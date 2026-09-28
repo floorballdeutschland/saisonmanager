@@ -165,12 +165,28 @@ body {
 /* ══ Anzeigetafel ══════════════════════════════════════════════════════════
    Unten links, wo bei Hallensport üblicherweise wenig passiert. Zahlen in
    Oswald, weil die schmale Grotesk auch bei zweistelligen Ständen ruhig
-   bleibt. */
+   bleibt.
+
+   GRÖSSE: Alle Maße der Tafel unten sind für 100 % geschrieben, gezeigt wird
+   sie auf 70 % und 30px vom Rand. In voller Größe war sie mit Uhr rund 1000px
+   breit, also die halbe Bildbreite, und stand bei jedem Kameraschwenk in die
+   Ecke im Bild (Rückmeldung aus Kaufering). Skaliert per `transform` statt
+   über kleinere Einzelmaße: Die festen Plätze für Stand und Uhr (siehe dort)
+   bleiben so im selben Verhältnis, und die Strafenzeile schrumpft mit. Der
+   Ursprung liegt in der Ecke, an der die Tafel hängt.
+
+   Kleiner als 70 % geht bewusst nicht: Darunter sind Kürzel und Strafenzeile
+   nach der Videokompression auf dem Handy nicht mehr lesbar. Wer weniger
+   Fläche braucht, nimmt „Kompakt" (unten), das Spalten weglässt statt weiter
+   zu schrumpfen. In OBS lässt sich die Größe nicht selbst lösen, weil die
+   Tafel mit Bauchbinde und Strafen in EINER Browser-Quelle liegt. */
 
 .ov-scoreboard {
   position: absolute;
-  left: 60px;
-  bottom: 60px;
+  left: 30px;
+  bottom: 30px;
+  transform: scale(0.7);
+  transform-origin: bottom left;
   /* Spalte, nicht Reihe: Die eigentliche Leiste ist `.ov-sb-row`, darunter
      hängt die Strafenzeile. Ohne diese Ebene stünden die Strafen als weitere
      Spalte NEBEN dem Ligazeichen. */
@@ -185,68 +201,54 @@ body {
 
 /* Platzierung, umschaltbar im Bedienfeld. Unten links bleibt der Standard und
    steht deshalb oben in `.ov-scoreboard` selbst: Eine Bühne ohne Dock und ohne
-   gespeicherte Wahl sieht damit aus wie bisher.
+   gespeicherte Wahl zeigt ihn.
 
-   Die Bauchbinde hängt mit dran. Sie sitzt über der Anzeigetafel; steht die
-   oben, ist der Platz unten frei und die Bauchbinde rutscht dorthin. Ohne das
-   klebte sie mitten im Bild, mit der Höhe der Anzeigetafel als Lücke zum
-   unteren Rand. */
+   Die Bauchbinde hängt mit dran. Sie behält ihre volle Größe (sie steht nur
+   kurz im Bild) und sitzt über der Anzeigetafel; steht die oben, ist der Platz
+   unten frei und die Bauchbinde rutscht dorthin. Ohne das klebte sie mitten im
+   Bild, mit der Höhe der Anzeigetafel als Lücke zum unteren Rand.
+
+   `transform` muss hier vollständig stehen: Die Angabe ersetzt die aus
+   `.ov-scoreboard`, ein bloßes `translateX` ließe die Tafel in voller Größe
+   stehen. */
 .ov-stage[data-position="bottom-center"] .ov-scoreboard {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.ov-stage[data-position="top-left"] .ov-scoreboard {
-  top: 60px;
-  bottom: auto;
-}
-
-.ov-stage[data-position="top-left"] .ov-lower-third {
-  bottom: 60px;
-}
-
-/* Kompakte Anzeigetafel, umschaltbar im Bedienfeld. Gewünscht für Hallen, in
-   denen die Kamera in die Ecke der Anzeigetafel schwenkt: Mit Uhr ist die Tafel
-   in voller Größe rund 1000px breit, also die halbe Bildbreite.
-
-   Eine feste Stufe statt eines Reglers: Unter etwa 70 % sind die Kürzel und
-   die Strafenzeile nach der Videokompression auf dem Handy nicht mehr lesbar,
-   und das fiele erst auf Sendung auf. In OBS lässt sich das nicht selbst
-   lösen, weil die Tafel mit Bauchbinde und Strafen in EINER Browser-Quelle
-   liegt; wer die Quelle kleiner zieht, verkleinert alles.
-
-   Skaliert per `transform`, nicht über kleinere Einzelmaße: Die festen Plätze
-   für Stand und Uhr (siehe dort) bleiben so im selben Verhältnis, und die
-   Strafenzeile schrumpft mit. Der Ursprung liegt in der Ecke, an der die Tafel
-   hängt, damit sie beim Umschalten dort stehen bleibt. Die Bauchbinde behält
-   ihre Größe (sie steht nur kurz im Bild) und rückt an dieselbe Kante. */
-.ov-stage[data-size="compact"] .ov-scoreboard {
-  left: 30px;
-  bottom: 30px;
-  transform: scale(0.7);
-  transform-origin: bottom left;
-}
-
-.ov-stage[data-size="compact"] .ov-lower-third {
-  left: 30px;
-  /* 30px Rand + 70px Tafel (100px Leiste x 0,7) + 30px Abstand. */
-  bottom: 130px;
-}
-
-.ov-stage[data-size="compact"][data-position="bottom-center"] .ov-scoreboard {
   left: 50%;
   transform: translateX(-50%) scale(0.7);
   transform-origin: bottom center;
 }
 
-.ov-stage[data-size="compact"][data-position="top-left"] .ov-scoreboard {
+.ov-stage[data-position="top-left"] .ov-scoreboard {
   top: 30px;
   bottom: auto;
   transform-origin: top left;
 }
 
-.ov-stage[data-size="compact"][data-position="top-left"] .ov-lower-third {
+.ov-stage[data-position="top-left"] .ov-lower-third {
   bottom: 30px;
+}
+
+/* Kompakt, umschaltbar im Bedienfeld: dieselbe Größe, aber nur Kürzel,
+   Spielstand, Uhr und Strafen. Logos, Abschnitt und Ligazeichen fallen weg,
+   die Tafel ist damit etwa halb so breit.
+
+   `display: none` und nicht `.ov-hidden`: Die Spalten sollen keinen Platz
+   mehr belegen. Die Klassen, die overlay.js an Logo und Ligazeichen setzt,
+   bleiben davon unberührt; zurück auf Standard steht alles wieder da. Der
+   Abschnitt fehlt auch, obwohl er eine Aussage ist, weil die Uhr die Zeit
+   schon trägt und „2. DRITTEL" die breiteste Spalte nach den Mannschaften
+   ist. */
+.ov-stage[data-size="compact"] .ov-logo-chip,
+.ov-stage[data-size="compact"] .ov-meta,
+.ov-stage[data-size="compact"] .ov-league-mark {
+  display: none;
+}
+
+/* Die Mindestbreite der Mannschaftsblöcke rechnet mit dem Logo (siehe
+   `.ov-team`). Ohne Logo ließe sie neben einem Kürzel wie BER über hundert
+   Pixel leer stehen. 140px hält die Ziffern bei Kürzeln bis vier Zeichen
+   weiter in der Mitte. */
+.ov-stage[data-size="compact"] .ov-team {
+  min-width: 140px;
 }
 
 /* Akzentkante als Markenzeichen der Liga. */
@@ -593,8 +595,10 @@ body {
 
 .ov-lower-third {
   position: absolute;
-  left: 60px;
-  bottom: 190px;
+  left: 30px;
+  /* 30px Rand + 70px Tafel (100px Leiste x 0,7) + 30px Abstand. Die Tafel
+     ohne Logos (Kompakt) ist etwas niedriger, die Lücke also etwas größer. */
+  bottom: 130px;
   min-width: 620px;
   max-width: 1100px;
   padding: 20px 34px 22px;
