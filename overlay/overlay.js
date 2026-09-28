@@ -574,9 +574,10 @@
     el.stage.setAttribute("data-position", erlaubt ? wanted : "bottom-left");
   }
 
-  // Kompakte Anzeigetafel (siehe overlay.css). Nur `true` schaltet um, jeder
-  // andere Wert lässt die volle Größe stehen: Eine Bühne ohne Dock oder mit
-  // einem älteren Bedienfeld sieht damit aus wie bisher.
+  // Kompakte Anzeigetafel ohne Logos, Abschnitt und Ligazeichen (siehe
+  // overlay.css). Nur `true` schaltet um, jeder andere Wert lässt den Standard
+  // stehen: Eine Bühne ohne Dock oder mit einem älteren Bedienfeld zeigt die
+  // Tafel vollständig.
   function applyScoreboardSize() {
     if (state.control.scoreboard_compact === true) {
       el.stage.setAttribute("data-size", "compact");

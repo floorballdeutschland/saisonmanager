@@ -519,7 +519,7 @@
     // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
     if (el["sb-compact"]) {
       var kompakt = state.control.scoreboard_compact === true;
-      el["sb-compact"].textContent = kompakt ? "Kompakt" : "Normal";
+      el["sb-compact"].textContent = kompakt ? "Kompakt" : "Standard";
       el["sb-compact"].classList.toggle("dk-toggle--on", kompakt);
     }
 
