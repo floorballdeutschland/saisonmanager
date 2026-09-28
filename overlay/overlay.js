@@ -98,6 +98,8 @@
     guestName: document.getElementById("guest-name"),
     homeLogo: document.getElementById("home-logo"),
     guestLogo: document.getElementById("guest-logo"),
+    homeJersey: document.getElementById("home-jersey"),
+    guestJersey: document.getElementById("guest-jersey"),
     homeGoals: document.getElementById("home-goals"),
     guestGoals: document.getElementById("guest-goals"),
     period: document.getElementById("period"),
@@ -539,7 +541,9 @@
 
     el.scoreboard.classList.toggle("ov-hidden", !visible);
     applyScoreboardPosition();
+    applyScoreboardSize();
     applyColors();
+    applyJerseys();
     // Auch ohne neue Spieldaten: Die Übersteuerung steckt allein im
     // Steuerzustand, sonst wirkte ein Druck im Dock erst beim nächsten
     // Eintrag im Spielbericht.
@@ -568,6 +572,47 @@
     var erlaubt = Object.prototype.hasOwnProperty.call(POSITIONS, wanted);
 
     el.stage.setAttribute("data-position", erlaubt ? wanted : "bottom-left");
+  }
+
+  // Kompakte Anzeigetafel (siehe overlay.css). Nur `true` schaltet um, jeder
+  // andere Wert lässt die volle Größe stehen: Eine Bühne ohne Dock oder mit
+  // einem älteren Bedienfeld sieht damit aus wie bisher.
+  function applyScoreboardSize() {
+    if (state.control.scoreboard_compact === true) {
+      el.stage.setAttribute("data-size", "compact");
+    } else {
+      el.stage.removeAttribute("data-size");
+    }
+  }
+
+  // Trikotfarben der beiden Mannschaften, vom Bedienfeld vor dem Spiel gesetzt.
+  //
+  // Sie gelten NUR für das Spiel, für das sie eingetragen wurden. Der
+  // Steuerzustand hängt am Token und damit am ganzen Spieltag; ohne diese
+  // Bindung trüge nach dem Umschalten auf die nächste Partie deren Anzeigetafel
+  // die Trikots der vorigen. Das Bedienfeld schreibt deshalb die Spiel-id mit,
+  // und eine abweichende blendet die Balken aus.
+  //
+  // Geprüft wie die Akzentfarben (`hexOrNull`): Der Wert landet in
+  // `background`, und der Steuerzustand ist frei beschreibbar.
+  function applyJerseys() {
+    var jerseys = state.control.jerseys || {};
+    var passt = state.game && Number(jerseys.game_id) === Number(state.game.id);
+
+    setJersey(el.homeJersey, passt ? hexOrNull(jerseys.home) : null);
+    setJersey(el.guestJersey, passt ? hexOrNull(jerseys.guest) : null);
+  }
+
+  function setJersey(node, hex) {
+    // Ein älteres, zwischengespeichertes index.html hat die Balken nicht.
+    if (!node) return;
+
+    node.classList.toggle("ov-hidden", !hex);
+    if (hex) {
+      node.style.background = hex;
+    } else {
+      node.style.removeProperty("background");
+    }
   }
 
   // Eigene Farben aus dem Bedienfeld, damit die Einblendungen zu den übrigen

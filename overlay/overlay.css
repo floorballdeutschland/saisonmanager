@@ -205,6 +205,50 @@ body {
   bottom: 60px;
 }
 
+/* Kompakte Anzeigetafel, umschaltbar im Bedienfeld. Gewünscht für Hallen, in
+   denen die Kamera in die Ecke der Anzeigetafel schwenkt: Mit Uhr ist die Tafel
+   in voller Größe rund 1000px breit, also die halbe Bildbreite.
+
+   Eine feste Stufe statt eines Reglers: Unter etwa 70 % sind die Kürzel und
+   die Strafenzeile nach der Videokompression auf dem Handy nicht mehr lesbar,
+   und das fiele erst auf Sendung auf. In OBS lässt sich das nicht selbst
+   lösen, weil die Tafel mit Bauchbinde und Strafen in EINER Browser-Quelle
+   liegt; wer die Quelle kleiner zieht, verkleinert alles.
+
+   Skaliert per `transform`, nicht über kleinere Einzelmaße: Die festen Plätze
+   für Stand und Uhr (siehe dort) bleiben so im selben Verhältnis, und die
+   Strafenzeile schrumpft mit. Der Ursprung liegt in der Ecke, an der die Tafel
+   hängt, damit sie beim Umschalten dort stehen bleibt. Die Bauchbinde behält
+   ihre Größe (sie steht nur kurz im Bild) und rückt an dieselbe Kante. */
+.ov-stage[data-size="compact"] .ov-scoreboard {
+  left: 30px;
+  bottom: 30px;
+  transform: scale(0.7);
+  transform-origin: bottom left;
+}
+
+.ov-stage[data-size="compact"] .ov-lower-third {
+  left: 30px;
+  /* 30px Rand + 70px Tafel (100px Leiste x 0,7) + 30px Abstand. */
+  bottom: 130px;
+}
+
+.ov-stage[data-size="compact"][data-position="bottom-center"] .ov-scoreboard {
+  left: 50%;
+  transform: translateX(-50%) scale(0.7);
+  transform-origin: bottom center;
+}
+
+.ov-stage[data-size="compact"][data-position="top-left"] .ov-scoreboard {
+  top: 30px;
+  bottom: auto;
+  transform-origin: top left;
+}
+
+.ov-stage[data-size="compact"][data-position="top-left"] .ov-lower-third {
+  bottom: 30px;
+}
+
 /* Akzentkante als Markenzeichen der Liga. */
 .ov-scoreboard::before {
   content: "";
@@ -249,6 +293,41 @@ body {
 
 .ov-team--home {
   padding-left: 28px;
+}
+
+/* Trikotfarbe der Mannschaft als Balken an der Unterkante ihres Blocks. Die
+   Regie trägt sie vor dem Spiel im Bedienfeld ein, denn welches Trikot eine
+   Mannschaft trägt, ändert sich je Spiel und steht nirgends im System.
+
+   Absolut gesetzt, damit der Balken die Leiste weder höher noch breiter macht:
+   Mit und ohne Trikotfarbe steht die Tafel gleich im Bild.
+
+   Die helle Kontur ist nötig und keine Zierde. Schwarz und Dunkelblau sind
+   häufige Trikotfarben und verschwänden ohne sie im dunklen Verlauf der Tafel;
+   ein weißer Balken bleibt mit ihr genauso weiß. */
+.ov-team {
+  position: relative;
+}
+
+.ov-jersey {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 10px und eine 2px-Kontur, weil beides kompakt noch auf 70 % schrumpft:
+     Mit 8px und 1px waren Schwarz und Dunkelblau dort nicht mehr zu sehen. */
+  height: 10px;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 65%);
+}
+
+/* Links liegt die Akzentkante der Tafel (6px, `.ov-scoreboard::before`). Der
+   Balken beginnt dahinter, sonst deckte er ihr unteres Ende ab. */
+.ov-team--home .ov-jersey {
+  left: 6px;
+}
+
+.ov-jersey.ov-hidden {
+  display: none;
 }
 
 .ov-team--guest {

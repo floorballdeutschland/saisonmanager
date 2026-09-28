@@ -78,6 +78,14 @@
     "lt-text-main",
     "lt-onair",
     "sb-position",
+    "sb-compact",
+    "jersey-reset",
+    "jersey-home-team",
+    "jersey-home-name",
+    "jersey-home-swatches",
+    "jersey-guest-team",
+    "jersey-guest-name",
+    "jersey-guest-swatches",
     "col-accent",
     "col-accent-alt",
     "col-reset",
@@ -400,6 +408,7 @@
     renderPenalties();
     renderLowerThird();
     renderColors();
+    renderJerseys();
     renderInterview();
     renderOverride();
   }
@@ -505,6 +514,13 @@
       el["sb-position"].value =
         state.control.scoreboard_position || "bottom-left";
       if (!el["sb-position"].value) el["sb-position"].value = "bottom-left";
+    }
+
+    // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
+    if (el["sb-compact"]) {
+      var kompakt = state.control.scoreboard_compact === true;
+      el["sb-compact"].textContent = kompakt ? "Kompakt" : "Normal";
+      el["sb-compact"].classList.toggle("dk-toggle--on", kompakt);
     }
 
     el["score-line"].textContent = state.game
@@ -779,6 +795,170 @@
     var game = state.game;
     var team = game && (side === "home" ? game.home : game.guest);
     return teamLabel(team) || (side === "home" ? "Heim" : "Gast");
+  }
+
+  // ── Trikotfarben ────────────────────────────────────────────────────────
+
+  // Die Farbfelder. Namen auf Deutsch, weil sie die Beschriftung sind (Tooltip
+  // und Bildschirmleser) und in der Zeile über den Feldern stehen. Die Werte
+  // sind kräftig gewählt: Ein Trikot wirkt in der Halle heller als ein
+  // Farbbalken auf dunklem Grund, und blasse Töne verschwinden nach der
+  // Videokompression zuerst.
+  var JERSEY_COLORS = [
+    { name: "Weiß", hex: "#ffffff" },
+    { name: "Schwarz", hex: "#111111" },
+    { name: "Grau", hex: "#8a8f98" },
+    { name: "Gelb", hex: "#ffd400" },
+    { name: "Orange", hex: "#f47c20" },
+    { name: "Rot", hex: "#d7263d" },
+    { name: "Weinrot", hex: "#7a1f2b" },
+    { name: "Pink", hex: "#e04f9a" },
+    { name: "Lila", hex: "#6f3aa8" },
+    { name: "Hellblau", hex: "#4fa8e0" },
+    { name: "Blau", hex: "#1f5fbf" },
+    { name: "Dunkelblau", hex: "#13294b" },
+    { name: "Grün", hex: "#1f9d55" },
+    { name: "Dunkelgrün", hex: "#0b5d3b" },
+  ];
+
+  var JERSEY_SIDES = ["home", "guest"];
+
+  // Das Spiel, für das Trikotfarben gelten sollen. Dieselbe Quelle wie die
+  // Spielauswahl: Direkt nach dem Umschalten trägt `state.game` noch das alte
+  // Spiel, bis der nächste Abruf die neuen Daten bringt.
+  function activeGameId() {
+    var id = state.control.active_game_id || (state.game && state.game.id);
+    return id ? Number(id) : null;
+  }
+
+  // Die Trikotfarben des gewählten Spiels, jede geprüft. Gehören die
+  // gespeicherten zu einem anderen Spiel, gelten sie hier als leer -- genauso
+  // behandelt sie die Bühne.
+  function jerseyState() {
+    var jerseys = state.control.jerseys || {};
+    var passt =
+      activeGameId() !== null && Number(jerseys.game_id) === activeGameId();
+
+    return {
+      home: passt && HEX_COLOR.test(String(jerseys.home)) ? jerseys.home : null,
+      guest:
+        passt && HEX_COLOR.test(String(jerseys.guest)) ? jerseys.guest : null,
+    };
+  }
+
+  // Einmal aufbauen, danach nur noch markieren. Ein Neuaufbau bei jedem
+  // Abruf tauschte die Knöpfe alle zwei Sekunden aus, und ein Druck, der
+  // gerade in diesen Moment fällt, ginge verloren (wie bei den Strafen).
+  function buildJerseySwatches() {
+    JERSEY_SIDES.forEach(function (side) {
+      var box = el["jersey-" + side + "-swatches"];
+      if (!box || box.dataset.filled === "1") return;
+
+      box.appendChild(swatchButton(side, "", "keine"));
+      JERSEY_COLORS.forEach(function (color) {
+        box.appendChild(swatchButton(side, color.hex, color.name));
+      });
+
+      // Der freie Wähler für alles, was die Liste nicht hat. Das Farbfeld des
+      // Betriebssystems, also ohne englische Farbnamen.
+      var label = document.createElement("label");
+      label.className = "dk-swatch dk-swatch--custom";
+      label.title = "Andere Farbe";
+      var input = document.createElement("input");
+      input.type = "color";
+      input.setAttribute("data-jersey-side", side);
+      input.setAttribute("aria-label", sideWord(side) + ": andere Farbe");
+      label.appendChild(input);
+      box.appendChild(label);
+
+      box.dataset.filled = "1";
+    });
+  }
+
+  function swatchButton(side, hex, name) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "dk-swatch" + (hex ? "" : " dk-swatch--none");
+    button.title = name;
+    button.setAttribute("aria-label", sideWord(side) + ": " + name);
+    button.setAttribute("data-jersey-side", side);
+    button.setAttribute("data-jersey-color", hex);
+    if (hex) button.style.background = hex;
+    return button;
+  }
+
+  function sideWord(side) {
+    return side === "home" ? "Heim" : "Gast";
+  }
+
+  function jerseyName(hex) {
+    if (!hex) return "keine";
+    for (var i = 0; i < JERSEY_COLORS.length; i++) {
+      if (JERSEY_COLORS[i].hex === hex.toLowerCase()) {
+        return JERSEY_COLORS[i].name;
+      }
+    }
+    return "eigene Farbe";
+  }
+
+  function renderJerseys() {
+    // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
+    if (!el["jersey-home-swatches"] || !el["jersey-guest-swatches"]) return;
+
+    buildJerseySwatches();
+    var chosen = jerseyState();
+
+    JERSEY_SIDES.forEach(function (side) {
+      var hex = chosen[side];
+      var team =
+        state.game && (side === "home" ? state.game.home : state.game.guest);
+
+      // textContent: Das Mannschaftskürzel kommt aus der Datenbank.
+      el["jersey-" + side + "-team"].textContent =
+        teamLabel(team) || sideWord(side);
+      el["jersey-" + side + "-name"].textContent = jerseyName(hex);
+
+      var box = el["jersey-" + side + "-swatches"];
+      var istListenfarbe = false;
+      box.querySelectorAll("button[data-jersey-color]").forEach(function (b) {
+        var wert = b.getAttribute("data-jersey-color");
+        var an = wert === (hex ? hex.toLowerCase() : "");
+        if (an && wert) istListenfarbe = true;
+        b.classList.toggle("dk-swatch--on", an);
+        b.setAttribute("aria-pressed", an ? "true" : "false");
+      });
+
+      var input = box.querySelector("input[type=color]");
+      var eigene = Boolean(hex) && !istListenfarbe;
+      input.parentNode.classList.toggle("dk-swatch--on", eigene);
+      // Eine eigene Farbe zeigt sich im Feld selbst, sonst der Regenbogen.
+      input.parentNode.style.background = eigene ? hex : "";
+      // Nicht zurückstellen, während jemand darin wählt (siehe renderColors).
+      if (eigene && document.activeElement !== input) input.value = hex;
+    });
+
+    var irgendeine = Boolean(chosen.home || chosen.guest);
+    el["jersey-reset"].disabled = !irgendeine;
+  }
+
+  // Beide Seiten in EINEM Wert mit der Spiel-id schreiben. Gehört der
+  // gespeicherte Stand zu einem anderen Spiel, beginnt das neue leer, sonst
+  // erbte die zweite Mannschaft die Farbe aus der vorigen Partie.
+  function setJersey(side, hex) {
+    var id = activeGameId();
+    if (id === null) {
+      setStatus("Trikotfarben brauchen ein gewähltes Spiel.", true);
+      return;
+    }
+
+    var bisher = jerseyState();
+    var neu = { game_id: id };
+    JERSEY_SIDES.forEach(function (s) {
+      var wert = s === side ? hex : bisher[s];
+      if (wert) neu[s] = wert.toLowerCase();
+    });
+
+    writeState({ jerseys: neu });
   }
 
   // ── Farben ──────────────────────────────────────────────────────────────
@@ -1290,6 +1470,34 @@
 
   on("col-reset", "click", function () {
     writeState({ colors: null });
+  });
+
+  on("sb-compact", "click", function () {
+    writeState({
+      scoreboard_compact: state.control.scoreboard_compact !== true,
+    });
+  });
+
+  // Ein Zuhörer je Liste statt je Feld, wie bei den Strafen.
+  JERSEY_SIDES.forEach(function (side) {
+    var box = "jersey-" + side + "-swatches";
+
+    on(box, "click", function (event) {
+      var ziel = event.target;
+      if (!ziel || ziel.tagName !== "BUTTON") return;
+      setJersey(side, ziel.getAttribute("data-jersey-color") || null);
+    });
+
+    // `change` und nicht `input`, aus demselben Grund wie bei den Akzentfarben.
+    on(box, "change", function (event) {
+      var ziel = event.target;
+      if (!ziel || ziel.type !== "color") return;
+      if (HEX_COLOR.test(ziel.value)) setJersey(side, ziel.value);
+    });
+  });
+
+  on("jersey-reset", "click", function () {
+    writeState({ jerseys: null });
   });
 
   on("iv-team", "change", renderInterview);

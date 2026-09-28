@@ -40,6 +40,52 @@
             <option value="top-left">oben links</option>
           </select>
         </div>
+
+        <!-- Kleiner und näher an der Ecke, für Hallen, in denen die Kamera
+             dorthin schwenkt. Eine feste Stufe, siehe overlay.css. -->
+        <div class="dk-row">
+          <span class="dk-label">Größe</span>
+          <button class="dk-toggle" id="sb-compact" type="button">
+            Normal
+          </button>
+        </div>
+      </section>
+
+      <!-- Trikotfarben, vor dem Spiel einzutragen. Die Bühne zeigt sie als
+           Balken unter den Mannschaften. Sie gelten nur für das gewählte
+           Spiel; nach dem Umschalten auf die nächste Partie ist die Tafel
+           wieder ohne, bis dort Farben gesetzt sind.
+
+           Fertige Farbfelder mit deutschem Namen statt eines Textfelds: Ein
+           Klick zwischen zwei Handgriffen, und niemand muss wissen, wie eine
+           Farbe auf Englisch heißt. Für alles andere steht der freie
+           Farbwähler daneben. Die Felder baut dock.js, damit beide
+           Mannschaften dieselbe Liste haben. -->
+      <section class="dk-card">
+        <div class="dk-row">
+          <span class="dk-label">Trikotfarben</span>
+          <button class="dk-toggle" id="jersey-reset" type="button">
+            Entfernen
+          </button>
+        </div>
+
+        <div class="dk-jersey" data-jersey-side="home">
+          <div class="dk-jersey-head">
+            <span class="dk-jersey-team" id="jersey-home-team">Heim</span>
+            <span class="dk-jersey-name" id="jersey-home-name">keine</span>
+          </div>
+          <div class="dk-swatches" id="jersey-home-swatches"></div>
+        </div>
+
+        <div class="dk-jersey" data-jersey-side="guest">
+          <div class="dk-jersey-head">
+            <span class="dk-jersey-team" id="jersey-guest-team">Gast</span>
+            <span class="dk-jersey-name" id="jersey-guest-name">keine</span>
+          </div>
+          <div class="dk-swatches" id="jersey-guest-swatches"></div>
+        </div>
+
+        <div class="dk-hint">Gilt nur für das oben gewählte Spiel.</div>
       </section>
 
       <section class="dk-card">
