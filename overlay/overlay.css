@@ -251,15 +251,6 @@ body {
   min-width: 140px;
 }
 
-/* Akzentkante als Markenzeichen der Liga. */
-.ov-scoreboard::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 6px;
-  background: var(--ov-grad-accent);
-}
-
 /* Die Leiste selbst: Mannschaften, Stand, Uhr, Abschnitt, Ligazeichen. Die
    Spalten sind gleich hoch (`stretch`), damit die Trennlinien zwischen ihnen
    durchlaufen. */
@@ -320,12 +311,6 @@ body {
      Mit 8px und 1px waren Schwarz und Dunkelblau dort nicht mehr zu sehen. */
   height: 10px;
   box-shadow: inset 0 0 0 2px rgb(255 255 255 / 65%);
-}
-
-/* Links liegt die Akzentkante der Tafel (6px, `.ov-scoreboard::before`). Der
-   Balken beginnt dahinter, sonst deckte er ihr unteres Ende ab. */
-.ov-team--home .ov-jersey {
-  left: 6px;
 }
 
 .ov-jersey.ov-hidden {
