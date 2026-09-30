@@ -53,4 +53,16 @@ describe('MatchPairingComponent', () => {
     expect(text).not.toContain('04.10.2026');
     expect(text).not.toContain('11:00 Uhr');
   });
+
+  // Nur Verschiebung, Absage und fehlender Termin verdraengen Datum und
+  // Uhrzeit. Jeder andere Hinweis steht zusaetzlich dazwischen.
+  it('zeigt Datum und Uhrzeit neben einem sonstigen Hinweis', () => {
+    const text = render({
+      notice_type: 'Other',
+      notice_string: 'Hallenwechsel',
+    }).textContent;
+    expect(text).toContain('Hallenwechsel');
+    expect(text).toContain('04.10.2026');
+    expect(text).toContain('11:00 Uhr');
+  });
 });
