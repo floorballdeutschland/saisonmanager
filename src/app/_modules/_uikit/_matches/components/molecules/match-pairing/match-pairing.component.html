@@ -1,6 +1,6 @@
 <a
   [routerLink]="['./', 'spiel', match.game_id]"
-  class="grid grid-cols-[42px_1fr_100px] md:grid-cols-[1fr_42px_80px_42px_1fr] grid-rows-[40px_40px] md:grid-rows-1 md:gap-x-5 items-center md:h-20 cursor-pointer hover:bg-fb-gray-200 transition my-4 md:my-0"
+  class="grid grid-cols-[42px_1fr_minmax(100px,auto)] md:grid-cols-[1fr_42px_80px_42px_1fr] grid-rows-[40px_40px] md:grid-rows-1 md:gap-x-5 items-center md:h-20 cursor-pointer hover:bg-fb-gray-200 transition my-4 md:my-0"
 >
   <div class="md:text-right text-sm font-bold order-2 md:order-1 truncate">
     {{ match.home_team_name }}
@@ -33,7 +33,7 @@
   <div
     class="relative order-3 row-span-2 md:order-3 text-center font-bold tracking-widest md:grid md:grid-cols-1"
   >
-    @if (match.date) {
+    @if (match.date && (match.notice_type | gameNoticeVisibility: "date")) {
       <p class="text-xs text-fb-gray-400 font-normal whitespace-nowrap">
         {{ match.date | date: "dd.MM.yyyy" }}
       </p>
@@ -41,7 +41,7 @@
 
     @if (match.notice_type) {
       <div
-        class="absolute drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] top-1/2 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 -translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
+        class="drop-shadow-lg tracking-[0.5px] w-[150px] md:w-[170px] mx-auto mb-1 md:mb-0 md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 px-2 py-1.5 rounded border border-red-500 bg-red-200"
       >
         <div class="uppercase text-[13px] leading-none whitespace-nowrap">
           {{ match.notice_type | gameNoticeHeadline }}
@@ -54,7 +54,7 @@
       </div>
     }
 
-    @if (!match.started) {
+    @if (!match.started && (match.notice_type | gameNoticeVisibility: "time")) {
       @if (match.time) {
         <p class="text-base whitespace-nowrap">{{ match.time }} Uhr</p>
       }
