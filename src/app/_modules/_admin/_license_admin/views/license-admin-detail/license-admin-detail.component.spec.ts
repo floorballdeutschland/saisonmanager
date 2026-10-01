@@ -872,7 +872,8 @@ describe('LicenseAdminDetailComponent', () => {
       canFreeReject: boolean,
       history: unknown[] = [
         { license_status_id: 2, created_at: '2026-09-28T10:00:00Z' },
-      ]
+      ],
+      lastStatusId = 2
     ): {
       fixture: ComponentFixture<LicenseAdminDetailComponent>;
       root: HTMLElement;
@@ -915,7 +916,7 @@ describe('LicenseAdminDetailComponent', () => {
         licenses: [],
         team_license: {
           license: { id: 'l1', team_id: 1, history },
-          last_status: { license_status_id: 2 },
+          last_status: { license_status_id: lastStatusId },
           documents: {},
           required_documents: [],
         },
@@ -953,6 +954,47 @@ describe('LicenseAdminDetailComponent', () => {
         { license_status_id: 2, created_at: '2026-09-28T10:00:00Z' },
       ]);
       expect(button(root)).toBeNull();
+    });
+
+    // Status-IDs aus JSONB sind nicht typgarantiert.
+    it('erkennt eine fruehere Erteilung auch als Text', () => {
+      const { root } = render(true, [
+        { license_status_id: '1', created_at: '2026-09-02T10:00:00Z' },
+        { license_status_id: 2, created_at: '2026-09-28T10:00:00Z' },
+      ]);
+      expect(button(root)).toBeNull();
+    });
+
+    // Die API lehnt einen gesperrten Antrag ab (aktueller Status gesperrt).
+    it('fehlt bei einem gesperrten Antrag', () => {
+      const { root } = render(true, undefined, 9);
+      expect(button(root)).toBeNull();
+    });
+
+    it('meldet eine Absage der API und laesst die Karte stehen', () => {
+      const { fixture, root, http } = render(true);
+      const error = spyOn(TestBed.inject(NotificationService), 'error');
+      const input = root.querySelector<HTMLInputElement>('input[type="text"]')!;
+      input.value = 'Grund';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      button(root)!.click();
+      http
+        .expectOne((r) => r.url.endsWith('handle_license_request.json'))
+        .flush(
+          {
+            message:
+              'Es lassen sich nur Anträge der laufenden Saison kostenfrei ablehnen.',
+          },
+          { status: 422, statusText: 'Unprocessable Entity' }
+        );
+
+      expect(error).toHaveBeenCalledWith(
+        'Es lassen sich nur Anträge der laufenden Saison kostenfrei ablehnen.',
+        jasmine.anything()
+      );
+      expect(fixture.componentInstance.hidePlayer[7]).toBeFalsy();
     });
 
     it('bleibt ohne Begruendung gesperrt', () => {

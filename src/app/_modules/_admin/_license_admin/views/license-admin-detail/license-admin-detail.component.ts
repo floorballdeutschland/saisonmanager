@@ -356,19 +356,23 @@ export class LicenseAdminDetailComponent implements OnInit {
       });
   }
 
-  // Kostenfrei ablehnen (api: License.free_rejectable?) gibt es nur für eine
-  // Lizenz, die nie erteilt war: Eine einmal erteilte ist abgerechnet. Die
-  // Saisongrenze prüft allein die API, die Liga dieser Ansicht kann eine
-  // frühere Saison sein.
+  // Kostenfrei ablehnen (api: License.free_rejectable?) gibt es nur für einen
+  // offenen Antrag, der nie erteilt war: Eine einmal erteilte Lizenz ist
+  // abgerechnet. Ein gesperrter Antrag zählt nicht als offen. Number(), weil
+  // die Status-IDs aus JSONB nicht typgarantiert sind. Die Saisongrenze prüft
+  // allein die API, die Liga dieser Ansicht kann eine frühere Saison sein.
   public freeRejectable(player: PlayerWithLicense): boolean {
     if (!this.canFreeReject) return false;
+    if (Number(player.team_license.last_status?.license_status_id) !== 2) {
+      return false;
+    }
     return !(player.team_license.license?.history ?? []).some(
-      (h) => h.license_status_id === 1
+      (h) => Number(h.license_status_id) === 1
     );
   }
 
-  // Die Begründung ist Pflicht, sie steht später als einziger Beleg in der
-  // History und im Gebührenexport.
+  // Die Begründung ist Pflicht: Sie ist später der einzige Beleg in der
+  // History, denn die Gebührenrechnung führt die Lizenz nicht mehr.
   public hasReason(player: PlayerWithLicense): boolean {
     return !!this.reasons[player.team_license.license.id]?.trim();
   }
