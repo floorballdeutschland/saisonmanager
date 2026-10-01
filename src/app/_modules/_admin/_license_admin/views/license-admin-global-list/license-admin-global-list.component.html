@@ -685,7 +685,19 @@
                       }}</span
                     >
                   }
-                  @if (!e.express && !e.reactivation) {
+                  @if (e.free_rejection) {
+                    <span
+                      class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-5 bg-emerald-100 text-emerald-800"
+                      [title]="
+                        'licenseAdmin.globalList.freeRejectionTitle' | transloco
+                      "
+                      data-testid="free-rejection-badge"
+                      >{{
+                        "licenseAdmin.globalList.freeRejectionBadge" | transloco
+                      }}</span
+                    >
+                  }
+                  @if (!e.express && !e.reactivation && !e.free_rejection) {
                     <span class="text-gray-300">–</span>
                   }
                 </td>

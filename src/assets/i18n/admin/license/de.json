@@ -42,7 +42,9 @@
     "gfRoleOtherRequested": "erst beantragt, noch nicht erteilt",
     "gfRoleOtherUnknown": "Status unbekannt",
     "gfRoleDemoteHint": "Bereits vorhandene GF-Lizenzen dieses Wettbewerbs werden bei der Genehmigung automatisch zur Zweitlizenz.",
-    "reactivation": "Reaktivierung, kostenfrei"
+    "reactivation": "Reaktivierung, kostenfrei",
+    "rejectFreeOfCharge": "Kostenfrei ablehnen",
+    "rejectFreeOfChargeHint": "Für Anträge, die der Verein in gutem Glauben gestellt hat und die lizenzrechtlich nicht möglich sind. Die Lizenz fällt aus der Gebührenrechnung, ein Expresszuschlag entfällt. Begründung ist Pflicht."
   },
   "globalList": {
     "title": "Lizenzverwaltung",
@@ -164,7 +166,10 @@
     "csvLicensesRequested": "davon offen beantragt",
     "reactivationBadge": "Reaktivierung",
     "reactivationTitle": "Lizenz nach Transfer und Freigabe zurück reaktiviert, keine neue Lizenzgebühr",
-    "csvReactivation": "Reaktivierung (kostenfrei)"
+    "csvReactivation": "Reaktivierung (kostenfrei)",
+    "freeRejectionBadge": "Kostenfrei abgelehnt",
+    "freeRejectionTitle": "Von einem Admin kostenfrei abgelehnt, keine Lizenzgebühr",
+    "csvFreeRejection": "Kostenfrei abgelehnt"
   },
   "leagueDetail": {
     "title": "Lizenzverwaltung",
@@ -327,6 +332,7 @@
     "withdrawRequestError": "Lizenzantrag konnte nicht zurückgezogen werden.",
     "actionFailed": "Aktion fehlgeschlagen.",
     "fileTooLarge": "Die Datei darf maximal 5 MB groß sein.",
-    "rejectionRevoked": "Ablehnung für Spieler {{ firstName }} {{ lastName }} ({{ id }}) widerrufen, der Antrag steht wieder auf „beantragt\""
+    "rejectionRevoked": "Ablehnung für Spieler {{ firstName }} {{ lastName }} ({{ id }}) widerrufen, der Antrag steht wieder auf „beantragt\"",
+    "requestRejectedFreeOfCharge": "Lizenzantrag für Spieler {{ firstName }} {{ lastName }} ({{ id }}) kostenfrei abgelehnt"
   }
 }

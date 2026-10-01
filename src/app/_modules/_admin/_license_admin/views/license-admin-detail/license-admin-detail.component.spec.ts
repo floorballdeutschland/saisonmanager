@@ -867,4 +867,135 @@ describe('LicenseAdminDetailComponent', () => {
       http.verify();
     });
   });
+  describe('Kostenfrei ablehnen', () => {
+    function render(
+      canFreeReject: boolean,
+      history: unknown[] = [
+        { license_status_id: 2, created_at: '2026-09-28T10:00:00Z' },
+      ]
+    ): {
+      fixture: ComponentFixture<LicenseAdminDetailComponent>;
+      root: HTMLElement;
+      http: HttpTestingController;
+      success: jasmine.Spy;
+    } {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          UikitPlayerModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule({
+            de: {
+              licenseAdmin: {
+                detail: { rejectFreeOfCharge: 'Kostenfrei ablehnen' },
+                notifications: {
+                  requestRejectedFreeOfCharge: 'kostenfrei abgelehnt',
+                },
+              },
+            },
+          }),
+        ],
+        declarations: [LicenseAdminDetailComponent],
+      });
+      const fixture = TestBed.createComponent(LicenseAdminDetailComponent);
+      const component = fixture.componentInstance;
+      component.initiallyOpen = true;
+      component.allClubs = [];
+      component.canFreeReject = canFreeReject;
+      component.player = {
+        id: 7,
+        first_name: 'Mia',
+        last_name: 'Muster',
+        birthdate: '2000-05-01',
+        gender: 'W',
+        clubs: [],
+        licenses: [],
+        team_license: {
+          license: { id: 'l1', team_id: 1, history },
+          last_status: { license_status_id: 2 },
+          documents: {},
+          required_documents: [],
+        },
+      } as unknown as PlayerWithLicense;
+      component.team = {
+        id: 1,
+        name: 'Musterstadt',
+      } as unknown as TeamWithPlayers;
+      fixture.detectChanges();
+      return {
+        fixture,
+        root: fixture.nativeElement,
+        http: TestBed.inject(HttpTestingController),
+        success: spyOn(TestBed.inject(NotificationService), 'success'),
+      };
+    }
+
+    function button(root: HTMLElement): HTMLButtonElement | null {
+      return root.querySelector<HTMLButtonElement>(
+        '[data-testid="reject-free-of-charge"]'
+      );
+    }
+
+    it('fehlt ohne das Recht', () => {
+      const { root } = render(false);
+      expect(button(root)).toBeNull();
+    });
+
+    // Eine einmal erteilte Lizenz ist abgerechnet; die API lehnt das ab, der
+    // Knopf soll es gar nicht erst anbieten.
+    it('fehlt bei einer schon einmal erteilten Lizenz', () => {
+      const { root } = render(true, [
+        { license_status_id: 2, created_at: '2026-09-01T10:00:00Z' },
+        { license_status_id: 1, created_at: '2026-09-02T10:00:00Z' },
+        { license_status_id: 2, created_at: '2026-09-28T10:00:00Z' },
+      ]);
+      expect(button(root)).toBeNull();
+    });
+
+    it('bleibt ohne Begruendung gesperrt', () => {
+      const { root } = render(true);
+      expect(button(root)).not.toBeNull();
+      expect(button(root)!.disabled).toBeTrue();
+    });
+
+    it('schickt die Ablehnung mit free_of_charge und Begruendung', () => {
+      const { fixture, root, http, success } = render(true);
+      const input = root.querySelector<HTMLInputElement>('input[type="text"]')!;
+      input.value = 'Pokal-SG nicht zulaessig';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      button(root)!.click();
+
+      const request = http.expectOne((r) =>
+        r.url.endsWith('admin/players/7/handle_license_request.json')
+      );
+      expect(request.request.body).toEqual(
+        jasmine.objectContaining({
+          license_id: 'l1',
+          license_status_id: 3,
+          reason: 'Pokal-SG nicht zulaessig',
+          free_of_charge: true,
+        })
+      );
+      request.flush({ success: true });
+      expect(success).toHaveBeenCalledWith(
+        'kostenfrei abgelehnt',
+        jasmine.anything()
+      );
+    });
+
+    // Gegenprobe: Die gewoehnliche Ablehnung bleibt kostenpflichtig.
+    it('die gewoehnliche Ablehnung schickt kein free_of_charge', () => {
+      const { fixture, http } = render(true);
+      fixture.componentInstance.cancelLicense(fixture.componentInstance.player);
+      const request = http.expectOne((r) =>
+        r.url.endsWith('handle_license_request.json')
+      );
+      expect(request.request.body.free_of_charge).toBeUndefined();
+    });
+  });
 });
