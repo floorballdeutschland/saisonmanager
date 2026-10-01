@@ -51,6 +51,10 @@ export class LicenseAdminDetailComponent implements OnInit {
   @Input()
   league?: League;
 
+  // Darf der Betrachter kostenfrei ablehnen (`player_free_reject_license`)?
+  @Input()
+  canFreeReject = false;
+
   @Output() handledPlayer = new EventEmitter<number>();
 
   reasons: { [key: string]: string } = {};
@@ -336,6 +340,65 @@ export class LicenseAdminDetailComponent implements OnInit {
           this._notificationService.success(
             this._transloco.translate(
               'licenseAdmin.notifications.requestRejected',
+              {
+                firstName: player.first_name,
+                lastName: player.last_name,
+                id: player.id,
+              }
+            ),
+            {
+              autoClose: true,
+              keepAfterRouteChange: false,
+            }
+          );
+        },
+        error: (err) => this.showActionError(err),
+      });
+  }
+
+  // Kostenfrei ablehnen (api: License.free_rejectable?) gibt es nur für einen
+  // offenen Antrag, der nie erteilt war: Eine einmal erteilte Lizenz ist
+  // abgerechnet. Ein gesperrter Antrag zählt nicht als offen. Number(), weil
+  // die Status-IDs aus JSONB nicht typgarantiert sind. Die Saisongrenze prüft
+  // allein die API, die Liga dieser Ansicht kann eine frühere Saison sein.
+  public freeRejectable(player: PlayerWithLicense): boolean {
+    if (!this.canFreeReject) return false;
+    if (Number(player.team_license.last_status?.license_status_id) !== 2) {
+      return false;
+    }
+    return !(player.team_license.license?.history ?? []).some(
+      (h) => Number(h.license_status_id) === 1
+    );
+  }
+
+  // Die Begründung ist Pflicht: Sie ist später der einzige Beleg in der
+  // History, denn die Gebührenrechnung führt die Lizenz nicht mehr.
+  public hasReason(player: PlayerWithLicense): boolean {
+    return !!this.reasons[player.team_license.license.id]?.trim();
+  }
+
+  public rejectFreeOfCharge(player: PlayerWithLicense) {
+    const licenseId = player.team_license.license.id;
+    if (!this.hasReason(player)) return;
+
+    this._playerService
+      .updateLicenseStatus(
+        player.id,
+        licenseId,
+        3,
+        this.reasons[licenseId],
+        undefined,
+        undefined,
+        undefined,
+        true
+      )
+      .subscribe({
+        next: () => {
+          this.handledPlayer.emit(player.id);
+          this.hidePlayer[player.id] = true;
+          this._notificationService.success(
+            this._transloco.translate(
+              'licenseAdmin.notifications.requestRejectedFreeOfCharge',
               {
                 firstName: player.first_name,
                 lastName: player.last_name,

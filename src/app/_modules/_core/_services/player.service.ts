@@ -93,7 +93,8 @@ export class PlayerService {
     reason: string,
     validUntil?: string,
     gfRole?: GfRole,
-    express?: boolean
+    express?: boolean,
+    freeOfCharge?: boolean
   ) {
     const path =
       environment.apiURL +
@@ -108,6 +109,7 @@ export class PlayerService {
       ...(validUntil ? { valid_until: validUntil } : {}),
       ...(gfRole ? { gf_role: gfRole } : {}),
       ...(express === undefined ? {} : { express: express }),
+      ...(freeOfCharge ? { free_of_charge: true } : {}),
     });
   }
 

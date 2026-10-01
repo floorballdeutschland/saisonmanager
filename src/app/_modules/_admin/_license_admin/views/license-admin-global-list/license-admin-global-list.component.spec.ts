@@ -35,6 +35,13 @@ describe('LicenseAdminGlobalListComponent', () => {
                 csvLicensesRequested: 'davon offen beantragt',
                 csvHauptlizenz: 'Hauptlizenz',
                 csvZusatzlizenz: 'Zusatzlizenz',
+                csvExpress: 'Express',
+                csvReactivation: 'Reaktivierung',
+                csvFreeRejection: 'Kostenfrei abgelehnt',
+                csvRequested: 'Beantragt am',
+                csvYes: 'Ja',
+                csvNo: 'Nein',
+                freeRejectionBadge: 'Kostenfrei abgelehnt',
               },
             },
           },
@@ -871,6 +878,34 @@ describe('LicenseAdminGlobalListComponent', () => {
     });
   });
 
+  describe('Kostenfrei abgelehnt', () => {
+    function render(e: Partial<AdminLicenseEntry>): HTMLElement {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = [
+        { ...entry('Muster'), express: false, ...e } as AdminLicenseEntry,
+      ];
+      component.applyFilters();
+      component.loading = false;
+      fixture.detectChanges();
+      return fixture.nativeElement;
+    }
+
+    it('zeigt das Badge statt des Strichs', () => {
+      const root = render({ free_rejection: true });
+      const badge = root.querySelector('[data-testid="free-rejection-badge"]');
+      expect(badge?.textContent?.trim()).toBe('Kostenfrei abgelehnt');
+      expect(badge?.parentElement?.textContent).not.toContain('–');
+    });
+
+    it('zeigt ohne Markierung kein Badge', () => {
+      const root = render({});
+      expect(
+        root.querySelector('[data-testid="free-rejection-badge"]')
+      ).toBeNull();
+    });
+  });
+
   describe('CSV-Ausfuhr', () => {
     let blobs: Blob[];
 
@@ -959,6 +994,28 @@ describe('LicenseAdminGlobalListComponent', () => {
     // Etikett -- und in der Datei, aus der abgerechnet wird, bleibt die Zelle
     // dann leer. Vorher fiel sie in den Sonst-Zweig und stand als
     // Zusatzlizenz da, also als haette der Spieler seine Hauptlizenz woanders.
+    // Aus der Datei wird abgerechnet. Kopf und Zeile muessen dieselbe Spalte
+    // treffen, sonst verrutscht alles dahinter, auch die Datumsspalten.
+    it('fuehrt die kostenfreie Ablehnung hinter der Reaktivierung', async () => {
+      const [header, frei, normal] = await exportRows([
+        {
+          ...entry('Frei'),
+          express: false,
+          free_rejection: true,
+          requested_at: '2026-09-28T10:00:00Z',
+        } as AdminLicenseEntry,
+        { ...entry('Normal'), express: false } as AdminLicenseEntry,
+      ]);
+      const cells = (line: string) => line.split(';');
+      const col = cells(header).indexOf('"Kostenfrei abgelehnt"');
+
+      expect(col).toBe(cells(header).indexOf('"Reaktivierung"') + 1);
+      expect(cells(header)[col + 1]).toBe('"Beantragt am"');
+      expect(cells(frei)[col]).toBe('"Ja"');
+      expect(cells(frei)[col + 1]).toBe('"28.09.2026"');
+      expect(cells(normal)[col]).toBe('"Nein"');
+    });
+
     it('laesst die Lizenztyp-Spalte ohne Etikett leer', async () => {
       const zeilen = await exportRows([
         { ...entry('Haupt'), license_type: 'primary' } as AdminLicenseEntry,
