@@ -52,6 +52,9 @@ export interface AdminLicenseEntry {
   // Antrag nach Transfer und Freigabe zurück auf dieselbe Mannschaft: derselbe
   // Lizenzeintrag wie vor dem Transfer, keine neue Gebühr (api#760).
   reactivation?: boolean;
+  // Von einem Admin kostenfrei abgelehnt: keine Lizenzgebühr, kein
+  // Expresszuschlag (dann ist `express` schon false).
+  free_rejection?: boolean;
   requested_at: string | null;
   approved_at: string | null;
   valid_until: string | null;

@@ -42,7 +42,9 @@
     "gfRoleOtherRequested": "only applied for, not yet granted",
     "gfRoleOtherUnknown": "status unknown",
     "gfRoleDemoteHint": "Existing large-field licenses in this competition will automatically become the second license upon approval.",
-    "reactivation": "Reactivation, free of charge"
+    "reactivation": "Reactivation, free of charge",
+    "rejectFreeOfCharge": "Reject free of charge",
+    "rejectFreeOfChargeHint": "For requests the club made in good faith that are not possible under the licensing rules. The license is excluded from the fee calculation and any express surcharge is dropped. A reason is required."
   },
   "globalList": {
     "title": "License management",
@@ -164,7 +166,10 @@
     "csvLicensesRequested": "of which pending",
     "reactivationBadge": "Reactivation",
     "reactivationTitle": "Licence reactivated after transfer and release back, no new licence fee",
-    "csvReactivation": "Reactivation (free)"
+    "csvReactivation": "Reactivation (free)",
+    "freeRejectionBadge": "Rejected free of charge",
+    "freeRejectionTitle": "Rejected free of charge by an admin, no license fee",
+    "csvFreeRejection": "Rejected free of charge"
   },
   "leagueDetail": {
     "title": "License management",
@@ -327,6 +332,7 @@
     "withdrawRequestError": "License request could not be withdrawn.",
     "actionFailed": "Action failed.",
     "fileTooLarge": "The file may not exceed 5 MB.",
-    "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again"
+    "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again",
+    "requestRejectedFreeOfCharge": "License request for player {{ firstName }} {{ lastName }} ({{ id }}) rejected free of charge"
   }
 }

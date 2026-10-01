@@ -56,6 +56,10 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
   // Sperren aufheben darf, wer sperren darf (Admin und SBK). Die Zeile zeigt
   // die Sperre auch allen anderen, aber ohne Knopf.
   canLiftSuspension = false;
+
+  // Kostenfrei ablehnen ist vorerst dem Admin vorbehalten (die API prüft es
+  // selbst noch einmal).
+  canFreeReject = false;
   liftingSuspensionId?: number;
 
   public statusBadgeClass = licenseStatusBadgeClass;
@@ -124,6 +128,7 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       this.canLiftSuspension = !!(
         user?.permissions['player_suspend'] || user?.permissions['admin']
       );
+      this.canFreeReject = !!user?.permissions['player_free_reject_license'];
       this._cdr.markForCheck();
     });
 

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { LicenseAdminLeagueDetailComponent } from './license-admin-league-detail.component';
 import {
@@ -8,7 +8,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { getTranslocoTestingModule } from '@floorball/core';
+import { getTranslocoTestingModule, SessionService } from '@floorball/core';
 import { PlayerWithLicense } from '@floorball/types';
 
 describe('LicenseAdminLeagueDetailComponent', () => {
@@ -243,6 +243,45 @@ describe('LicenseAdminLeagueDetailComponent', () => {
           'id_copy'
         )
       ).toBeNull();
+    });
+  });
+
+  describe('Recht zum kostenfreien Ablehnen', () => {
+    function canFreeReject(permissions: Record<string, boolean>): boolean {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule, getTranslocoTestingModule()],
+        declarations: [LicenseAdminLeagueDetailComponent],
+        providers: [
+          {
+            provide: ActivatedRoute,
+            useValue: {
+              params: new BehaviorSubject<Params>({ leagueId: '7' }),
+              queryParams: new BehaviorSubject<Params>({}),
+              snapshot: { params: { leagueId: '7' } },
+            },
+          },
+          {
+            provide: SessionService,
+            useValue: { currentUser$: of({ permissions }) },
+          },
+        ],
+      }).overrideTemplate(LicenseAdminLeagueDetailComponent, '');
+      const fixture = TestBed.createComponent(
+        LicenseAdminLeagueDetailComponent
+      );
+      fixture.detectChanges();
+      return fixture.componentInstance.canFreeReject;
+    }
+
+    it('folgt player_free_reject_license', () => {
+      expect(canFreeReject({ player_free_reject_license: true })).toBeTrue();
+    });
+
+    // Admin allein reicht nicht: Massgeblich ist das eigene Recht, das die
+    // API vergibt.
+    it('bleibt ohne das Recht aus', () => {
+      expect(canFreeReject({ player_suspend: true })).toBeFalse();
     });
   });
 });
