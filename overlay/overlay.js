@@ -1196,7 +1196,8 @@
     endstand: { source: null, render: fsFinal },
     tabelle: { source: "table", render: fsTable },
     topscorer: { source: "scorer", render: fsScorer },
-    "naechste-spiele": { source: "schedule", render: fsSchedule },
+    "naechste-spiele": { source: "upcoming", render: fsUpcoming },
+    spieltag: { source: "schedule", render: fsSchedule },
     formkurve: { source: "form", render: fsForm },
   };
 
@@ -2362,6 +2363,85 @@
   // international übliche Zeichen dafür, dass er noch nicht endgültig ist.
   // Vorher stand hier "läuft" ohne Zahl, weil die API die Zwischenstände
   // paralleler Partien gestrichen hat.
+  // ── Nächste Spiele ──────────────────────────────────────────────────────
+
+  // Die nächsten anstehenden Partien beider Mannschaften, früheste zuerst.
+  // Aufbau wie die Formkurve, damit beide Bilder nebeneinander gleich lesen.
+  // Bis saisonmanager-feedback#72 stand unter diesem Szenennamen die
+  // Spieltagsübersicht, die jetzt `spieltag` heißt: Erwartet wurde nach dem
+  // Namen, wann und gegen wen es weitergeht.
+  function fsUpcoming() {
+    var upcoming = (state.league && state.league.upcoming) || null;
+    // Noch kein Abruf: gar nicht senden, es kommt gleich etwas.
+    if (!upcoming) return null;
+
+    var teams = [upcoming.home, upcoming.guest].filter(Boolean);
+    // Unterzeile aus derselben Nutzlast wie die Blöcke, aus denselben Gründen
+    // wie bei der Formkurve.
+    var namen = teams
+      .map(function (team) {
+        return team.name || team.short_name || "";
+      })
+      .filter(Boolean);
+
+    var frame = {
+      league: leagueName(),
+      title: "Nächste Spiele",
+      sub: namen.length === 2 ? namen.join(" und ") : namen.join(""),
+    };
+
+    if (!teams.length) {
+      frame.body = node(
+        "p",
+        "ov-fs-empty",
+        "Zu diesem Spiel sind keine Mannschaften hinterlegt."
+      );
+      return frame;
+    }
+
+    var columns = node("div", "ov-fs-columns");
+    teams.forEach(function (team) {
+      columns.appendChild(upcomingBlock(team));
+    });
+    frame.body = columns;
+
+    return frame;
+  }
+
+  function upcomingBlock(team) {
+    var block = node("div", "ov-fs-group ov-fs-group--form");
+    block.appendChild(
+      node("div", "ov-fs-group-title", team.name || team.short_name || "")
+    );
+
+    var games = team.games || [];
+    if (!games.length) {
+      // Zum Saisonende oder vor der Ansetzung. Eine leere Spalte läse sich auf
+      // Sendung wie ein Fehler.
+      block.appendChild(
+        node("p", "ov-fs-empty", "Keine weitere Partie angesetzt.")
+      );
+      return block;
+    }
+
+    games.forEach(function (game) {
+      var row = node("div", "ov-fs-player");
+      row.appendChild(node("span", "ov-fs-form-date", formDate(game.date)));
+      row.appendChild(node("span", "ov-fs-form-where", game.home ? "H" : "A"));
+      row.appendChild(
+        node(
+          "span",
+          "ov-fs-form-opponent",
+          game.opponent_short || game.opponent || ""
+        )
+      );
+      row.appendChild(node("span", "ov-fs-form-score", game.time || ""));
+      block.appendChild(row);
+    });
+
+    return block;
+  }
+
   // ── Formkurve ───────────────────────────────────────────────────────────
 
   // Die letzten Partien beider Mannschaften, neueste zuerst. Je Mannschaft ein
