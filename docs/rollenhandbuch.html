@@ -8734,10 +8734,10 @@
             <p>
               Der Saisonmanager stellt fertige Grafiken für OBS Studio bereit:
               eine Anzeigetafel mit Spielstand und Abschnitt, Bauchbinden für
-              Torschützen, Strafen, Paarung und Interviews, zehn Vollbilder für
+              Torschützen, Strafen, Paarung und Interviews, elf Vollbilder für
               Startbild, Aufstellungen, Drittelpause, Endstand, Tabelle,
-              Torschützen der Liga, Tore des Spiels, weitere Spiele und
-              Formkurve, dazu ein Bedienfeld, über das du im Spiel alles
+              Torschützen der Liga, Tore des Spiels, nächste Spiele, Spieltag
+              und Formkurve, dazu ein Bedienfeld, über das du im Spiel alles
               steuerst. Alles speist sich aus dem digitalen Spielbericht,
               niemand muss also nebenher Zahlen abtippen. Du brauchst weder ein
               Zusatzprogramm noch eine Installation, es genügt, was der
@@ -8953,7 +8953,7 @@
                 und Ton fehlen und ergänzt du selbst.
               </p>
               <div class="note">
-                Bei den zehn Vollbildern ist
+                Bei den elf Vollbildern ist
                 <em>Quelle beenden, wenn nicht sichtbar</em> bereits gesetzt,
                 sonst fragen alle inaktiven Szenen die ganze Zeit mit. Bei der
                 Bühne ist es absichtlich nicht gesetzt: Sie soll beim
@@ -9498,6 +9498,34 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
               <div>
                 <div class="proc-title">Vollbild: Nächste Spiele</div>
                 <div class="proc-sub">
+                  Gefüllt, sobald weitere Spiele angesetzt sind
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Szene <code>naechste-spiele</code>. Zeigt je Mannschaft des
+                übertragenen Spiels die <strong>nächsten drei
+                anstehenden Partien</strong> derselben Liga, früheste zuerst:
+                Datum, <code>H</code> oder <code>A</code> für Heim oder
+                Auswärts, Gegner und Anstoßzeit. Aufbau wie die Formkurve,
+                beide Bilder passen also gut hintereinander in den Abspann.
+              </p>
+              <p class="proc-text">
+                „Nächste" heißt nach dem übertragenen Spiel, nicht nach heute.
+                Am selben Tag zählt nur, was später angepfiffen wird. Pokal- und
+                andere Wettbewerbe fehlen, genau wie in der Formkurve. Hat eine
+                Mannschaft nichts mehr angesetzt, steht das in ihrer Spalte.
+              </p>
+            </div>
+          </details>
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📅</span>
+              <div>
+                <div class="proc-title">Vollbild: Spieltag</div>
+                <div class="proc-sub">
                   Gefüllt, sobald der Spieltag angesetzt ist
                 </div>
               </div>
@@ -9505,7 +9533,10 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             </summary>
             <div class="proc-body">
               <p class="proc-text">
-                Trotz des Szenennamens trägt das Bild die Überschrift
+                Szene <code>spieltag</code>. Bis Oktober 2026 lag diese Ansicht
+                unter <code>naechste-spiele</code>; wer sie weiter nutzen will,
+                stellt die Browser-Quelle auf <code>scene=spieltag</code> um.
+                Das Bild trägt die Überschrift
                 <strong>Weitere Spiele</strong> und zeigt Anstoßzeit, Begegnung,
                 Stand und den Zustand der Partie. Die eigene ist hervorgehoben.
               </p>
@@ -10367,7 +10398,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 <tr>
                   <td>Torschützen zeigt nur einen Hinweistext</td>
                   <td>Am Spieltag ist noch keine Partie beendet</td>
-                  <td>Stattdessen Tabelle oder weitere Spiele nehmen</td>
+                  <td>Stattdessen Tabelle, nächste Spiele oder Spieltag nehmen</td>
                 </tr>
                 <tr>
                   <td>Tabelle scheint veraltet</td>
@@ -10826,6 +10857,10 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                     <tr>
                       <td><code>naechste-spiele</code></td>
                       <td>Nächste Spiele</td>
+                    </tr>
+                    <tr>
+                      <td><code>spieltag</code></td>
+                      <td>Spieltag</td>
                     </tr>
                     <tr>
                       <td><code>tore</code></td>
