@@ -9,6 +9,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  CopyLineupResponse,
   GameEvent,
   GamePlayerEntry,
   LicenseHash,
@@ -48,6 +49,8 @@ export class TeamSquadComponent implements OnInit {
   licenseHash!: LicenseHash;
   captainPlayerId: number | null = null;
   playerFocus?: number;
+  copyingLastGame = false;
+  copyResult?: CopyLineupResponse;
 
   public filter: 'all' | 'selected' | 'not-selected' = 'all';
   public filterTypes: SquatFilterType[] = [
@@ -95,6 +98,38 @@ export class TeamSquadComponent implements OnInit {
           },
         });
     }
+  }
+
+  /**
+   * Aufstellung aus dem letzten Spiel der Mannschaft übernehmen (feedback#69).
+   * Danach trägt man die Abwesenden über die Häkchen wieder aus. Angeboten nur
+   * bei leerer Aufstellung, siehe Vorlage. Fehler meldet der ErrorInterceptor.
+   */
+  copyFromLastGame() {
+    if (!this.gameId || this.copyingLastGame) return;
+
+    this.copyingLastGame = true;
+    this._gameService.copyLineupFromLastGame(this.gameId, this.side).subscribe({
+      next: (result) => {
+        this.copyingLastGame = false;
+        this.copyResult = result;
+        this.updateLineup(result.players);
+      },
+      error: () => {
+        this.copyingLastGame = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  /**
+   * `game_days.date` ist in der API Text, im Altbestand stehen auch Werte wie
+   * „11.08.2026". Nur ein ISO-Datum wird umgestellt, alles andere bleibt, wie
+   * es ist, statt über die DatePipe zu werfen.
+   */
+  formatSourceDate(date: string | null): string {
+    const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date ?? '');
+    return iso ? `${iso[3]}.${iso[2]}.${iso[1]}` : (date ?? '');
   }
 
   updateLineup(lineup: GamePlayerEntry[]) {
