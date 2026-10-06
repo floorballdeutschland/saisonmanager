@@ -294,6 +294,17 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
       return err?.error?.message ?? 'Der Code ist ungültig oder abgelaufen.';
     }
 
+    // Richtiger Code, aber vor seinem Zeitraum (ab 72 Stunden vor dem
+    // Spieltag). Die Meldung des Servers nennt den Beginn. Ohne sie läse sich
+    // das wie ein Störfall, und wer vorab ausprobiert, holte sich einen neuen
+    // Code und entwertete damit den ausgedruckten.
+    if (err?.status === 403) {
+      return (
+        err?.error?.message ??
+        'Dieser Code gilt noch nicht. Er wird 72 Stunden vor dem Spieltag gültig.'
+      );
+    }
+
     return (
       `Der Code konnte gerade nicht geprüft werden (Fehler ${err?.status ?? 0}). ` +
       'Er bleibt gültig – bitte gleich noch einmal versuchen.'
@@ -336,8 +347,13 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
         // unbrauchbare Antwort. Diesen Fall nicht als abgelaufenen Link ausgeben
         // und erst recht nicht die Eingabe anbieten: Das Sekretariat ließe sich
         // sonst einen neuen Zugang geben, der genauso scheitert.
+        // 403 heißt seit dem Fenster um den Spieltag „noch nicht gültig"
+        // (etwa wenn der Spieltag verschoben wurde). Der Server nennt den
+        // Beginn in der Meldung, und auch hier bleibt nur, später den Code
+        // erneut einzugeben.
         error: (err) => {
-          const gone = err?.status === 410 || err?.status === 401;
+          const gone =
+            err?.status === 410 || err?.status === 401 || err?.status === 403;
           this.error = gone
             ? (err?.error?.message ?? 'Der Link ist ungültig oder abgelaufen.')
             : ((err instanceof Error ? err.message : null) ??

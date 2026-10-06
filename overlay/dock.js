@@ -207,6 +207,21 @@
             "Der Overlay-Zugang ist abgelaufen oder wurde zurückgezogen."
           );
         }
+        // Noch nicht gültig: Der Zugang gilt ab 72 Stunden vor dem Spieltag.
+        // Bewusst NICHT endgültig, das Dock fragt weiter und springt am
+        // Spieltag von selbst an. Die Meldung des Servers nennt den Beginn.
+        if (res.status === 403) {
+          return res
+            .json()
+            .catch(function () {
+              return {};
+            })
+            .then(function (body) {
+              throw new Error(
+                body.message || "Der Overlay-Zugang gilt noch nicht."
+              );
+            });
+        }
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })

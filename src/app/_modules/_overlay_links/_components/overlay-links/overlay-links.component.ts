@@ -10,6 +10,7 @@ import {
 import * as Sentry from '@sentry/angular';
 import { GameService, SessionService } from '@floorball/core';
 import { OverlayLinkState } from '@floorball/types';
+import { AccessCardEntry } from '@floorball/access-card';
 import {
   buildObsSceneCollection,
   downloadObsSceneCollection,
@@ -39,6 +40,11 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   @Input()
   label = 'Spieltag';
 
+  // Spieltag in Worten für den Ausdruck (Datum, Halle, Liga). Ohne Angabe
+  // steht dort `label`; der Spielbericht kennt das Datum ohnehin selbst.
+  @Input()
+  subject = '';
+
   // Vorbelegter Zustand für Aufrufer, die ihn schon kennen. Die
   // Sekretariats-Übersicht liefert ihn je Spieltag mit; ohne diesen Weg
   // fragte die Seite ihn für jeden gelisteten Spieltag einzeln nach.
@@ -66,6 +72,13 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   // Klartext-URLs gibt es nur direkt nach dem Erzeugen. Danach liegt
   // serverseitig bloß der Digest, sie lassen sich also nicht nachladen.
   public overlayUrls: { overlay_url: string; dock_url: string } | null = null;
+  // Für den QR-Ausdruck. Einmal beim Erzeugen gebaut und nicht als Getter:
+  // Die Karte rechnet ihre QR-Codes bei jeder neuen Liste neu.
+  public accessEntries: AccessCardEntry[] = [];
+  public readonly accessNotice =
+    'Mit diesen Adressen lassen sich die Livestream-Grafiken dieses Spieltags ' +
+    'ohne Verzögerung abrufen und über das Bedienfeld steuern. Bitte nur an ' +
+    'das Streaming-Team weitergeben.';
   public overlayBusy = false;
   // Der Zustand ließ sich nicht feststellen (Abruf fehlgeschlagen). Weder
   // „Zugang läuft" noch „kein Zugang", und die Oberfläche sagt das auch so.
@@ -127,9 +140,22 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
           overlay_url: res.overlay_url,
           dock_url: res.dock_url,
         };
+        this.accessEntries = [
+          {
+            label: 'Browser-Quelle (Anzeigetafel)',
+            url: res.overlay_url,
+            hint: 'In OBS als Browser-Quelle mit 1920 × 1080 Pixeln.',
+          },
+          {
+            label: 'Bedienfeld',
+            url: res.dock_url,
+            hint: 'In OBS als benutzerdefiniertes Browser-Dock.',
+          },
+        ];
         this.overlayStateUnknown = false;
         this.overlayLink = {
           active: true,
+          valid_from: res.valid_from ?? null,
           expires_at: res.expires_at,
           created_by: res.created_by,
         };
@@ -158,6 +184,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
         this.overlayLink = { active: false };
         this.overlayStateUnknown = false;
         this.overlayUrls = null;
+        this.accessEntries = [];
         this.overlayBusy = false;
         this._cdr.markForCheck();
       },
