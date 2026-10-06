@@ -1,0 +1,44 @@
+{
+  "index": {
+    "title": "Coach-Beobachtungen",
+    "intro": "Alle Beobachtungsbögen der Schiedsrichtercoaches, die du in der Verwaltung sehen darfst. Neueste Spiele zuerst.",
+    "loading": "Wird geladen …",
+    "loadError": "Die Beobachtungen konnten nicht geladen werden.",
+    "empty": "Keine Beobachtungsbögen für diese Auswahl.",
+    "count": "{{ count }} Bögen"
+  },
+  "filter": {
+    "season": "Saison",
+    "gameOperation": "Spielbetrieb",
+    "coach": "Coach",
+    "referee": "Schiedsrichter",
+    "from": "Spiele ab",
+    "to": "Spiele bis",
+    "status": "Status",
+    "statusVisible": "Sichtbar",
+    "statusHidden": "Zurückgenommen",
+    "statusAll": "Alle",
+    "all": "Alle",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
+  },
+  "table": {
+    "date": "Datum",
+    "game": "Spiel",
+    "coach": "Coach",
+    "referees": "Schiedsrichter",
+    "pairOverall": "Gespann gesamt",
+    "open": "Bogen anzeigen",
+    "close": "Bogen schließen",
+    "hidden": "Zurückgenommen",
+    "select": "Für den Export auswählen",
+    "selectAll": "Alle auswählen"
+  },
+  "export": {
+    "all": "Export: alle {{ count }} gefilterten Bögen",
+    "selected": "Export: {{ count }} ausgewählte Bögen",
+    "csv": "CSV",
+    "xlsx": "Excel",
+    "error": "Der Export ist fehlgeschlagen."
+  }
+}

@@ -131,3 +131,32 @@ export interface RefereeObservationAdminResponse {
   };
   observations: RefereeObservation[];
 }
+
+/** Filter der Übersicht aller Beobachtungsbögen. */
+export interface RefereeObservationReportQuery {
+  season_id?: string;
+  game_operation_id?: number;
+  coach_id?: number;
+  referee_id?: number;
+  /** Ohne Angabe nur sichtbare Bögen; `all` schließt zurückgenommene ein. */
+  status?: 'visible' | 'hidden' | 'all';
+  from?: string;
+  to?: string;
+}
+
+export interface RefereeObservationReportOption {
+  id: number;
+  name: string;
+}
+
+/** Antwort der Übersicht aller Beobachtungsbögen (Verwaltung). */
+export interface RefereeObservationReport {
+  filters: RefereeObservationReportQuery;
+  /** Aus allen Bögen, die das Konto sehen darf, nicht nur aus den gefilterten. */
+  options: {
+    coaches: RefereeObservationReportOption[];
+    referees: RefereeObservationReportOption[];
+    game_operations: RefereeObservationReportOption[];
+  };
+  observations: RefereeObservation[];
+}
