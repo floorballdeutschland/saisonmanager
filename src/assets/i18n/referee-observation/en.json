@@ -69,7 +69,7 @@
     "empty": "There is no observation about you yet.",
     "teamsTitle": "Feedback from teams",
     "teamsIntro": "After each game the teams involved rate the referee pair on a scale from 1 to 10. You see the averages across all responses about you, but no individual ratings, comments or teams.",
-    "teamsEnabledHint": "Responses only come from leagues where referee feedback is enabled. If you do not referee in such a league, this section stays empty.",
+    "teamsEnabledHint": "Responses only come from leagues where referee feedback is enabled. If you do not referee in such a league, no responses will arrive here.",
     "teamsAvgLine": "Avg. consistency",
     "teamsAvgCommunication": "Avg. communication",
     "teamsCount": "Responses",
