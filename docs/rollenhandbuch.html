@@ -1958,7 +1958,8 @@
               <div class="qp-chain">
                 <span class="rb sbk">SBK / Admin</span> konfiguriert →
                 <span class="rb tm">TM</span> /
-                <span class="rb vm">VM</span> beantwortet beim Einreichen
+                <span class="rb vm">VM</span> beantwortet in der
+                Spielvorbereitung und bestätigt beim Einreichen
               </div>
             </div>
             <div class="quick-proc">
@@ -1966,9 +1967,18 @@
               <div class="qp-chain">
                 <span class="rb sbk">SBK / Admin</span> schaltet Liga frei →
                 <span class="rb tm">TM</span> oder
-                <span class="rb player">Spielführung</span> gibt ab (ab 24 h
+                <span class="rb player">Spielführung</span> gibt ab (ab 12 h
                 nach dem Spiel) → <span class="rb rsk">RSK FD</span> /
                 <span class="rb ansetzer">Ansetzer FD</span> wertet aus
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">🎯 Coach-Beobachtung</div>
+              <div class="qp-chain">
+                <span class="rb schiri">SR-Coach (B)</span> gibt Bogen ab →
+                <span class="rb schiri">Schiri</span> liest unter „Mein
+                Feedback“ → <span class="rb rsk">RSK</span> /
+                <span class="rb ansetzer">Ansetzer</span> werten aus
               </div>
             </div>
           </div>
@@ -2380,9 +2390,58 @@
                   </td>
                   <td>
                     <span
-                      class="sym none"
-                      title="Schiedsrichter sehen ihr eigenes Feedback nicht"
-                      >—</span
+                      class="sym read"
+                      title="Eigene Durchschnitte unter „Mein Feedback“, erst ab fünf Rückmeldungen"
+                      >○</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <th>Coach-Beobachtungen</th>
+                  <td>
+                    <span
+                      class="sym full"
+                      title="Alle Bögen lesen, exportieren und zurücknehmen"
+                      >●</span
+                    >
+                  </td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td>
+                    <span
+                      class="sym full"
+                      title="Alle Bögen lesen, exportieren und zurücknehmen"
+                      >●</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym full"
+                      title="Bögen des eigenen Spielbetriebs lesen, exportieren und zurücknehmen"
+                      >●</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym read"
+                      title="Alle Bögen lesen und exportieren, nicht zurücknehmen"
+                      >○</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym read"
+                      title="Bögen des eigenen Spielbetriebs lesen und exportieren, nicht zurücknehmen"
+                      >○</span
+                    >
+                  </td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td>
+                    <span
+                      class="sym read"
+                      title="Eigene Beobachtungen unter „Mein Feedback“ lesen; mit gültiger B-Qualifikation als Coach Bögen abgeben"
+                      >○</span
                     >
                   </td>
                 </tr>
@@ -3353,7 +3412,7 @@
                 Das Formular öffnet, sobald <strong>beide</strong> Bedingungen
                 erfüllt sind: Der Spielberichtsbogen ist abgeschlossen, weil
                 erst dann feststeht, wer gepfiffen hat, und der
-                <strong>Anpfiff liegt mindestens 24 Stunden zurück</strong>. Die
+                <strong>Anpfiff liegt mindestens 12 Stunden zurück</strong>. Die
                 Rückmeldung soll mit Abstand zum Spiel entstehen, nicht in der
                 Emotion direkt danach. Solange die Frist läuft, steht das Spiel
                 in der Übersicht schon mit dem Vermerk „Möglich ab“ statt mit
@@ -3386,7 +3445,7 @@
               <div class="flow">
                 <div class="st start">Spielbericht abgeschlossen</div>
                 <div class="cn">
-                  <span class="cl">Anpfiff + 24 h</span
+                  <span class="cl">Anpfiff + 12 h</span
                   ><span class="rb auto">automatisch</span
                   ><span class="ar">→</span>
                 </div>
@@ -3430,13 +3489,24 @@
                 lediglich ein Hinweis mit dem aktuellen Stand. Einzelne
                 Rückmeldungen samt Kommentaren liegen im Menü
                 <em>Auswertungen</em>: <strong>Team-Feedback: einzeln</strong>
-                listet alle kommentierten Rückmeldungen, filterbar nach Schiri,
-                Liga, Saison, Zeitraum, Notenschwelle und Thema, und lässt die
-                Kommentare über eine Themen-Taxonomie taggen.
+                listet alle sichtbaren Rückmeldungen, auch die ohne Freitext
+                („Ohne Freitext, nur Noten abgegeben.“), filterbar nach Schiri,
+                Liga, Saison, Zeitraum, Notenschwelle und Thema sowie mit
+                <em>Nur mit Kommentar</em>, und lässt die Kommentare über eine
+                Themen-Taxonomie taggen.
                 <strong>Team-Feedback: Kennzahlen</strong> aggregiert Mittelwerte,
                 Trends, Notenband und Monats-Zeitreihe und ist als CSV/Excel
                 exportierbar. Beides sehen nur Admin sowie RSK und Ansetzer mit
                 bundesweitem Scope (FD).
+              </p>
+              <p class="proc-text">
+                Die Schiedsrichter*innen selbst sehen ihr Team-Feedback im
+                Portal unter <strong>Mein Feedback</strong>: die Durchschnitte
+                für Linie/Konstanz und Kommunikation und die Zahl der
+                Rückmeldungen, ebenfalls erst ab fünf. Einzelne Bewertungen,
+                Kommentare und Mannschaften sehen sie nicht, und neue
+                Rückmeldungen fließen nur in Fünferschritten ein, damit sich
+                keine einzelne Bewertung zurückrechnen lässt.
               </p>
               <div class="roles-inline">
                 <span class="rb vm">VM</span>
@@ -3444,6 +3514,114 @@
                 <span class="rb admin">Admin</span>
                 <span class="rb rsk">RSK FD</span>
                 <span class="rb ansetzer">Ansetzer FD</span>
+                <span class="rb schiri">Schiedsrichter</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎯</span>
+              <div>
+                <div class="proc-title">Beobachtungen der Schiedsrichtercoaches</div>
+                <div class="proc-sub">
+                  Beobachtungsbogen statt Formular per Mail
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Schiedsrichtercoaches geben ihre Beobachtung eines Gespanns
+                direkt im Saisonmanager ab. Coach ist, wer eine gültige
+                <strong>Zusatzqualifikation der Stufe B</strong> hat; maßgeblich
+                ist die Gültigkeit am Spieltag. Nur dann erscheint im Menü der
+                Bereich <strong>Coaching</strong> mit dem Punkt
+                <strong>Beobachtungsbögen</strong>. Läuft die Qualifikation ab,
+                verschwindet er wieder.
+              </p>
+              <div class="proc-h">Welche Spiele zur Auswahl stehen</div>
+              <p class="proc-text">
+                Unter <em>Offene Spiele</em> stehen die Spiele, für die du als
+                Schiedsrichtercoach <strong>angesetzt</strong> warst. Setzt dein
+                Spielbetrieb nicht auf Personenebene an, gibt es dort keinen
+                Coach-Platz in der Ansetzung; dann kannst du zusätzlich jedes
+                Spiel deines eigenen Spielbetriebs frei wählen (gekennzeichnet
+                mit „ohne Ansetzung gewählt“). Beobachtet wird, was gespielt
+                wurde: Ein Spiel taucht erst am Spieltag auf. Ohne hinterlegtes
+                Gespann ist kein Bogen möglich, und je Spiel gibt jede*r Coach
+                genau einen Bogen ab.
+              </p>
+              <p class="proc-text">
+                Bist du angesetzt, bekommst du <strong>zum Anpfiff</strong> eine
+                Erinnerung per Mail mit dem Link auf den Bogen dieses Spiels. So
+                kannst du die Kriterien schon während des Spiels vor Augen
+                haben. Die Mail kommt nur, solange noch kein Bogen abgegeben
+                ist, und nicht, wenn du unter <em>Mein Konto</em> die Info-Mails
+                abbestellt hast.
+              </p>
+              <div class="proc-h">Der Bogen</div>
+              <p class="proc-text">
+                Datum, Mannschaften, Liga und Gespann zieht der Bogen aus dem
+                Spiel, du füllst nur die Beobachtung aus. Bewertet werden fünf
+                Bereiche: <strong>Stocklinie</strong>,
+                <strong>Körperspiellinie</strong>,
+                <strong>Strafenlinie</strong>, <strong>Spielleitung</strong> und
+                <strong>Gesamtspielbewertung</strong>, jeweils für
+                Schiedsrichter 1, Schiedsrichter 2 und das Gespann. Die Skala
+                reicht von 1 bis 7; 7 ist die beste Bewertung, 4 das in den
+                obersten Ligen erwartete Niveau. Die ausformulierte Legende steht
+                im Bogen. Dazu kommen Ausführungen zu den vier Linien sowie
+                Spielbeschreibung, Sonstiges und abschließende Bemerkungen mit
+                Entwicklungsmöglichkeiten. Alle Bewertungen und Textfelder sind
+                Pflicht.
+              </p>
+              <div class="note">
+                <strong>Nach dem Absenden ist der Bogen sofort sichtbar und
+                nicht mehr änderbar.</strong> Es gibt keinen Entwurf und keine
+                Freigabestufe. Die beobachteten Schiedsrichter*innen bekommen
+                eine Mail, die bewusst weder Noten noch Text enthält; gelesen
+                wird im Portal, wo die Skala danebensteht.
+              </div>
+              <div class="proc-h">Wer was sieht</div>
+              <p class="proc-text">
+                Die beobachtete Person liest den Bogen unter
+                <strong>Mein Feedback</strong>. Sie sieht die gemeinsamen
+                Anmerkungen, die Bewertung des Gespanns und ihre
+                <strong>eigenen</strong> Einzelnoten, nicht die des
+                Gespannpartners. Der Coach sieht seine abgegebenen Bögen unter
+                <em>Beobachtungsbögen</em>.
+              </p>
+              <p class="proc-text">
+                In der Verwaltung stehen die Bögen am
+                <strong>Schiri-Profil</strong> und gesammelt unter
+                <em>Auswertungen</em> › <strong>Beobachtungen: alle Bögen</strong>.
+                Beides sehen Admin, RSK und Ansetzer*innen, und zwar anders als
+                beim Team-Feedback auch die eines Landesverbands, dort für die
+                Spiele des eigenen Spielbetriebs. Die Übersicht lässt sich nach
+                Saison, Spielbetrieb, Coach, Schiedsrichter, Zeitraum und Status
+                filtern. Der <strong>Export als CSV oder Excel</strong> (alle
+                gefilterten oder nur die ausgewählten Bögen) enthält Kopfdaten
+                und Noten, aber <strong>keine Freitexte</strong>, weil eine
+                Massendatei mit Rückmeldungen über Personen schnell in falsche
+                Hände gerät. Den vollständigen Bogen samt Texten gibt es über
+                <strong>PDF</strong>: Das öffnet den Druckdialog des Browsers,
+                dort „Als PDF speichern“ wählen, je Bogen eine Seite.
+              </p>
+              <div class="note">
+                <strong>Zurücknehmen:</strong> Entgleist eine Rückmeldung, können
+                Admin und RSK einen Bogen am Schiri-Profil zurücknehmen. Er ist
+                dann für die beobachteten Personen nicht mehr sichtbar und lässt
+                sich wieder sichtbar machen. Die Ansetzung sieht die Bögen, darf
+                sie aber nicht zurücknehmen. In der Übersicht stehen
+                zurückgenommene Bögen nur mit dem Statusfilter.
+              </div>
+              <div class="roles-inline">
+                <span class="rb schiri">SR-Coach (B)</span>
+                <span class="rb schiri">Schiedsrichter</span>
+                <span class="rb admin">Admin</span>
+                <span class="rb rsk">RSK</span>
+                <span class="rb ansetzer">Ansetzer</span>
               </div>
             </div>
           </details>
@@ -3955,7 +4133,22 @@
                 Der Landesverband kann für den
                 <strong>Spieltagsbericht</strong> Ja/Nein-Fragen definieren, die
                 vor dem Abschluss eines Spielberichts zu beantworten sind. Werden Punkte verneint, geht eine E-Mail als
-                BCC an die hinterlegte SBK-Adresse. Maßgeblich ist dabei der
+                BCC an die hinterlegte SBK-Adresse.
+              </p>
+              <p class="proc-text">
+                Die Fragen lassen sich schon in der
+                <strong>Spielvorbereitung</strong> beantworten: Im ersten
+                Schritt (<em>Spielinformationen</em>) steht der Abschnitt
+                <em>Spieltagsbericht</em> mit dem Stand („Noch N von M Fragen
+                offen“), jede Antwort wird sofort gespeichert. Beim Abschließen
+                fragt der Dialog dann nur noch nach der Bestätigung: Er nennt,
+                wie viele Fragen beantwortet sind und wie viele davon mit „Nein“,
+                und bietet <em>Spielbericht abschließen</em>,
+                <em>Ändern</em> (holt die volle Fragenliste zurück) und
+                <em>Abbrechen</em>. Fehlt noch eine Antwort, erscheint gleich
+                die vorbelegte Fragenliste.
+              </p>
+              <p class="proc-text"> Maßgeblich ist dabei der
                 Landesverband <strong>des Spielbetriebs</strong>, nicht der des
                 ausrichtenden Vereins. Für das Kampfgericht vor Ort gibt es den
                 Sekretariats-Link (eigene Karte unten) und eine öffentliche
@@ -3968,8 +4161,16 @@
                 listet ausschließlich Spieltage, die ein anderer Verein
                 ausrichtet, und erscheint nur, wenn der Landesverband des
                 Spielbetriebs überhaupt eine Frage für den Spieltagsbericht hinterlegt hat.
-                Bleibt die Bestätigung aus, gilt der Spieltag nach 48 Stunden
-                automatisch als bestätigt.
+                Mit dem Abschluss des Spielberichts bekommt jede Gastmannschaft
+                die Antworten des Ausrichters per Mail („Spieltagsbericht
+                bestätigen“, mit Frist und Link). Die Mail geht an die
+                Teammanager der Mannschaft, ohne sie an die Vereinsmanager mit
+                Info-Mails und zuletzt an die Kontaktadresse des Vereins. Bleibt
+                die Bestätigung aus, gilt der Spieltag nach
+                <strong>48 Stunden</strong> automatisch als bestätigt. Gezählt
+                wird ab dem Ende des Spieltags, kam die Mail erst später, ab
+                ihrem Versand. Wer nicht ordnungsgemäß meldet, löst eine Mail
+                an die SBK aus, die die betroffenen Spiele nennt.
               </p>
               <div class="roles-inline">
                 <span class="rb sbk">SBK / LV</span>
@@ -7803,7 +8004,7 @@
                 <li>Erreichbar unter „Verein → Schiri-Feedback"</li>
                 <li>
                   Möglich, sobald der Spielberichtsbogen abgeschlossen ist und
-                  der Anpfiff mindestens 24 Stunden zurückliegt; je Mannschaft
+                  der Anpfiff mindestens 12 Stunden zurückliegt; je Mannschaft
                   genau einmal pro Spiel
                 </li>
                 <li>
@@ -8214,7 +8415,7 @@
                 </li>
                 <li>
                   Möglich, sobald der Spielberichtsbogen abgeschlossen ist und
-                  der Anpfiff mindestens 24 Stunden zurückliegt; je Mannschaft
+                  der Anpfiff mindestens 12 Stunden zurückliegt; je Mannschaft
                   genau einmal pro Spiel
                 </li>
                 <li>
@@ -8248,8 +8449,11 @@
                   überhaupt Fragen für den Spieltagsbericht hinterlegt hat
                 </li>
                 <li>
-                  Ohne Bestätigung gilt der Spieltag nach 48 Stunden automatisch
-                  als bestätigt
+                  Die Antworten des Ausrichters kommen mit dem Abschluss des
+                  Spielberichts per Mail an die Teammanager der Gastmannschaft.
+                  Ohne Bestätigung gilt der Spieltag 48 Stunden nach dieser Mail
+                  (frühestens nach dem Ende des Spieltags) automatisch als
+                  bestätigt
                 </li>
               </ul>
             </div>
@@ -8415,6 +8619,17 @@
                   ohne Spieltagsbericht und ohne Partner-Status, denn die
                   Spieltagsbestätigung bleibt Sache des Schiedsrichterpaars
                 </li>
+                <li>
+                  <strong>Kontaktdaten im Gespann:</strong> Im Profil lässt
+                  sich zustimmen, dass die mit dir am selben Spiel angesetzten
+                  Schiris und Coaches hier deine Telefonnummer und
+                  E-Mail-Adresse sehen („Mit-Angesetzte dürfen meine
+                  Kontaktdaten sehen“). Das Portal fragt einmal danach. Sichtbar
+                  ist das ab der Veröffentlichung der Ansetzung bis zum Tag
+                  nach dem Spieltag und nur auf Gegenseitigkeit: Die Daten der
+                  anderen siehst du erst, wenn du deine auch teilst. Abschalten
+                  geht jederzeit
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -8465,6 +8680,60 @@
                 </li>
               </ul>
             </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">💬</div>
+                <div>
+                  <h3>Mein Feedback</h3>
+                  <div class="cap-sub">Beobachtungen und Team-Feedback</div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <strong>Beobachtungen</strong> der Schiedsrichtercoaches zu
+                  deinen Einsätzen: gemeinsame Anmerkungen, Bewertung des
+                  Gespanns und deine eigenen Einzelnoten (Skala 1 bis 7), nicht
+                  die deines Partners. Zu jedem neuen Bogen kommt eine Mail
+                </li>
+                <li>
+                  <strong>Team-Feedback</strong> der Mannschaften: Durchschnitt
+                  für Linie/Konstanz und Kommunikation, erst ab fünf
+                  Rückmeldungen und ohne einzelne Bewertungen oder Kommentare.
+                  Rückmeldungen gibt es nur aus Ligen mit aktiviertem
+                  Schiri-Feedback
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">🎯</div>
+                <div>
+                  <h3>Beobachtungsbögen</h3>
+                  <div class="cap-sub">
+                    Bereich „Coaching“, nur mit gültiger B-Qualifikation
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <em>Offene Spiele:</em> Spiele, für die du als
+                  Schiedsrichtercoach angesetzt warst, und in Spielbetrieben
+                  ohne Ansetzung auf Personenebene die Spiele des eigenen
+                  Spielbetriebs
+                </li>
+                <li>
+                  Erinnerung per Mail zum Anpfiff, wenn du angesetzt bist
+                </li>
+                <li>
+                  <em>Abgegebene Beobachtungen:</em> deine Bögen. Nach dem
+                  Absenden sind sie sofort sichtbar und nicht mehr änderbar
+                </li>
+                <li>
+                  Ablauf und Sichtbarkeit im Kapitel <a href="#panel-fn-schiri">Schiedsrichterwesen</a> unter
+                  „Beobachtungen der Schiedsrichtercoaches“
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="sec">
@@ -8490,9 +8759,10 @@
                   kurzfristig einspringen kannst
                 </li>
                 <li>
-                  Telefonnummer hinterlegen: wird ausschließlich in dringenden
-                  Fällen von der RSK bei der Ansetzung genutzt und nicht an
-                  Dritte weitergegeben
+                  Telefonnummer hinterlegen: wird in dringenden Fällen von der
+                  RSK bei der Ansetzung genutzt. Darüber hinaus sehen sie nur
+                  die Mit-Angesetzten, und nur mit deiner Zustimmung (siehe
+                  „Meine Spieltage“)
                 </li>
                 <li>
                   Heimadresse pflegen: dient allein der Kilometerberechnung bei
@@ -8675,11 +8945,16 @@
                 Nacht von Donnerstag auf Freitag und gebündelt für alle
                 Ansetzungen der kommenden sieben Tage; ihr Link läuft am Ende
                 des Tages nach dem Spiel ab. Über „Meine Spieltage“ wird der
-                Spieltag bestätigt; bleibt die Bestätigung aus, kann der
-                Spieltag automatisch als bestätigt gelten. Die Bestätigung der
+                Spieltag bestätigt. Die Bestätigung der
                 ordnungsgemäßen Durchführung setzt voraus, dass der Spielbetrieb
                 Fragen für den Spieltagsbericht hinterlegt hat, und ist ab Beginn des
-                letzten Spiels möglich. Ändern sich danach Anpfiff, Datum, Halle
+                letzten Spiels möglich. Sie gilt für den ganzen Spieltag:
+                <em>Ordnungsgemäß bestätigen</em> benachrichtigt niemanden und
+                lässt sich nicht mehr ändern. <em>Nicht ordnungsgemäß</em>
+                öffnet erst die Fragen; erst <em>Meldung absenden</em> schickt
+                die Antworten per Mail an die SBK, vorher lässt sich noch
+                abbrechen. Ohne Rückmeldung gilt der Spieltag 48 Stunden nach
+                seinem Ende automatisch als bestätigt. Ändern sich danach Anpfiff, Datum, Halle
                 oder der Absage-Status, kommt automatisch eine
                 Änderungs-Benachrichtigung. Hat die Ansetzung
                 <strong>zusätzliche Spielinformationen</strong> hinterlegt,
