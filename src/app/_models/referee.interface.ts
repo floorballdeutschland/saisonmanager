@@ -263,6 +263,10 @@ export interface RefereeProfile {
   ort?: string;
   partner_lizenznummer?: number | null;
   kurzfristig_mobil?: boolean;
+  // Einwilligung, dass die am selben Spiel angesetzten Schiris und der Coach
+  // Telefonnummer und E-Mail sehen. null = noch nie gefragt, dann fragt
+  // „Meine Spieltage" einmal nach.
+  share_contact_with_officials?: boolean | null;
   club_exclusions?: RefereeClubExclusion[];
   club_exclusion_requests?: RefereeClubExclusionRequest[];
   // Korrekturanträge zu den gesperrten Stammdaten (Name, Geburtsdatum, Verein).
@@ -660,6 +664,18 @@ export interface RefereeGameDayGame {
   // Hinweis des Ansetzers an das Gespann; nur gefüllt, wenn man selbst
   // (veröffentlicht) angesetzt ist.
   referee_notes?: string | null;
+  // Die übrigen am Spiel Angesetzten ohne die eigene Person.
+  officials?: RefereeGameDayOfficial[];
+}
+
+export interface RefereeGameDayOfficial {
+  role: 'referee1' | 'referee2' | 'coach';
+  name: string;
+  // Hat die Person ihre Kontaktdaten freigegeben? Telefonnummer und E-Mail
+  // liefert die API trotzdem nur rund um den Spieltag (bis zum Folgetag).
+  contact_shared: boolean;
+  telefonnummer?: string | null;
+  email?: string | null;
 }
 
 export interface RefereeChecklistItem {
