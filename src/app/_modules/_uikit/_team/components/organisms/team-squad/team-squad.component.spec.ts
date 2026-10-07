@@ -75,4 +75,100 @@ describe('TeamSquadComponent', () => {
   it('bietet ohne die Erlaubnis nur die erteilte Lizenz an', () => {
     expect(render(false)).toBe(1);
   });
+
+  describe('Aufstellung aus letztem Spiel übernehmen', () => {
+    const copyUrl = `${environment.apiURL}user/games/42/lineup/home/copy_from_last_game.json`;
+
+    function open(players: { player_id: number; trikot_number: number }[]) {
+      const fixture = TestBed.createComponent(TeamSquadComponent);
+      fixture.componentRef.setInput('teamId', 7);
+      fixture.componentRef.setInput('gameId', 42);
+      fixture.componentRef.setInput('side', 'home');
+      fixture.componentRef.setInput('players', players);
+      fixture.detectChanges();
+      http
+        .expectOne(`${environment.apiURL}user/team/7/licenses.json`)
+        .flush({ team: { id: 7 }, current_requests: [] });
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('bietet die Übernahme nur bei leerer Aufstellung an', () => {
+      expect(open([]).nativeElement.querySelector('fb-button')).toBeTruthy();
+      expect(
+        open([{ player_id: 1, trikot_number: 4 }]).nativeElement.querySelector(
+          'fb-button'
+        )
+      ).toBeNull();
+    });
+
+    it('übernimmt die Aufstellung und zeigt Übersprungenes', () => {
+      const fixture = open([]);
+
+      fixture.componentInstance.copyFromLastGame();
+      const req = http.expectOne(copyUrl);
+      expect(req.request.method).toBe('POST');
+      req.flush({
+        players: [
+          {
+            player_id: 1,
+            trikot_number: 4,
+            player_firstname: 'Anna',
+            player_name: 'Alt',
+          },
+        ],
+        added_count: 1,
+        skipped: [
+          {
+            player_id: 2,
+            player_firstname: 'Dora',
+            player_name: 'Dahl',
+            trikot_number: 8,
+            reason: 'kein Lizenzantrag für diese Mannschaft',
+          },
+        ],
+        warnings: ['Lizenz von Anna Alt ist nicht erteilt (Status: beantragt)'],
+        source_game: { id: 9, game_number: '17', date: '2026-01-10' },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.players.length).toBe(1);
+      const panel: HTMLElement = fixture.nativeElement.querySelector(
+        '[data-testid="copy-result"]'
+      );
+      expect(panel.textContent).toContain('Nr. 17');
+      expect(panel.textContent).toContain('10.01.2026');
+      expect(panel.textContent).toContain('#8 Dora Dahl');
+      expect(panel.textContent).toContain('nicht erteilt');
+      // Nach der Übernahme ist die Aufstellung nicht mehr leer.
+      expect(fixture.nativeElement.querySelector('fb-button')).toBeNull();
+    });
+
+    it('meldet, wenn es kein früheres Spiel gibt', () => {
+      const fixture = open([]);
+
+      fixture.componentInstance.copyFromLastGame();
+      http.expectOne(copyUrl).flush({
+        players: [],
+        added_count: 0,
+        skipped: [],
+        warnings: [],
+        source_game: null,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="copy-result"]')
+          .textContent
+      ).toContain('noch kein früheres Spiel');
+    });
+
+    it('lässt ein Altdatum ohne ISO-Form stehen', () => {
+      const component =
+        TestBed.createComponent(TeamSquadComponent).componentInstance;
+      expect(component.formatSourceDate('2026-01-10')).toBe('10.01.2026');
+      expect(component.formatSourceDate('11.08.2026')).toBe('11.08.2026');
+      expect(component.formatSourceDate(null)).toBe('');
+    });
+  });
 });

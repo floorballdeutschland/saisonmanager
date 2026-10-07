@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 import {
   AddLineupPlayerResponse,
+  CopyLineupResponse,
   ChecklistVeto,
   ChecklistVetoAnswer,
   Game,
@@ -243,6 +244,17 @@ export class GameService {
       trikot_number,
       goalkeeper,
     });
+  }
+
+  public copyLineupFromLastGame(gameId: number, team: string) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/lineup/' +
+      team +
+      '/copy_from_last_game.json';
+    return this.http.post<CopyLineupResponse>(path, {});
   }
 
   public removeLineupPlayerToGame(
