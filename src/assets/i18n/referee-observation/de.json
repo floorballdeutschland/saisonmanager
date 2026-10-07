@@ -49,7 +49,7 @@
     "hidden": "Diese Beobachtung wurde zurückgenommen und ist für die beobachteten Schiedsrichter*innen nicht mehr sichtbar."
   },
   "coach": {
-    "title": "Meine Beobachtungen",
+    "title": "Beobachtungsbögen",
     "intro": "Hier gibst du deine Beobachtungsbögen ab. Zur Auswahl stehen die Spiele, für die du als Schiedsrichtercoach angesetzt warst – und in Spielbetrieben ohne namentliche Ansetzung zusätzlich die Spiele deines eigenen Spielbetriebs.",
     "openTitle": "Offene Spiele",
     "openEmpty": "Zurzeit steht kein Spiel zur Beobachtung an.",
@@ -64,10 +64,10 @@
   },
   "received": {
     "title": "Mein Feedback",
-    "coachingTitle": "Coaching-Feedback",
+    "coachingTitle": "Beobachtungen",
     "intro": "Die Beobachtungen deiner Schiedsrichtercoaches zu deinen Einsätzen. Du siehst die gemeinsamen Anmerkungen, die Bewertung des Gespanns und deine eigenen Einzelbewertungen.",
     "empty": "Es liegt noch keine Beobachtung zu dir vor.",
-    "teamsTitle": "Feedback der Mannschaften",
+    "teamsTitle": "Team-Feedback (von den Mannschaften)",
     "teamsIntro": "Nach jedem Spiel bewerten die beteiligten Mannschaften das Gespann auf einer Skala von 1 bis 10. Du siehst die Durchschnitte über deine Rückmeldungen, aber keine einzelnen Bewertungen, Kommentare oder Mannschaften. Neue Rückmeldungen fließen in Fünferschritten ein, damit sich keine einzelne Bewertung zurückrechnen lässt.",
     "teamsEnabledHint": "Rückmeldungen gibt es nur aus Ligen, für die das Schiri-Feedback aktiviert ist. Pfeifst du keine solche Liga, kommen hier keine Rückmeldungen an.",
     "teamsAvgLine": "Ø Linie/Konstanz",

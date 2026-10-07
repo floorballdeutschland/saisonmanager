@@ -16,9 +16,9 @@ import {
 /**
  * „Mein Feedback" aus Sicht der bewerteten Person, in zwei Abschnitten:
  *
- * - Coaching-Feedback: die vollständigen Bögen der Schiedsrichtercoaches.
+ * - Beobachtungen: die vollständigen Bögen der Schiedsrichtercoaches.
  *   Zurückgenommene Bögen liefert die API nicht aus.
- * - Feedback der Mannschaften: nur die Kennzahlen (Anzahl und zwei
+ * - Team-Feedback: nur die Kennzahlen (Anzahl und zwei
  *   Durchschnitte), und die Durchschnitte erst ab der Mindestzahl, die die API
  *   vorgibt. Einzelne Rückmeldungen, Freitexte und Mannschaften bleiben der
  *   Schiedsrichterverwaltung vorbehalten.

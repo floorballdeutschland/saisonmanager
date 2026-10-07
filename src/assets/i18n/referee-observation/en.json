@@ -49,7 +49,7 @@
     "hidden": "This observation has been withdrawn and is no longer visible to the referees it covers."
   },
   "coach": {
-    "title": "My observations",
+    "title": "Observation forms",
     "intro": "Submit your coaching forms here. Listed are the games you were appointed to as a referee coach, plus, in competitions without named appointments, the games of your own competition.",
     "openTitle": "Open games",
     "openEmpty": "There is currently no game to observe.",
@@ -64,10 +64,10 @@
   },
   "received": {
     "title": "My feedback",
-    "coachingTitle": "Coaching feedback",
+    "coachingTitle": "Observations",
     "intro": "The observations your referee coaches wrote about your games. You see the shared comments, the rating of the pair, and your own individual ratings.",
     "empty": "There is no observation about you yet.",
-    "teamsTitle": "Feedback from teams",
+    "teamsTitle": "Team feedback (from the teams)",
     "teamsIntro": "After each game the teams involved rate the referee pair on a scale from 1 to 10. You see the averages across your responses, but no individual ratings, comments or teams. New responses are added in steps of five so that no single rating can be worked out.",
     "teamsEnabledHint": "Responses only come from leagues where referee feedback is enabled. If you do not referee in such a league, no responses will arrive here.",
     "teamsAvgLine": "Avg. consistency",
