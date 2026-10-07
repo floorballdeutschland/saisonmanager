@@ -40,5 +40,11 @@
     "csv": "CSV",
     "xlsx": "Excel",
     "error": "The export failed."
+  },
+  "print": {
+    "one": "PDF",
+    "selected": "Selection as PDF",
+    "hint": "Opens the print dialog. Choose “Save as PDF” there.",
+    "title": "Referee coach observation form"
   }
 }

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -22,6 +23,10 @@ type StatusFilter = 'visible' | 'hidden' | 'all';
  * Filter, aufklappbarem Bogen und Export (CSV/Excel) der Auswahl oder aller
  * gefilterten Bögen. Welche Bögen das sind, entscheidet die API
  * (RefereeObservationPolicy#admin_scope), nicht diese Ansicht.
+ *
+ * Das PDF entsteht über den Druckdialog des Browsers („Als PDF speichern“):
+ * Ein nur im Druck sichtbarer Bereich zeigt die gewählten Bögen vollständig,
+ * mit Freitexten, je Bogen eine Seite. Keine PDF-Bibliothek, kein API-Aufruf.
  */
 @Component({
   templateUrl: './referee-observation-report-index.component.html',
@@ -52,6 +57,8 @@ export class RefereeObservationReportIndexComponent
   selected = new Set<number>();
   /** Aufgeklappte Bögen. */
   expanded = new Set<number>();
+  /** Bögen im Druckbereich; leer, sobald der Druckdialog geschlossen ist. */
+  printIds: number[] = [];
 
   private _destroy$ = new Subject<void>();
 
@@ -164,6 +171,37 @@ export class RefereeObservationReportIndexComponent
     if (!iso) return '';
     const [year, month, day] = iso.split('-');
     return year && month && day ? `${day}.${month}.${year}` : iso;
+  }
+
+  // ----- PDF (Druckdialog) -----
+
+  get printObservations(): RefereeObservation[] {
+    return this.printIds
+      .map((id) => this.observations.find((o) => o.id === id))
+      .filter((o): o is RefereeObservation => !!o);
+  }
+
+  /** Einzelner Bogen oder die Auswahl, in Tabellenreihenfolge. */
+  print(ids: number[]): void {
+    const wanted = new Set(ids);
+    this.printIds = this.observations
+      .filter((o) => wanted.has(o.id))
+      .map((o) => o.id);
+    if (this.printIds.length === 0) return;
+    // Der Druckbereich muss im DOM stehen, bevor der Dialog ihn abgreift.
+    this._cdr.detectChanges();
+    window.print();
+  }
+
+  printSelected(): void {
+    this.print([...this.selected]);
+  }
+
+  /** Sonst druckte ein späteres Strg+P still die zuletzt gewählten Bögen. */
+  @HostListener('window:afterprint')
+  clearPrint(): void {
+    this.printIds = [];
+    this._cdr.markForCheck();
   }
 
   // ----- Export -----

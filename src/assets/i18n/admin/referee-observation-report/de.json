@@ -40,5 +40,11 @@
     "csv": "CSV",
     "xlsx": "Excel",
     "error": "Der Export ist fehlgeschlagen."
+  },
+  "print": {
+    "one": "PDF",
+    "selected": "Auswahl als PDF",
+    "hint": "Öffnet den Druckdialog. Dort „Als PDF speichern“ wählen.",
+    "title": "Beobachtungsbogen Schiedsrichtercoach"
   }
 }

@@ -214,6 +214,66 @@ describe('RefereeObservationReportIndexComponent', () => {
     expect(el().textContent).toContain('Kommunikation ausbauen.');
   });
 
+  describe('PDF über den Druckdialog', () => {
+    let printSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      printSpy = spyOn(window, 'print');
+    });
+
+    function printArea(): HTMLElement | null {
+      return el().querySelector('[data-test="print-area"]');
+    }
+
+    it('druckt einen einzelnen Bogen mit Freitexten', () => {
+      el()
+        .querySelectorAll<HTMLButtonElement>('[data-test="print-one"]')[1]
+        .click();
+
+      expect(printSpy).toHaveBeenCalledTimes(1);
+      expect(component.printIds).toEqual([2]);
+      // Der Bereich muss schon stehen, wenn der Dialog öffnet.
+      expect(
+        printArea()?.querySelectorAll('fb-referee-observation-detail').length
+      ).toBe(1);
+      expect(printArea()?.textContent).toContain('Kommunikation ausbauen.');
+    });
+
+    it('druckt die Auswahl in Tabellenreihenfolge, je Bogen eine Seite', () => {
+      component.toggleSelected(2);
+      component.toggleSelected(1);
+      fixture.detectChanges();
+      el()
+        .querySelector<HTMLButtonElement>('[data-test="print-selected"]')!
+        .click();
+
+      expect(component.printIds).toEqual([1, 2]);
+      const sections = printArea()!.querySelectorAll('section');
+      expect(sections.length).toBe(2);
+      expect(sections[0].classList).toContain('break-after-page');
+      expect(sections[1].classList).not.toContain('break-after-page');
+    });
+
+    it('sperrt „Auswahl als PDF“ ohne Auswahl', () => {
+      expect(
+        el().querySelector<HTMLButtonElement>('[data-test="print-selected"]')!
+          .disabled
+      ).toBeTrue();
+      component.printSelected();
+      expect(printSpy).not.toHaveBeenCalled();
+    });
+
+    // Sonst druckte ein späteres Strg+P still die zuletzt gewählten Bögen.
+    it('räumt den Druckbereich nach dem Dialog ab', () => {
+      component.print([1]);
+      window.dispatchEvent(new Event('afterprint'));
+      fixture.detectChanges();
+
+      expect(component.printIds).toEqual([]);
+      expect(printArea()).toBeNull();
+    });
+  });
+
   it('formatiert das Spieldatum deutsch', () => {
     expect(component.formatDate('2026-10-04')).toBe('04.10.2026');
     expect(component.formatDate(null)).toBe('');
