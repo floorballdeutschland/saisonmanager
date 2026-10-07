@@ -1337,17 +1337,21 @@
       if (controller) controller.abort();
     }, REQUEST_TIMEOUT_MS);
 
-    fetch(
+    // Mit `game_id` wie der Spiel-Abruf: Formkurve und nächste Spiele hängen
+    // am Spiel. Ohne den Parameter nähme der Server das im Dock gewählte, und
+    // eine auf ein Spiel festgelegte Quelle zeigte fremde Mannschaften.
+    var leagueUrl =
       "/api/v2/public/overlay/" +
-        def.source +
-        "?token=" +
-        encodeURIComponent(token),
-      {
-        credentials: "omit",
-        cache: "no-store",
-        signal: controller ? controller.signal : undefined,
-      }
-    )
+      def.source +
+      "?token=" +
+      encodeURIComponent(token);
+    if (gameId) leagueUrl += "&game_id=" + encodeURIComponent(gameId);
+
+    fetch(leagueUrl, {
+      credentials: "omit",
+      cache: "no-store",
+      signal: controller ? controller.signal : undefined,
+    })
       .then(function (response) {
         window.clearTimeout(timer);
         if (response.status === 400 || response.status === 410) {
