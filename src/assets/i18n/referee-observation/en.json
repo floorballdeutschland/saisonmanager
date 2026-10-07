@@ -68,7 +68,7 @@
     "intro": "The observations your referee coaches wrote about your games. You see the shared comments, the rating of the pair, and your own individual ratings.",
     "empty": "There is no observation about you yet.",
     "teamsTitle": "Feedback from teams",
-    "teamsIntro": "After each game the teams involved rate the referee pair on a scale from 1 to 10. You see the averages across all responses about you, but no individual ratings, comments or teams.",
+    "teamsIntro": "After each game the teams involved rate the referee pair on a scale from 1 to 10. You see the averages across your responses, but no individual ratings, comments or teams. New responses are added in steps of five so that no single rating can be worked out.",
     "teamsEnabledHint": "Responses only come from leagues where referee feedback is enabled. If you do not referee in such a league, no responses will arrive here.",
     "teamsAvgLine": "Avg. consistency",
     "teamsAvgCommunication": "Avg. communication",

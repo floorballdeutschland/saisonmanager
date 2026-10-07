@@ -12,6 +12,8 @@ import {
   RefereeObservation,
 } from '@floorball/types';
 import { getTranslocoTestingModule } from '../../../_core/_i18n/transloco-testing';
+import de from '../../../../../assets/i18n/referee-observation/de.json';
+import en from '../../../../../assets/i18n/referee-observation/en.json';
 import { ObservationReceivedComponent } from './observation-received.component';
 
 describe('ObservationReceivedComponent', () => {
@@ -161,5 +163,13 @@ describe('ObservationReceivedComponent (Darstellung)', () => {
     expect(
       el.querySelector('[data-test="team-below-threshold"]')
     ).not.toBeNull();
+  });
+});
+
+describe('ObservationReceivedComponent (Texte)', () => {
+  it('erklaert, dass neue Rueckmeldungen in Fuenferschritten einfliessen', () => {
+    expect(de.received.teamsIntro).toContain('Fünferschritten');
+    expect(en.received.teamsIntro).toContain('steps of five');
+    expect(de.received.teamsIntro).not.toContain('alle Rückmeldungen');
   });
 });

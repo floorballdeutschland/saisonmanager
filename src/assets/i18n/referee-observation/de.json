@@ -68,7 +68,7 @@
     "intro": "Die Beobachtungen deiner Schiedsrichtercoaches zu deinen Einsätzen. Du siehst die gemeinsamen Anmerkungen, die Bewertung des Gespanns und deine eigenen Einzelbewertungen.",
     "empty": "Es liegt noch keine Beobachtung zu dir vor.",
     "teamsTitle": "Feedback der Mannschaften",
-    "teamsIntro": "Nach jedem Spiel bewerten die beteiligten Mannschaften das Gespann auf einer Skala von 1 bis 10. Du siehst die Durchschnitte über alle Rückmeldungen zu dir, aber keine einzelnen Bewertungen, Kommentare oder Mannschaften.",
+    "teamsIntro": "Nach jedem Spiel bewerten die beteiligten Mannschaften das Gespann auf einer Skala von 1 bis 10. Du siehst die Durchschnitte über deine Rückmeldungen, aber keine einzelnen Bewertungen, Kommentare oder Mannschaften. Neue Rückmeldungen fließen in Fünferschritten ein, damit sich keine einzelne Bewertung zurückrechnen lässt.",
     "teamsEnabledHint": "Rückmeldungen gibt es nur aus Ligen, für die das Schiri-Feedback aktiviert ist. Pfeifst du keine solche Liga, kommen hier keine Rückmeldungen an.",
     "teamsAvgLine": "Ø Linie/Konstanz",
     "teamsAvgCommunication": "Ø Kommunikation",
