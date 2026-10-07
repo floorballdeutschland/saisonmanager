@@ -12,7 +12,7 @@
     "nameReadOnlyHint": "Your name, date of birth and club appear on your digital referee card or determine who assigns you, so they are read-only here. If something is wrong, submit a correction request: it goes to the referee committee of your state association and is applied once approved.",
     "email": "Email",
     "phone": "Phone number",
-    "phoneHint": "The phone number is used by the RSK solely in urgent cases during assignment. It is not shared with third parties or used for any other purpose.",
+    "phoneHint": "The RSK uses your phone number in urgent cases during assignment. Beyond that, only the referees and coaches assigned to the same game as you can see it, and only if you agree below.",
     "sectionAssignmentInfo": "Assignment information",
     "assignmentInfoHint": "This information comes from your profile and is used solely for referee assignment.",
     "shortNoticeMobile": "I am available at short notice",
@@ -69,7 +69,9 @@
     "sectionQualifications": "Additional qualifications",
     "qualificationsHint": "These entries are maintained by the referee commission and also appear on your digital referee card and in the public licence check. If a qualification is wrong or missing, contact the referee commission of your state association.",
     "qualificationNoExpiry": "no expiry date",
-    "qualificationExpiredOn": "expired on {{ date }}"
+    "qualificationExpiredOn": "expired on {{ date }}",
+    "shareContact": "Fellow officials may see my contact details",
+    "shareContactHint": "Referees and coaches assigned to the same game as you see your phone number and e-mail address under “My match days” so you can coordinate before the game. Visible from publication of the assignment until the day after the match day. It works both ways: you only see the others’ contact details if you share yours. You can turn this off at any time."
   },
   "card": {
     "title": "My card",
@@ -175,7 +177,17 @@
     "reportedImproperAt": "Reported as not properly conducted on {{ date }}",
     "partner": "Partner:",
     "notesTitle": "Additional game information from the assigner",
-    "coachBadge": "Assigned as referee coach"
+    "coachBadge": "Assigned as referee coach",
+    "officialsTitle": "Assigned with you",
+    "roleReferee1": "Referee 1",
+    "roleReferee2": "Referee 2",
+    "roleCoach": "Referee coach",
+    "contactNotShared": "no contact details shared",
+    "sharePromptTitle": "Share your contact details with your fellow officials?",
+    "sharePromptText": "If you agree, referees and coaches assigned to the same game as you see your phone number and e-mail address here, from publication of the assignment until the day after the match day. It works both ways: you only see the others’ contact details if you share yours. You can change this at any time in your profile.",
+    "sharePromptYes": "Yes, share",
+    "sharePromptNo": "No, don’t share",
+    "contactNeedsOwnShare": "shares contact details, visible once you share yours too"
   },
   "notifications": {
     "profileLoadError": "Profile could not be loaded.",
@@ -190,6 +202,7 @@
     "gameDayReportSaved": "Report saved.",
     "gameDaySaveError": "Saving failed.",
     "exclusionRequested": "Request sent to the assigners.",
-    "correctionRequested": "Correction request sent to your state association."
+    "correctionRequested": "Correction request sent to your state association.",
+    "shareContactSaveError": "The setting could not be saved."
   }
 }

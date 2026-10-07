@@ -12,7 +12,7 @@
     "nameReadOnlyHint": "Name, Geburtsdatum und Verein stehen auf deinem digitalen Schiedsrichterausweis bzw. bestimmen, wer dich ansetzt. Sie sind deshalb hier gesperrt. Ist eine Angabe falsch, stelle einen Korrekturantrag: Er geht an die Schiedsrichterkommission deines Landesverbands, und mit der Genehmigung wird der Wert übernommen.",
     "email": "E-Mail",
     "phone": "Telefonnummer",
-    "phoneHint": "Die Telefonnummer wird ausschließlich in dringenden Fällen von der RSK bei der Ansetzung genutzt. Eine Weitergabe an Dritte oder eine Nutzung zu anderen Zwecken erfolgt nicht.",
+    "phoneHint": "Die Telefonnummer nutzt die RSK in dringenden Fällen bei der Ansetzung. Darüber hinaus sehen sie nur die Schiris und Coaches, die mit dir am selben Spiel angesetzt sind, und das nur, wenn du unten zustimmst.",
     "sectionAssignmentInfo": "Ansetzungsinformationen",
     "assignmentInfoHint": "Diese Angaben stammen aus deinem Profil und werden ausschließlich für die Schiedsrichter-Ansetzung verwendet.",
     "shortNoticeMobile": "Ich bin kurzfristig mobil",
@@ -69,7 +69,9 @@
     "sectionQualifications": "Zusatzqualifikationen",
     "qualificationsHint": "Diese Angaben pflegt die Schiedsrichterkommission und sie stehen auch auf deinem digitalen Ausweis sowie im öffentlichen Lizenzcheck. Ist eine Qualifikation falsch oder fehlt sie, wende dich an die Schiedsrichterkommission deines Landesverbands.",
     "qualificationNoExpiry": "ohne Ablaufdatum",
-    "qualificationExpiredOn": "abgelaufen am {{ date }}"
+    "qualificationExpiredOn": "abgelaufen am {{ date }}",
+    "shareContact": "Mit-Angesetzte dürfen meine Kontaktdaten sehen",
+    "shareContactHint": "Die Schiris und Coaches, die mit dir am selben Spiel angesetzt sind, sehen unter „Meine Spieltage“ deine Telefonnummer und E-Mail-Adresse, damit ihr euch vor dem Spiel absprechen könnt. Sichtbar ab der Veröffentlichung der Ansetzung bis zum Tag nach dem Spieltag. Auf Gegenseitigkeit: Die Kontaktdaten der anderen siehst du nur, wenn du deine auch teilst. Du kannst das jederzeit wieder abschalten."
   },
   "card": {
     "title": "Mein Ausweis",
@@ -175,7 +177,17 @@
     "reportedImproperAt": "Als nicht ordnungsgemäß gemeldet am {{ date }}",
     "partner": "Partner:",
     "notesTitle": "Zusätzliche Spielinformationen der Ansetzung",
-    "coachBadge": "Als SR-Coach angesetzt"
+    "coachBadge": "Als SR-Coach angesetzt",
+    "officialsTitle": "Mit dir angesetzt",
+    "roleReferee1": "Schiri 1",
+    "roleReferee2": "Schiri 2",
+    "roleCoach": "SR-Coach",
+    "contactNotShared": "keine Kontaktdaten freigegeben",
+    "sharePromptTitle": "Kontaktdaten mit deinem Gespann teilen?",
+    "sharePromptText": "Wenn du zustimmst, sehen die Schiris und Coaches, die mit dir am selben Spiel angesetzt sind, hier deine Telefonnummer und E-Mail-Adresse, ab der Veröffentlichung der Ansetzung bis zum Tag nach dem Spieltag. Das gilt auf Gegenseitigkeit: Die Kontaktdaten der anderen siehst du nur, wenn du deine auch teilst. Du kannst das jederzeit in deinem Profil ändern.",
+    "sharePromptYes": "Ja, teilen",
+    "sharePromptNo": "Nein, nicht teilen",
+    "contactNeedsOwnShare": "teilt Kontaktdaten, sichtbar sobald du deine auch teilst"
   },
   "notifications": {
     "profileLoadError": "Profil konnte nicht geladen werden.",
@@ -190,6 +202,7 @@
     "gameDayReportSaved": "Meldung gespeichert.",
     "gameDaySaveError": "Speichern fehlgeschlagen.",
     "exclusionRequested": "Antrag an die Ansetzung übermittelt.",
-    "correctionRequested": "Korrekturantrag an deinen Landesverband übermittelt."
+    "correctionRequested": "Korrekturantrag an deinen Landesverband übermittelt.",
+    "shareContactSaveError": "Die Einstellung konnte nicht gespeichert werden."
   }
 }

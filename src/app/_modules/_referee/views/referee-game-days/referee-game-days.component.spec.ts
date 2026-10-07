@@ -1,7 +1,9 @@
-import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of, Subject, throwError } from 'rxjs';
 import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeGameDay } from '@floorball/types';
+import { RefereeGameDay, RefereeProfile } from '@floorball/types';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
 
 import { RefereeGameDaysComponent } from './referee-game-days.component';
@@ -111,5 +113,191 @@ describe('RefereeGameDaysComponent (Bestätigungsstatus)', () => {
         spieltag({ confirmable_from: inEinerWoche, auto_confirmed: true })
       )
     ).toBe('auto');
+  });
+});
+
+describe('RefereeGameDaysComponent (Mit-Angesetzte und Kontaktfreigabe)', () => {
+  let refereeService: jasmine.SpyObj<RefereeService>;
+
+  function render(
+    days: RefereeGameDay[],
+    share: boolean | null
+  ): ComponentFixture<RefereeGameDaysComponent> {
+    refereeService.getGameDays.and.returnValue(of(days));
+    refereeService.getProfile.and.returnValue(
+      of({ share_contact_with_officials: share } as RefereeProfile)
+    );
+    const fixture = TestBed.createComponent(RefereeGameDaysComponent);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  beforeEach(async () => {
+    refereeService = jasmine.createSpyObj('RefereeService', [
+      'getGameDays',
+      'getProfile',
+      'updateProfile',
+    ]);
+    await TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule(), UikitCommonModule],
+      declarations: [RefereeGameDaysComponent],
+      providers: [
+        provideRouter([]),
+        { provide: RefereeService, useValue: refereeService },
+        {
+          provide: NotificationService,
+          useValue: {
+            success: jasmine.createSpy(),
+            error: jasmine.createSpy(),
+          },
+        },
+      ],
+    }).compileComponents();
+  });
+
+  const tagMitGespann = spieltag({
+    games: [
+      {
+        id: 7,
+        home_team: 'A',
+        guest_team: 'B',
+        officials: [
+          {
+            role: 'referee2',
+            name: 'Paula Partner',
+            contact_shared: true,
+            telefonnummer: '0170 1234567',
+            email: 'paula@example.com',
+          },
+          { role: 'coach', name: 'Carl Coach', contact_shared: false },
+        ],
+      },
+    ],
+  });
+
+  it('verlinkt Telefon und E-Mail freigegebener Mit-Angesetzter', () => {
+    const el: HTMLElement = render([tagMitGespann], true).nativeElement;
+
+    const rows = el.querySelectorAll('[data-testid="official"]');
+    expect(rows.length).toBe(2);
+    expect(rows[0].querySelector('a[href="tel:0170 1234567"]')).not.toBeNull();
+    expect(
+      rows[0].querySelector('a[href="mailto:paula@example.com"]')
+    ).not.toBeNull();
+    expect(rows[1].textContent).toContain('Carl Coach');
+    expect(rows[1].querySelector('a')).toBeNull();
+  });
+
+  it('fragt einmal nach, solange die Freigabe nie beantwortet wurde', () => {
+    refereeService.updateProfile.and.returnValue(of({} as RefereeProfile));
+    const fixture = render([], null);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[data-testid="share-prompt"]')).not.toBeNull();
+
+    (el.querySelector('[data-testid="share-no"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(refereeService.updateProfile).toHaveBeenCalledWith({
+      share_contact_with_officials: false,
+    });
+    expect(el.querySelector('[data-testid="share-prompt"]')).toBeNull();
+  });
+
+  it('erklärt fehlende Kontaktdaten, solange man selbst nicht teilt', () => {
+    const ohneDaten = spieltag({
+      games: [
+        {
+          id: 7,
+          officials: [
+            { role: 'referee2', name: 'Paula Partner', contact_shared: true },
+          ],
+        },
+      ],
+    });
+    const el: HTMLElement = render([ohneDaten], false).nativeElement;
+
+    const row = el.querySelector('[data-testid="official"]')!;
+    expect(row.textContent).toContain(
+      'refereeSelf.gameDays.contactNeedsOwnShare'
+    );
+  });
+
+  it('lädt die Spieltage nach einer Zustimmung neu', () => {
+    refereeService.updateProfile.and.returnValue(of({} as RefereeProfile));
+    const fixture = render([], null);
+    refereeService.getGameDays.calls.reset();
+
+    (
+      fixture.nativeElement.querySelector(
+        '[data-testid="share-yes"]'
+      ) as HTMLElement
+    ).click();
+
+    expect(refereeService.getGameDays).toHaveBeenCalledTimes(1);
+  });
+
+  it('lässt eine ältere Spieltags-Antwort die neuere nicht überschreiben', () => {
+    const first = new Subject<RefereeGameDay[]>();
+    refereeService.getGameDays.and.returnValue(first);
+    refereeService.getProfile.and.returnValue(
+      of({ share_contact_with_officials: null } as RefereeProfile)
+    );
+    refereeService.updateProfile.and.returnValue(of({} as RefereeProfile));
+    const fixture = TestBed.createComponent(RefereeGameDaysComponent);
+    fixture.detectChanges();
+
+    refereeService.getGameDays.and.returnValue(of([tagMitGespann]));
+    fixture.componentInstance.answerSharePrompt(true);
+    first.next([]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.gameDays).toEqual([tagMitGespann]);
+  });
+
+  it('zeigt ohne ladbares Profil keinen Freigabe-Hinweis', () => {
+    refereeService.getGameDays.and.returnValue(
+      of([
+        spieltag({
+          games: [
+            {
+              id: 7,
+              officials: [
+                {
+                  role: 'referee2',
+                  name: 'Paula Partner',
+                  contact_shared: true,
+                },
+              ],
+            },
+          ],
+        }),
+      ])
+    );
+    refereeService.getProfile.and.returnValue(throwError(() => new Error()));
+    const fixture = TestBed.createComponent(RefereeGameDaysComponent);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('[data-testid="share-prompt"]')).toBeNull();
+    expect(
+      el.querySelector('[data-testid="official"]')!.textContent
+    ).not.toContain('refereeSelf.gameDays.contactNeedsOwnShare');
+  });
+
+  it('lässt die Rückfrage stehen, wenn das Speichern scheitert', () => {
+    refereeService.updateProfile.and.returnValue(throwError(() => new Error()));
+    const fixture = render([], null);
+    fixture.componentInstance.answerSharePrompt(true);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.savingShare).toBeFalse();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="share-prompt"]')
+    ).not.toBeNull();
+  });
+
+  it('fragt nicht erneut nach einer Ablehnung', () => {
+    const el: HTMLElement = render([], false).nativeElement;
+    expect(el.querySelector('[data-testid="share-prompt"]')).toBeNull();
   });
 });

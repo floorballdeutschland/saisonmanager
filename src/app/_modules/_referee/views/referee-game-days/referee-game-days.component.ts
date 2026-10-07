@@ -6,10 +6,14 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
-import { RefereeGameDay, RefereeGameDayGame } from '@floorball/types';
+import {
+  RefereeGameDay,
+  RefereeGameDayGame,
+  RefereeGameDayOfficial,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './referee-game-days.component.html',
@@ -26,7 +30,19 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   rejectingId: number | null = null;
   rejectAnswers: Record<number, boolean | null> = {};
 
+  // Einmalige Rückfrage zur Kontaktfreigabe: nur solange das Profil noch nie
+  // geantwortet hat (null). Ein Ladefehler des Profils zeigt sie nicht.
+  showSharePrompt = false;
+  savingShare = false;
+  // Eigene Freigabe: Die API liefert fremde Kontaktdaten nur auf
+  // Gegenseitigkeit, die Maske erklärt dann, warum sie fehlen. undefined =
+  // unbekannt (Profil noch nicht oder nicht ladbar), dann kein Hinweis.
+  ownShares: boolean | null | undefined = undefined;
+
   private _destroy$ = new Subject<void>();
+  // Laufender Abruf der Spieltage; ein neuer Abruf verwirft ihn, sonst kann
+  // die ältere Antwort (ohne Kontaktdaten) die neuere überschreiben.
+  private _loadSub?: Subscription;
 
   constructor(
     private _refereeService: RefereeService,
@@ -37,6 +53,7 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._load();
+    this._loadShareSetting();
   }
 
   ngOnDestroy(): void {
@@ -67,6 +84,44 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   notYetConfirmable(gd: RefereeGameDay): boolean {
     if (!gd.confirmable_from) return false;
     return new Date(gd.confirmable_from).getTime() > Date.now();
+  }
+
+  roleKey(official: RefereeGameDayOfficial): string {
+    switch (official.role) {
+      case 'referee1':
+        return 'refereeSelf.gameDays.roleReferee1';
+      case 'referee2':
+        return 'refereeSelf.gameDays.roleReferee2';
+      default:
+        return 'refereeSelf.gameDays.roleCoach';
+    }
+  }
+
+  answerSharePrompt(share: boolean): void {
+    this.savingShare = true;
+    this._refereeService
+      .updateProfile({ share_contact_with_officials: share })
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.savingShare = false;
+          this.showSharePrompt = false;
+          this.ownShares = share;
+          this._cdr.markForCheck();
+          // Erst jetzt liefert die API die freigegebenen Daten der anderen.
+          if (share) this._load();
+        },
+        error: () => {
+          this.savingShare = false;
+          this._cdr.markForCheck();
+          this._notificationService.error(
+            this._transloco.translate(
+              'refereeSelf.notifications.shareContactSaveError'
+            ),
+            { autoClose: false }
+          );
+        },
+      });
   }
 
   startReject(gd: RefereeGameDay): void {
@@ -184,8 +239,24 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
       });
   }
 
-  private _load(): void {
+  private _loadShareSetting(): void {
     this._refereeService
+      .getProfile()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (profile) => {
+          this.ownShares = profile.share_contact_with_officials ?? null;
+          this.showSharePrompt = this.ownShares == null;
+          this._cdr.markForCheck();
+        },
+        // Ohne Profil keine Rückfrage; die Spieltage laden davon unabhängig.
+        error: () => {},
+      });
+  }
+
+  private _load(): void {
+    this._loadSub?.unsubscribe();
+    this._loadSub = this._refereeService
       .getGameDays()
       .pipe(takeUntil(this._destroy$))
       .subscribe({

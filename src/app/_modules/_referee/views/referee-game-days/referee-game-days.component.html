@@ -6,6 +6,40 @@
     {{ "refereeSelf.gameDays.intro" | transloco }}
   </p>
 
+  @if (showSharePrompt) {
+    <div
+      class="mb-6 rounded-[5px] border border-blue-200 bg-blue-50 p-4"
+      data-testid="share-prompt"
+    >
+      <div class="text-sm font-bold mb-1">
+        {{ "refereeSelf.gameDays.sharePromptTitle" | transloco }}
+      </div>
+      <p class="text-xs text-fb-gray-500 mb-3">
+        {{ "refereeSelf.gameDays.sharePromptText" | transloco }}
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <fb-button
+          variant="success"
+          size="small"
+          [disabled]="savingShare"
+          (click)="answerSharePrompt(true)"
+          data-testid="share-yes"
+        >
+          {{ "refereeSelf.gameDays.sharePromptYes" | transloco }}
+        </fb-button>
+        <button
+          type="button"
+          [disabled]="savingShare"
+          (click)="answerSharePrompt(false)"
+          class="px-3 py-1.5 text-xs font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          data-testid="share-no"
+        >
+          {{ "refereeSelf.gameDays.sharePromptNo" | transloco }}
+        </button>
+      </div>
+    </div>
+  }
+
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-4">
       {{ "refereeSelf.common.loading" | transloco }}
@@ -108,6 +142,62 @@
                       {{ g.result || "–" }}
                     </td>
                   </tr>
+                  <!-- Mit-Angesetzte; Kontaktdaten nur bei deren Freigabe -->
+                  @if (g.officials?.length) {
+                    <tr>
+                      <td colspan="4" class="pb-2">
+                        <div
+                          class="text-[10px] font-bold uppercase text-fb-gray-500 mb-0.5"
+                        >
+                          {{
+                            "refereeSelf.gameDays.officialsTitle" | transloco
+                          }}
+                        </div>
+                        <ul class="flex flex-col gap-0.5">
+                          @for (o of g.officials; track o.role) {
+                            <li
+                              class="flex flex-wrap gap-x-2"
+                              data-testid="official"
+                            >
+                              <span class="text-fb-gray-500"
+                                >{{ roleKey(o) | transloco }}:</span
+                              >
+                              <span class="font-medium">{{ o.name }}</span>
+                              @if (o.telefonnummer) {
+                                <a
+                                  [href]="'tel:' + o.telefonnummer"
+                                  class="underline"
+                                  >{{ o.telefonnummer }}</a
+                                >
+                              }
+                              @if (o.email) {
+                                <a
+                                  [href]="'mailto:' + o.email"
+                                  class="underline break-all"
+                                  >{{ o.email }}</a
+                                >
+                              }
+                              @if (
+                                o.contact_shared &&
+                                (ownShares === false || ownShares === null)
+                              ) {
+                                <span class="text-fb-gray-500 italic">{{
+                                  "refereeSelf.gameDays.contactNeedsOwnShare"
+                                    | transloco
+                                }}</span>
+                              }
+                              @if (!o.contact_shared) {
+                                <span class="text-fb-gray-500 italic">{{
+                                  "refereeSelf.gameDays.contactNotShared"
+                                    | transloco
+                                }}</span>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      </td>
+                    </tr>
+                  }
                   <!-- Hinweis des Ansetzers, nur fürs Gespann bzw. den Coach -->
                   @if (g.referee_notes) {
                     <tr>
