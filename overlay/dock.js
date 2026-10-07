@@ -21,6 +21,13 @@
 
   var state = {
     control: {},
+    // Was der Server zuletzt bestätigt hat. `control` trägt dagegen schon den
+    // gedrückten, vielleicht nie gespeicherten Stand. Die Rückmeldung, was in
+    // der Bühne steht, darf nur hieraus kommen: Erreichte das Dock den Server
+    // nicht, zeigte es sonst „Bühne: …“, während in OBS nichts kam
+    // (saisonmanager-feedback#72, das Spiel Eiche Horn gegen Bonn am 26.09.:
+    // dessen Link wurde nie beschrieben).
+    confirmed: {},
     // Zeitstempel des zuletzt gesehenen Zustands. Geht mit jedem Schreiben
     // mit, damit der Server einen Schreibvorgang auf altem Stand abweisen
     // kann (zwei geöffnete Docks).
@@ -41,6 +48,9 @@
     writeError: null,
     // Endgültig abgewiesen (Token fehlt oder abgelaufen).
     terminal: false,
+    // Interview: gewählte Mannschaft und Trikotnummer.
+    ivSide: "home",
+    ivNumber: null,
   };
 
   // Standardtext des Hinweises unter der Zeitanzeige. Steht hier und nicht nur
@@ -91,8 +101,8 @@
     "col-reset",
     "col-state",
     "col-warn",
-    "iv-team",
-    "iv-player",
+    "iv-teams",
+    "iv-players",
     "iv-show",
     "override-toggle",
     "override-controls",
@@ -217,9 +227,11 @@
               return {};
             })
             .then(function (body) {
-              throw new Error(
+              var notYet = new Error(
                 body.message || "Der Overlay-Zugang gilt noch nicht."
               );
+              notYet.fromServer = true;
+              throw notYet;
             });
         }
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -236,7 +248,17 @@
         window.setTimeout(poll, POLL_MS);
       })
       .catch(function (err) {
-        setStatus(err.message, true);
+        // Ein „Failed to fetch" oder „HTTP 502" allein sagt der Regie nicht,
+        // dass gerade NICHTS in OBS ankommt. Genau das blieb am 26.09.
+        // unbemerkt (saisonmanager-feedback#72).
+        setStatus(
+          state.terminal || err.fromServer
+            ? err.message
+            : "Keine Verbindung zum Server, Einblendungen kommen nicht an (" +
+                err.message +
+                ")",
+          true
+        );
         if (state.terminal) return;
 
         window.setTimeout(poll, state.errorDelay);
@@ -258,6 +280,7 @@
 
     if (!state.writeInFlight && newer) {
       state.control = body.state || {};
+      state.confirmed = state.control;
       state.stateUpdatedAt = incoming;
     }
 
@@ -331,6 +354,7 @@
           // Ein zweites Bedienfeld war schneller. Dessen Stand gewinnt, damit
           // nicht zwei Regien gegeneinander schreiben.
           state.control = res.body.state || {};
+          state.confirmed = state.control;
           state.stateUpdatedAt = res.body.state_updated_at || null;
           state.pendingChanges = null;
           state.writeError = "Ein anderes Bedienfeld hat den Zustand geändert.";
@@ -342,6 +366,7 @@
         }
 
         state.control = res.body.state || {};
+        state.confirmed = state.control;
         state.stateUpdatedAt = res.body.state_updated_at || null;
         state.writeError = null;
         setStatus("Verbunden", false);
@@ -432,6 +457,10 @@
   // Server, also weiß das Bedienfeld es auch dann, wenn eine zweite Regie
   // gedrückt hat oder dieses Fenster neu geladen wurde.
   //
+  // Deshalb aus `confirmed` und nicht aus `control`: Ein Druck, den der Server
+  // (noch) nicht bestätigt hat, steht nicht in der Bühne. Solange er unterwegs
+  // ist, heißt es „wird gespeichert“, scheitert er, „nicht gespeichert“.
+  //
   // „Bühne“ und nicht „auf Sendung“: Ob die Bühne im Programm liegt oder
   // gerade ein Vollbild darüber, entscheidet OBS. Das Bedienfeld erfährt davon
   // nichts und darf es deshalb nicht behaupten.
@@ -443,8 +472,11 @@
     // rendert bis zum Neuladen NIE mehr. `bindHotkeys` hält es genauso.
     if (!el["lt-onair"] || !el["lt-off"]) return;
 
-    var lt = state.control.lower_third || null;
+    var lt = state.confirmed.lower_third || null;
     var kind = lt && lt.kind;
+    var wanted = state.control.lower_third || null;
+    var offen = JSON.stringify(wanted) !== JSON.stringify(lt);
+    var gescheitert = offen && Boolean(state.writeError);
 
     LT_BUTTONS.forEach(function (entry) {
       if (el[entry.id]) {
@@ -453,13 +485,21 @@
     });
 
     // textContent, nicht innerHTML: Der Freitext kommt aus dem Feld daneben.
-    el["lt-onair"].textContent = lowerThirdLabel(lt);
-    el["lt-onair"].classList.toggle("dk-onair--live", Boolean(kind));
+    var label = lowerThirdLabel(lt);
+    if (gescheitert) label = "Nicht gespeichert";
+    else if (offen) label = "Wird gespeichert …";
+    el["lt-onair"].textContent = label;
+    el["lt-onair"].classList.toggle(
+      "dk-onair--live",
+      Boolean(kind) && !gescheitert
+    );
+    el["lt-onair"].classList.toggle("dk-onair--error", gescheitert);
 
     // Ohne Einblendung gibt es nichts auszublenden. Der abgeschaltete Knopf ist
     // die zweite Rückmeldung: Er zeigt auch ohne Lesen des Textes, dass dieser
-    // Bereich gerade nichts in der Bühne hat.
-    el["lt-off"].disabled = !kind;
+    // Bereich gerade nichts in der Bühne hat. Ein ungespeicherter Druck zählt
+    // mit: Ihn muss man zurücknehmen können, bevor er doch noch durchgeht.
+    el["lt-off"].disabled = !kind && !(wanted && wanted.kind);
   }
 
   function lowerThirdLabel(lt) {
@@ -1119,102 +1159,177 @@
 
   // ── Interview ───────────────────────────────────────────────────────────
 
-  // Zwei Auswahlfelder, gefüllt aus der Aufstellung des Spiels. Bewusst keine
-  // Eingabe der Nummer von Hand: Eine Zahl, die in der Aufstellung nicht
-  // vorkommt, ergäbe eine Bauchbinde ohne Namen, und das fiele erst auf
-  // Sendung auf.
+  // Knöpfe statt Auswahllisten, gefüllt aus der Aufstellung des Spiels. Vorher
+  // waren es zwei `select`: Ohne geladenes Spiel blieb die Spielerliste ganz
+  // leer, und eine leere Liste geht im Browser gar nicht erst auf -- gemeldet
+  // als „lässt keinen Spieler wählen“ (saisonmanager#513). Auf Sendung ist
+  // eine sichtbare Liste ohnehin schneller als Blättern in einem Dropdown.
+  //
+  // Bewusst keine Eingabe der Nummer von Hand: Eine Zahl, die in der
+  // Aufstellung nicht vorkommt, ergäbe eine Bauchbinde ohne Namen, und das
+  // fiele erst auf Sendung auf.
   function renderInterview() {
     // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
-    if (!el["iv-team"] || !el["iv-player"] || !el["iv-show"]) return;
+    if (!el["iv-teams"] || !el["iv-players"] || !el["iv-show"]) return;
 
     fillInterviewTeams();
     fillInterviewPlayers();
+    markInterviewButtons();
 
-    el["iv-show"].disabled = !el["iv-player"].value;
+    el["iv-show"].disabled = !state.ivNumber;
   }
 
   function fillInterviewTeams() {
-    if (!state.game) return;
+    // Neu füllen, sobald ein anderes Spiel gewählt ist: Die Namen stehen auf
+    // den Knöpfen, nicht bloß „Heim" und „Gast".
+    var key = state.game ? String(state.game.id) : "";
+    if (el["iv-teams"].dataset.filledFor === key) return;
 
-    // Neu füllen, sobald ein anderes Spiel gewählt ist: Die Namen stehen in
-    // den Feldern, nicht bloß „Heim" und „Gast".
-    var key = String(state.game.id);
-    if (el["iv-team"].dataset.filledFor === key) return;
-
-    var chosen = el["iv-team"].value === "guest" ? "guest" : "home";
-    el["iv-team"].textContent = "";
+    el["iv-teams"].textContent = "";
+    if (!state.game) {
+      el["iv-teams"].dataset.filledFor = key;
+      return;
+    }
 
     [
       { side: "home", team: state.game.home, fallback: "Heim" },
       { side: "guest", team: state.game.guest, fallback: "Gast" },
     ].forEach(function (entry) {
-      var opt = document.createElement("option");
-      opt.value = entry.side;
-      opt.textContent =
-        (entry.team && (entry.team.name || entry.team.short_name)) ||
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dk-toggle";
+      btn.setAttribute("data-iv-side", entry.side);
+      // textContent: Die Namen kommen aus der Datenbank.
+      btn.textContent =
+        (entry.team && (entry.team.short_name || entry.team.name)) ||
         entry.fallback;
-      el["iv-team"].appendChild(opt);
+      if (entry.team && entry.team.name) btn.title = entry.team.name;
+      el["iv-teams"].appendChild(btn);
     });
 
-    el["iv-team"].value = chosen;
-    el["iv-team"].dataset.filledFor = key;
+    el["iv-teams"].dataset.filledFor = key;
   }
 
   function fillInterviewPlayers() {
-    if (!state.game) return;
+    var box = el["iv-players"];
 
-    // Nicht neu bauen, während die Liste geöffnet ist: Chromium schließt sie,
-    // wenn ihre Einträge ersetzt werden, und der Klick der Regie landete im
-    // Leeren. Passiert, sobald das Sekretariat währenddessen einen Spieler
-    // nachträgt.
-    if (document.activeElement === el["iv-player"]) return;
+    if (!state.game) {
+      if (box.dataset.filledFor !== "") {
+        box.textContent = "";
+        box.appendChild(
+          node(
+            "div",
+            "dk-hint",
+            "Kein Spiel geladen. Oben steht, warum; ohne Verbindung zum " +
+              "Server gibt es keine Aufstellung."
+          )
+        );
+        box.dataset.filledFor = "";
+      }
+      return;
+    }
 
-    var side = el["iv-team"].value || "home";
+    var side = state.ivSide;
     var roster = rosterFor(side);
     // Die Anzahl gehört in den Schlüssel: Wird die Aufstellung erst während
     // des Spiels eingetragen, muss die Liste nachziehen, ohne dass jemand das
-    // Dock neu lädt.
+    // Dock neu lädt. Sonst NICHT neu bauen: Ein Knopf, der unter dem Zeiger
+    // ersetzt wird, verschluckt den Klick.
     var key = state.game.id + ":" + side + ":" + roster.length;
-    if (el["iv-player"].dataset.filledFor === key) return;
+    if (box.dataset.filledFor === key) return;
 
-    // Die Wahl nur innerhalb DERSELBEN Mannschaft halten. Nach einem
-    // Seitenwechsel wäre sie entweder wirkungslos (die andere Mannschaft hat die
-    // Nummer nicht, das Feld stünde leer und der Knopf gesperrt, ohne
-    // Erklärung) oder still falsch: Hat sie die Nummer auch, wäre plötzlich ein
-    // Spieler vorgewählt, den niemand ausgesucht hat.
-    var vorherigeSeite = String(el["iv-player"].dataset.filledFor || "").split(
-      ":"
-    )[1];
-    var chosen = vorherigeSeite === side ? el["iv-player"].value : "";
-    el["iv-player"].textContent = "";
+    box.textContent = "";
 
     if (!roster.length) {
-      var empty = document.createElement("option");
-      empty.value = "";
-      empty.textContent = "Keine Aufstellung eingetragen";
-      el["iv-player"].appendChild(empty);
+      box.appendChild(node("div", "dk-hint", "Keine Aufstellung eingetragen"));
     } else {
       roster.forEach(function (player) {
-        var opt = document.createElement("option");
-        opt.value = String(player.trikot_number);
-        // textContent: Die Namen kommen aus der Datenbank.
-        opt.textContent =
-          player.trikot_number +
-          "  " +
-          playerName(player) +
-          (player.position === "Tor" ? " (Tor)" : "") +
-          // Kommt eine Nummer doppelt vor, tragen beide Einträge denselben Wert
-          // in dieser Liste und nur der erste ist ansprechbar (Bühne und Chip
-          // lösen beide auf ihn auf). Ohne diesen Zusatz wählt die Regie den
-          // zweiten und bekommt ohne Erklärung den Namen des ersten.
-          (mehrfacheNummer(roster, player) ? " – Nummer doppelt erfasst" : "");
-        el["iv-player"].appendChild(opt);
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dk-btn dk-roster-btn";
+        btn.setAttribute("data-iv-number", String(player.trikot_number));
+        btn.appendChild(
+          node("span", "dk-roster-number", String(player.trikot_number))
+        );
+        // textContent (über `node`): Die Namen kommen aus der Datenbank.
+        btn.appendChild(
+          node(
+            "span",
+            "dk-roster-name",
+            playerName(player) +
+              (player.position === "Tor" ? " (Tor)" : "") +
+              // Kommt eine Nummer doppelt vor, lösen Bühne und Chip beide
+              // Knöpfe auf den ersten Eintrag auf. Ohne diesen Zusatz drückt
+              // die Regie den zweiten und bekommt ohne Erklärung den Namen des
+              // ersten.
+              (mehrfacheNummer(roster, player) ? " – Nummer doppelt" : "")
+          )
+        );
+        box.appendChild(btn);
       });
-
-      if (chosen) el["iv-player"].value = chosen;
     }
 
-    el["iv-player"].dataset.filledFor = key;
+    box.dataset.filledFor = key;
+  }
+
+  // Gewählte Mannschaft, gewählter Spieler und der Knopf, der gerade in der
+  // Bühne steht. Bei jedem Rendern, ohne die Knöpfe neu zu bauen.
+  function markInterviewButtons() {
+    var lt = state.confirmed.lower_third || null;
+    var live = lt && lt.kind === "interview" ? lt : null;
+
+    el["iv-teams"]
+      .querySelectorAll("button[data-iv-side]")
+      .forEach(function (btn) {
+        var an = btn.getAttribute("data-iv-side") === state.ivSide;
+        btn.classList.toggle("dk-toggle--on", an);
+        btn.setAttribute("aria-pressed", an ? "true" : "false");
+      });
+
+    // Nur der ERSTE Knopf einer doppelt erfassten Nummer: Auf ihn lösen Bühne
+    // und Chip auf, der zweite steht nicht in der Bühne.
+    var gesehen = {};
+    el["iv-players"]
+      .querySelectorAll("button[data-iv-number]")
+      .forEach(function (btn) {
+        var number = btn.getAttribute("data-iv-number");
+        var erster = !gesehen[number];
+        gesehen[number] = true;
+
+        btn.classList.toggle(
+          "dk-roster-btn--chosen",
+          erster && number === state.ivNumber
+        );
+        btn.classList.toggle(
+          "dk-btn--live",
+          erster &&
+            Boolean(live) &&
+            live.side === state.ivSide &&
+            String(live.number) === number
+        );
+      });
+  }
+
+  function showInterview() {
+    if (!state.ivNumber) {
+      setStatus("Für das Interview ist noch niemand gewählt.", true);
+      return;
+    }
+
+    writeState({
+      lower_third: {
+        kind: "interview",
+        side: state.ivSide,
+        number: Number(state.ivNumber),
+      },
+    });
+  }
+
+  function node(tag, className, text) {
+    var n = document.createElement(tag);
+    n.className = className;
+    n.textContent = text;
+    return n;
   }
 
   // Nach Trikotnummer sortiert, ohne Einträge ohne Nummer und ohne solche ohne
@@ -1529,26 +1644,34 @@
     writeState({ jerseys: null });
   });
 
-  on("iv-team", "change", renderInterview);
+  // Mannschaft wechseln. Die Wahl des Spielers gilt nur innerhalb DERSELBEN
+  // Mannschaft: Danach wäre sie entweder wirkungslos (die andere Mannschaft
+  // hat die Nummer nicht) oder still falsch -- hat sie die Nummer auch, wäre
+  // plötzlich ein Spieler gewählt, den niemand ausgesucht hat.
+  on("iv-teams", "click", function (event) {
+    var btn = event.target.closest && event.target.closest("[data-iv-side]");
+    if (!btn) return;
 
-  on("iv-show", "click", function () {
-    var number = el["iv-player"].value;
-    if (!number) {
-      setStatus(
-        "Für das Interview fehlt die Aufstellung dieser Mannschaft.",
-        true
-      );
-      return;
-    }
+    var side = btn.getAttribute("data-iv-side");
+    if (side === state.ivSide) return;
 
-    writeState({
-      lower_third: {
-        kind: "interview",
-        side: el["iv-team"].value || "home",
-        number: Number(number),
-      },
-    });
+    state.ivSide = side;
+    state.ivNumber = null;
+    renderInterview();
   });
+
+  // Ein Druck auf den Spieler blendet ihn direkt ein, wie die übrigen
+  // Bauchbinden-Knöpfe. Der Knopf darunter (Taste 5) holt die letzte Wahl
+  // zurück, etwa nach einem Ausblenden.
+  on("iv-players", "click", function (event) {
+    var btn = event.target.closest && event.target.closest("[data-iv-number]");
+    if (!btn) return;
+
+    state.ivNumber = btn.getAttribute("data-iv-number");
+    showInterview();
+  });
+
+  on("iv-show", "click", showInterview);
 
   el["override-toggle"].addEventListener("click", function () {
     if (state.control.score_override) {
@@ -1624,8 +1747,11 @@
     // einem Zeigerklick wieder abgeben. `detail` ist 0, wenn `click()` aus dem
     // Code kommt (Tastenkürzel), und größer, wenn ein Zeiger dahinter steckt.
     el.dock.addEventListener("click", function (event) {
-      var target = event.target;
-      if (event.detail > 0 && target && target.tagName === "BUTTON") {
+      // `closest`: Die Knöpfe der Interview-Liste tragen Nummer und Namen als
+      // eigene Elemente, der Klick landet also auf einem `span`.
+      var target =
+        event.target && event.target.closest && event.target.closest("button");
+      if (event.detail > 0 && target) {
         target.blur();
       }
     });
@@ -1742,6 +1868,9 @@
   loadGameDay();
 
   bindHotkeys();
+  // Sofort und nicht erst mit der ersten Antwort: Kommt die nie, stünde im
+  // Interview-Bereich sonst eine leere Fläche statt des Hinweises.
+  renderInterview();
   poll();
   window.setInterval(function () {
     renderClockUi();

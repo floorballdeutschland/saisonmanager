@@ -61,8 +61,14 @@ body {
   background: var(--dk-card);
 }
 
+/* Deutlich, nicht nur rote Schrift: Steht hier ein Fehler, kommt in OBS
+   meist gar nichts an, und das Bedienfeld sieht sonst aus wie immer
+   (saisonmanager-feedback#72). */
 .dk-status--error {
-  color: var(--dk-accent);
+  color: #fff;
+  font-weight: 600;
+  background: rgb(233 69 96 / 55%);
+  border: 1px solid var(--dk-accent);
 }
 
 .dk-card {
@@ -189,6 +195,12 @@ body {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.dk-onair--error {
+  color: #fff;
+  background: rgb(233 69 96 / 55%);
+  border-color: var(--dk-accent);
 }
 
 .dk-onair--live {
@@ -450,4 +462,39 @@ body {
 
 .dk-hidden {
   display: none;
+}
+
+/* Interview: die Aufstellung als Knopfliste, zwei Spalten. Die Nummer vorn
+   und fest breit, damit die Regie nach ihr suchen kann wie auf dem Spielfeld. */
+.dk-roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+}
+
+.dk-roster-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 500;
+}
+
+.dk-roster-number {
+  flex: 0 0 2.2em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.dk-roster-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dk-roster-btn--chosen {
+  border-color: var(--dk-muted);
 }
