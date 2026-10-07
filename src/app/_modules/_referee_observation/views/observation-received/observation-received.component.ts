@@ -4,16 +4,27 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { RefereeObservationService } from '@floorball/core';
-import { RefereeObservation } from '@floorball/types';
+import {
+  RefereeFeedbackService,
+  RefereeObservationService,
+} from '@floorball/core';
+import {
+  RefereeFeedbackOwnSummary,
+  RefereeObservation,
+} from '@floorball/types';
 
 /**
- * „Meine Beobachtungen" aus Sicht der beobachteten Person: die Rückmeldungen der
- * Schiedsrichtercoaches zum eigenen Einsatz.
+ * „Mein Feedback" aus Sicht der bewerteten Person, in zwei Abschnitten:
  *
- * Anders als beim Vereins-Feedback, das die Mannschaften abgeben und das die
- * beobachtete Person bewusst nicht sieht, ist genau das hier der Zweck.
- * Zurückgenommene Bögen liefert die API nicht aus.
+ * - Coaching-Feedback: die vollständigen Bögen der Schiedsrichtercoaches.
+ *   Zurückgenommene Bögen liefert die API nicht aus.
+ * - Feedback der Mannschaften: nur die Kennzahlen (Anzahl und zwei
+ *   Durchschnitte), und die Durchschnitte erst ab der Mindestzahl, die die API
+ *   vorgibt. Einzelne Rückmeldungen, Freitexte und Mannschaften bleiben der
+ *   Schiedsrichterverwaltung vorbehalten.
+ *
+ * Beide Abschnitte laden unabhängig voneinander, damit ein Fehler im einen den
+ * anderen nicht mitnimmt.
  */
 @Component({
   templateUrl: './observation-received.component.html',
@@ -25,8 +36,13 @@ export class ObservationReceivedComponent implements OnInit {
   loading = true;
   failed = false;
 
+  teamSummary?: RefereeFeedbackOwnSummary;
+  teamLoading = true;
+  teamFailed = false;
+
   constructor(
     private _service: RefereeObservationService,
+    private _feedbackService: RefereeFeedbackService,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -43,5 +59,29 @@ export class ObservationReceivedComponent implements OnInit {
         this._cdr.markForCheck();
       },
     });
+
+    this._feedbackService.getOwnSummary().subscribe({
+      next: (summary) => {
+        this.teamSummary = summary;
+        this.teamLoading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.teamFailed = true;
+        this.teamLoading = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  /** Durchschnitte nur, wenn die API sie geliefert hat (ab der Mindestzahl). */
+  get hasTeamAverages(): boolean {
+    const summary = this.teamSummary;
+    return (
+      !!summary &&
+      summary.count >= summary.min_count &&
+      summary.avg_line_rating !== null &&
+      summary.avg_communication_rating !== null
+    );
   }
 }

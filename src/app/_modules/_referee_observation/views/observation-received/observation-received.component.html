@@ -1,22 +1,92 @@
 <div class="p-4 max-w-3xl">
-  <h1 class="text-xl font-bold mb-1">
+  <h1 class="text-xl font-bold mb-4">
     {{ "refereeObservation.received.title" | transloco }}
   </h1>
-  <p class="text-sm text-fb-gray-500 mb-4">
-    {{ "refereeObservation.received.intro" | transloco }}
-  </p>
 
-  @if (loading) {
-    <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
-  } @else if (failed) {
-    <p class="text-sm">{{ "refereeObservation.loadFailed" | transloco }}</p>
-  } @else if (!observations.length) {
-    <p class="text-sm">{{ "refereeObservation.received.empty" | transloco }}</p>
-  } @else {
-    <div class="flex flex-col gap-4">
-      @for (observation of observations; track observation.id) {
-        <fb-referee-observation-detail [observation]="observation" />
-      }
-    </div>
-  }
+  <!-- Coaching-Feedback: Beobachtungsboegen der Schiedsrichtercoaches -->
+  <section class="mb-10">
+    <h2 class="text-lg font-bold mb-1">
+      {{ "refereeObservation.received.coachingTitle" | transloco }}
+    </h2>
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{ "refereeObservation.received.intro" | transloco }}
+    </p>
+
+    @if (loading) {
+      <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
+    } @else if (failed) {
+      <p class="text-sm">{{ "refereeObservation.loadFailed" | transloco }}</p>
+    } @else if (!observations.length) {
+      <p class="text-sm">
+        {{ "refereeObservation.received.empty" | transloco }}
+      </p>
+    } @else {
+      <div class="flex flex-col gap-4">
+        @for (observation of observations; track observation.id) {
+          <fb-referee-observation-detail [observation]="observation" />
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Feedback der Mannschaften: nur Kennzahlen, Schwelle setzt die API -->
+  <section>
+    <h2 class="text-lg font-bold mb-1">
+      {{ "refereeObservation.received.teamsTitle" | transloco }}
+    </h2>
+    <p class="text-sm text-fb-gray-500 mb-2">
+      {{ "refereeObservation.received.teamsIntro" | transloco }}
+    </p>
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{ "refereeObservation.received.teamsEnabledHint" | transloco }}
+    </p>
+
+    @if (teamLoading) {
+      <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
+    } @else if (teamFailed || !teamSummary) {
+      <p class="text-sm">
+        {{ "refereeObservation.received.teamsLoadFailed" | transloco }}
+      </p>
+    } @else if (hasTeamAverages) {
+      <dl
+        class="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        data-test="team-summary"
+      >
+        <div class="border border-fb-gray-100 rounded p-3">
+          <dt class="text-sm text-fb-gray-500">
+            {{ "refereeObservation.received.teamsAvgLine" | transloco }}
+          </dt>
+          <dd class="text-2xl font-bold">
+            {{ teamSummary.avg_line_rating | number: "1.1-1" }}
+            <span class="text-sm font-normal text-fb-gray-500">/ 10</span>
+          </dd>
+        </div>
+        <div class="border border-fb-gray-100 rounded p-3">
+          <dt class="text-sm text-fb-gray-500">
+            {{
+              "refereeObservation.received.teamsAvgCommunication" | transloco
+            }}
+          </dt>
+          <dd class="text-2xl font-bold">
+            {{ teamSummary.avg_communication_rating | number: "1.1-1" }}
+            <span class="text-sm font-normal text-fb-gray-500">/ 10</span>
+          </dd>
+        </div>
+        <div class="border border-fb-gray-100 rounded p-3">
+          <dt class="text-sm text-fb-gray-500">
+            {{ "refereeObservation.received.teamsCount" | transloco }}
+          </dt>
+          <dd class="text-2xl font-bold">{{ teamSummary.count }}</dd>
+        </div>
+      </dl>
+    } @else {
+      <p class="text-sm" data-test="team-below-threshold">
+        {{
+          "refereeObservation.received.teamsBelowThreshold"
+            | transloco
+              : { min: teamSummary.min_count, count: teamSummary.count }
+        }}
+      </p>
+    }
+  </section>
 </div>

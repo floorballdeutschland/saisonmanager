@@ -37,7 +37,7 @@ describe('MetanavigationComponent', () => {
             'nav.section.referee': 'Schiedsrichterwesen',
             'nav.section.coaching': 'Coaching',
             'nav.myObservations': 'Meine Beobachtungen',
-            'nav.myReceivedObservations': 'Mein Coaching-Feedback',
+            'nav.myReceivedObservations': 'Mein Feedback',
           },
         }),
       ],
@@ -106,9 +106,9 @@ describe('MetanavigationComponent', () => {
     expect(sectionAfter('Coaching')).toBeNull();
   });
 
-  it('beschriftet die erhaltenen Rueckmeldungen als Coaching-Feedback', () => {
-    expect(de.nav.myReceivedObservations).toBe('Mein Coaching-Feedback');
-    expect(en.nav.myReceivedObservations).toBe('My coaching feedback');
+  it('beschriftet die erhaltenen Rueckmeldungen als Mein Feedback', () => {
+    expect(de.nav.myReceivedObservations).toBe('Mein Feedback');
+    expect(en.nav.myReceivedObservations).toBe('My feedback');
     expect(de.nav.section.coaching).toBe('Coaching');
     expect(en.nav.section.coaching).toBe('Coaching');
   });
