@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import {
@@ -35,10 +35,14 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   showSharePrompt = false;
   savingShare = false;
   // Eigene Freigabe: Die API liefert fremde Kontaktdaten nur auf
-  // Gegenseitigkeit, die Maske erklärt dann, warum sie fehlen.
-  ownShares: boolean | null = null;
+  // Gegenseitigkeit, die Maske erklärt dann, warum sie fehlen. undefined =
+  // unbekannt (Profil noch nicht oder nicht ladbar), dann kein Hinweis.
+  ownShares: boolean | null | undefined = undefined;
 
   private _destroy$ = new Subject<void>();
+  // Laufender Abruf der Spieltage; ein neuer Abruf verwirft ihn, sonst kann
+  // die ältere Antwort (ohne Kontaktdaten) die neuere überschreiben.
+  private _loadSub?: Subscription;
 
   constructor(
     private _refereeService: RefereeService,
@@ -251,7 +255,8 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   }
 
   private _load(): void {
-    this._refereeService
+    this._loadSub?.unsubscribe();
+    this._loadSub = this._refereeService
       .getGameDays()
       .pipe(takeUntil(this._destroy$))
       .subscribe({
