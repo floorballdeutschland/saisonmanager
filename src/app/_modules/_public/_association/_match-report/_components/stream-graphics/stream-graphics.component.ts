@@ -41,7 +41,7 @@ import {
  *
  * Steht neben den Overlay-Adressen im Spielbericht UND in der öffentlichen
  * Spielansicht. Das zweite ist kein Beiwerk: Der Zugang zu den Overlays hängt
- * am Spieltags-Token und läuft nach 36 Stunden ab, ein Highlightvideo entsteht
+ * am Spieltags-Token und läuft am Tag nach dem Spieltag ab, ein Highlightvideo entsteht
  * aber oft Tage nach dem Spiel. Ein Thumbnail braucht nur öffentliche Daten,
  * also darf es nicht an dieser Frist hängen.
  *

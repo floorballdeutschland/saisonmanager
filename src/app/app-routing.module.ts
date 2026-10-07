@@ -183,6 +183,15 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
+          import('@floorball/admin/referee-observation-report').then(
+            (m) => m.AdminRefereeObservationReportModule
+          ),
+        canActivate: [permissionGuard],
+        data: { permission: 'referee_observation_view' },
+      },
+      {
+        path: '',
+        loadChildren: () =>
           import('@floorball/admin/document-types').then(
             (m) => m.AdminDocumentTypeModule
           ),

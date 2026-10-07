@@ -7,7 +7,8 @@
           Fertige Grafiken für OBS Studio, in den Farben und mit dem Zeichen
           dieses Wettbewerbs: Anzeigetafel, Bauchbinden und Vollbilder, alle
           gespeist aus diesem Spielbericht. Der Zugang gilt für den gesamten
-          Spieltag und läuft nach 36 Stunden ab.
+          Spieltag, von 72 Stunden vorher bis zum Ende des Folgetags. Du kannst
+          ihn also schon Tage vorher erzeugen und in OBS einrichten.
         </p>
       </div>
 
@@ -55,8 +56,11 @@
            Besteht schon ein Zugang, lässt er sich nicht nachreichen. -->
       <p class="text-sm text-fb-gray-500 mt-3">
         Es besteht bereits ein Zugang, erzeugt von
-        {{ overlayLink?.created_by }}, gültig bis
-        {{ overlayLink?.expires_at | date: "dd.MM.yyyy HH:mm" }}. Die Links
+        {{ overlayLink?.created_by }}, gültig
+        @if (overlayLink?.valid_from) {
+          von {{ overlayLink?.valid_from | date: "dd.MM.yyyy HH:mm" }}
+        }
+        bis {{ overlayLink?.expires_at | date: "dd.MM.yyyy HH:mm" }}. Die Links
         lassen sich aus Sicherheitsgründen nicht erneut anzeigen. Über „Neu
         erzeugen" gibt es neue; die alten gelten dann nicht mehr.
       </p>
@@ -132,11 +136,23 @@
           </p>
         </div>
 
+        <fb-access-card
+          title="Livestream-Overlays"
+          [subject]="subject || label"
+          [validFrom]="overlayLink?.valid_from"
+          [expiresAt]="overlayLink?.expires_at"
+          [entries]="accessEntries"
+          [notice]="accessNotice"
+        ></fb-access-card>
+
         <p class="text-xs text-fb-gray-500">
-          Jetzt kopieren oder herunterladen: Die Links werden nach dem Verlassen
-          dieser Seite nicht mehr angezeigt, und ohne sie lässt sich auch keine
-          Szenensammlung mehr erzeugen. Gültig bis
-          {{ overlayLink?.expires_at | date: "dd.MM.yyyy HH:mm" }}.
+          Jetzt kopieren, ausdrucken oder herunterladen: Die Links werden nach
+          dem Verlassen dieser Seite nicht mehr angezeigt, und ohne sie lässt
+          sich auch keine Szenensammlung mehr erzeugen. Gültig
+          @if (overlayLink?.valid_from) {
+            von {{ overlayLink?.valid_from | date: "dd.MM.yyyy HH:mm" }}
+          }
+          bis {{ overlayLink?.expires_at | date: "dd.MM.yyyy HH:mm" }}.
         </p>
       </div>
     }
