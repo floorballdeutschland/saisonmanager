@@ -97,6 +97,9 @@
       "@floorball/admin/referee-feedback-report": [
         "src/app/_modules/_admin/_referee_feedback_report_admin"
       ],
+      "@floorball/admin/referee-observation-report": [
+        "src/app/_modules/_admin/_referee_observation_report_admin"
+      ],
       "@floorball/admin/player-vm": ["src/app/_modules/_admin/_player_vm"],
       "@floorball/admin/player-stats": [
         "src/app/_modules/_admin/_player_stats"
@@ -154,6 +157,7 @@
       "@floorball/team-game-days": ["src/app/_modules/_team_game_days"],
       "@floorball/secretary-links": ["src/app/_modules/_secretary_links"],
       "@floorball/overlay-links": ["src/app/_modules/_overlay_links"],
+      "@floorball/access-card": ["src/app/_modules/_access_card"],
       "@floorball/stream-thumbnails": ["src/app/_modules/_stream_thumbnails"],
       "@floorball/referee-feedback": ["src/app/_modules/_referee_feedback"],
       "@floorball/referee-observation": [

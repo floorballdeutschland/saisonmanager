@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 import {
   AddLineupPlayerResponse,
+  CopyLineupResponse,
   ChecklistVeto,
   ChecklistVetoAnswer,
   Game,
@@ -245,6 +246,17 @@ export class GameService {
     });
   }
 
+  public copyLineupFromLastGame(gameId: number, team: string) {
+    const path =
+      environment.apiURL +
+      'user/games/' +
+      gameId +
+      '/lineup/' +
+      team +
+      '/copy_from_last_game.json';
+    return this.http.post<CopyLineupResponse>(path, {});
+  }
+
   public removeLineupPlayerToGame(
     gameId: number,
     team: string,
@@ -466,6 +478,7 @@ export class GameService {
       entry_url: string;
       url: string;
       token: string;
+      valid_from?: string | null;
       expires_at: string;
       created_by: string;
       game_day_id: number;
@@ -479,6 +492,7 @@ export class GameService {
 
   public getSecretaryLink(gameDayId: number) {
     return this.http.get<{
+      valid_from?: string | null;
       expires_at?: string;
       created_by?: string;
       game_day_ids?: number[];
@@ -496,6 +510,7 @@ export class GameService {
       token: string;
       overlay_url: string;
       dock_url: string;
+      valid_from?: string | null;
       expires_at: string;
       created_by: string;
       game_day_id: number;
@@ -508,6 +523,7 @@ export class GameService {
   public getOverlayLink(gameDayId: number) {
     return this.http.get<{
       active: boolean;
+      valid_from?: string | null;
       expires_at?: string;
       created_by?: string;
     }>(environment.apiURL + 'user/game_days/' + gameDayId + '/overlay_link');

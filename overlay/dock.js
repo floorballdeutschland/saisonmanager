@@ -207,6 +207,21 @@
             "Der Overlay-Zugang ist abgelaufen oder wurde zurückgezogen."
           );
         }
+        // Noch nicht gültig: Der Zugang gilt ab 72 Stunden vor dem Spieltag.
+        // Bewusst NICHT endgültig, das Dock fragt weiter und springt am
+        // Spieltag von selbst an. Die Meldung des Servers nennt den Beginn.
+        if (res.status === 403) {
+          return res
+            .json()
+            .catch(function () {
+              return {};
+            })
+            .then(function (body) {
+              throw new Error(
+                body.message || "Der Overlay-Zugang gilt noch nicht."
+              );
+            });
+        }
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
@@ -1687,23 +1702,44 @@
 
   // ── Start ───────────────────────────────────────────────────────────────
 
-  // Die Spielliste einmalig holen: Sie ändert sich während einer Übertragung
+  // Die Spielliste einmal holen: Sie ändert sich während einer Übertragung
   // nicht, und das Dock soll nicht bei jedem Abruf denselben Spieltag laden.
-  fetch("/api/v2/public/overlay/game_day?token=" + encodeURIComponent(token), {
-    credentials: "omit",
-    cache: "no-store",
-  })
-    .then(function (res) {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.json();
-    })
-    .then(function (body) {
-      state.gameDay = body;
-      render();
-    })
-    .catch(function (err) {
-      setStatus("Spieltag nicht geladen: " + err.message, true);
-    });
+  //
+  // Scheitert das, wird nachgefragt, bis es klappt. Ein Dock, das Tage vorher
+  // eingerichtet wird, bekommt bis zum Beginn des Zugangs eine 403; ohne
+  // erneuten Versuch bliebe die Spielliste am Spieltag leer, bis jemand das
+  // Dock in OBS neu lädt. Nur 400 und 410 sind endgültig, wie in `poll`.
+  var GAME_DAY_RETRY_MS = 30000;
+
+  function loadGameDay() {
+    fetch(
+      "/api/v2/public/overlay/game_day?token=" + encodeURIComponent(token),
+      {
+        credentials: "omit",
+        cache: "no-store",
+      }
+    )
+      .then(function (res) {
+        if (res.status === 400 || res.status === 410) {
+          var stop = new Error("HTTP " + res.status);
+          stop.terminal = true;
+          throw stop;
+        }
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (body) {
+        state.gameDay = body;
+        render();
+      })
+      .catch(function (err) {
+        setStatus("Spieltag nicht geladen: " + err.message, true);
+        if (err.terminal || state.terminal) return;
+        window.setTimeout(loadGameDay, GAME_DAY_RETRY_MS);
+      });
+  }
+
+  loadGameDay();
 
   bindHotkeys();
   poll();
