@@ -4,6 +4,7 @@ import {
   RefereeFeedbackAnswers,
   RefereeFeedbackGame,
   RefereeFeedbackInvitation,
+  RefereeFeedbackOwnSummary,
   RefereeFeedbackStatus,
   RefereeFeedbackSubmit,
   RefereeFeedbackTeamSettings,
@@ -31,6 +32,16 @@ export class RefereeFeedbackService {
     return this.http.post<RefereeFeedbackStatus>(
       environment.apiURL + 'user/referee_feedbacks',
       body
+    );
+  }
+
+  /**
+   * Kennzahlen des Vereins-Feedbacks zur angemeldeten Schiedsrichterperson.
+   * Einzelne Rückmeldungen gibt es für sie bewusst nicht.
+   */
+  public getOwnSummary() {
+    return this.http.get<RefereeFeedbackOwnSummary>(
+      environment.apiURL + 'referee/feedback_summary'
     );
   }
 

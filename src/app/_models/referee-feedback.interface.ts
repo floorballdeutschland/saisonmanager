@@ -111,6 +111,14 @@ export interface RefereeFeedbackSummary {
   avg_communication_rating: number | null;
 }
 
+/**
+ * Vereins-Feedback aus Sicht der bewerteten Person: nur die Kennzahlen. Die
+ * Mittelwerte liefert die API erst ab `min_count` Rückmeldungen, darunter null.
+ */
+export interface RefereeFeedbackOwnSummary extends RefereeFeedbackSummary {
+  min_count: number;
+}
+
 /** Einzelnes Feedback in der Schiriverwaltung (Admin/FD-RSK/FD-Ansetzer). */
 export interface RefereeProfileFeedback {
   id: number;
