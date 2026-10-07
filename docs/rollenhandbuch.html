@@ -4061,7 +4061,12 @@
                 deckt alle Spieltage derselben Halle am selben Tag ab, für die
                 der Erzeugende berechtigt ist. Bei einer gemeinsam genutzten
                 Halle reicht also ein Link, ohne dass er fremde Ligen öffnet. Er
-                ist <strong>72 Stunden</strong> gültig.
+                gilt <strong>ab 72 Stunden vor dem Spieltag bis zum Ende des
+                Folgetags</strong>, egal wann du ihn erzeugst. Du kannst ihn
+                also Tage vorher erzeugen und als QR-Code ausdrucken
+                (<em>Drucken</em> unter dem Code). Vorher meldet die
+                Sekretariatsseite, ab wann er gilt. Wird der Spieltag verlegt,
+                wandert der Zeitraum mit.
               </p>
               <div class="note">
                 <strong>Ein neuer Link entwertet den alten.</strong> Wer ihn
@@ -4087,8 +4092,9 @@
                 Overlay-Zugang immer nur für <strong>einen</strong> Spieltag,
                 nicht für die ganze Halle. Laufen dort mehrere Ligen
                 nacheinander, steht deshalb je Spieltag ein eigener Abschnitt.
-                Er ist 36 Stunden gültig. Einzelheiten stehen im Kapitel für
-                Streamer.
+                Er gilt im selben Zeitraum wie der Sekretariats-Link und lässt
+                sich ebenfalls als QR-Code ausdrucken. Einzelheiten stehen im
+                Kapitel für Streamer.
               </p>
               <div class="roles-inline">
                 <span class="rb vm">VM</span>
@@ -8891,8 +8897,10 @@
           <div class="note">
             Die Adressen werden aus Sicherheitsgründen nur dieses eine Mal
             angezeigt. Wer die Seite ohne sie verlässt, muss neu erzeugen und
-            alles noch einmal in OBS eintragen. Der Zugang gilt
-            <strong>36 Stunden</strong> und für
+            alles noch einmal in OBS eintragen. Unter <em>Drucken</em> gibt es
+            beide Adressen als QR-Code auf einem Blatt. Der Zugang gilt
+            <strong>ab 72 Stunden vor dem Spieltag bis zum Ende des
+            Folgetags</strong> und für
             <strong>alle Spiele des Spieltags</strong>, nicht nur für das gerade
             geöffnete. Bei einem Doppelspieltag reicht also ein Satz Adressen,
             im Bedienfeld wechselst du zwischen den Spielen.
@@ -8916,7 +8924,7 @@
             Verzögerung und blendet Ergebnisse laufender Spiele aus. Für eine
             Anzeigetafel taugt das nicht. Das Spieltags-Token zeigt den Stand
             dagegen ohne Verzögerung, gilt aber nur für die Spiele dieses
-            Spieltags und läuft nach 36 Stunden ab.
+            Spieltags und läuft am Tag nach dem Spieltag ab.
           </div>
 
           <div class="sec">
@@ -10625,7 +10633,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <strong>Grafiken für die Übertragung</strong>, im Spielbericht unter
             den Overlay-Adressen und zusätzlich in der öffentlichen Ansicht des
             Spiels. Die öffentliche Ansicht ist der Weg nach dem Spiel: Das
-            Overlay-Token läuft nach 36 Stunden ab, ein Highlightvideo
+            Overlay-Token läuft am Tag nach dem Spieltag ab, ein Highlightvideo
             schneidest du oft später.
           </p>
           <details class="proc" open>
@@ -10720,8 +10728,11 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <h2>Der nächste Spieltag</h2>
           </div>
           <p class="proc-text">
-            Das Token gilt 36 Stunden, vor jedem Spieltag holst du dir also neue
-            Adressen. Encoder-Einstellungen, Bitrate, Streamkey und Audiogeräte
+            Das Token gilt nur rund um seinen Spieltag (ab 72 Stunden vorher bis
+            zum Ende des Folgetags), für jeden Spieltag holst du dir also neue
+            Adressen. Richtest du OBS früher ein, zeigt die Bühne erst ab
+            Beginn dieses Zeitraums etwas an und springt dann von selbst an;
+            das Bedienfeld nennt bis dahin den Beginn. Encoder-Einstellungen, Bitrate, Streamkey und Audiogeräte
             liegen im <strong>Profil</strong> und nicht in der Szenensammlung,
             die musst du nie erneut einrichten, egal welchen Weg du wählst.
           </p>
@@ -10903,7 +10914,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             Verzögerung und blendet die Ergebnisse laufender Spiele ganz aus.
             Für eine Anzeigetafel ist er damit unbrauchbar. Das Overlay-Token
             hebt die Verzögerung auf. Dafür reicht es nur bis zu deinem eigenen
-            Spieltag und läuft nach 36 Stunden von selbst ab.
+            Spieltag und läuft am Tag danach von selbst ab.
           </div>
           <p class="proc-text">
             <strong>Wie oft du fragen darfst.</strong> Die Grenze liegt bei 300
@@ -11476,8 +11487,11 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
 curl "https://saisonmanager.de/api/v2/public/overlay/live?token=DEIN_TOKEN&amp;game_id=12345"</pre
           >
           <div class="note">
-            <strong>Eigenschaften des Tokens.</strong> 43 Zeichen, 36 Stunden
-            gültig, ein aktives je Spieltag: Ein erneutes Erzeugen entwertet das
+            <strong>Eigenschaften des Tokens.</strong> 43 Zeichen, gültig ab
+            72 Stunden vor dem Spieltag bis zum Ende des Folgetags (vorher
+            antwortet die API mit <code>403</code> und nennt in
+            <code>valid_from</code> den Beginn, danach mit <code>410</code>),
+            ein aktives je Spieltag: Ein erneutes Erzeugen entwertet das
             vorherige sofort, ebenso <em>Zugang zurückziehen</em> im
             Spielbericht. Es gilt für alle Spiele des Spieltags; welches gemeint
             ist, entscheidet <code>game_id</code>, ersatzweise die Wahl des

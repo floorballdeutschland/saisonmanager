@@ -110,6 +110,42 @@ describe('OverlayLinksComponent', () => {
       .flush({ active: false });
   });
 
+  // Die Spielseite behält die Komponente beim Wechsel auf ein Spiel eines
+  // anderen Spieltags. Ein danach gedruckter Zettel trüge sonst die Überschrift
+  // des neuen Spieltags und die QR-Codes des alten.
+  it('verwirft Links und QR-Ausdruck, wenn der Spieltag wechselt', () => {
+    TestBed.inject(SessionService).currentUser = { id: 1 } as never;
+    const fixture = TestBed.createComponent(OverlayLinksComponent);
+    fixture.componentRef.setInput('gameDayId', 7);
+    fixture.detectChanges();
+    http
+      .expectOne((r) => r.url.indexOf('game_days/7/overlay_link') !== -1)
+      .flush({ active: false });
+
+    fixture.componentInstance.generateOverlayLink();
+    http
+      .expectOne((r) => r.method === 'POST')
+      .flush({
+        token: 't',
+        overlay_url: 'https://example.test/overlay?token=alt',
+        dock_url: 'https://example.test/dock?token=alt',
+        valid_from: '2026-03-16T23:00:00Z',
+        expires_at: '2026-03-21T22:59:59Z',
+        created_by: 'Mia Berg',
+        game_day_id: 7,
+      });
+    expect(fixture.componentInstance.accessEntries.length).toBe(2);
+
+    fixture.componentRef.setInput('gameDayId', 8);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.overlayUrls).toBeNull();
+    expect(fixture.componentInstance.accessEntries).toEqual([]);
+    http
+      .expectOne((r) => r.url.indexOf('game_days/8/overlay_link') !== -1)
+      .flush({ active: false });
+  });
+
   // Die Rechteprüfung des Servers endet beim Ausrichter. Ohne eigene Meldung
   // stünde dort der allgemeine Text, und der schickt in die falsche Richtung.
   it('nennt die fehlende Berechtigung als Grund', () => {

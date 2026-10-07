@@ -183,6 +183,10 @@
           state.terminal = true;
           throw new Error("HTTP " + response.status);
         }
+        // 403 heißt „noch nicht gültig" (ab 72 Stunden vor dem Spieltag) und
+        // läuft absichtlich in den allgemeinen Fehlerzweig: Die Bühne fragt
+        // weiter und zeigt am Spieltag von selbst an, ohne dass jemand die
+        // Browser-Quelle in OBS neu laden muss.
         if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
       })

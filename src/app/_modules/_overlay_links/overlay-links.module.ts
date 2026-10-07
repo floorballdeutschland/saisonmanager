@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { UikitCommonModule } from '@floorball/uikit/common';
+import { AccessCardModule } from '@floorball/access-card';
 
 import * as Components from './_components';
 
@@ -14,6 +15,6 @@ import * as Components from './_components';
 @NgModule({
   declarations: [Components.OverlayLinksComponent],
   exports: [Components.OverlayLinksComponent],
-  imports: [CommonModule, UikitCommonModule],
+  imports: [CommonModule, UikitCommonModule, AccessCardModule],
 })
 export class OverlayLinksModule {}

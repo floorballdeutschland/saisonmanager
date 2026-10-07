@@ -154,6 +154,7 @@
       "@floorball/team-game-days": ["src/app/_modules/_team_game_days"],
       "@floorball/secretary-links": ["src/app/_modules/_secretary_links"],
       "@floorball/overlay-links": ["src/app/_modules/_overlay_links"],
+      "@floorball/access-card": ["src/app/_modules/_access_card"],
       "@floorball/stream-thumbnails": ["src/app/_modules/_stream_thumbnails"],
       "@floorball/referee-feedback": ["src/app/_modules/_referee_feedback"],
       "@floorball/referee-observation": [

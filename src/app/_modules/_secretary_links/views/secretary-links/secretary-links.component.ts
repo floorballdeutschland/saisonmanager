@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { GameService, NotificationService } from '@floorball/core';
+import { AccessCardEntry } from '@floorball/access-card';
 import {
   SecretaryGameDayStub,
   SecretaryHallDay,
@@ -60,6 +61,15 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
   linkByKey: Record<string, SecretaryLinkInfo> = {};
   generatingKey: string | null = null;
   copiedKey: string | null = null;
+  /**
+   * QR-Eintrag je Gruppe, beim Erzeugen gebaut. Ein fester Wert statt eines
+   * Getters, weil die Karte ihre QR-Codes bei jeder neuen Liste neu rechnet.
+   */
+  accessEntriesByKey: Record<string, AccessCardEntry[]> = {};
+  readonly accessNotice =
+    'Wer diesen Zettel hat, kann Aufstellung und Spielbericht dieser Spiele ' +
+    'bearbeiten und sieht die Lizenzlisten der beteiligten Mannschaften. Bitte ' +
+    'nur an das Spielsekretariat geben und nach dem Spieltag vernichten.';
 
   private _destroy$ = new Subject<void>();
 
@@ -101,6 +111,16 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Überschrift des Ausdrucks: Tag, Halle, Ligen. */
+  accessSubject(hallDay: SecretaryHallDay): string {
+    const hall = hallDay.arena
+      ? [hallDay.arena, hallDay.arena_city].filter(Boolean).join(', ')
+      : '';
+    return [this.formatDate(hallDay.date), hall, this.leagueNames(hallDay)]
+      .filter(Boolean)
+      .join(' · ');
+  }
+
   leagueNames(hallDay: SecretaryHallDay): string {
     return hallDay.game_days
       .map((gd) => gd.league)
@@ -123,6 +143,19 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
    */
   overlayLabel(gameDay: SecretaryGameDayStub): string {
     return gameDay.league ?? `Spieltag ${gameDay.number ?? gameDay.id}`;
+  }
+
+  /** Überschrift des Overlay-Ausdrucks: Tag, Halle und die eine Liga. */
+  overlaySubject(
+    hallDay: SecretaryHallDay,
+    gameDay: SecretaryGameDayStub
+  ): string {
+    const hall = hallDay.arena
+      ? [hallDay.arena, hallDay.arena_city].filter(Boolean).join(', ')
+      : '';
+    return [this.formatDate(hallDay.date), hall, this.overlayLabel(gameDay)]
+      .filter(Boolean)
+      .join(' · ');
   }
 
   gamesCount(hallDay: SecretaryHallDay): number {
@@ -161,7 +194,17 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
 
           this.codeByKey[key] = result.code;
           this.entryUrl = result.entry_url;
+          this.accessEntriesByKey[key] = [
+            {
+              label: 'Spielsekretariat',
+              // Die Seite löst `?code=` selbst ein (fe#461), der QR-Code
+              // führt also ohne Abtippen in den Spielbericht.
+              url: `${result.entry_url}?code=${encodeURIComponent(result.code)}`,
+              hint: 'Mit dem Handy oder Tablet am Spieltisch scannen.',
+            },
+          ];
           this.linkByKey[key] = {
+            valid_from: result.valid_from ?? null,
             expires_at: result.expires_at,
             created_by: result.created_by,
             game_day_ids: result.game_day_ids,

@@ -30,6 +30,8 @@ export interface SecretaryGameDayStub {
 }
 
 export interface SecretaryLinkInfo {
+  /** Beginn des Gültigkeitsfensters; fehlt bei älterer API und Altbestand. */
+  valid_from?: string | null;
   expires_at: string;
   created_by: string | null;
   game_day_ids: number[];
