@@ -2799,6 +2799,14 @@
                 <strong>Team-Kalender als ICS</strong>. Statistiken vergangener
                 Saisons stimmen, weil die Auswertung an die Saison der eigenen
                 Liga des Teams gebunden ist, nicht an die laufende Saison.
+                Termine aus den Kalender-Abos von Liga, Mannschaft oder Spiel
+                tragen den Spieltag vorn im Titel, etwa „3. Spieltag, Heim -
+                Gast (Liga, Verband)“, bei Pokal und Playoffs die Runde.
+              </p>
+              <p class="proc-text">
+                Neben dem Impressum führt die Navigation, angemeldet wie
+                abgemeldet, zur <strong>Datenschutzerklärung</strong> von
+                Floorball Deutschland.
               </p>
             </div>
           </details>
@@ -7038,17 +7046,33 @@
                 eingerichtet wird, oder eine Liga mit einer Spieltagsnummer über
                 alle Hallen. Titel und Beschreibung kommen aus Vorlagen mit
                 Platzhaltern, die für alle gelten; YouTube deckelt den Titel bei
-                100 Zeichen. Die Sichtbarkeit stellst du für den ganzen Lauf
-                ein, die Playlist hängt an der Liga.
+                100 Zeichen. Die Vorlagen bearbeitest du mit einer Vorschau am
+                ersten ausgewählten Spiel; <em>Vorgabe wiederherstellen</em>
+                holt den Ausgangstext zurück. Die Sichtbarkeit stellst du für
+                den ganzen Lauf ein, die Playlist hängt an der Liga. Wird eine
+                <strong>öffentliche</strong> Übertragung angelegt, trägt das
+                System ihren Link am Spiel ein, sodass er im Spielplan
+                erscheint; ein vorhandener Link wird dabei nicht überschrieben.
+                <em>Thumbnails (ZIP)</em> lädt die Vorschaubilder der
+                ausgewählten Spiele in einem Archiv herunter, quer über Hallen,
+                Spieltage und Ligen, mit einem Ordner je Spieltag.
               </p>
               <div class="note">
                 <strong
                   >Einzelne Vereine haben die Zusage, dass wir während ihrer
                   Heimspiele nicht öffentlich senden</strong
-                >, weil sie parallel auf ihren eigenen Kanal übertragen. Für
-                deren Spieltage legst du <em>nicht gelistet</em> an. Die Liste
-                zeigt die Zusage je Zeile an, und die Pflegeliste darunter führt
-                alle Ausrichter der Saison.
+                >, weil sie parallel auf ihren eigenen Kanal übertragen. Die
+                Zusage hängt am Verein und gilt für alle Partien, die er
+                ausrichtet, auch die, in denen er nicht Heim ist. Gepflegt wird
+                sie unter <em>Zusagen der Ausrichter verwalten</em>. Für diese
+                Spieltage legt das System die Übertragung automatisch
+                <em>nicht gelistet</em> an, unabhängig von der Sichtbarkeit des
+                Laufs; die Zeile trägt den Hinweis „Zusage an den Ausrichter“,
+                und neben dem Knopf zum Anlegen steht, wie viele davon nicht
+                gelistet laufen. Drei Stunden nach Sendeschluss schaltet der
+                Livestream-Wächter sie öffentlich und verlinkt sie im
+                Spielplan. Soll ein solches Spiel ausnahmsweise von Anfang an
+                öffentlich laufen, nimmst du den Haken beim Verein kurz heraus.
               </div>
             </div>
           </details>
@@ -12170,6 +12194,14 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
                   <td>
                     Formkurve beider Mannschaften des aktiven Spiels, neueste
                     Partie zuerst
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/upcoming</td>
+                  <td>
+                    Die nächsten anstehenden Partien beider Mannschaften des
+                    aktiven Spiels, früheste zuerst (für „Nächste Spiele“)
                   </td>
                 </tr>
                 <tr>
