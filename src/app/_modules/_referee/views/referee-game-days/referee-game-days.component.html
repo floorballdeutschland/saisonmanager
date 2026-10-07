@@ -177,6 +177,12 @@
                                   >{{ o.email }}</a
                                 >
                               }
+                              @if (o.contact_shared && ownShares !== true) {
+                                <span class="text-fb-gray-500 italic">{{
+                                  "refereeSelf.gameDays.contactNeedsOwnShare"
+                                    | transloco
+                                }}</span>
+                              }
                               @if (!o.contact_shared) {
                                 <span class="text-fb-gray-500 italic">{{
                                   "refereeSelf.gameDays.contactNotShared"

@@ -71,7 +71,7 @@
     "qualificationNoExpiry": "no expiry date",
     "qualificationExpiredOn": "expired on {{ date }}",
     "shareContact": "Fellow officials may see my contact details",
-    "shareContactHint": "Referees and coaches assigned to the same game as you see your phone number and e-mail address under “My match days” so you can coordinate before the game. Visible from publication of the assignment until the day after the match day. You can turn this off at any time."
+    "shareContactHint": "Referees and coaches assigned to the same game as you see your phone number and e-mail address under “My match days” so you can coordinate before the game. Visible from publication of the assignment until the day after the match day. It works both ways: you only see the others’ contact details if you share yours. You can turn this off at any time."
   },
   "card": {
     "title": "My card",
@@ -184,9 +184,10 @@
     "roleCoach": "Referee coach",
     "contactNotShared": "no contact details shared",
     "sharePromptTitle": "Share your contact details with your fellow officials?",
-    "sharePromptText": "If you agree, referees and coaches assigned to the same game as you see your phone number and e-mail address here, from publication of the assignment until the day after the match day. You can change this at any time in your profile.",
+    "sharePromptText": "If you agree, referees and coaches assigned to the same game as you see your phone number and e-mail address here, from publication of the assignment until the day after the match day. It works both ways: you only see the others’ contact details if you share yours. You can change this at any time in your profile.",
     "sharePromptYes": "Yes, share",
-    "sharePromptNo": "No, don’t share"
+    "sharePromptNo": "No, don’t share",
+    "contactNeedsOwnShare": "shares contact details, visible once you share yours too"
   },
   "notifications": {
     "profileLoadError": "Profile could not be loaded.",

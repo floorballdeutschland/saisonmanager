@@ -203,6 +203,39 @@ describe('RefereeGameDaysComponent (Mit-Angesetzte und Kontaktfreigabe)', () => 
     expect(el.querySelector('[data-testid="share-prompt"]')).toBeNull();
   });
 
+  it('erklärt fehlende Kontaktdaten, solange man selbst nicht teilt', () => {
+    const ohneDaten = spieltag({
+      games: [
+        {
+          id: 7,
+          officials: [
+            { role: 'referee2', name: 'Paula Partner', contact_shared: true },
+          ],
+        },
+      ],
+    });
+    const el: HTMLElement = render([ohneDaten], false).nativeElement;
+
+    const row = el.querySelector('[data-testid="official"]')!;
+    expect(row.textContent).toContain(
+      'refereeSelf.gameDays.contactNeedsOwnShare'
+    );
+  });
+
+  it('lädt die Spieltage nach einer Zustimmung neu', () => {
+    refereeService.updateProfile.and.returnValue(of({} as RefereeProfile));
+    const fixture = render([], null);
+    refereeService.getGameDays.calls.reset();
+
+    (
+      fixture.nativeElement.querySelector(
+        '[data-testid="share-yes"]'
+      ) as HTMLElement
+    ).click();
+
+    expect(refereeService.getGameDays).toHaveBeenCalledTimes(1);
+  });
+
   it('fragt nicht erneut nach einer Ablehnung', () => {
     const el: HTMLElement = render([], false).nativeElement;
     expect(el.querySelector('[data-testid="share-prompt"]')).toBeNull();

@@ -34,6 +34,9 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   // geantwortet hat (null). Ein Ladefehler des Profils zeigt sie nicht.
   showSharePrompt = false;
   savingShare = false;
+  // Eigene Freigabe: Die API liefert fremde Kontaktdaten nur auf
+  // Gegenseitigkeit, die Maske erklärt dann, warum sie fehlen.
+  ownShares: boolean | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -99,7 +102,10 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
         next: () => {
           this.savingShare = false;
           this.showSharePrompt = false;
+          this.ownShares = share;
           this._cdr.markForCheck();
+          // Erst jetzt liefert die API die freigegebenen Daten der anderen.
+          if (share) this._load();
         },
         error: () => {
           this.savingShare = false;
@@ -235,7 +241,8 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (profile) => {
-          this.showSharePrompt = profile.share_contact_with_officials == null;
+          this.ownShares = profile.share_contact_with_officials ?? null;
+          this.showSharePrompt = this.ownShares == null;
           this._cdr.markForCheck();
         },
         // Ohne Profil keine Rückfrage; die Spieltage laden davon unabhängig.
