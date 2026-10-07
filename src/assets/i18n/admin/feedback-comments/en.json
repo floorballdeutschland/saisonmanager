@@ -1,6 +1,6 @@
 {
   "index": {
-    "title": "Feedback (individual ratings)",
+    "title": "Team feedback: individual responses",
     "manageThemes": "Manage themes",
     "loading": "Loading ratings…",
     "loadError": "The ratings could not be loaded.",

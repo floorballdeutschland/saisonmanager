@@ -36,7 +36,7 @@ describe('MetanavigationComponent', () => {
           de: {
             'nav.section.referee': 'Schiedsrichterwesen',
             'nav.section.coaching': 'Coaching',
-            'nav.myObservations': 'Meine Beobachtungen',
+            'nav.myObservations': 'Beobachtungsbögen',
             'nav.myReceivedObservations': 'Mein Feedback',
           },
         }),
