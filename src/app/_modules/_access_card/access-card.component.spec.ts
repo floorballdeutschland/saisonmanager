@@ -128,11 +128,31 @@ describe('AccessCardComponent', () => {
       await settle();
 
       component.print();
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(printDoc.querySelector('.subject')?.textContent).toBe(
         '<img src=x onerror="alert(1)">'
       );
       expect(printDoc.querySelectorAll('.subject img').length).toBe(0);
+    });
+
+    // Wer gleich nach dem Erzeugen druckt, ist schneller als die QR-Codes.
+    // Der Zettel geht an den Spieltisch und braucht den Code trotzdem.
+    it('wartet beim Drucken auf die QR-Codes', async () => {
+      spyOn(window, 'open').and.returnValue(fakeWindow as unknown as Window);
+      fixture.componentRef.setInput('entries', [
+        {
+          label: 'Spielsekretariat',
+          url: 'https://saisonmanager.de/spielsekretariat?code=ABCD2345',
+        },
+      ]);
+      fixture.detectChanges();
+
+      component.print();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(printDoc.querySelectorAll('.entry img').length).toBe(1);
+      expect(fakeWindow.print).toHaveBeenCalled();
     });
 
     it('meldet ein blockiertes Druckfenster', async () => {

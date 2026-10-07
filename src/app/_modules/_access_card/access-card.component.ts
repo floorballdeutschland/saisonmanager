@@ -89,6 +89,8 @@ export class AccessCardComponent implements OnChanges {
   // Eingaben zweimal kurz hintereinander, darf das Ergebnis des ersten Laufs
   // nicht das des zweiten überschreiben.
   private _generation = 0;
+  // Erfüllt, sobald die QR-Codes des letzten Laufs vorliegen.
+  private _qrReady: Promise<void> = Promise.resolve();
 
   constructor(private _cdr: ChangeDetectorRef) {}
 
@@ -126,18 +128,23 @@ export class AccessCardComponent implements OnChanges {
       return;
     }
 
-    const doc = win.document;
-    this._buildPrintDocument(doc);
+    // Das Fenster sofort öffnen (sonst greift der Pop-up-Blocker), den Inhalt
+    // aber erst nach den QR-Codes aufbauen: Wer gleich nach dem Erzeugen auf
+    // „Drucken" drückt, bekäme sonst einen Zettel ohne QR-Code.
+    this._qrReady.then(() => {
+      const doc = win.document;
+      this._buildPrintDocument(doc);
 
-    // Die Bilder sind Data-URLs, liegen also vor. Dekodiert sind sie damit noch
-    // nicht, und ein zu früher Druckdialog zeigt leere Kästen.
-    const images = Array.from(doc.images);
-    Promise.all(images.map((img) => img.decode().catch(() => undefined))).then(
-      () => {
+      // Die Bilder sind Data-URLs, liegen also vor. Dekodiert sind sie damit
+      // noch nicht, und ein zu früher Druckdialog zeigt leere Kästen.
+      const images = Array.from(doc.images);
+      return Promise.all(
+        images.map((img) => img.decode().catch(() => undefined))
+      ).then(() => {
         win.focus();
         win.print();
-      }
-    );
+      });
+    });
   }
 
   private _buildPrintDocument(doc: Document): void {
@@ -196,7 +203,7 @@ export class AccessCardComponent implements OnChanges {
     const entries = this.entries ?? [];
     this.rendered = entries.map((e) => ({ ...e, qrDataUrl: null }));
 
-    Promise.all(
+    this._qrReady = Promise.all(
       entries.map((entry) =>
         QRCode.toDataURL(entry.url, {
           errorCorrectionLevel: 'M',
