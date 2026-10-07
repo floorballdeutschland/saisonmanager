@@ -1893,7 +1893,13 @@
             wirken <strong>additiv</strong>: Was eine Rolle erlaubt, bleibt
             erlaubt, auch wenn zusätzlich eine engere Rolle am Konto hängt.
             Vereine, die nur über die VM-Rolle erreichbar sind, stehen in
-            Auswahllisten unter <em>Eigene Vereine</em>.
+            Auswahllisten unter <em>Eigene Vereine</em>. Ein
+            <span class="rb vm">VM</span>, der zugleich eine bestimmte
+            Mannschaft betreut, bekommt dafür unter <em>Team-Zuweisung</em>
+            seine Mannschaften zugeordnet (nur ganz eigene der laufenden
+            Saison). Für sie wird er dann wie ein Teammanager behandelt: Der
+            Spieltagsbericht der Gastmannschaft und das Schiri-Feedback gehen
+            an sein Konto. Seine VM-Rechte bleiben unberührt.
           </div>
 
           <div class="note">
@@ -1958,7 +1964,8 @@
               <div class="qp-chain">
                 <span class="rb sbk">SBK / Admin</span> konfiguriert →
                 <span class="rb tm">TM</span> /
-                <span class="rb vm">VM</span> beantwortet beim Einreichen
+                <span class="rb vm">VM</span> beantwortet in der
+                Spielvorbereitung und bestätigt beim Einreichen
               </div>
             </div>
             <div class="quick-proc">
@@ -1966,9 +1973,18 @@
               <div class="qp-chain">
                 <span class="rb sbk">SBK / Admin</span> schaltet Liga frei →
                 <span class="rb tm">TM</span> oder
-                <span class="rb player">Spielführung</span> gibt ab (ab 24 h
+                <span class="rb player">Spielführung</span> gibt ab (ab 12 h
                 nach dem Spiel) → <span class="rb rsk">RSK FD</span> /
                 <span class="rb ansetzer">Ansetzer FD</span> wertet aus
+              </div>
+            </div>
+            <div class="quick-proc">
+              <div class="qp-name">🎯 Coach-Beobachtung</div>
+              <div class="qp-chain">
+                <span class="rb schiri">SR-Coach (B)</span> gibt Bogen ab →
+                <span class="rb schiri">Schiri</span> liest unter „Mein
+                Feedback“ → <span class="rb rsk">RSK</span> /
+                <span class="rb ansetzer">Ansetzer</span> werten aus
               </div>
             </div>
           </div>
@@ -2380,9 +2396,58 @@
                   </td>
                   <td>
                     <span
-                      class="sym none"
-                      title="Schiedsrichter sehen ihr eigenes Feedback nicht"
-                      >—</span
+                      class="sym read"
+                      title="Eigene Durchschnitte unter „Mein Feedback“, erst ab fünf Rückmeldungen"
+                      >○</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <th>Coach-Beobachtungen</th>
+                  <td>
+                    <span
+                      class="sym full"
+                      title="Alle Bögen lesen, exportieren und zurücknehmen"
+                      >●</span
+                    >
+                  </td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td>
+                    <span
+                      class="sym full"
+                      title="Alle Bögen lesen, exportieren und zurücknehmen"
+                      >●</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym full"
+                      title="Bögen des eigenen Spielbetriebs lesen, exportieren und zurücknehmen"
+                      >●</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym read"
+                      title="Alle Bögen lesen und exportieren, nicht zurücknehmen"
+                      >○</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="sym read"
+                      title="Bögen des eigenen Spielbetriebs lesen und exportieren, nicht zurücknehmen"
+                      >○</span
+                    >
+                  </td>
+                  <td><span class="sym none">—</span></td>
+                  <td><span class="sym none">—</span></td>
+                  <td>
+                    <span
+                      class="sym read"
+                      title="Eigene Beobachtungen unter „Mein Feedback“ lesen; mit gültiger B-Qualifikation als Coach Bögen abgeben"
+                      >○</span
                     >
                   </td>
                 </tr>
@@ -2734,6 +2799,14 @@
                 <strong>Team-Kalender als ICS</strong>. Statistiken vergangener
                 Saisons stimmen, weil die Auswertung an die Saison der eigenen
                 Liga des Teams gebunden ist, nicht an die laufende Saison.
+                Termine aus den Kalender-Abos von Liga, Mannschaft oder Spiel
+                tragen den Spieltag vorn im Titel, etwa „3. Spieltag, Heim -
+                Gast (Liga, Verband)“, bei Pokal und Playoffs die Runde.
+              </p>
+              <p class="proc-text">
+                Neben dem Impressum führt die Navigation, angemeldet wie
+                abgemeldet, zur <strong>Datenschutzerklärung</strong> von
+                Floorball Deutschland.
               </p>
             </div>
           </details>
@@ -2912,6 +2985,82 @@
                   ><span class="ar">→</span>
                 </div>
                 <div class="st success">Übernommen</div>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🙈</span>
+              <div>
+                <div class="proc-title">
+                  Nachname aus der öffentlichen Anzeige nehmen
+                </div>
+                <div class="proc-sub">
+                  Antwort auf einen Antrag nach Art. 17 oder 21 DSGVO
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Wer nicht mehr am Spielbetrieb teilnimmt, kann verlangen, nicht
+                länger über eine Suche nach dem eigenen Namen auffindbar zu
+                sein. Dafür hat das Spielerprofil den Abschnitt
+                <strong>Nachname in der öffentlichen Anzeige</strong> mit dem
+                Knopf <em>Nachname öffentlich weglassen</em> und einem
+                optionalen internen Vermerk, etwa dem Aktenzeichen des Antrags.
+                Das darf nur ein Admin.
+              </p>
+              <p class="proc-text">
+                Danach erscheint die Person in Scorerlisten, Aufstellungen,
+                Spielansicht und Spielbericht, Mannschaftsstatistik, auf der
+                öffentlichen Spielerseite, in der öffentlichen Transferliste und
+                in den Livestream-Overlays nur noch mit dem Vornamen, ohne
+                Platzhalter oder Initiale. Spiele, Tore und Trikotnummern
+                bleiben erhalten, die Zahlen einer Liga ändern sich nicht. Den
+                vollen Namen führen weiterhin das Profil, die Spielersuche und
+                die Lizenzlisten am Spieltag, damit Dublettenprüfung, Sperren
+                und Spielberechtigung weiter funktionieren.
+                <em>Nachname wieder öffentlich anzeigen</em> nimmt den Schritt
+                zurück; der Vermerk bleibt als Beleg stehen.
+              </p>
+              <div class="note">
+                Bis der Name aus den Suchmaschinen verschwindet, vergeht noch
+                Zeit, und die vorgerenderten Ligaseiten übernehmen die Änderung
+                erst mit der nächsten Auslieferung des Frontends.
+              </div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📊</span>
+              <div>
+                <div class="proc-title">Spielerdaten: Rangliste und Export</div>
+                <div class="proc-sub">
+                  Einsätze, Tore, Vorlagen und Strafminuten über alle Saisons
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Seite <strong>Spielerdaten</strong> der Spielerverwaltung
+                zählt Einsätze, Tore, Vorlagen und Strafminuten über alle
+                Saisons, je Verein (Spielgemeinschaften bleiben
+                unberücksichtigt). Die Zahlen stammen aus einem nächtlich
+                berechneten Bestand. Der <em>CSV-Export</em> beginnt mit
+                Spieler-ID, Nachname, Vorname und Geburtsdatum, damit sich die
+                Zeilen eindeutig zuordnen lassen, und endet bei 50.000 Zeilen;
+                für den Rest grenzt du die Auswahl weiter ein.
+              </p>
+              <div class="roles-inline">
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">Admin</span>
               </div>
             </div>
           </details>
@@ -3300,6 +3449,53 @@
 
           <details class="proc">
             <summary>
+              <span class="proc-icon">🔀</span>
+              <div>
+                <div class="proc-title">
+                  Schiri-Profile zusammenführen &amp; löschen
+                </div>
+                <div class="proc-sub">
+                  Doppelte Profile vereinen, Fehlanlagen entfernen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Gibt es dieselbe Person zweimal, etwa weil der Kursimport nach
+                einer Heirat den neuen Namen nicht wiedererkannt hat, vereinst
+                du die Profile am verbleibenden Profil mit
+                <em>Duplikat zusammenführen</em>. Alles, was am Zweitprofil
+                hängt, wandert mit: Kursergebnisse, Ansetzungen, Rückmeldungen
+                und Spieltagsbestätigungen. Bei der Lizenz gewinnt die
+                <strong>spätere Gültigkeit</strong>, und zwar nur zusammen mit
+                ihrer Stufe; trägt das Zweitprofil keine Stufe, bleibt die
+                Lizenz des verbleibenden Profils unangetastet. Die
+                <strong>Lizenznummer</strong> bleibt die ältere, bereits
+                bekannte. Führt eine Ansetzung oder Rückmeldung beide Profile im
+                selben Gespann, bleibt sie unverändert und wird protokolliert.
+              </p>
+              <p class="proc-text">
+                <strong>Löschen</strong> ist für Fehlanlagen gedacht. Hängt
+                noch etwas am Profil, nennt die Verwaltung im Klartext, was im
+                Weg steht: Kursergebnisse, Ansetzungen, bereits
+                zusammengeführte Profile oder Schiri-Feedback. Nichts davon wird
+                mitgelöscht, denn es ist Historie; zwei Profile derselben Person
+                werden stattdessen zusammengeführt. Am häufigsten hält das
+                Kursergebnis fest, das das Profil angelegt hat. Ein verknüpftes
+                Benutzerkonto wird beim Löschen nur durch einen Admin
+                mitgelöscht.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb rsk">RSK</span>
+                <span class="rb ansetzer">Ansetzer</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
               <span class="proc-icon">🎫</span>
               <div>
                 <div class="proc-title">
@@ -3353,7 +3549,7 @@
                 Das Formular öffnet, sobald <strong>beide</strong> Bedingungen
                 erfüllt sind: Der Spielberichtsbogen ist abgeschlossen, weil
                 erst dann feststeht, wer gepfiffen hat, und der
-                <strong>Anpfiff liegt mindestens 24 Stunden zurück</strong>. Die
+                <strong>Anpfiff liegt mindestens 12 Stunden zurück</strong>. Die
                 Rückmeldung soll mit Abstand zum Spiel entstehen, nicht in der
                 Emotion direkt danach. Solange die Frist läuft, steht das Spiel
                 in der Übersicht schon mit dem Vermerk „Möglich ab“ statt mit
@@ -3386,7 +3582,7 @@
               <div class="flow">
                 <div class="st start">Spielbericht abgeschlossen</div>
                 <div class="cn">
-                  <span class="cl">Anpfiff + 24 h</span
+                  <span class="cl">Anpfiff + 12 h</span
                   ><span class="rb auto">automatisch</span
                   ><span class="ar">→</span>
                 </div>
@@ -3430,13 +3626,24 @@
                 lediglich ein Hinweis mit dem aktuellen Stand. Einzelne
                 Rückmeldungen samt Kommentaren liegen im Menü
                 <em>Auswertungen</em>: <strong>Team-Feedback: einzeln</strong>
-                listet alle kommentierten Rückmeldungen, filterbar nach Schiri,
-                Liga, Saison, Zeitraum, Notenschwelle und Thema, und lässt die
-                Kommentare über eine Themen-Taxonomie taggen.
+                listet alle sichtbaren Rückmeldungen, auch die ohne Freitext
+                („Ohne Freitext, nur Noten abgegeben.“), filterbar nach Schiri,
+                Liga, Saison, Zeitraum, Notenschwelle und Thema sowie mit
+                <em>Nur mit Kommentar</em>, und lässt die Kommentare über eine
+                Themen-Taxonomie taggen.
                 <strong>Team-Feedback: Kennzahlen</strong> aggregiert Mittelwerte,
                 Trends, Notenband und Monats-Zeitreihe und ist als CSV/Excel
                 exportierbar. Beides sehen nur Admin sowie RSK und Ansetzer mit
                 bundesweitem Scope (FD).
+              </p>
+              <p class="proc-text">
+                Die Schiedsrichter*innen selbst sehen ihr Team-Feedback im
+                Portal unter <strong>Mein Feedback</strong>: die Durchschnitte
+                für Linie/Konstanz und Kommunikation und die Zahl der
+                Rückmeldungen, ebenfalls erst ab fünf. Einzelne Bewertungen,
+                Kommentare und Mannschaften sehen sie nicht, und neue
+                Rückmeldungen fließen nur in Fünferschritten ein, damit sich
+                keine einzelne Bewertung zurückrechnen lässt.
               </p>
               <div class="roles-inline">
                 <span class="rb vm">VM</span>
@@ -3444,6 +3651,113 @@
                 <span class="rb admin">Admin</span>
                 <span class="rb rsk">RSK FD</span>
                 <span class="rb ansetzer">Ansetzer FD</span>
+                <span class="rb schiri">Schiedsrichter</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🎯</span>
+              <div>
+                <div class="proc-title">Beobachtungen der Schiedsrichtercoaches</div>
+                <div class="proc-sub">
+                  Beobachtungsbogen statt Formular per Mail
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Schiedsrichtercoaches geben ihre Beobachtung eines Gespanns
+                direkt im Saisonmanager ab. Coach ist, wer eine gültige
+                <strong>Zusatzqualifikation der Stufe B</strong> hat; maßgeblich
+                ist die Gültigkeit am Spieltag. Nur dann erscheint im Menü der
+                Bereich <strong>Coaching</strong> mit dem Punkt
+                <strong>Beobachtungsbögen</strong>. Läuft die Qualifikation ab,
+                verschwindet er wieder.
+              </p>
+              <div class="proc-h">Welche Spiele zur Auswahl stehen</div>
+              <p class="proc-text">
+                Unter <em>Offene Spiele</em> stehen die Spiele, für die du als
+                Schiedsrichtercoach <strong>angesetzt</strong> warst. Setzt dein
+                Spielbetrieb nicht auf Personenebene an, gibt es dort keinen
+                Coach-Platz in der Ansetzung; dann kannst du zusätzlich jedes
+                Spiel deines eigenen Spielbetriebs frei wählen (gekennzeichnet
+                mit „ohne Ansetzung gewählt“). Beobachtet wird, was gespielt
+                wurde: Ein Spiel taucht erst am Spieltag auf. Ohne hinterlegtes
+                Gespann ist kein Bogen möglich, und je Spiel gibt jede*r Coach
+                genau einen Bogen ab.
+              </p>
+              <p class="proc-text">
+                Bist du angesetzt, bekommst du <strong>zum Anpfiff</strong> eine
+                Erinnerung per Mail mit dem Link auf den Bogen dieses Spiels. So
+                kannst du die Kriterien schon während des Spiels vor Augen
+                haben. Die Mail kommt nur, solange noch kein Bogen abgegeben
+                ist.
+              </p>
+              <div class="proc-h">Der Bogen</div>
+              <p class="proc-text">
+                Datum, Mannschaften, Liga und Gespann zieht der Bogen aus dem
+                Spiel, du füllst nur die Beobachtung aus. Bewertet werden fünf
+                Bereiche: <strong>Stocklinie</strong>,
+                <strong>Körperspiellinie</strong>,
+                <strong>Strafenlinie</strong>, <strong>Spielleitung</strong> und
+                <strong>Gesamtspielbewertung</strong>, jeweils für
+                Schiedsrichter 1, Schiedsrichter 2 und das Gespann. Die Skala
+                reicht von 1 bis 7; 7 ist die beste Bewertung, 4 das in den
+                obersten Ligen erwartete Niveau. Die ausformulierte Legende steht
+                im Bogen. Dazu kommen Ausführungen zu den vier Linien sowie
+                Spielbeschreibung, Sonstiges und abschließende Bemerkungen mit
+                Entwicklungsmöglichkeiten. Alle Bewertungen und Textfelder sind
+                Pflicht.
+              </p>
+              <div class="note">
+                <strong>Nach dem Absenden ist der Bogen sofort sichtbar und
+                nicht mehr änderbar.</strong> Es gibt keinen Entwurf und keine
+                Freigabestufe. Die beobachteten Schiedsrichter*innen bekommen
+                eine Mail, die bewusst weder Noten noch Text enthält; gelesen
+                wird im Portal, wo die Skala danebensteht.
+              </div>
+              <div class="proc-h">Wer was sieht</div>
+              <p class="proc-text">
+                Die beobachtete Person liest den Bogen unter
+                <strong>Mein Feedback</strong>. Sie sieht die gemeinsamen
+                Anmerkungen, die Bewertung des Gespanns und ihre
+                <strong>eigenen</strong> Einzelnoten, nicht die des
+                Gespannpartners. Der Coach sieht seine abgegebenen Bögen unter
+                <em>Beobachtungsbögen</em>.
+              </p>
+              <p class="proc-text">
+                In der Verwaltung stehen die Bögen am
+                <strong>Schiri-Profil</strong> und gesammelt unter
+                <em>Auswertungen</em> › <strong>Beobachtungen: alle Bögen</strong>.
+                Beides sehen Admin, RSK und Ansetzer*innen, und zwar anders als
+                beim Team-Feedback auch die eines Landesverbands, dort für die
+                Spiele des eigenen Spielbetriebs. Die Übersicht lässt sich nach
+                Saison, Spielbetrieb, Coach, Schiedsrichter, Zeitraum und Status
+                filtern. Der <strong>Export als CSV oder Excel</strong> (alle
+                gefilterten oder nur die ausgewählten Bögen) enthält Kopfdaten
+                und Noten, aber <strong>keine Freitexte</strong>, weil eine
+                Massendatei mit Rückmeldungen über Personen schnell in falsche
+                Hände gerät. Den vollständigen Bogen samt Texten gibt es über
+                <strong>PDF</strong>: Das öffnet den Druckdialog des Browsers,
+                dort „Als PDF speichern“ wählen, je Bogen eine Seite.
+              </p>
+              <div class="note">
+                <strong>Zurücknehmen:</strong> Entgleist eine Rückmeldung, können
+                Admin und RSK einen Bogen am Schiri-Profil zurücknehmen. Er ist
+                dann für die beobachteten Personen nicht mehr sichtbar und lässt
+                sich wieder sichtbar machen. Die Ansetzung sieht die Bögen, darf
+                sie aber nicht zurücknehmen. In der Übersicht stehen
+                zurückgenommene Bögen nur mit dem Statusfilter.
+              </div>
+              <div class="roles-inline">
+                <span class="rb schiri">SR-Coach (B)</span>
+                <span class="rb schiri">Schiedsrichter</span>
+                <span class="rb admin">Admin</span>
+                <span class="rb rsk">RSK</span>
+                <span class="rb ansetzer">Ansetzer</span>
               </div>
             </div>
           </details>
@@ -3484,12 +3798,22 @@
                 zuständige <strong>SBK bzw. der Admin erteilt</strong> sie. Beim
                 Beantragen prüft das System die für die Liga hinterlegten
                 Pflichtdokumente (siehe unten) und, je nach Liga, die
-                Altersberechtigung.
+                Altersberechtigung. Neben dem festen Stichtag kann eine Liga ein
+                <strong>Mindestalter</strong> tragen (Ligaeinstellungen,
+                Spielereinstellungen). Es wird am Tag der Beantragung
+                tagesgenau gegen das Geburtsdatum gerechnet und gilt ab dem
+                Geburtstag. Beide Regeln gelten nebeneinander; wer den Stichtag
+                durch das Mindestalter ersetzen will, leert ihn. Beim Kopieren
+                einer Liga wandert das Mindestalter unverändert mit.
               </p>
               <p class="proc-text">
                 Aufstellen darf grundsätzlich nur, wessen Lizenz für die
                 aufstellende Mannschaft <strong>erteilt</strong> ist; der
-                Kader-Dialog des Spielberichts blendet alles andere aus.
+                Kader-Dialog des Spielberichts blendet alles andere aus. Wer
+                für die Mannschaft <strong>gar keinen</strong> Lizenzeintrag
+                hat, kommt auf keinem Weg in den Kader. Hat er einen, der nicht
+                erteilt ist, nimmt ihn die Übernahme aus dem letzten Spiel und
+                das Sekretariat mit, aber nur mit einem sichtbaren Hinweis.
                 Landesverbände, deren SBK über die Anträge erst nach dem
                 Spieltag entscheidet, können das über den Schalter
                 <strong>Beantragte Lizenz einsetzbar</strong> lockern: Dort
@@ -3511,10 +3835,54 @@
                 <em>Ungültig (Transfer)</em>. Eine widerrufene Freigabe setzt
                 die Lizenzen der Zweitmitgliedschaft auf <em>Zurückgezogen</em>.
                 Eine Spielersperre setzt aktive Lizenzen auf
-                <em>Gesperrt</em> und stellt sie beim Aufheben wieder her. Eine
+                <em>Gesperrt</em> und stellt sie beim Aufheben wieder her,
+                sofern sie inzwischen nicht abgelaufen sind. Auch eine
+                gesperrte Lizenz wird bei einem Transfer ungültig. Eine
                 Deaktivierung löst dagegen keinen Statuswechsel aus: Sie nimmt
                 den Spieler nur aus der Vereinsliste, die Lizenz bleibt gültig.
               </p>
+              <p class="proc-text">
+                <strong>Rückkehr nach Transfer und Freigabe:</strong> Kehrt ein
+                Spieler per Freigabe in einen Verein zurück, für dessen
+                Mannschaft er vor dem Transfer schon lizenziert war, bietet der
+                Antrag die Option <em>Reaktivierung, kostenfrei</em>. Sie holt
+                die alte Lizenz zurück, ohne neue Lizenzgebühr; eine
+                Expresslizenz ist dafür nicht vorgesehen. In den Listen trägt
+                sie das Abzeichen <em>Reaktivierung</em>. Wird sie
+                zurückgezogen, steht die Lizenz wieder auf „ungültig wg.
+                Transfer“.
+              </p>
+              <p class="proc-text">
+                <strong>Beim Entscheiden</strong> gibt es neben Erteilen und
+                Ablehnen drei Sonderwege:
+              </p>
+              <ul>
+                <li>
+                  Einen Expressantrag kann die SBK <em>Als Expresslizenz
+                  erteilen</em> oder <em>Als normale Lizenz erteilen</em>, dann
+                  ohne Expresszuschlag. Gedacht für Anträge, die erst nach einer
+                  Nachbesserung erteilt werden und deshalb keine Eilbearbeitung
+                  ausgelöst haben.
+                </li>
+                <li>
+                  <em>Kostenfrei ablehnen</em> (nur Admin, Begründung Pflicht)
+                  für Anträge, die der Verein in gutem Glauben gestellt hat und
+                  die lizenzrechtlich nicht möglich sind. Die Lizenz fällt aus
+                  der Gebührenrechnung, ein Expresszuschlag entfällt. Sie trägt
+                  das Abzeichen <em>Kostenfrei abgelehnt</em>, auch in der CSV.
+                </li>
+                <li>
+                  Eine erteilte Lizenz lässt sich im Spielerprofil
+                  <em>Auf „beantragt“ zurücksetzen</em> (Admin und SBK,
+                  Begründung Pflicht), wenn sie erteilt wurde, obwohl noch
+                  etwas fehlte. Das geht nur in der laufenden Saison, nicht bei
+                  gesperrten Lizenzen. Die Begründung sieht auch der Verein,
+                  die Erteilung bleibt im Verlauf und in der Gebührenrechnung,
+                  „Gültig bis“ wird geleert. In Landesverbänden mit
+                  <em>Beantragte Lizenz einsetzbar</em> bleibt der Spieler
+                  dabei spielberechtigt.
+                </li>
+              </ul>
               <div class="proc-h">Wer macht das?</div>
               <div class="roles-inline">
                 <span class="rb tm">Teammanager</span>
@@ -3539,7 +3907,28 @@
                   ><span class="chip error">Abgelehnt</span>
                 </div>
                 <div class="branch">
-                  <span class="from">aus Beantragt oder Erteilt:</span
+                  <span class="from">aus Beantragt:</span
+                  ><span class="rb admin">Admin</span
+                  ><span class="act">kostenfrei ablehnen</span
+                  ><span class="ar">→</span
+                  ><span class="chip error">Abgelehnt (kostenfrei)</span>
+                </div>
+                <div class="branch">
+                  <span class="from">aus Abgelehnt:</span
+                  ><span class="rb sbk">SBK / Admin</span
+                  ><span class="act">Ablehnung widerrufen</span
+                  ><span class="ar">→</span
+                  ><span class="chip neutral">Beantragt</span>
+                </div>
+                <div class="branch">
+                  <span class="from">aus Erteilt:</span
+                  ><span class="rb sbk">SBK / Admin</span
+                  ><span class="act">zurücksetzen</span
+                  ><span class="ar">→</span
+                  ><span class="chip neutral">Beantragt</span>
+                </div>
+                <div class="branch">
+                  <span class="from">aus Beantragt, Erteilt oder Gesperrt:</span
                   ><span class="rb auto">automatisch</span
                   ><span class="act">Transfer genehmigt</span
                   ><span class="ar">→</span
@@ -3668,6 +4057,54 @@
               </div>
             </div>
           </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🗂️</span>
+              <div>
+                <div class="proc-title">Lizenzverwaltung: Verbandsübersicht</div>
+                <div class="proc-sub">
+                  Alle Lizenzen eines Verbands auf einer Seite, mit Export
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Unter <em>Spielbetrieb</em> ›
+                <strong>Lizenzverwaltung</strong> sehen Admin und SBK alle
+                Lizenzen ihres Zuständigkeitsbereichs über die Ligen hinweg,
+                filterbar nach Saison, Spielbetrieb, Liga, Spielform,
+                Altersklasse und Ligaklasse, nach Haupt- und Zusatzlizenzen,
+                Expresslizenzen und nach Status. Der Statusfilter kennt
+                <em>Erteilt</em>, <em>Beantragt</em>, <em>Abgelehnt</em> und
+                <em>Zurückgezogen</em>. Die Standardansicht und die CSV
+                enthalten auch abgelehnte und zurückgezogene Anträge; wer
+                daraus abrechnet, filtert auf <em>Erteilt</em>.
+              </p>
+              <p class="proc-text">
+                Die Spalte <strong>Liz.</strong> zählt die erteilten Lizenzen
+                des Spielers in der angezeigten Saison über alle Verbände,
+                daneben grau die noch offen beantragten. Mitgezählt werden auch
+                später zurückgezogene, gelöschte oder durch Transfer ungültige
+                Lizenzen, denn erteilt waren sie; abgelehnte zählen nicht.
+                Damit lässt sich eine Höchstzahl an Lizenzen je Spieler und
+                Saison prüfen, wie sie einige Landesverbände vorgeben.
+              </p>
+              <p class="proc-text">
+                <em>CSV exportieren</em> liefert je Lizenz eine Zeile, beginnend
+                mit Spieler-ID, Nachname, Vorname und vollem Geburtsdatum, dazu
+                Verein, Team, Spielbetrieb, Liga, Status, Lizenztyp, Express,
+                die Erst-/Zweitlizenz-Zuordnung und die Lizenzzahl der Saison.
+                Reaktivierungen und kostenfreie Ablehnungen sind als solche
+                gekennzeichnet.
+              </p>
+              <div class="roles-inline">
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
         </section>
 
         <section class="panel" id="panel-fn-transfers" style="--rc: #4f46e5">
@@ -3714,11 +4151,34 @@
                 Jede Station kann ablehnen, und der aufnehmende Verein kann den
                 Antrag bis zur Genehmigung zurückziehen. Setzt du ein
                 <strong>Wirkungsdatum in der Zukunft</strong>, wird der Transfer
-                geplant und erst ab diesem Datum vollzogen. Bei Genehmigung
+                geplant und an diesem Datum automatisch vollzogen. Bei Genehmigung
                 setzt das System die laufenden Lizenzen des Spielers automatisch
                 auf Ungültig (Transfer). Die vorübergehende Freigabe
                 funktioniert analog und lässt sich später widerrufen, was die
-                Lizenzen der Zweitmitgliedschaft zurückzieht.
+                Lizenzen der Zweitmitgliedschaft zurückzieht. Sie gilt bis zum
+                nächsten 15.07., also bis zum Ende der Saison. Admin und SBK
+                können eine Freigabe auch direkt im Spielerprofil erteilen
+                (<em>Neue Freigabe erteilen</em>); dann geht ebenfalls die Mail
+                „Spielerfreigabe erteilt“ an beide Vereine, den Spieler und den
+                Landesverband des abgebenden Vereins.
+              </p>
+              <p class="proc-text">
+                <strong>Mails und Datenschutz:</strong> Die Mails eines
+                Vorgangs gehen getrennt an die Vereins- und Verbandspostfächer
+                und an die betroffene Person, die private Adresse steht also
+                nie im Verteiler der Vereine. Die Mails an die Person tragen
+                einen Datenschutzhinweis, der den zuständigen Landesverband
+                nennt und auf die Datenschutzerklärung verlinkt. Er gehört zum
+                Mailrahmen und bleibt auch bei angepassten Vorlagen erhalten.
+              </p>
+              <p class="proc-text">
+                <strong>Ausfuhr:</strong> In der Transferliste exportiert die
+                SBK die genehmigten Vorgänge mit <em>CSV exportieren</em>. Die
+                Datei nennt neben Spieler, Typ und den beiden Vereinen auch den
+                <strong>abgebenden und den aufnehmenden Landesverband</strong>
+                (als Kürzel, so wie es am Verein eingetragen ist) und das
+                Genehmigungsdatum. Daraus stellen die Landesverbände die
+                Transfergebühr in Rechnung.
               </p>
               <div class="note">
                 <strong>Welcher Landesverband entscheidet?</strong> Immer der
@@ -3790,7 +4250,8 @@
               <div>
                 <div class="proc-title">Direktzuweisung ohne Antrag</div>
                 <div class="proc-sub">
-                  SBK und Admin vollziehen einen Vereinswechsel sofort
+                  SBK und Admin vollziehen einen Vereinswechsel sofort oder zum
+                  Wunschdatum
                 </div>
               </div>
               <span class="proc-chev">▾</span>
@@ -3813,6 +4274,17 @@
                 sofort vollzogen, und die laufenden Lizenzen werden dabei wie
                 bei jeder Genehmigung auf
                 <em>Ungültig (Transfer)</em> gesetzt.
+              </p>
+              <p class="proc-text">
+                Optional gibst du ein <strong>Wunschdatum</strong> an
+                (<em>Zum Wunschdatum zuweisen</em>). Dann bleibt der Spieler bis
+                dahin im abgebenden Verein, und der Transfer wird an diesem Tag
+                automatisch vollzogen. Anders als beim Antrag gilt keine
+                Mindestfrist; heute heißt sofort, ein Datum in der
+                Vergangenheit wird abgewiesen. Beide Vereine, der Landesverband
+                des abgebenden Vereins und der Spieler bekommen eine Mail mit
+                dem Vollzugsdatum. Bis dahin lässt sich der geplante Transfer
+                mit <em>Transfer annullieren</em> zurücknehmen.
               </p>
               <div class="proc-h">So läuft es ab</div>
               <div class="flow">
@@ -3934,6 +4406,32 @@
                 denselben Angaben speisen sich die
                 <a href="#panel-streamer">Livestream-Overlays</a> für OBS.
               </p>
+              <p class="proc-text">
+                <strong>Aufstellung aus dem letzten Spiel:</strong> Solange der
+                Kader einer Mannschaft leer ist, bietet das Fenster
+                <em>Kader bearbeiten</em> den Knopf <em>Aufstellung aus letztem
+                Spiel übernehmen</em>. Er holt die Aufstellung aus dem jüngsten
+                früheren Spiel derselben Mannschaft in dieser Saison, auch aus
+                einer anderen Liga. Wer nicht mehr passt, wird mit Grund
+                übersprungen, etwa ohne Lizenzantrag für diese Mannschaft, nicht
+                mehr Mitglied im Verein, Lizenz durch Transfer erloschen, Profil
+                deaktiviert oder Rückennummer schon vergeben. Danach lässt sich
+                der Kader wie gewohnt anpassen.
+              </p>
+              <p class="proc-text">
+                <strong>Nach dem Abschluss</strong> ändern Kader, Kapitän,
+                Betreuer, Starting Six, Auszeichnungen und Ereignisse nur noch
+                Admin und die SBK des Spielbetriebs, auch nicht mehr der
+                Sekretariats-Code. Offen bleiben für den Ausrichter die
+                Kopfdaten wie Zuschauerzahl oder Zeitnehmer.
+              </p>
+              <p class="proc-text">
+                <strong>Turnierspieltag:</strong> Richtet ein Verein einen
+                Spieltag mit mehreren Spielen aus, führen seine Teammanager den
+                Bericht <strong>aller</strong> Spiele des Tages, nicht nur die
+                der eigenen Mannschaft. Das gilt in der laufenden Saison und nur,
+                wenn am Spieltag ein Ausrichter eingetragen ist.
+              </p>
             </div>
           </details>
 
@@ -3955,10 +4453,25 @@
                 Der Landesverband kann für den
                 <strong>Spieltagsbericht</strong> Ja/Nein-Fragen definieren, die
                 vor dem Abschluss eines Spielberichts zu beantworten sind. Werden Punkte verneint, geht eine E-Mail als
-                BCC an die hinterlegte SBK-Adresse. Maßgeblich ist dabei der
+                BCC an die hinterlegte SBK-Adresse.
+              </p>
+              <p class="proc-text">
+                Die Fragen lassen sich schon in der
+                <strong>Spielvorbereitung</strong> beantworten: Im ersten
+                Schritt (<em>Spielinformationen</em>) steht der Abschnitt
+                <em>Spieltagsbericht</em> mit dem Stand („Noch N von M Fragen
+                offen“), jede Antwort wird sofort gespeichert. Beim Abschließen
+                fragt der Dialog dann nur noch nach der Bestätigung: Er nennt,
+                wie viele Fragen beantwortet sind und wie viele davon mit „Nein“,
+                und bietet <em>Spielbericht abschließen</em>,
+                <em>Ändern</em> (holt die volle Fragenliste zurück) und
+                <em>Abbrechen</em>. Fehlt noch eine Antwort, erscheint gleich
+                die vorbelegte Fragenliste.
+              </p>
+              <p class="proc-text"> Maßgeblich ist dabei der
                 Landesverband <strong>des Spielbetriebs</strong>, nicht der des
                 ausrichtenden Vereins. Für das Kampfgericht vor Ort gibt es den
-                Sekretariats-Link (eigene Karte unten) und eine öffentliche
+                Sekretariats-Code (eigene Karte unten) und eine öffentliche
                 <strong>Lizenzliste</strong> über einen signierten Link, der die
                 lizenzierten und beantragten Spieler beider Teams zeigt.
               </p>
@@ -3968,8 +4481,16 @@
                 listet ausschließlich Spieltage, die ein anderer Verein
                 ausrichtet, und erscheint nur, wenn der Landesverband des
                 Spielbetriebs überhaupt eine Frage für den Spieltagsbericht hinterlegt hat.
-                Bleibt die Bestätigung aus, gilt der Spieltag nach 48 Stunden
-                automatisch als bestätigt.
+                Mit dem Abschluss des Spielberichts bekommt jede Gastmannschaft
+                die Antworten des Ausrichters per Mail („Spieltagsbericht
+                bestätigen“, mit Frist und Link). Die Mail geht an die
+                Teammanager der Mannschaft, ohne sie an die Vereinsmanager mit
+                Info-Mails und zuletzt an die Kontaktadresse des Vereins. Bleibt
+                die Bestätigung aus, gilt der Spieltag nach
+                <strong>48 Stunden</strong> automatisch als bestätigt. Gezählt
+                wird ab dem Ende des Spieltags, kam die Mail erst später, ab
+                ihrem Versand. Wer nicht ordnungsgemäß meldet, löst eine Mail
+                an die SBK aus, die die betroffenen Spiele nennt.
               </p>
               <div class="roles-inline">
                 <span class="rb sbk">SBK / LV</span>
@@ -4025,7 +4546,7 @@
             <summary>
               <span class="proc-icon">🔗</span>
               <div>
-                <div class="proc-title">Sekretariats-Link</div>
+                <div class="proc-title">Sekretariats-Code</div>
                 <div class="proc-sub">
                   Zugang fürs Kampfgericht ohne eigenes Benutzerkonto
                 </div>
@@ -4034,66 +4555,84 @@
             </summary>
             <div class="proc-body">
               <p class="proc-text">
-                Am Kampfgericht sitzen oft Helfer ohne Benutzerkonto. Für sie
-                gibt es einen Link, der genau das freischaltet, was vor Ort
-                gebraucht wird: Aufstellung und Spielbericht. Erzeugen können
-                ihn Vereins- und Teammanager selbst unter
-                <strong>Verein › Spielsekretariat</strong>, außerdem Admin und
-                SBK über die Spielplanverwaltung.
+                Am Kampfgericht sitzen oft Helfer ohne Benutzerkonto, und am
+                Vereinsrechner meldet sich bewusst niemand mit dem eigenen
+                Konto an. Für sie gibt es einen Zugang, der genau das
+                freischaltet, was vor Ort gebraucht wird: Aufstellung und
+                Spielbericht. Erzeugen können ihn Vereins- und Teammanager
+                selbst unter <strong>Verein › Spielsekretariat</strong>,
+                außerdem Admin und SBK über die Spielplanverwaltung
+                (<em>Spielsek-Code</em>).
+              </p>
+              <p class="proc-text">
+                Du bekommst einen <strong>achtstelligen Code</strong> (Form
+                <code>XXXX-XXXX</code>), den das Sekretariat auf der Seite
+                <code>/spielsekretariat</code> eintippt. Groß- und
+                Kleinschreibung sind egal, der Trennstrich darf mit. Dazu gibt
+                es einen QR-Code zum Ausdrucken, der den Code schon enthält und
+                direkt in den Spielbericht führt. Wer den Code hat, sieht auch
+                die Lizenzlisten der beteiligten Mannschaften mit Name,
+                Geburtsdatum und Lizenzstatus; gib ihn deshalb nur an die
+                Personen am Tisch weiter.
               </p>
               <p class="proc-text">
                 Für Vereins- und Teammanager zählt dabei allein der
                 <strong>Ausrichter</strong>. In der Übersicht stehen nur
-                Spieltage, die der eigene Verein ausrichtet, beim Teammanager
+                Spieltage der nächsten 60 Tage, die der eigene Verein ausrichtet, beim Teammanager
                 zusätzlich nur die der eigenen Mannschaft. Am Tisch sitzt der
-                ausrichtende Verein, und der Link öffnet die Spielberichte aller
+                ausrichtende Verein, und der Code öffnet die Spielberichte aller
                 Spiele der Halle an diesem Tag: Ein Gastverein hat darin nichts
                 zu suchen. Eine Spielgemeinschaft, die unter einem ihrer
                 Partnervereine ausrichtet, fällt nicht durch, denn verglichen
                 werden alle Vereine der Mannschaft. Ist am Spieltag kein
-                Ausrichter eingetragen, gibt es dort keinen Link; sobald er
+                Ausrichter eingetragen, gibt es dort keinen Code; sobald er
                 nachgetragen ist, ist er da. Dieselbe Regel gilt für den
                 Overlay-Zugang der Livestream-Grafiken, weil auch dort aus der
                 Halle des Ausrichters gestreamt wird.
               </p>
               <p class="proc-text">
-                Der Link gilt für einen <strong>ganzen Spieltag</strong> und
+                Der Code gilt für einen <strong>ganzen Spieltag</strong> und
                 deckt alle Spieltage derselben Halle am selben Tag ab, für die
                 der Erzeugende berechtigt ist. Bei einer gemeinsam genutzten
-                Halle reicht also ein Link, ohne dass er fremde Ligen öffnet. Er
-                gilt <strong>ab 72 Stunden vor dem Spieltag bis zum Ende des
+                Halle reicht also ein Code, ohne dass er fremde Ligen öffnet. Er
+                gilt <strong>ab drei Tagen vor dem Spieltag bis zum Ende des
                 Folgetags</strong>, egal wann du ihn erzeugst. Du kannst ihn
                 also Tage vorher erzeugen und als QR-Code ausdrucken
                 (<em>Drucken</em> unter dem Code). Vorher meldet die
                 Sekretariatsseite, ab wann er gilt. Wird der Spieltag verlegt,
-                wandert der Zeitraum mit.
+                wandert der Zeitraum mit. Erzeugst du ihn erst nach dem
+                Spieltag, etwa zum Nachtragen, gilt er ab dem Erzeugen noch
+                72 Stunden.
               </p>
               <div class="note">
-                <strong>Ein neuer Link entwertet den alten.</strong> Wer ihn
+                <strong>Ein neuer Code entwertet den alten.</strong> Wer ihn
                 verliert, erzeugt einfach einen neuen; der vorherige
                 funktioniert dann nicht mehr. Im System liegt nur eine
-                Prüfsumme, der Link selbst lässt sich also nicht nachträglich
+                Prüfsumme, der Code selbst lässt sich also nicht nachträglich
                 anzeigen. Wird ein Spielplan überschrieben, verfallen bestehende
-                Links mit.
+                Codes mit.
               </div>
               <p class="proc-text">
-                Was der Link <strong>nicht</strong> kann: den Spielbericht
-                abschließen oder freigeben, Ligen verwalten oder Schiedsrichter
-                nominieren. Das bleibt an den angemeldeten Rollen.
+                Was der Code <strong>nicht</strong> kann: einen
+                abgeschlossenen Spielbericht wieder öffnen, den Kader danach
+                noch ändern, den Bericht freigeben, Ligen verwalten oder
+                Schiedsrichter nominieren. Das bleibt an den angemeldeten
+                Rollen.
               </p>
               <p class="proc-text">
                 Unter <strong>Verein › Spielsekretariat</strong> steht bei jedem
                 Spieltag daneben der <strong>Overlay-Zugang</strong> für die
-                Livestream-Grafiken. Er ist vom Sekretariats-Link unabhängig:
+                Livestream-Grafiken. Er ist vom Sekretariats-Code unabhängig:
                 Wer überträgt, sitzt nicht zwangsläufig am Tisch und bekommt so
-                seinen eigenen Link, ohne den des Sekretariats zu brauchen. Die
+                seinen eigenen Link, ohne den Code des Sekretariats zu brauchen. Die
                 fertige OBS-Szenensammlung lässt sich damit schon am Vorabend
-                herunterladen. Anders als der Sekretariats-Link gilt ein
+                herunterladen. Anders als der Sekretariats-Code gilt ein
                 Overlay-Zugang immer nur für <strong>einen</strong> Spieltag,
                 nicht für die ganze Halle. Laufen dort mehrere Ligen
                 nacheinander, steht deshalb je Spieltag ein eigener Abschnitt.
-                Er gilt im selben Zeitraum wie der Sekretariats-Link und lässt
-                sich ebenfalls als QR-Code ausdrucken. Einzelheiten stehen im
+                Er gilt im selben Zeitraum wie der Sekretariats-Code (nach dem
+                Spieltag erzeugt: noch 36 Stunden) und lässt sich ebenfalls als
+                QR-Code ausdrucken. Einzelheiten stehen im
                 Kapitel für Streamer.
               </p>
               <div class="roles-inline">
@@ -4133,9 +4672,9 @@
               <p class="proc-text">
                 Ohne weitere Angabe wertet das System das in der Liga
                 hinterlegte <strong>Vorgabeergebnis</strong>: 0:5 im Großfeld,
-                sonst 0:8. Bei beidseitiger Wertung zählt es −8:−8 – beide
-                Mannschaften gehen leer aus und die Wertung belastet zusätzlich
-                ihr Torverhältnis.
+                sonst 0:8. Bei beidseitiger Wertung zählt es −5:−5 im Großfeld
+                und sonst −8:−8: Beide Mannschaften gehen leer aus, und die
+                Wertung belastet zusätzlich ihr Torverhältnis.
               </p>
               <div class="proc-h">Abweichendes Ergebnis festsetzen</div>
               <p class="proc-text">
@@ -4179,6 +4718,13 @@
                 erspielt. Die Wertung ist außerdem jederzeit änderbar und nicht
                 an die Frist des Spielberichts gebunden.
               </p>
+              <p class="proc-text">
+                <strong>Ein kampflos gewertetes Spiel gilt als begonnen.</strong>
+                Es lässt sich deshalb nicht mehr löschen, und es sperrt den
+                Neuimport des ganzen Liga-Spielplans und das Löschen der Liga.
+                Nimmst du die Wertung bei einem Spiel ohne erfasste Ereignisse
+                zurück, sind diese Sperren wieder aufgehoben.
+              </p>
               <div class="roles-inline">
                 <span class="rb sbk">SBK / LV</span>
                 <span class="rb admin">Admin</span>
@@ -4208,6 +4754,12 @@
                 entscheidet, ob überhaupt digital berichtet wird. Ist er aus,
                 bleibt es beim analogen Papierbericht vor Ort, und es passiert
                 nichts weiter.
+              </p>
+              <p class="proc-text">
+                Der Vermerk im Feld <strong>Besonderes Ereignis</strong> der
+                Spielinformationen ist nicht öffentlich. Ihn sehen nur die
+                Personen, die den Spielbericht pflegen, und die RSK des
+                Spielbetriebs.
               </p>
               <p class="proc-text">
                 Ist er an, entscheidet der zweite Schalter über den Weg des
@@ -4276,8 +4828,8 @@
                 Zu Saisonbeginn musst du nicht jede Liga von Hand neu anlegen.
                 Du kopierst eine bestehende Liga der Vorsaison in die aktuelle
                 Saison. Die Stammdaten (Name, Klasse, Modus, Einstellungen)
-                wandern mit, die Anmeldefrist rückt automatisch um ein Jahr nach
-                vorne, und die Quell-Liga wird als
+                wandern mit, der Alters-Stichtag rückt automatisch um ein Jahr
+                nach vorne, ein Mindestalter bleibt unverändert, und die Quell-Liga wird als
                 <strong>Vorsaison-Liga</strong> verknüpft.
               </p>
               <p class="proc-text">
@@ -4496,7 +5048,7 @@
                 <strong>bisherige Spielplan bleibt unverändert erhalten</strong
                 >. Beim erfolgreichen Ersetzen verschwinden die alten Spieltage
                 und Spiele <strong>mitsamt allem, was daran hängt</strong>:
-                bereits gesetzte Schiedsrichter-Ansetzungen, Sekretariats-Links
+                bereits gesetzte Schiedsrichter-Ansetzungen, Sekretariats-Codes
                 und Spieltags-Bestätigungen. Vor dem Ersetzen weist die
                 Oberfläche dich deshalb ausdrücklich darauf hin.
               </p>
@@ -5076,10 +5628,27 @@
                       <td class="def">aus</td>
                     </tr>
                     <tr>
+                      <td>
+                        <strong
+                          >Teaminformationen während der Saison änderbar</strong
+                        >
+                      </td>
+                      <td>
+                        Vereine dürfen Name, Kürzel und Logo ihrer Mannschaften
+                        auch nach dem ersten Spieltag ändern. Ohne den Haken ist
+                        damit ab dem ersten Spieltag einer Liga Schluss, davor
+                        geht es immer. Verband und SBK können jederzeit
+                        berichtigen. Ein untergeordneter Verband erbt den Wert.
+                      </td>
+                      <td class="def">an</td>
+                    </tr>
+                    <tr>
                       <td><strong>Pflicht-Scan Spielbericht</strong></td>
                       <td>
-                        Der Papierbogen muss nach dem Spiel hochgeladen werden,
-                        der Ausrichter wird per E-Mail erinnert.
+                        Der Papierbogen muss nach dem Spiel hochgeladen werden.
+                        Fehlt er eine Stunde nach dem Abschluss des letzten
+                        Spielberichts noch, bekommt der Ausrichter einmal je
+                        Spieltag eine Erinnerung an seine Vereinsadressen.
                       </td>
                       <td class="def">aus</td>
                     </tr>
@@ -5207,9 +5776,15 @@
                 <strong>Liga-Logo</strong> (max. 3 MB) pflegt, wer die Liga
                 bearbeiten darf; fehlt es, wird das Logo des Landesverbands
                 angezeigt. Das <strong>Vereinslogo</strong> pflegt der Verein
-                selbst über den Vereinsmanager (wird auf 100 × 100 verkleinert),
-                ebenso das Teamlogo über den Teammanager. So halten die Vereine
-                ihre Logos ohne Umweg über die Geschäftsstelle aktuell.
+                selbst über den Vereinsmanager (wird auf 100 × 100 verkleinert).
+                Ein abweichendes <strong>Mannschaftslogo</strong> setzt der
+                Vereinsmanager in der Vereinsverwaltung unter
+                <em>Mannschaften des Vereins</em>, zusammen mit Name und Kürzel
+                der Mannschaft; ohne eigenes Logo trägt sie das Vereinslogo. In
+                einer Spielgemeinschaft darf das jeder beteiligte Verein. So
+                halten die Vereine ihre Logos ohne Umweg über die
+                Geschäftsstelle aktuell. Tabelle und Livestream-Grafiken zeigen
+                ein neues Logo nach bis zu fünf Minuten.
               </p>
               <div class="note">
                 <strong>Bildformate:</strong> Erlaubt sind überall
@@ -5225,8 +5800,7 @@
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
                 <span class="rb sbk">SBK</span>
-                <span class="rb vm">VM (Vereinslogo)</span>
-                <span class="rb tm">TM (Teamlogo)</span>
+                <span class="rb vm">VM (Vereins- und Mannschaftslogo)</span>
               </div>
             </div>
           </details>
@@ -5283,7 +5857,9 @@
                 <em>Mein Konto</em> Sprache, Passwort, den eigenen Vor- und
                 Nachnamen, die eigene E-Mail-Adresse (aktiv erst nach
                 Bestätigung über einen Link an die neue Adresse) und, als
-                Teammanager, den Empfang von Info-Mails. Bei Konten mit
+                Teammanager (auch als Vereinsmanager mit zugeordneten
+                Mannschaften), den Empfang von Info-Mails (<em>Info-E-Mails vom
+                System erhalten</em>). Bei Konten mit
                 verknüpfter Schiedsrichter-Lizenz bleibt der Name der
                 Geschäftsstelle vorbehalten, weil er auf dem digitalen
                 Schiedsrichterausweis erscheint.
@@ -5363,6 +5939,11 @@
                   aufnehmen, ohne sie zu kopieren
                 </li>
                 <li>Hallen anlegen und verwalten</li>
+                <li>
+                  Doppelte Spielorte zusammenlegen: Die Spieltage des doppelten
+                  Eintrags wandern auf den verbleibenden, der doppelte wird
+                  gelöscht (nicht umkehrbar, nur Admin und SBK FD)
+                </li>
                 <li>Landesverbände verwalten</li>
                 <li>
                   Zwei Vereinseinträge zusammenlegen, für Dubletten und echte
@@ -5566,10 +6147,11 @@
                   <span class="cl">genehmigt mit Datum</span
                   ><span class="ar">→</span>
                 </div>
-                <div class="st info">Termin geplant</div>
-                <div class="cn act">
-                  <span class="cl">Datum erreicht, ausführen</span
-                  ><span class="rb admin">Admin</span><span class="ar">→</span>
+                <div class="st info">Transfer geplant</div>
+                <div class="cn">
+                  <span class="cl">Datum erreicht</span
+                  ><span class="rb auto">automatisch</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st success">Genehmigt</div>
               </div>
@@ -5612,8 +6194,14 @@
                 abgebenden Verein bestätigt der Spieler den Wechsel selbst über
                 einen E-Mail-Link, bevor die LV-Prüfung beginnt. ·
                 <strong>Wirkungsdatum:</strong> Ein zukünftiges Datum (mind. 7
-                Tage) führt zu <em>Termin geplant</em>; der Transfer wird ab dem
-                Wirkungsdatum manuell vollzogen (kein automatischer Job). ·
+                Tage) führt zu <em>Transfer geplant</em>. Ein täglicher Lauf
+                vollzieht ihn am Wirkungsdatum automatisch; mit
+                <em>Transfer jetzt vollziehen</em> geht es auch von Hand.
+                Liegt der aufnehmende Verein inzwischen deaktiviert oder wurde
+                das Spielerprofil zusammengeführt, bleibt der Vorgang geplant
+                stehen. Beide Vereine, der Spieler und der Landesverband des
+                abgebenden Vereins erfahren schon bei der Genehmigung per Mail,
+                an welchem Tag der Wechsel vollzogen wird. ·
                 <strong>Lizenzen:</strong> Bei Genehmigung werden alle laufenden
                 Spielerlizenzen automatisch auf
                 <strong>Ungültig (Transfer)</strong> gesetzt; bei Widerruf einer
@@ -5702,7 +6290,7 @@
                   ><span class="chip error">Abgelehnt</span>
                 </div>
                 <div class="branch">
-                  <span class="from">aus Beantragt oder Erteilt:</span
+                  <span class="from">aus Beantragt, Erteilt oder Gesperrt:</span
                   ><span class="rb auto">automatisch</span
                   ><span class="act">Transfer genehmigt</span
                   ><span class="ar">→</span
@@ -5809,7 +6397,11 @@
                 Erfolgsmeldung mit dem Benutzernamen und dem Hinweis, dass eine
                 Passwort-Mail verschickt wurde. Hat der Schiri bereits ein
                 Konto, wird kein Button angezeigt. Nur für Admin und RSK
-                sichtbar (<code>referee_can_create</code>).
+                sichtbar (<code>referee_can_create</code>). Der Benutzername
+                folgt der Lizenznummer (<code>sr-1234</code>); Gastschiedsrichter
+                haben keine und heißen nach dem Nachnamen
+                (<code>sr-nowak</code>, bei Namensgleichheit
+                <code>sr-nowak2</code>).
               </div>
             </div>
           </details>
@@ -6013,6 +6605,10 @@
               <ul>
                 <li>Vereine anlegen, bearbeiten, deaktivieren</li>
                 <li>Teams verwalten, Hallen anlegen</li>
+                <li>
+                  Spielorte löschen und doppelte zusammenlegen (die Spieltage
+                  wandern mit, nicht umkehrbar)
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -6116,7 +6712,15 @@
                 <li>
                   Auffälligkeiten auf einen Blick: fehlende Zuschauerzahlen,
                   Matchstrafen, nachträglich geänderte
-                  Berichte
+                  Berichte, verneinte Punkte im Spieltagsbericht (mit den
+                  betroffenen Fragen beim Namen) und ein Einspruch des
+                  Ausrichters
+                </li>
+                <li>
+                  Der Name dessen, der den Papierbogen oder das
+                  Schiri-Berichtsformular hochgeladen hat, ist ein Mail-Link,
+                  sofern eine Adresse vorliegt. So erreichst du ihn bei
+                  Rückfragen direkt
                 </li>
                 <li>
                   Hinweise der Mannschaften aus dem Kommentarfeld des
@@ -6180,10 +6784,11 @@
                   <span class="cl">genehmigt mit Datum</span
                   ><span class="ar">→</span>
                 </div>
-                <div class="st info">Termin geplant</div>
-                <div class="cn act">
-                  <span class="cl">Datum erreicht, ausführen</span
-                  ><span class="rb sbk">SBK FD</span><span class="ar">→</span>
+                <div class="st info">Transfer geplant</div>
+                <div class="cn">
+                  <span class="cl">Datum erreicht</span
+                  ><span class="rb auto">automatisch</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st success">Genehmigt</div>
               </div>
@@ -6441,17 +7046,33 @@
                 eingerichtet wird, oder eine Liga mit einer Spieltagsnummer über
                 alle Hallen. Titel und Beschreibung kommen aus Vorlagen mit
                 Platzhaltern, die für alle gelten; YouTube deckelt den Titel bei
-                100 Zeichen. Die Sichtbarkeit stellst du für den ganzen Lauf
-                ein, die Playlist hängt an der Liga.
+                100 Zeichen. Die Vorlagen bearbeitest du mit einer Vorschau am
+                ersten ausgewählten Spiel; <em>Vorgabe wiederherstellen</em>
+                holt den Ausgangstext zurück. Die Sichtbarkeit stellst du für
+                den ganzen Lauf ein, die Playlist hängt an der Liga. Wird eine
+                <strong>öffentliche</strong> Übertragung angelegt, trägt das
+                System ihren Link am Spiel ein, sodass er im Spielplan
+                erscheint; ein vorhandener Link wird dabei nicht überschrieben.
+                <em>Thumbnails (ZIP)</em> lädt die Vorschaubilder der
+                ausgewählten Spiele in einem Archiv herunter, quer über Hallen,
+                Spieltage und Ligen, mit einem Ordner je Spieltag.
               </p>
               <div class="note">
                 <strong
                   >Einzelne Vereine haben die Zusage, dass wir während ihrer
                   Heimspiele nicht öffentlich senden</strong
-                >, weil sie parallel auf ihren eigenen Kanal übertragen. Für
-                deren Spieltage legst du <em>nicht gelistet</em> an. Die Liste
-                zeigt die Zusage je Zeile an, und die Pflegeliste darunter führt
-                alle Ausrichter der Saison.
+                >, weil sie parallel auf ihren eigenen Kanal übertragen. Die
+                Zusage hängt am Verein und gilt für alle Partien, die er
+                ausrichtet, auch die, in denen er nicht Heim ist. Gepflegt wird
+                sie unter <em>Zusagen der Ausrichter verwalten</em>. Für diese
+                Spieltage legt das System die Übertragung automatisch
+                <em>nicht gelistet</em> an, unabhängig von der Sichtbarkeit des
+                Laufs; die Zeile trägt den Hinweis „Zusage an den Ausrichter“,
+                und neben dem Knopf zum Anlegen steht, wie viele davon nicht
+                gelistet laufen. Drei Stunden nach Sendeschluss schaltet der
+                Livestream-Wächter sie öffentlich und verlinkt sie im
+                Spielplan. Soll ein solches Spiel ausnahmsweise von Anfang an
+                öffentlich laufen, nimmst du den Haken beim Verein kurz heraus.
               </div>
             </div>
           </details>
@@ -6717,7 +7338,15 @@
                 <li>
                   Auffälligkeiten auf einen Blick: fehlende Zuschauerzahlen,
                   Matchstrafen, nachträglich geänderte
-                  Berichte
+                  Berichte, verneinte Punkte im Spieltagsbericht (mit den
+                  betroffenen Fragen beim Namen) und ein Einspruch des
+                  Ausrichters
+                </li>
+                <li>
+                  Der Name dessen, der den Papierbogen oder das
+                  Schiri-Berichtsformular hochgeladen hat, ist ein Mail-Link,
+                  sofern eine Adresse vorliegt. So erreichst du ihn bei
+                  Rückfragen direkt
                 </li>
                 <li>
                   Hinweise der Mannschaften aus dem Kommentarfeld des
@@ -6777,10 +7406,11 @@
                 <span class="subflow-label"
                   >Mit zukünftigem Wirkungsdatum:</span
                 >
-                <div class="st info">Termin geplant</div>
-                <div class="cn act">
-                  <span class="cl">ausführen</span
-                  ><span class="rb sbk">SBK LV</span><span class="ar">→</span>
+                <div class="st info">Transfer geplant</div>
+                <div class="cn">
+                  <span class="cl">Datum erreicht</span
+                  ><span class="rb auto">automatisch</span
+                  ><span class="ar">→</span>
                 </div>
                 <div class="st success">Genehmigt</div>
               </div>
@@ -7065,12 +7695,18 @@
                   Notenband, Monats-Zeitreihe, Export als CSV/Excel
                 </li>
                 <li>
-                  <em>Team-Feedback: einzeln</em>: Kommentar-Feed mit Filtern und
-                  händischer Themen-Zuordnung
+                  <em>Team-Feedback: einzeln</em>: alle Rückmeldungen, auch ohne
+                  Freitext, mit Filtern und händischer Themen-Zuordnung
                 </li>
                 <li>
                   Am Schiri-Profil nur die Durchschnittswerte, und erst ab fünf
                   Rückmeldungen
+                </li>
+                <li>
+                  <em>Beobachtungen: alle Bögen</em>: alle Beobachtungsbögen der
+                  Schiedsrichtercoaches, Export als CSV/Excel (ohne Freitexte)
+                  oder PDF; einzelne Bögen lassen sich am Schiri-Profil
+                  zurücknehmen
                 </li>
               </ul>
             </div>
@@ -7172,6 +7808,13 @@
                   Kein Zugriff auf das Schiri-Feedback der Vereine – Einsicht
                   und Auswertung sind den bundesweiten Rollen (RSK FD, Ansetzer
                   FD, Admin) vorbehalten
+                </li>
+                <li>
+                  Die Beobachtungsbögen der Schiedsrichtercoaches zu Spielen des
+                  eigenen Spielbetriebs dagegen schon: am Schiri-Profil und
+                  unter <em>Auswertungen</em> › <em>Beobachtungen: alle
+                  Bögen</em>, mit Export. Einen entgleisten Bogen kann die RSK
+                  zurücknehmen
                 </li>
               </ul>
             </div>
@@ -7433,6 +8076,11 @@
                   Am Schiri-Profil nur die Durchschnittswerte, und erst ab fünf
                   Rückmeldungen
                 </li>
+                <li>
+                  <em>Beobachtungen: alle Bögen</em>: alle Beobachtungsbögen der
+                  Schiedsrichtercoaches lesen und exportieren; zurücknehmen
+                  dürfen nur Admin und RSK
+                </li>
               </ul>
             </div>
           </div>
@@ -7596,6 +8244,12 @@
                 <li>
                   Schiedsrichter-Tags zuweisen (nur Tags des eigenen
                   Landesverbands sowie globale Tags)
+                </li>
+                <li>
+                  Beobachtungsbögen der Schiedsrichtercoaches zu Spielen des
+                  eigenen Spielbetriebs lesen und exportieren
+                  (<em>Auswertungen</em> › <em>Beobachtungen: alle Bögen</em>),
+                  nicht zurücknehmen
                 </li>
               </ul>
             </div>
@@ -7803,7 +8457,7 @@
                 <li>Erreichbar unter „Verein → Schiri-Feedback"</li>
                 <li>
                   Möglich, sobald der Spielberichtsbogen abgeschlossen ist und
-                  der Anpfiff mindestens 24 Stunden zurückliegt; je Mannschaft
+                  der Anpfiff mindestens 12 Stunden zurückliegt; je Mannschaft
                   genau einmal pro Spiel
                 </li>
                 <li>
@@ -8214,7 +8868,7 @@
                 </li>
                 <li>
                   Möglich, sobald der Spielberichtsbogen abgeschlossen ist und
-                  der Anpfiff mindestens 24 Stunden zurückliegt; je Mannschaft
+                  der Anpfiff mindestens 12 Stunden zurückliegt; je Mannschaft
                   genau einmal pro Spiel
                 </li>
                 <li>
@@ -8248,8 +8902,11 @@
                   überhaupt Fragen für den Spieltagsbericht hinterlegt hat
                 </li>
                 <li>
-                  Ohne Bestätigung gilt der Spieltag nach 48 Stunden automatisch
-                  als bestätigt
+                  Die Antworten des Ausrichters kommen mit dem Abschluss des
+                  Spielberichts per Mail an die Teammanager der Gastmannschaft.
+                  Ohne Bestätigung gilt der Spieltag 48 Stunden nach dieser Mail
+                  (frühestens nach dem Ende des Spieltags) automatisch als
+                  bestätigt
                 </li>
               </ul>
             </div>
@@ -8415,6 +9072,17 @@
                   ohne Spieltagsbericht und ohne Partner-Status, denn die
                   Spieltagsbestätigung bleibt Sache des Schiedsrichterpaars
                 </li>
+                <li>
+                  <strong>Kontaktdaten im Gespann:</strong> Im Profil lässt
+                  sich zustimmen, dass die mit dir am selben Spiel angesetzten
+                  Schiris und Coaches hier deine Telefonnummer und
+                  E-Mail-Adresse sehen („Mit-Angesetzte dürfen meine
+                  Kontaktdaten sehen“). Das Portal fragt einmal danach. Sichtbar
+                  ist das ab der Veröffentlichung der Ansetzung bis zum Tag
+                  nach dem Spieltag und nur auf Gegenseitigkeit: Die Daten der
+                  anderen siehst du erst, wenn du deine auch teilst. Abschalten
+                  geht jederzeit
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -8465,6 +9133,60 @@
                 </li>
               </ul>
             </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">💬</div>
+                <div>
+                  <h3>Mein Feedback</h3>
+                  <div class="cap-sub">Beobachtungen und Team-Feedback</div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <strong>Beobachtungen</strong> der Schiedsrichtercoaches zu
+                  deinen Einsätzen: gemeinsame Anmerkungen, Bewertung des
+                  Gespanns und deine eigenen Einzelnoten (Skala 1 bis 7), nicht
+                  die deines Partners. Zu jedem neuen Bogen kommt eine Mail
+                </li>
+                <li>
+                  <strong>Team-Feedback</strong> der Mannschaften: Durchschnitt
+                  für Linie/Konstanz und Kommunikation, erst ab fünf
+                  Rückmeldungen und ohne einzelne Bewertungen oder Kommentare.
+                  Rückmeldungen gibt es nur aus Ligen mit aktiviertem
+                  Schiri-Feedback
+                </li>
+              </ul>
+            </div>
+            <div class="cap">
+              <div class="cap-head">
+                <div class="cap-icon">🎯</div>
+                <div>
+                  <h3>Beobachtungsbögen</h3>
+                  <div class="cap-sub">
+                    Bereich „Coaching“, nur mit gültiger B-Qualifikation
+                  </div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <em>Offene Spiele:</em> Spiele, für die du als
+                  Schiedsrichtercoach angesetzt warst, und in Spielbetrieben
+                  ohne Ansetzung auf Personenebene die Spiele des eigenen
+                  Spielbetriebs
+                </li>
+                <li>
+                  Erinnerung per Mail zum Anpfiff, wenn du angesetzt bist
+                </li>
+                <li>
+                  <em>Abgegebene Beobachtungen:</em> deine Bögen. Nach dem
+                  Absenden sind sie sofort sichtbar und nicht mehr änderbar
+                </li>
+                <li>
+                  Ablauf und Sichtbarkeit im Kapitel <a href="#panel-fn-schiri">Schiedsrichterwesen</a> unter
+                  „Beobachtungen der Schiedsrichtercoaches“
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="sec">
@@ -8490,9 +9212,10 @@
                   kurzfristig einspringen kannst
                 </li>
                 <li>
-                  Telefonnummer hinterlegen: wird ausschließlich in dringenden
-                  Fällen von der RSK bei der Ansetzung genutzt und nicht an
-                  Dritte weitergegeben
+                  Telefonnummer hinterlegen: wird in dringenden Fällen von der
+                  RSK bei der Ansetzung genutzt. Darüber hinaus sehen sie nur
+                  die Mit-Angesetzten, und nur mit deiner Zustimmung (siehe
+                  „Meine Spieltage“)
                 </li>
                 <li>
                   Heimadresse pflegen: dient allein der Kilometerberechnung bei
@@ -8675,11 +9398,16 @@
                 Nacht von Donnerstag auf Freitag und gebündelt für alle
                 Ansetzungen der kommenden sieben Tage; ihr Link läuft am Ende
                 des Tages nach dem Spiel ab. Über „Meine Spieltage“ wird der
-                Spieltag bestätigt; bleibt die Bestätigung aus, kann der
-                Spieltag automatisch als bestätigt gelten. Die Bestätigung der
+                Spieltag bestätigt. Die Bestätigung der
                 ordnungsgemäßen Durchführung setzt voraus, dass der Spielbetrieb
                 Fragen für den Spieltagsbericht hinterlegt hat, und ist ab Beginn des
-                letzten Spiels möglich. Ändern sich danach Anpfiff, Datum, Halle
+                letzten Spiels möglich. Sie gilt für den ganzen Spieltag:
+                <em>Ordnungsgemäß bestätigen</em> benachrichtigt niemanden und
+                lässt sich nicht mehr ändern. <em>Nicht ordnungsgemäß</em>
+                öffnet erst die Fragen; erst <em>Meldung absenden</em> schickt
+                die Antworten per Mail an die SBK, vorher lässt sich noch
+                abbrechen. Ohne Rückmeldung gilt der Spieltag 48 Stunden nach
+                seinem Ende automatisch als bestätigt. Ändern sich danach Anpfiff, Datum, Halle
                 oder der Absage-Status, kommt automatisch eine
                 Änderungs-Benachrichtigung. Hat die Ansetzung
                 <strong>zusätzliche Spielinformationen</strong> hinterlegt,
@@ -8807,7 +9535,7 @@
             Der Abschnitt <strong>Livestream-Overlays</strong> steht an drei
             Stellen. Am schnellsten dort, wo der Verein ohnehin seine Zugänge
             ausgibt: unter <strong>Verein › Spielsekretariat</strong>, bei jedem
-            Spieltag unterhalb des Sekretariats-Links. Dafür brauchst du keinen
+            Spieltag unterhalb des Sekretariats-Codes. Dafür brauchst du keinen
             Spielbericht zu öffnen und musst nichts über das Sekretariat holen.
             Im Spielbericht selbst gibt es ihn außerdem auf der Begrüßungsseite
             unter dem Knopf <em>Eingabe starten</em> und noch einmal in
@@ -10664,7 +11392,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 <strong>Die rechte untere Ecke bleibt frei</strong>, dort legt
                 YouTube die Laufzeit über das Bild. Fehlt einem Verein das
                 Wappen, steht an seiner Stelle sein Kürzel; nachtragen kann es
-                nur der Verein selbst, siehe
+                der Verein selbst, siehe
                 <a href="#panel-streamer">Abschnitt 07</a>.
               </div>
             </div>
@@ -11466,6 +12194,14 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
                   <td>
                     Formkurve beider Mannschaften des aktiven Spiels, neueste
                     Partie zuerst
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="method get">GET</span></td>
+                  <td class="path">/api/v2/public/overlay/upcoming</td>
+                  <td>
+                    Die nächsten anstehenden Partien beider Mannschaften des
+                    aktiven Spiels, früheste zuerst (für „Nächste Spiele“)
                   </td>
                 </tr>
                 <tr>
