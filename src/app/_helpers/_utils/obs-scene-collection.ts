@@ -32,6 +32,7 @@ const FULLSCREEN_SCENES: { scene: string; label: string }[] = [
   { scene: 'tabelle', label: 'Tabelle' },
   { scene: 'topscorer', label: 'Torschützen' },
   { scene: 'naechste-spiele', label: 'Nächste Spiele' },
+  { scene: 'spieltag', label: 'Spieltag' },
   { scene: 'formkurve', label: 'Formkurve' },
 ];
 
