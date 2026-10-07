@@ -52,6 +52,66 @@
               </p>
             </div>
 
+            @if (gameId && !players?.length) {
+              <div class="mt-3">
+                <fb-button
+                  size="small"
+                  [disabled]="copyingLastGame"
+                  (handleClick)="copyFromLastGame()"
+                >
+                  Aufstellung aus letztem Spiel übernehmen
+                </fb-button>
+                <p class="mt-1 text-xs text-gray-500">
+                  Übernimmt Spieler/innen mit Trikotnummer und Torwart aus dem
+                  letzten Spiel dieser Mannschaft. Danach nur noch die
+                  Abwesenden austragen.
+                </p>
+              </div>
+            }
+
+            @if (copyResult) {
+              <div
+                class="mt-3 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700"
+                data-testid="copy-result"
+              >
+                @if (copyResult.source_game) {
+                  <p>
+                    {{ copyResult.added_count }} Spieler/innen übernommen aus
+                    dem Spiel
+                    @if (copyResult.source_game.game_number) {
+                      Nr. {{ copyResult.source_game.game_number }}
+                    }
+                    vom {{ formatSourceDate(copyResult.source_game.date) }}.
+                  </p>
+                } @else {
+                  <p>
+                    Es gibt in dieser Saison noch kein früheres Spiel dieser
+                    Mannschaft mit Aufstellung.
+                  </p>
+                }
+                @if (copyResult.skipped.length) {
+                  <p class="mt-2 font-medium">Nicht übernommen:</p>
+                  <ul class="list-disc pl-5">
+                    @for (entry of copyResult.skipped; track $index) {
+                      <li>
+                        #{{ entry.trikot_number }} {{ entry.player_firstname }}
+                        {{ entry.player_name }}:
+                        {{ entry.reason }}
+                      </li>
+                    }
+                  </ul>
+                }
+                @if (copyResult.warnings.length) {
+                  <p class="mt-2 font-medium text-yellow-700">Hinweise:</p>
+                  <ul class="list-disc pl-5 text-yellow-700">
+                    @for (warning of copyResult.warnings; track $index) {
+                      <li>{{ warning }}</li>
+                    }
+                  </ul>
+                }
+              </div>
+            }
+
             <div class="mt-4">
               <div class="sm:hidden">
                 <label for="tabs" class="sr-only">Select a tab</label>

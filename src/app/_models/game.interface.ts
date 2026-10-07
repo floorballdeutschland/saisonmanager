@@ -69,6 +69,31 @@ export interface AddLineupPlayerResponse {
   warning: string | null;
 }
 
+export interface CopyLineupSkippedEntry {
+  player_id: number | null;
+  player_firstname: string | null;
+  player_name: string | null;
+  trikot_number: number;
+  reason: string;
+}
+
+/**
+ * Antwort von `lineup/:side/copy_from_last_game`. `source_game` ist null, wenn
+ * die Mannschaft in dieser Saison noch kein früheres Spiel mit Aufstellung hat;
+ * dann ist auch nichts übernommen worden.
+ */
+export interface CopyLineupResponse {
+  players: GamePlayerEntry[];
+  added_count: number;
+  skipped: CopyLineupSkippedEntry[];
+  warnings: string[];
+  source_game: {
+    id: number;
+    game_number: string | null;
+    date: string | null;
+  } | null;
+}
+
 export interface StartingPlayer {
   position: string;
   team: string;
