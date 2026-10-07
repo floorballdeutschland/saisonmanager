@@ -281,7 +281,7 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
    */
   private _redeemErrorMessage(err: {
     status?: number;
-    error?: { message?: string };
+    error?: { message?: string; valid_from?: string };
   }): string {
     if (err?.status === 429) {
       return (
@@ -298,7 +298,11 @@ export class SpielSekretariatComponent implements OnInit, OnDestroy {
     // Spieltag). Die Meldung des Servers nennt den Beginn. Ohne sie läse sich
     // das wie ein Störfall, und wer vorab ausprobiert, holte sich einen neuen
     // Code und entwertete damit den ausgedruckten.
-    if (err?.status === 403) {
+    //
+    // Erkannt am `valid_from` der Antwort, nicht am Status allein: Dieselbe
+    // 403 kommt auch von der CSRF-Prüfung der API (angemeldet, veraltetes
+    // Cookie), und dort hieße „gilt noch nicht" das Falsche.
+    if (err?.status === 403 && err?.error?.valid_from) {
       return (
         err?.error?.message ??
         'Dieser Code gilt noch nicht. Er wird 72 Stunden vor dem Spieltag gültig.'

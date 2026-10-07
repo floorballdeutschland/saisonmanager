@@ -527,6 +527,24 @@ describe('SpielSekretariatComponent', () => {
     // Ein vorab ausgedruckter Code wird gern gleich ausprobiert. Stuende dort
     // „Fehler 403, bitte gleich noch einmal", holte man sich einen neuen Code
     // und entwertete damit den gedruckten (Feedback #70).
+    // Die CSRF-Prüfung der API antwortet ebenfalls mit 403, ohne valid_from.
+    // Das ist kein „gilt noch nicht", der Code bleibt gültig.
+    it('liest eine 403 ohne valid_from nicht als noch nicht gueltig', () => {
+      component.ngOnInit();
+      component.codeInput = 'K7QF3MXR';
+
+      component.redeemCode();
+      httpMock
+        .expectOne(redeemUrl)
+        .flush(
+          { success: false, message: 'CSRF token ungültig.' },
+          { status: 403, statusText: 'Forbidden' }
+        );
+
+      expect(component.codeError).toContain('Fehler 403');
+      expect(component.codeError).toContain('bleibt gültig');
+    });
+
     it('nennt bei einem noch nicht gueltigen Code den Beginn', () => {
       component.ngOnInit();
       component.codeInput = 'K7QF3MXR';
