@@ -1893,7 +1893,13 @@
             wirken <strong>additiv</strong>: Was eine Rolle erlaubt, bleibt
             erlaubt, auch wenn zusätzlich eine engere Rolle am Konto hängt.
             Vereine, die nur über die VM-Rolle erreichbar sind, stehen in
-            Auswahllisten unter <em>Eigene Vereine</em>.
+            Auswahllisten unter <em>Eigene Vereine</em>. Ein
+            <span class="rb vm">VM</span>, der zugleich eine bestimmte
+            Mannschaft betreut, bekommt dafür unter <em>Team-Zuweisung</em>
+            seine Mannschaften zugeordnet (nur ganz eigene der laufenden
+            Saison). Für sie wird er dann wie ein Teammanager behandelt: Der
+            Spieltagsbericht der Gastmannschaft und das Schiri-Feedback gehen
+            an sein Konto. Seine VM-Rechte bleiben unberührt.
           </div>
 
           <div class="note">
@@ -2974,6 +2980,82 @@
               </div>
             </div>
           </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">🙈</span>
+              <div>
+                <div class="proc-title">
+                  Nachname aus der öffentlichen Anzeige nehmen
+                </div>
+                <div class="proc-sub">
+                  Antwort auf einen Antrag nach Art. 17 oder 21 DSGVO
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Wer nicht mehr am Spielbetrieb teilnimmt, kann verlangen, nicht
+                länger über eine Suche nach dem eigenen Namen auffindbar zu
+                sein. Dafür hat das Spielerprofil den Abschnitt
+                <strong>Nachname in der öffentlichen Anzeige</strong> mit dem
+                Knopf <em>Nachname öffentlich weglassen</em> und einem
+                optionalen internen Vermerk, etwa dem Aktenzeichen des Antrags.
+                Das darf nur ein Admin.
+              </p>
+              <p class="proc-text">
+                Danach erscheint die Person in Scorerlisten, Aufstellungen,
+                Spielansicht und Spielbericht, Mannschaftsstatistik, auf der
+                öffentlichen Spielerseite, in der öffentlichen Transferliste und
+                in den Livestream-Overlays nur noch mit dem Vornamen, ohne
+                Platzhalter oder Initiale. Spiele, Tore und Trikotnummern
+                bleiben erhalten, die Zahlen einer Liga ändern sich nicht. Den
+                vollen Namen führen weiterhin das Profil, die Spielersuche und
+                die Lizenzlisten am Spieltag, damit Dublettenprüfung, Sperren
+                und Spielberechtigung weiter funktionieren.
+                <em>Nachname wieder öffentlich anzeigen</em> nimmt den Schritt
+                zurück; der Vermerk bleibt als Beleg stehen.
+              </p>
+              <div class="note">
+                Bis der Name aus den Suchmaschinen verschwindet, vergeht noch
+                Zeit, und die vorgerenderten Ligaseiten übernehmen die Änderung
+                erst mit der nächsten Auslieferung des Frontends.
+              </div>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
+              <span class="proc-icon">📊</span>
+              <div>
+                <div class="proc-title">Spielerdaten: Rangliste und Export</div>
+                <div class="proc-sub">
+                  Einsätze, Tore, Vorlagen und Strafminuten über alle Saisons
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Die Seite <strong>Spielerdaten</strong> der Spielerverwaltung
+                zählt Einsätze, Tore, Vorlagen und Strafminuten über alle
+                Saisons, je Verein (Spielgemeinschaften bleiben
+                unberücksichtigt). Die Zahlen stammen aus einem nächtlich
+                berechneten Bestand. Der <em>CSV-Export</em> beginnt mit
+                Spieler-ID, Nachname, Vorname und Geburtsdatum, damit sich die
+                Zeilen eindeutig zuordnen lassen, und endet bei 50.000 Zeilen;
+                für den Rest grenzt du die Auswahl weiter ein.
+              </p>
+              <div class="roles-inline">
+                <span class="rb sbk">SBK</span>
+                <span class="rb admin">Admin</span>
+              </div>
+            </div>
+          </details>
         </section>
 
         <section class="panel" id="panel-fn-schiri" style="--rc: #4f46e5">
@@ -3359,6 +3441,53 @@
 
           <details class="proc">
             <summary>
+              <span class="proc-icon">🔀</span>
+              <div>
+                <div class="proc-title">
+                  Schiri-Profile zusammenführen &amp; löschen
+                </div>
+                <div class="proc-sub">
+                  Doppelte Profile vereinen, Fehlanlagen entfernen
+                </div>
+              </div>
+              <span class="proc-chev">▾</span>
+            </summary>
+            <div class="proc-body">
+              <p class="proc-text">
+                Gibt es dieselbe Person zweimal, etwa weil der Kursimport nach
+                einer Heirat den neuen Namen nicht wiedererkannt hat, vereinst
+                du die Profile am verbleibenden Profil mit
+                <em>Duplikat zusammenführen</em>. Alles, was am Zweitprofil
+                hängt, wandert mit: Kursergebnisse, Ansetzungen, Rückmeldungen
+                und Spieltagsbestätigungen. Bei der Lizenz gewinnt die
+                <strong>spätere Gültigkeit</strong>, und zwar nur zusammen mit
+                ihrer Stufe; trägt das Zweitprofil keine Stufe, bleibt die
+                Lizenz des verbleibenden Profils unangetastet. Die
+                <strong>Lizenznummer</strong> bleibt die ältere, bereits
+                bekannte. Führt eine Ansetzung oder Rückmeldung beide Profile im
+                selben Gespann, bleibt sie unverändert und wird protokolliert.
+              </p>
+              <p class="proc-text">
+                <strong>Löschen</strong> ist für Fehlanlagen gedacht. Hängt
+                noch etwas am Profil, nennt die Verwaltung im Klartext, was im
+                Weg steht: Kursergebnisse, Ansetzungen, bereits
+                zusammengeführte Profile oder Schiri-Feedback. Nichts davon wird
+                mitgelöscht, denn es ist Historie; zwei Profile derselben Person
+                werden stattdessen zusammengeführt. Am häufigsten hält das
+                Kursergebnis fest, das das Profil angelegt hat. Ein verknüpftes
+                Benutzerkonto wird beim Löschen nur durch einen Admin
+                mitgelöscht.
+              </p>
+              <div class="roles-inline">
+                <span class="rb admin">Admin</span>
+                <span class="rb rsk">RSK</span>
+                <span class="rb ansetzer">Ansetzer</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="proc">
+            <summary>
               <span class="proc-icon">🎫</span>
               <div>
                 <div class="proc-title">
@@ -3557,8 +3686,7 @@
                 Erinnerung per Mail mit dem Link auf den Bogen dieses Spiels. So
                 kannst du die Kriterien schon während des Spiels vor Augen
                 haben. Die Mail kommt nur, solange noch kein Bogen abgegeben
-                ist, und nicht, wenn du unter <em>Mein Konto</em> die Info-Mails
-                abbestellt hast.
+                ist.
               </p>
               <div class="proc-h">Der Bogen</div>
               <p class="proc-text">
@@ -5492,10 +5620,27 @@
                       <td class="def">aus</td>
                     </tr>
                     <tr>
+                      <td>
+                        <strong
+                          >Teaminformationen während der Saison änderbar</strong
+                        >
+                      </td>
+                      <td>
+                        Vereine dürfen Name, Kürzel und Logo ihrer Mannschaften
+                        auch nach dem ersten Spieltag ändern. Ohne den Haken ist
+                        damit ab dem ersten Spieltag einer Liga Schluss, davor
+                        geht es immer. Verband und SBK können jederzeit
+                        berichtigen. Ein untergeordneter Verband erbt den Wert.
+                      </td>
+                      <td class="def">an</td>
+                    </tr>
+                    <tr>
                       <td><strong>Pflicht-Scan Spielbericht</strong></td>
                       <td>
-                        Der Papierbogen muss nach dem Spiel hochgeladen werden,
-                        der Ausrichter wird per E-Mail erinnert.
+                        Der Papierbogen muss nach dem Spiel hochgeladen werden.
+                        Fehlt er eine Stunde nach dem Abschluss des letzten
+                        Spielberichts noch, bekommt der Ausrichter einmal je
+                        Spieltag eine Erinnerung an seine Vereinsadressen.
                       </td>
                       <td class="def">aus</td>
                     </tr>
@@ -5623,9 +5768,15 @@
                 <strong>Liga-Logo</strong> (max. 3 MB) pflegt, wer die Liga
                 bearbeiten darf; fehlt es, wird das Logo des Landesverbands
                 angezeigt. Das <strong>Vereinslogo</strong> pflegt der Verein
-                selbst über den Vereinsmanager (wird auf 100 × 100 verkleinert),
-                ebenso das Teamlogo über den Teammanager. So halten die Vereine
-                ihre Logos ohne Umweg über die Geschäftsstelle aktuell.
+                selbst über den Vereinsmanager (wird auf 100 × 100 verkleinert).
+                Ein abweichendes <strong>Mannschaftslogo</strong> setzt der
+                Vereinsmanager in der Vereinsverwaltung unter
+                <em>Mannschaften des Vereins</em>, zusammen mit Name und Kürzel
+                der Mannschaft; ohne eigenes Logo trägt sie das Vereinslogo. In
+                einer Spielgemeinschaft darf das jeder beteiligte Verein. So
+                halten die Vereine ihre Logos ohne Umweg über die
+                Geschäftsstelle aktuell. Tabelle und Livestream-Grafiken zeigen
+                ein neues Logo nach bis zu fünf Minuten.
               </p>
               <div class="note">
                 <strong>Bildformate:</strong> Erlaubt sind überall
@@ -5641,8 +5792,7 @@
               <div class="roles-inline">
                 <span class="rb admin">Admin</span>
                 <span class="rb sbk">SBK</span>
-                <span class="rb vm">VM (Vereinslogo)</span>
-                <span class="rb tm">TM (Teamlogo)</span>
+                <span class="rb vm">VM (Vereins- und Mannschaftslogo)</span>
               </div>
             </div>
           </details>
@@ -5699,7 +5849,9 @@
                 <em>Mein Konto</em> Sprache, Passwort, den eigenen Vor- und
                 Nachnamen, die eigene E-Mail-Adresse (aktiv erst nach
                 Bestätigung über einen Link an die neue Adresse) und, als
-                Teammanager, den Empfang von Info-Mails. Bei Konten mit
+                Teammanager (auch als Vereinsmanager mit zugeordneten
+                Mannschaften), den Empfang von Info-Mails (<em>Info-E-Mails vom
+                System erhalten</em>). Bei Konten mit
                 verknüpfter Schiedsrichter-Lizenz bleibt der Name der
                 Geschäftsstelle vorbehalten, weil er auf dem digitalen
                 Schiedsrichterausweis erscheint.
@@ -5779,6 +5931,11 @@
                   aufnehmen, ohne sie zu kopieren
                 </li>
                 <li>Hallen anlegen und verwalten</li>
+                <li>
+                  Doppelte Spielorte zusammenlegen: Die Spieltage des doppelten
+                  Eintrags wandern auf den verbleibenden, der doppelte wird
+                  gelöscht (nicht umkehrbar, nur Admin und SBK FD)
+                </li>
                 <li>Landesverbände verwalten</li>
                 <li>
                   Zwei Vereinseinträge zusammenlegen, für Dubletten und echte
@@ -6232,7 +6389,11 @@
                 Erfolgsmeldung mit dem Benutzernamen und dem Hinweis, dass eine
                 Passwort-Mail verschickt wurde. Hat der Schiri bereits ein
                 Konto, wird kein Button angezeigt. Nur für Admin und RSK
-                sichtbar (<code>referee_can_create</code>).
+                sichtbar (<code>referee_can_create</code>). Der Benutzername
+                folgt der Lizenznummer (<code>sr-1234</code>); Gastschiedsrichter
+                haben keine und heißen nach dem Nachnamen
+                (<code>sr-nowak</code>, bei Namensgleichheit
+                <code>sr-nowak2</code>).
               </div>
             </div>
           </details>
@@ -6436,6 +6597,10 @@
               <ul>
                 <li>Vereine anlegen, bearbeiten, deaktivieren</li>
                 <li>Teams verwalten, Hallen anlegen</li>
+                <li>
+                  Spielorte löschen und doppelte zusammenlegen (die Spieltage
+                  wandern mit, nicht umkehrbar)
+                </li>
               </ul>
             </div>
             <div class="cap">
@@ -6539,7 +6704,15 @@
                 <li>
                   Auffälligkeiten auf einen Blick: fehlende Zuschauerzahlen,
                   Matchstrafen, nachträglich geänderte
-                  Berichte
+                  Berichte, verneinte Punkte im Spieltagsbericht (mit den
+                  betroffenen Fragen beim Namen) und ein Einspruch des
+                  Ausrichters
+                </li>
+                <li>
+                  Der Name dessen, der den Papierbogen oder das
+                  Schiri-Berichtsformular hochgeladen hat, ist ein Mail-Link,
+                  sofern eine Adresse vorliegt. So erreichst du ihn bei
+                  Rückfragen direkt
                 </li>
                 <li>
                   Hinweise der Mannschaften aus dem Kommentarfeld des
@@ -7141,7 +7314,15 @@
                 <li>
                   Auffälligkeiten auf einen Blick: fehlende Zuschauerzahlen,
                   Matchstrafen, nachträglich geänderte
-                  Berichte
+                  Berichte, verneinte Punkte im Spieltagsbericht (mit den
+                  betroffenen Fragen beim Namen) und ein Einspruch des
+                  Ausrichters
+                </li>
+                <li>
+                  Der Name dessen, der den Papierbogen oder das
+                  Schiri-Berichtsformular hochgeladen hat, ist ein Mail-Link,
+                  sofern eine Adresse vorliegt. So erreichst du ihn bei
+                  Rückfragen direkt
                 </li>
                 <li>
                   Hinweise der Mannschaften aus dem Kommentarfeld des
@@ -7490,12 +7671,18 @@
                   Notenband, Monats-Zeitreihe, Export als CSV/Excel
                 </li>
                 <li>
-                  <em>Team-Feedback: einzeln</em>: Kommentar-Feed mit Filtern und
-                  händischer Themen-Zuordnung
+                  <em>Team-Feedback: einzeln</em>: alle Rückmeldungen, auch ohne
+                  Freitext, mit Filtern und händischer Themen-Zuordnung
                 </li>
                 <li>
                   Am Schiri-Profil nur die Durchschnittswerte, und erst ab fünf
                   Rückmeldungen
+                </li>
+                <li>
+                  <em>Beobachtungen: alle Bögen</em>: alle Beobachtungsbögen der
+                  Schiedsrichtercoaches, Export als CSV/Excel (ohne Freitexte)
+                  oder PDF; einzelne Bögen lassen sich am Schiri-Profil
+                  zurücknehmen
                 </li>
               </ul>
             </div>
@@ -7597,6 +7784,13 @@
                   Kein Zugriff auf das Schiri-Feedback der Vereine – Einsicht
                   und Auswertung sind den bundesweiten Rollen (RSK FD, Ansetzer
                   FD, Admin) vorbehalten
+                </li>
+                <li>
+                  Die Beobachtungsbögen der Schiedsrichtercoaches zu Spielen des
+                  eigenen Spielbetriebs dagegen schon: am Schiri-Profil und
+                  unter <em>Auswertungen</em> › <em>Beobachtungen: alle
+                  Bögen</em>, mit Export. Einen entgleisten Bogen kann die RSK
+                  zurücknehmen
                 </li>
               </ul>
             </div>
@@ -7858,6 +8052,11 @@
                   Am Schiri-Profil nur die Durchschnittswerte, und erst ab fünf
                   Rückmeldungen
                 </li>
+                <li>
+                  <em>Beobachtungen: alle Bögen</em>: alle Beobachtungsbögen der
+                  Schiedsrichtercoaches lesen und exportieren; zurücknehmen
+                  dürfen nur Admin und RSK
+                </li>
               </ul>
             </div>
           </div>
@@ -8021,6 +8220,12 @@
                 <li>
                   Schiedsrichter-Tags zuweisen (nur Tags des eigenen
                   Landesverbands sowie globale Tags)
+                </li>
+                <li>
+                  Beobachtungsbögen der Schiedsrichtercoaches zu Spielen des
+                  eigenen Spielbetriebs lesen und exportieren
+                  (<em>Auswertungen</em> › <em>Beobachtungen: alle Bögen</em>),
+                  nicht zurücknehmen
                 </li>
               </ul>
             </div>
@@ -11163,7 +11368,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 <strong>Die rechte untere Ecke bleibt frei</strong>, dort legt
                 YouTube die Laufzeit über das Bild. Fehlt einem Verein das
                 Wappen, steht an seiner Stelle sein Kürzel; nachtragen kann es
-                nur der Verein selbst, siehe
+                der Verein selbst, siehe
                 <a href="#panel-streamer">Abschnitt 07</a>.
               </div>
             </div>
