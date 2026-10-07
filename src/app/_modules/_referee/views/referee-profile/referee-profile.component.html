@@ -364,6 +364,21 @@
             {{ "refereeSelf.profile.phoneHint" | transloco }}
           </p>
         </div>
+        <!-- Kontaktdaten für Mit-Angesetzte -->
+        <div class="flex flex-col gap-1">
+          <label class="flex items-center gap-2 text-sm font-bold">
+            <input
+              type="checkbox"
+              [(ngModel)]="draft.share_contact_with_officials"
+              name="share_contact_with_officials"
+              class="h-4 w-4"
+            />
+            {{ "refereeSelf.profile.shareContact" | transloco }}
+          </label>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeSelf.profile.shareContactHint" | transloco }}
+          </p>
+        </div>
         <!-- Heimadresse -->
         <div class="flex flex-col gap-2">
           <h3 class="text-xs font-bold uppercase text-fb-gray-500">
