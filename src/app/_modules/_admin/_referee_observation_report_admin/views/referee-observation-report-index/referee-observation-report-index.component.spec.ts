@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { AssociationService, RefereeObservationService } from '@floorball/core';
 import {
   RefereeObservation,
@@ -185,6 +185,45 @@ describe('RefereeObservationReportIndexComponent', () => {
       { status: 'visible' },
       [2]
     );
+  });
+
+  // Ein geänderter, aber nicht angewendeter Filter gehört nicht in den Export:
+  // Die Tabelle und „alle N gefilterten Bögen“ zeigen noch den alten.
+  it('exportiert mit dem angewendeten Filter, nicht mit den Formularfeldern', () => {
+    component.filterStatus = 'all';
+    component.filterCoachId = 9;
+    component.export('csv');
+    expect(service.adminExportReport).toHaveBeenCalledWith(
+      'csv',
+      { status: 'visible' },
+      []
+    );
+  });
+
+  it('verwirft eine überholte, langsamere Abfrage', () => {
+    const slow = new Subject<RefereeObservationReport>();
+    service.adminGetReport.and.returnValues(slow, of(report([observation(3)])));
+    component.filterStatus = 'all';
+    component.load();
+    component.filterStatus = 'visible';
+    component.load();
+    slow.next(report([observation(1), observation(2)]));
+
+    expect(component.observations.map((o) => o.id)).toEqual([3]);
+  });
+
+  it('sperrt Export und Druck, wenn das Neuladen scheitert', () => {
+    component.toggleSelected(1);
+    service.adminGetReport.and.returnValue(throwError(() => new Error('500')));
+    component.load();
+    fixture.detectChanges();
+
+    expect(component.observations.length).toBe(0);
+    expect(component.selected.size).toBe(0);
+    expect(
+      el().querySelector<HTMLButtonElement>('[data-test="export-csv"]')!
+        .disabled
+    ).toBeTrue();
   });
 
   it('wählt alle aus und wieder ab', () => {

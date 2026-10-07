@@ -7,7 +7,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { AssociationService, RefereeObservationService } from '@floorball/core';
 import {
   RefereeObservation,
@@ -60,6 +60,13 @@ export class RefereeObservationReportIndexComponent
   /** Bögen im Druckbereich; leer, sobald der Druckdialog geschlossen ist. */
   printIds: number[] = [];
 
+  /**
+   * Der Filter, aus dem die angezeigte Liste stammt. Der Export nimmt diesen,
+   * nicht die Formularfelder: Wer einen Filter ändert, ohne „Anwenden“ zu
+   * klicken, exportierte sonst andere Bögen als die in der Tabelle.
+   */
+  private _appliedQuery: RefereeObservationReportQuery = { status: 'visible' };
+  private _loadSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -103,12 +110,16 @@ export class RefereeObservationReportIndexComponent
   load(): void {
     this.loading = true;
     this.loadError = false;
-    this._observationService
-      .adminGetReport(this._buildQuery())
+    const query = this._buildQuery();
+    // Eine noch laufende, langsamere Abfrage darf die neuere nicht überholen.
+    this._loadSub?.unsubscribe();
+    this._loadSub = this._observationService
+      .adminGetReport(query)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (result) => {
           this.data = result;
+          this._appliedQuery = query;
           // Eine Auswahl aus dem vorigen Filter bliebe sonst unsichtbar im
           // Export hängen.
           this.selected.clear();
@@ -117,6 +128,10 @@ export class RefereeObservationReportIndexComponent
           this._cdr.markForCheck();
         },
         error: () => {
+          // Ohne Liste kein Export und kein Druck alter Bögen unter neuem Filter.
+          this.data = null;
+          this.selected.clear();
+          this.expanded.clear();
           this.loadError = true;
           this.loading = false;
           this._cdr.markForCheck();
@@ -210,7 +225,7 @@ export class RefereeObservationReportIndexComponent
     this.exporting = true;
     this.exportError = false;
     this._observationService
-      .adminExportReport(format, this._buildQuery(), [...this.selected])
+      .adminExportReport(format, this._appliedQuery, [...this.selected])
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (blob) => {
