@@ -113,6 +113,25 @@ describe('SecretaryLinksComponent', () => {
     expect(component.generatingKey).toBeNull();
   });
 
+  // Der QR-Code führt über `?code=` direkt in den Spielbericht (fe#461), ohne
+  // Abtippen. Der Zeitraum kommt vom Server und steht auf dem Ausdruck.
+  it('baut den QR-Eintrag aus Adresse und Code und übernimmt den Zeitraum', () => {
+    gameService.createSecretaryLink.and.returnValue(
+      of({ ...createResponse, valid_from: '2026-01-06T23:00:00Z' })
+    );
+    component.ngOnInit();
+    const group = component.hallDays[0];
+
+    component.generate(group);
+
+    expect(component.accessEntriesByKey[component.key(group)]).toEqual([
+      jasmine.objectContaining({
+        url: 'https://example.test/spielsekretariat?code=K7QF3MXR',
+      }),
+    ]);
+    expect(component.linkFor(group)?.valid_from).toBe('2026-01-06T23:00:00Z');
+  });
+
   it('lässt die Serverantwort unangetastet und überlagert sie nur lokal', () => {
     gameService.createSecretaryLink.and.returnValue(of(createResponse));
     component.ngOnInit();

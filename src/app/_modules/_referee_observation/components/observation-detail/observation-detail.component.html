@@ -11,10 +11,12 @@
           · {{ observation.league }}
         }
         @if (matchLink(); as link) {
-          ·
-          <a [routerLink]="link" class="underline hover:no-underline">
-            {{ "refereeObservation.detail.toGame" | transloco }}
-          </a>
+          <span class="print:hidden">
+            ·
+            <a [routerLink]="link" class="underline hover:no-underline">
+              {{ "refereeObservation.detail.toGame" | transloco }}
+            </a>
+          </span>
         }
       </div>
     </div>

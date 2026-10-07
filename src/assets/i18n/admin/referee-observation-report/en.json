@@ -1,0 +1,50 @@
+{
+  "index": {
+    "title": "Coach observations",
+    "intro": "All referee coach observation forms you may see in the administration. Most recent games first.",
+    "loading": "Loading …",
+    "loadError": "The observations could not be loaded.",
+    "empty": "No observation forms for this selection.",
+    "count": "{{ count }} forms"
+  },
+  "filter": {
+    "season": "Season",
+    "gameOperation": "Game operation",
+    "coach": "Coach",
+    "referee": "Referee",
+    "from": "Games from",
+    "to": "Games until",
+    "status": "Status",
+    "statusVisible": "Visible",
+    "statusHidden": "Withdrawn",
+    "statusAll": "All",
+    "all": "All",
+    "apply": "Apply",
+    "reset": "Reset"
+  },
+  "table": {
+    "date": "Date",
+    "game": "Game",
+    "coach": "Coach",
+    "referees": "Referees",
+    "pairOverall": "Pair overall",
+    "open": "Show form",
+    "close": "Close form",
+    "hidden": "Withdrawn",
+    "select": "Select for export",
+    "selectAll": "Select all"
+  },
+  "export": {
+    "all": "Export: all {{ count }} filtered forms",
+    "selected": "Export: {{ count }} selected forms",
+    "csv": "CSV",
+    "xlsx": "Excel",
+    "error": "The export failed."
+  },
+  "print": {
+    "one": "PDF",
+    "selected": "Selection as PDF",
+    "hint": "Opens the print dialog. Choose “Save as PDF” there.",
+    "title": "Referee coach observation form"
+  }
+}

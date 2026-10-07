@@ -4,12 +4,15 @@ import {
   Component,
   HostBinding,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
+  SimpleChanges,
 } from '@angular/core';
 import * as Sentry from '@sentry/angular';
 import { GameService, SessionService } from '@floorball/core';
 import { OverlayLinkState } from '@floorball/types';
+import { AccessCardEntry } from '@floorball/access-card';
 import {
   buildObsSceneCollection,
   downloadObsSceneCollection,
@@ -30,7 +33,7 @@ import {
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class OverlayLinksComponent implements OnInit, OnDestroy {
+export class OverlayLinksComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   gameDayId?: number | null;
 
@@ -38,6 +41,11 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   // überträgt, unterscheidet die beiden Downloads sonst nur am Zeitstempel.
   @Input()
   label = 'Spieltag';
+
+  // Spieltag in Worten für den Ausdruck (Datum, Halle, Liga). Ohne Angabe
+  // steht dort `label`; der Spielbericht kennt das Datum ohnehin selbst.
+  @Input()
+  subject = '';
 
   // Vorbelegter Zustand für Aufrufer, die ihn schon kennen. Die
   // Sekretariats-Übersicht liefert ihn je Spieltag mit; ohne diesen Weg
@@ -66,6 +74,13 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   // Klartext-URLs gibt es nur direkt nach dem Erzeugen. Danach liegt
   // serverseitig bloß der Digest, sie lassen sich also nicht nachladen.
   public overlayUrls: { overlay_url: string; dock_url: string } | null = null;
+  // Für den QR-Ausdruck. Einmal beim Erzeugen gebaut und nicht als Getter:
+  // Die Karte rechnet ihre QR-Codes bei jeder neuen Liste neu.
+  public accessEntries: AccessCardEntry[] = [];
+  public readonly accessNotice =
+    'Mit diesen Adressen lassen sich die Livestream-Grafiken dieses Spieltags ' +
+    'ohne Verzögerung abrufen und über das Bedienfeld steuern. Bitte nur an ' +
+    'das Streaming-Team weitergeben.';
   public overlayBusy = false;
   // Der Zustand ließ sich nicht feststellen (Abruf fehlgeschlagen). Weder
   // „Zugang läuft" noch „kein Zugang", und die Oberfläche sagt das auch so.
@@ -96,8 +111,10 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   public loadOverlayLink(): void {
     if (!this.canManageOverlay) return;
 
-    this._gameService.getOverlayLink(this.gameDayId!).subscribe({
+    const gameDayId = this.gameDayId;
+    this._gameService.getOverlayLink(gameDayId!).subscribe({
       next: (link) => {
+        if (gameDayId !== this.gameDayId) return;
         this.overlayLink = link;
         this.overlayStateUnknown = false;
         this._cdr.markForCheck();
@@ -109,6 +126,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
       // in OBS stehen hat, drückt darauf -- und entwertet damit den laufenden
       // Zugang mitten in der Übertragung. Deshalb ein dritter Zustand.
       error: () => {
+        if (gameDayId !== this.gameDayId) return;
         this.overlayLink = null;
         this.overlayStateUnknown = true;
         this._cdr.markForCheck();
@@ -121,19 +139,40 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
 
     this.overlayBusy = true;
     this.overlayError = '';
-    this._gameService.createOverlayLink(this.gameDayId!).subscribe({
+    const gameDayId = this.gameDayId;
+    this._gameService.createOverlayLink(gameDayId!).subscribe({
       next: (res) => {
+        this.overlayBusy = false;
+        // Inzwischen ein anderer Spieltag (die Spielseite wird über Spiele
+        // hinweg wiederverwendet): Die Links gehören nicht zu dem, was jetzt
+        // dasteht, und dürfen weder angezeigt noch gedruckt werden.
+        if (gameDayId !== this.gameDayId) {
+          this._cdr.markForCheck();
+          return;
+        }
         this.overlayUrls = {
           overlay_url: res.overlay_url,
           dock_url: res.dock_url,
         };
+        this.accessEntries = [
+          {
+            label: 'Browser-Quelle (Anzeigetafel)',
+            url: res.overlay_url,
+            hint: 'In OBS als Browser-Quelle mit 1920 × 1080 Pixeln.',
+          },
+          {
+            label: 'Bedienfeld',
+            url: res.dock_url,
+            hint: 'In OBS als benutzerdefiniertes Browser-Dock.',
+          },
+        ];
         this.overlayStateUnknown = false;
         this.overlayLink = {
           active: true,
+          valid_from: res.valid_from ?? null,
           expires_at: res.expires_at,
           created_by: res.created_by,
         };
-        this.overlayBusy = false;
         this._cdr.markForCheck();
       },
       error: (err) => {
@@ -158,6 +197,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
         this.overlayLink = { active: false };
         this.overlayStateUnknown = false;
         this.overlayUrls = null;
+        this.accessEntries = [];
         this.overlayBusy = false;
         this._cdr.markForCheck();
       },
@@ -229,6 +269,25 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
         'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.';
     }
     this._cdr.markForCheck();
+  }
+
+  // Die Spielseite behält die Komponente beim Wechsel auf ein Spiel eines
+  // anderen Spieltags (spiel/:matchId). Ohne Zurücksetzen stünden die Links
+  // und der QR-Ausdruck des vorigen Spieltags unter der neuen Überschrift.
+  ngOnChanges(changes: SimpleChanges): void {
+    const change = changes['gameDayId'];
+    if (!change || change.firstChange) return;
+    if (change.previousValue === change.currentValue) return;
+
+    this.overlayUrls = null;
+    this.accessEntries = [];
+    this.overlayError = '';
+    this.overlayCopied = '';
+    this.overlayStateUnknown = false;
+    if (this._knownLinkSet) return;
+
+    this.overlayLink = null;
+    this.loadOverlayLink();
   }
 
   ngOnInit(): void {
