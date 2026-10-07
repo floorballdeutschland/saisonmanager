@@ -4,8 +4,10 @@ import {
   Component,
   HostBinding,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
+  SimpleChanges,
 } from '@angular/core';
 import * as Sentry from '@sentry/angular';
 import { GameService, SessionService } from '@floorball/core';
@@ -31,7 +33,7 @@ import {
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class OverlayLinksComponent implements OnInit, OnDestroy {
+export class OverlayLinksComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   gameDayId?: number | null;
 
@@ -109,8 +111,10 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
   public loadOverlayLink(): void {
     if (!this.canManageOverlay) return;
 
-    this._gameService.getOverlayLink(this.gameDayId!).subscribe({
+    const gameDayId = this.gameDayId;
+    this._gameService.getOverlayLink(gameDayId!).subscribe({
       next: (link) => {
+        if (gameDayId !== this.gameDayId) return;
         this.overlayLink = link;
         this.overlayStateUnknown = false;
         this._cdr.markForCheck();
@@ -122,6 +126,7 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
       // in OBS stehen hat, drückt darauf -- und entwertet damit den laufenden
       // Zugang mitten in der Übertragung. Deshalb ein dritter Zustand.
       error: () => {
+        if (gameDayId !== this.gameDayId) return;
         this.overlayLink = null;
         this.overlayStateUnknown = true;
         this._cdr.markForCheck();
@@ -134,8 +139,17 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
 
     this.overlayBusy = true;
     this.overlayError = '';
-    this._gameService.createOverlayLink(this.gameDayId!).subscribe({
+    const gameDayId = this.gameDayId;
+    this._gameService.createOverlayLink(gameDayId!).subscribe({
       next: (res) => {
+        this.overlayBusy = false;
+        // Inzwischen ein anderer Spieltag (die Spielseite wird über Spiele
+        // hinweg wiederverwendet): Die Links gehören nicht zu dem, was jetzt
+        // dasteht, und dürfen weder angezeigt noch gedruckt werden.
+        if (gameDayId !== this.gameDayId) {
+          this._cdr.markForCheck();
+          return;
+        }
         this.overlayUrls = {
           overlay_url: res.overlay_url,
           dock_url: res.dock_url,
@@ -159,7 +173,6 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
           expires_at: res.expires_at,
           created_by: res.created_by,
         };
-        this.overlayBusy = false;
         this._cdr.markForCheck();
       },
       error: (err) => {
@@ -256,6 +269,25 @@ export class OverlayLinksComponent implements OnInit, OnDestroy {
         'Kopieren war nicht möglich. Bitte markiere den Link und kopiere ihn von Hand.';
     }
     this._cdr.markForCheck();
+  }
+
+  // Die Spielseite behält die Komponente beim Wechsel auf ein Spiel eines
+  // anderen Spieltags (spiel/:matchId). Ohne Zurücksetzen stünden die Links
+  // und der QR-Ausdruck des vorigen Spieltags unter der neuen Überschrift.
+  ngOnChanges(changes: SimpleChanges): void {
+    const change = changes['gameDayId'];
+    if (!change || change.firstChange) return;
+    if (change.previousValue === change.currentValue) return;
+
+    this.overlayUrls = null;
+    this.accessEntries = [];
+    this.overlayError = '';
+    this.overlayCopied = '';
+    this.overlayStateUnknown = false;
+    if (this._knownLinkSet) return;
+
+    this.overlayLink = null;
+    this.loadOverlayLink();
   }
 
   ngOnInit(): void {
