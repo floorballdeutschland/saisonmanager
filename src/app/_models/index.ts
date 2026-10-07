@@ -34,6 +34,7 @@ export {
   RefereeFeedbackSubmit,
   RefereeFeedbackStatus,
   RefereeFeedbackSummary,
+  RefereeFeedbackOwnSummary,
   RefereeFeedbackTeamSettings,
   RefereeFeedbackInvitation,
   RefereeFeedbackInvitationStatus,

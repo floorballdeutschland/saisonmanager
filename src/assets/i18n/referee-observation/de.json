@@ -63,9 +63,18 @@
     "reminderHint": "Für dieses Spiel bist du als Schiedsrichtercoach angesetzt. Zum Anpfiff bekommst du eine Erinnerung per Mail mit dem Link auf diesen Bogen."
   },
   "received": {
-    "title": "Mein Coaching-Feedback",
+    "title": "Mein Feedback",
+    "coachingTitle": "Coaching-Feedback",
     "intro": "Die Beobachtungen deiner Schiedsrichtercoaches zu deinen Einsätzen. Du siehst die gemeinsamen Anmerkungen, die Bewertung des Gespanns und deine eigenen Einzelbewertungen.",
-    "empty": "Es liegt noch keine Beobachtung zu dir vor."
+    "empty": "Es liegt noch keine Beobachtung zu dir vor.",
+    "teamsTitle": "Feedback der Mannschaften",
+    "teamsIntro": "Nach jedem Spiel bewerten die beteiligten Mannschaften das Gespann auf einer Skala von 1 bis 10. Du siehst die Durchschnitte über deine Rückmeldungen, aber keine einzelnen Bewertungen, Kommentare oder Mannschaften. Neue Rückmeldungen fließen in Fünferschritten ein, damit sich keine einzelne Bewertung zurückrechnen lässt.",
+    "teamsEnabledHint": "Rückmeldungen gibt es nur aus Ligen, für die das Schiri-Feedback aktiviert ist. Pfeifst du keine solche Liga, kommen hier keine Rückmeldungen an.",
+    "teamsAvgLine": "Ø Linie/Konstanz",
+    "teamsAvgCommunication": "Ø Kommunikation",
+    "teamsCount": "Rückmeldungen",
+    "teamsBelowThreshold": "Die Auswertung wird erst ab {{ min }} Rückmeldungen angezeigt (aktuell {{ count }}).",
+    "teamsLoadFailed": "Das Feedback der Mannschaften konnte nicht geladen werden."
   },
   "form": {
     "title": "Beobachtungsbogen",
