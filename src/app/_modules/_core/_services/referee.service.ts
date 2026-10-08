@@ -273,6 +273,13 @@ export class RefereeService {
     );
   }
 
+  // Kurshistorie aus dem Kursimport (nur Admin/RSK/Ansetzung).
+  public adminGetCourses(id: number) {
+    return this.http.get<RefereeCourseResultSummary[]>(
+      environment.apiURL + 'admin/referees/' + id + '/courses'
+    );
+  }
+
   // Schiri-Feedback der Vereine (nur Admin/FD-RSK/FD-Ansetzer).
   public adminGetFeedbacks(id: number) {
     return this.http.get<RefereeFeedbackProfileResponse>(

@@ -297,6 +297,101 @@
       </div>
     }
 
+    <!-- Kurshistorie (Kursimport; nur Admin, RSK, Ansetzung) -->
+    @if (canViewCourses) {
+      <h2 class="text-lg font-bold mb-4 mt-10">
+        {{ "refereeAdmin.detail.courseHistory" | transloco }}
+      </h2>
+      @if (coursesLoading) {
+        <div class="text-fb-gray-500 text-sm py-4">
+          {{ "refereeAdmin.detail.loading" | transloco }}
+        </div>
+      } @else if (coursesFailed) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeAdmin.detail.coursesLoadFailed" | transloco }}
+        </p>
+      } @else if (courses.length === 0) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeAdmin.detail.noCourses" | transloco }}
+        </p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700 text-left">
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colCourseDate" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colCourseLevel" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colCourse1" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colCourse2" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeAdmin.detail.colInstructor" | transloco }}
+                </th>
+                <th class="py-2 font-bold">
+                  {{ "refereeAdmin.detail.colCourseStatus" | transloco }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of courses; track c.id) {
+                <tr class="border-b border-fb-gray-800 align-top">
+                  <td class="py-2 pr-4 whitespace-nowrap">
+                    {{ c.kursstichtag || "–" }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    {{ c.lizenzstufe || "–" }}
+                    @if (c.status === "applied" && c.gueltigkeit) {
+                      <span class="block text-xs text-fb-gray-500">{{
+                        "refereeAdmin.detail.courseValidUntil"
+                          | transloco: { date: c.gueltigkeit }
+                      }}</span>
+                    }
+                  </td>
+                  <td class="py-2 pr-4">
+                    {{ courseLine(c.course_data.kurs_1) || "–" }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    {{ courseLine(c.course_data.kurs_2) || "–" }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    {{ c.course_data.ausbilder || "–" }}
+                  </td>
+                  <td class="py-2">
+                    <span
+                      class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap"
+                      [class.bg-green-100]="c.status === 'applied'"
+                      [class.text-green-800]="c.status === 'applied'"
+                      [class.bg-red-100]="c.status === 'rejected'"
+                      [class.text-red-800]="c.status === 'rejected'"
+                      [class.bg-gray-100]="c.status === 'pending_review'"
+                      [class.text-gray-700]="c.status === 'pending_review'"
+                    >
+                      {{
+                        "refereeAdmin.detail.courseStatus." + c.status
+                          | transloco
+                      }}
+                    </span>
+                    @if (c.status === "rejected" && c.rejection_reason) {
+                      <span class="block text-xs text-fb-gray-500 mt-1">{{
+                        c.rejection_reason
+                      }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
     <!-- Vereins-Ausschlüsse (nur Ansetzung) -->
     @if (canManageExclusions) {
       <h2 class="text-lg font-bold mb-2 mt-10">
