@@ -65,7 +65,10 @@
             {{ "refereeCourseAdmin.import.colRecords" | transloco }}
           </th>
           <th class="text-left py-2 px-3">
-            {{ "refereeCourseAdmin.import.colOpenReviews" | transloco }}
+            {{ "refereeCourseAdmin.import.colToEdit" | transloco }}
+          </th>
+          <th class="text-left py-2 px-3">
+            {{ "refereeCourseAdmin.import.colAtLv" | transloco }}
           </th>
           <th class="text-left py-2 px-3">
             {{ "refereeCourseAdmin.import.colStatus" | transloco }}
@@ -84,7 +87,8 @@
               {{ imp.created_at | date: "dd.MM.yyyy HH:mm" }}
             </td>
             <td class="py-2 px-3">{{ imp.total_rows }}</td>
-            <td class="py-2 px-3">{{ imp.progress?.pending_review || 0 }}</td>
+            <td class="py-2 px-3">{{ toEditCount(imp) }}</td>
+            <td class="py-2 px-3">{{ atLvCount(imp) }}</td>
             <td class="py-2 px-3">{{ statusLabel(imp.status) }}</td>
             <td class="py-2 px-3 text-right">
               <a

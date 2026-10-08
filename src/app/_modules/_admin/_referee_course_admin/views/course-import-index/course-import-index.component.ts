@@ -84,6 +84,29 @@ export class CourseImportIndexComponent implements OnInit, OnDestroy {
     return !(imp.progress?.pending_review ?? 0);
   }
 
+  /**
+   * Zeilen, die der Importeur noch in der Hand hat: einreichbare und
+   * zurückgestellte. `pending_review` zählt zusätzlich die eingereichten, die
+   * beim Landesverband warten, und taugt deshalb nicht als „zu bearbeiten".
+   * Ein abgebrochener Import hat nichts mehr zu tun, auch wenn seine nie
+   * eingereichten Zeilen weiter `pending_review` tragen.
+   */
+  toEditCount(imp: RefereeCourseImport): number {
+    if (imp.status === 'cancelled') return 0;
+    return (imp.progress?.submittable ?? 0) + (imp.progress?.deferred ?? 0);
+  }
+
+  /**
+   * Eingereichte Zeilen, über die der Landesverband noch nicht entschieden
+   * hat. Die API schließt abgebrochene Importe aus der Freigabe aus
+   * (`awaiting_lv_review`), also hier auch.
+   */
+  atLvCount(imp: RefereeCourseImport): number {
+    if (imp.status === 'cancelled') return 0;
+    const pending = imp.progress?.pending_review ?? 0;
+    return Math.max(pending - this.toEditCount(imp), 0);
+  }
+
   visibleImports(): RefereeCourseImport[] {
     return this.showClosed
       ? this.imports
