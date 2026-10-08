@@ -442,6 +442,22 @@ describe('ErrorInterceptor', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Die Kurshistorie ist ein Nachschlag zum Schiri-Profil; ein 403 darauf
+  // (Mischrolle VM + LV-RSK) darf nicht aus dem Profil werfen.
+  it('leaves the page alone when the referee course history is forbidden', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+
+    failWith(
+      { error: 'Nicht berechtigt' },
+      403,
+      `${environment.apiURL}admin/referees/12/courses`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
   // Gegenprobe zur Ausnahme oben: Der Katalog der Dokumentarten ist eine eigene
   // Ansicht, kein Nachschlag zu einer offenen Seite. Ein 403 darauf muss weiter
   // melden und umleiten.

@@ -189,6 +189,15 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Die Kurshistorie am Schiri-Profil ist ebenfalls ein Nachschlag. Die
+        // API laesst dafuer den Vereinsmanager-Zweig weg, das Profil selbst
+        // aber nicht: Ein Konto mit VM- und LV-RSK-Rolle oeffnet den
+        // Vereinsschiri aus einem fremden Verband und bekommt nur hier 403.
+        // Die Ansicht meldet das im Abschnitt selbst (coursesFailed).
+        if (/\/admin\/referees\/\d+\/courses/.test(request.url)) {
+          return throwError(() => err);
+        }
+
         // Name und Kürzel einer Mannschaft sind ein Nachschlag im
         // Vereinsformular, keine eigene Ansicht – wie die Lizenzdokumente
         // darüber. Ein 403 heißt hier „diese Mannschaft gerade nicht", nicht
