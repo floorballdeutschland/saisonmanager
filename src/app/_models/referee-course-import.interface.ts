@@ -50,14 +50,29 @@ export interface RefereeCourseImportProgress {
   submittable: number;
 }
 
+/**
+ * Eine beim Upload übersprungene Zeile: dieselbe Person mit denselben
+ * Kursergebnissen ist in einem früheren Import schon angewendet oder offen.
+ */
+export interface RefereeCourseSkippedDuplicate {
+  lizenznummer: number | null;
+  vorname: string | null;
+  nachname: string | null;
+  /** Der frühere Import, in dem die Zeile steht. */
+  import_id: number;
+}
+
 export interface RefereeCourseImport {
   id: number;
   filename: string;
   status: RefereeCourseImportStatus;
+  /** Nur die angelegten Zeilen, ohne die übersprungenen. */
   total_rows: number;
   uploaded_by_user_id: number;
   created_at: string;
   progress?: RefereeCourseImportProgress;
+  /** Fehlt bei einer API ohne Dublettenfilter. */
+  skipped_duplicates?: RefereeCourseSkippedDuplicate[];
 }
 
 export interface RefereeSnapshot {
@@ -174,7 +189,14 @@ export interface RefereeCourseResult {
    * (unbekannt), `placeholder` („Karriere beendet" und Ähnliches), `blank`.
    * Ohne diese Angabe sahen alle vier in der Maske gleich aus.
    */
-  csv_club_match_type?: RefereeCourseClubMatchType | 'ambiguous' | 'none' | 'placeholder' | 'blank' | 'alias_target_missing' | null;
+  csv_club_match_type?:
+    | RefereeCourseClubMatchType
+    | 'ambiguous'
+    | 'none'
+    | 'placeholder'
+    | 'blank'
+    | 'alias_target_missing'
+    | null;
   age_at_kursstichtag?: number | null;
   previous_season_game_count?: number;
   state_association?: { id: number; name: string } | null;

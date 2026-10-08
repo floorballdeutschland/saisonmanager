@@ -67,6 +67,8 @@
     "badgePartial": "Partial match ({{ count }}/6)",
     "badgeNew": "New entry",
     "progressDeferred": "• {{ count }} deferred",
+    "skippedSummary": "{{ count }} rows skipped because they are already applied or still open in an earlier import",
+    "skippedInImport": "already in import #{{ id }}",
     "deferHint": "Rows with an open question can be deferred — they stay behind while the others are submitted, and can be added later or discarded.",
     "colRowAction": "Row",
     "deferredBadge": "⏸ Deferred",

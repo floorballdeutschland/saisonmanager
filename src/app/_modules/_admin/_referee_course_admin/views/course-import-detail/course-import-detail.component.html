@@ -43,6 +43,40 @@
         }
       </div>
     }
+    @if (importData.skipped_duplicates?.length) {
+      <details class="bg-fb-gray-50 rounded p-4 mb-6 text-sm">
+        <summary class="cursor-pointer">
+          {{
+            "refereeCourseAdmin.detail.skippedSummary"
+              | transloco: { count: importData.skipped_duplicates!.length }
+          }}
+        </summary>
+        <ul class="mt-2 space-y-1">
+          @for (skip of importData.skipped_duplicates; track $index) {
+            <li>
+              {{ skip.vorname }} {{ skip.nachname }}
+              @if (skip.lizenznummer) {
+                ({{ skip.lizenznummer }})
+              }
+              ·
+              <a
+                [routerLink]="[
+                  '/',
+                  'verwaltung',
+                  'schiri-kurse',
+                  skip.import_id,
+                ]"
+                class="underline hover:no-underline"
+                >{{
+                  "refereeCourseAdmin.detail.skippedInImport"
+                    | transloco: { id: skip.import_id }
+                }}</a
+              >
+            </li>
+          }
+        </ul>
+      </details>
+    }
     @if (isEditable()) {
       <div class="bg-fb-gray-50 rounded p-4 mb-6">
         <p class="text-sm">
