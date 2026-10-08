@@ -47,6 +47,16 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   // Per-row local edit state (debounced PATCH on blur/change)
   saving = new Set<number>();
 
+  /**
+   * Gesperrt, solange ein PATCH der Zeile oder ein Einreichen läuft. Während
+   * des Einreichens darf an keiner Zeile etwas geändert werden: Ein
+   * „Zurückstellen" kurz nach „Einreichen" landete sonst auf einer schon
+   * angewendeten Zeile.
+   */
+  rowBusy(result: RefereeCourseResult): boolean {
+    return this.submitting || this.saving.has(result.id);
+  }
+
   readonly conflictFields: MasterField[] = [
     'lizenznummer',
     'vorname',
@@ -204,10 +214,9 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     // sonst wie ein erfolgtes Verwerfen aus.
     if (this.saving.has(result.id)) {
       this._notify.error(
-        this._transloco.translate(
-          'refereeCourseAdmin.notifications.rowBusy',
-          { row: this.rowLabel(result) }
-        )
+        this._transloco.translate('refereeCourseAdmin.notifications.rowBusy', {
+          row: this.rowLabel(result),
+        })
       );
       return;
     }
@@ -258,7 +267,10 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
    * Schiedsrichters.
    */
   clubMatchHint(result: RefereeCourseResult): string | null {
-    if (result.csv_club_match && result.csv_club_match.id !== result.matched_club?.id) {
+    if (
+      result.csv_club_match &&
+      result.csv_club_match.id !== result.matched_club?.id
+    ) {
       return null;
     }
     const key = clubMatchHintKey(result);
@@ -345,7 +357,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   ): void {
     // Skip wenn für diese Zeile bereits ein PATCH in flight ist — sonst
     // können Responses out-of-order kommen und ältere überschreiben neuere.
-    if (this.saving.has(result.id)) return;
+    if (this.rowBusy(result)) return;
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
@@ -373,7 +385,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
 
   updateLizenzstufe(result: RefereeCourseResult, value: string): void {
     if (result.lizenzstufe === value) return;
-    if (this.saving.has(result.id)) return;
+    if (this.rowBusy(result)) return;
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
@@ -496,6 +508,61 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
               )
           );
           this._cdr.markForCheck();
+        },
+      });
+  }
+
+  /**
+   * Eine einzelne Zeile einreichen, sobald sie geklärt ist — ohne erst alle
+   * übrigen zurückzustellen. Eine zurückgestellte Zeile reicht nur der
+   * Importeur selbst wieder ein, indem er sie aufnimmt: Der Knopf steht an ihr
+   * deshalb nicht.
+   */
+  canSubmitRow(result: RefereeCourseResult): boolean {
+    return (
+      this.isRowEditable(result) &&
+      !result.deferred &&
+      !!result.lizenzstufe &&
+      this.licenseLevels.length > 0 &&
+      !this.rowBusy(result)
+    );
+  }
+
+  submitRow(result: RefereeCourseResult): void {
+    if (!this.importData || !this.canSubmitRow(result)) return;
+    this.submitting = true;
+    const rowLabel = this.rowLabel(result);
+    this._service
+      .submitImport(this.importData.id, [result.id])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this.submitting = false;
+          this._notify.success(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.rowSubmitted',
+              { row: rowLabel }
+            )
+          );
+          // Neu laden: Der Import wechselt dabei auf „teilweise eingereicht"
+          // oder, war es die letzte offene Zeile, auf „eingereicht".
+          this._cdr.markForCheck();
+          this.load(data.id);
+        },
+        error: (err) => {
+          this.submitting = false;
+          this._notify.error(
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.submitFailedForRow',
+                { row: rowLabel }
+              )
+          );
+          // Neu laden: Ein 422 heisst meist, dass die Zeile woanders
+          // eingereicht, verworfen oder zurückgestellt wurde. Die alte Tabelle
+          // böte sonst denselben Knopf für denselben Fehler weiter an.
+          this._cdr.markForCheck();
+          this.load(result.referee_course_import_id);
         },
       });
   }

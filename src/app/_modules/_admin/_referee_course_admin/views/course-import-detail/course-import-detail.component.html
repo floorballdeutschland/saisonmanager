@@ -206,7 +206,7 @@
                         labelKey="name"
                         valueKey="id"
                         [inputId]="'club-' + r.id"
-                        [disabled]="clubsUnavailable || saving.has(r.id)"
+                        [disabled]="clubsUnavailable || rowBusy(r)"
                         [placeholder]="
                           'refereeCourseAdmin.detail.clubPlaceholder'
                             | transloco
@@ -257,7 +257,8 @@
                       <div class="flex flex-wrap gap-2 mt-1">
                         <button
                           type="button"
-                          class="px-2 py-1 border rounded"
+                          class="px-2 py-1 border rounded disabled:opacity-50"
+                          [disabled]="rowBusy(r)"
                           [class.bg-black]="
                             currentMaster(r, field) === csvValue(r, field)
                           "
@@ -273,7 +274,8 @@
                         </button>
                         <button
                           type="button"
-                          class="px-2 py-1 border rounded"
+                          class="px-2 py-1 border rounded disabled:opacity-50"
+                          [disabled]="rowBusy(r)"
                           [class.bg-black]="
                             currentMaster(r, field) === dbValue(r, field)
                           "
@@ -390,7 +392,7 @@
                 class="border rounded px-2 py-1 w-full"
                 [ngModel]="r.lizenzstufe ?? ''"
                 [ngModelOptions]="{ standalone: true }"
-                [disabled]="!isRowEditable(r) || saving.has(r.id)"
+                [disabled]="!isRowEditable(r) || rowBusy(r)"
                 (ngModelChange)="updateLizenzstufe(r, $event)"
               >
                 <option value="">
@@ -409,10 +411,26 @@
               <td class="py-3 px-2">
                 @if (isRowEditable(r) && r.status === "pending_review") {
                   <div class="flex flex-col gap-1 items-start">
+                    @if (!r.deferred) {
+                      <button
+                        type="button"
+                        class="px-2 py-1 rounded text-xs font-bold whitespace-nowrap bg-black text-white hover:bg-fb-gray-500 disabled:opacity-50"
+                        [disabled]="!canSubmitRow(r)"
+                        [attr.title]="
+                          r.lizenzstufe
+                            ? null
+                            : ('refereeCourseAdmin.detail.submitRowNeedsLevel'
+                              | transloco)
+                        "
+                        (click)="submitRow(r)"
+                      >
+                        {{ "refereeCourseAdmin.detail.submitRow" | transloco }}
+                      </button>
+                    }
                     <button
                       type="button"
                       class="px-2 py-1 border rounded text-xs whitespace-nowrap"
-                      [disabled]="saving.has(r.id)"
+                      [disabled]="rowBusy(r)"
                       (click)="toggleDeferred(r)"
                     >
                       {{
@@ -422,7 +440,7 @@
                         ) | transloco
                       }}
                     </button>
-                    @if (r.deferred && !saving.has(r.id)) {
+                    @if (r.deferred && !rowBusy(r)) {
                       <fb-confirmation
                         [title]="
                           'refereeCourseAdmin.detail.discardTitle' | transloco
@@ -519,7 +537,7 @@
       <div class="mt-6 p-4 bg-yellow-50 text-yellow-900 rounded">
         {{
           "refereeCourseAdmin.detail.partiallySubmittedInfo"
-            | transloco: { count: deferredCount() }
+            | transloco: { count: pendingCount() }
         }}
       </div>
     }

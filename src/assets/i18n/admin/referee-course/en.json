@@ -25,12 +25,12 @@
     "loading": "Loading...",
     "uploadedAt": "Uploaded on {{ date }}",
     "progress": "{{ total }} records • {{ pending }} open • {{ applied }} applied",
-    "reviewHint": "Choose the license level and, if needed, the correct master data for each record. Only after \"Submit\" are the records — with the state association control process enabled — submitted for approval.",
+    "reviewHint": "Choose the license level and, if needed, the correct master data for each record. You can submit a clarified row right away with “Submit” in that row, or all open rows at once with the button below. Only after submitting are the records presented for approval (if the state association has enabled its review process).",
     "colMatch": "Match",
     "colMaster": "Master data",
     "colCourse": "Course / deadline",
     "colExistingLicense": "Existing license",
-    "colPreviousSeason": "Previous season",
+    "colPreviousSeason": "Previous season (U15+)",
     "colLicenseLevel": "License level",
     "applied": "✓ Applied",
     "pendingLv": "⏳ At state association",
@@ -76,7 +76,7 @@
     "discardSubmitTitle": "Discard row",
     "submitCount": "Submit {{ count }} of {{ total }}",
     "allDeferred": "All open rows are deferred — there is nothing to submit.",
-    "partiallySubmittedInfo": "Partially submitted. {{ count }} deferred row(s) are still waiting to be clarified: resume and submit them once clarified, or discard them. The import is complete after that.",
+    "partiallySubmittedInfo": "Partially submitted. {{ count }} row(s) are still open: submit them one by one or all at once, deferred ones once clarified, or discard them. The import is complete after that.",
     "nothingOpen": "No open row left — every row has been submitted or discarded. The import can be cancelled.",
     "rejectedByLvBadge": "✕ Rejected by the state association",
     "clubMatchAlias": "matched via the name list",
@@ -88,7 +88,9 @@
     "clubSelect": "Club for this row",
     "clubPlaceholder": "Search club",
     "clubReset": "no club",
-    "clubUnavailable": "Club list unavailable, selection disabled."
+    "clubUnavailable": "Club list unavailable, selection disabled.",
+    "submitRow": "Submit",
+    "submitRowNeedsLevel": "Choose a license level first"
   },
   "review": {
     "title": "Referee course results: approval",
@@ -148,6 +150,8 @@
     "loadClubsError": "Could not load the list of clubs. The club selection stays disabled.",
     "partiallySubmitted": "Import partially submitted — the deferred rows are still open",
     "discardFailedForRow": "Could not discard {{ row }}",
-    "rowBusy": "A change is still running for {{ row }} — please wait a moment."
+    "rowBusy": "A change is still running for {{ row }} — please wait a moment.",
+    "rowSubmitted": "{{ row }} submitted",
+    "submitFailedForRow": "Submit failed for {{ row }}"
   }
 }
