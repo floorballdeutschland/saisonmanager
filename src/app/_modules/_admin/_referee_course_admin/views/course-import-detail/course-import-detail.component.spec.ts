@@ -154,6 +154,7 @@ describe('CourseImportDetailComponent', () => {
                 conflictLabel: 'Abweichung „{{ field }}":',
                 csvOption: 'CSV: {{ value }}',
                 dbOption: 'DB: {{ value }}',
+                skippedInImport: 'bereits in Import #{{ id }}',
               },
             },
           },
@@ -375,6 +376,44 @@ describe('CourseImportDetailComponent', () => {
         fixture.nativeElement.querySelectorAll<HTMLButtonElement>('button')
       ).find((b) => b.textContent?.trim() === 'Einreichen');
     }
+
+    it('listet die beim Upload übersprungenen Zeilen mit Verweis auf den früheren Import', () => {
+      const fixture = render(
+        importMit([zeile({ id: 1 })], {
+          skipped_duplicates: [
+            {
+              lizenznummer: 700,
+              vorname: 'Anna',
+              nachname: 'Alt',
+              import_id: 4,
+            },
+          ],
+        })
+      );
+      const box: HTMLElement = fixture.nativeElement.querySelector('details');
+
+      expect(box.textContent).toContain('Anna Alt');
+      // Ohne echten Router setzt RouterLink kein href; der Linktext trägt
+      // die ID des früheren Imports.
+      expect(box.querySelector('a')?.textContent).toContain('#4');
+    });
+
+    it('verwirft ein verspätetes Nachladen des vorigen Imports', () => {
+      const fixture = render(importMit([zeile({ id: 1 })]));
+      importService.getImport.and.returnValue(
+        of(importMit([], { id: 5, filename: 'alt.csv' }))
+      );
+
+      fixture.componentInstance.load(5);
+
+      expect(fixture.componentInstance.importData?.id).toBe(9);
+    });
+
+    it('zeigt ohne übersprungene Zeilen keinen Hinweis', () => {
+      const fixture = render(importMit([zeile({ id: 1 })]));
+
+      expect(fixture.nativeElement.querySelector('details')).toBeNull();
+    });
 
     it('zeigt „Einreichen" an einer offenen Zeile und reicht genau sie ein', () => {
       importService.submitImport.and.returnValue(

@@ -66,6 +66,8 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   ];
 
   private _destroy$ = new Subject<void>();
+  /** Der Import, den die Route gerade zeigt. */
+  private _routeId: number | null = null;
 
   constructor(
     private _route: ActivatedRoute,
@@ -122,6 +124,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
 
     this._route.params.pipe(takeUntil(this._destroy$)).subscribe((p) => {
       const id = Number(p['id']);
+      this._routeId = id || null;
       if (id) this.load(id);
     });
   }
@@ -138,6 +141,11 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (data) => {
+          // Die Maske wird beim Wechsel auf einen anderen Import (Link
+          // „bereits in Import #N") wiederverwendet. Ein Nachladen nach
+          // Verwerfen oder Einreichen, das noch für den vorigen Import lief,
+          // darf den neuen nicht überschreiben.
+          if (data.id !== this._routeId) return;
           this.importData = data;
           this.loading = false;
           this._cdr.markForCheck();
