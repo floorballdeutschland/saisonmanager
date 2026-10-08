@@ -111,12 +111,12 @@
     "assignmentIntro": "Wer trägt in diesem Verband die Schiedsrichter*innen zu den Spielen ein?",
     "assignmentModeNoneLabel": "Nur die SBK",
     "assignmentModeNoneHint": "Die SBK trägt die Schiedsrichter*innen bei der Spielplanerstellung als Freitext ein.",
-    "assignmentModeClubLabel": "RSK trägt Verein oder Freitext ein",
-    "assignmentModeClubHint": "Die RSK pflegt je Spiel einen Verein, der die Schiedsrichter*innen stellt, oder Personen und Paare als Freitext. Einzelpersonen werden nicht angesetzt.",
+    "assignmentModeClubLabel": "Zusätzlich zur SBK: RSK trägt Verein oder Freitext ein",
+    "assignmentModeClubHint": "Die SBK kann wie bisher im Spielplan eintragen. Zusätzlich pflegt die RSK je Spiel einen Verein, der die Schiedsrichter*innen stellt, oder Personen und Paare als Freitext. Einzelpersonen werden nicht angesetzt.",
     "assignmentModePersonLabel": "Ansetzer*in setzt Personen an",
     "assignmentModePersonHint": "Setzt die separate Rolle Ansetzer*in voraus. Gespann und Coach werden personenscharf angesetzt und benachrichtigt. Angesetzt werden können nur Schiedsrichter*innen, die für den Tag eine Verfügbarkeit gemeldet haben.",
-    "coachAssignmentLabel": "Auch Schiedsrichtercoach*innen ansetzen",
-    "coachAssignmentHint": "Die RSK wählt je Spiel zusätzlich einen Coach mit gültiger B-Qualifikation. Der Coach wird per E-Mail benachrichtigt und zum Anpfiff an den Beobachtungsbogen erinnert."
+    "coachAssignmentLabel": "RSK kann Schiedsrichtercoach*innen ansetzen (freiwillig)",
+    "coachAssignmentHint": "Die RSK kann je Spiel einen Coach mit gültiger B-Qualifikation wählen, muss aber nicht. Ein angesetzter Coach wird per E-Mail benachrichtigt und zum Anpfiff an den Beobachtungsbogen erinnert."
   },
   "notifications": {
     "confirmDelete": "Landesverband \"{{ name }}\" wirklich löschen?",

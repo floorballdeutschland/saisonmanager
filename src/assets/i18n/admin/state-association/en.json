@@ -111,12 +111,12 @@
     "assignmentIntro": "Who enters the referees for the games in this association?",
     "assignmentModeNoneLabel": "Only the SBK",
     "assignmentModeNoneHint": "The SBK enters the referees as free text when creating the schedule.",
-    "assignmentModeClubLabel": "RSK enters a club or free text",
-    "assignmentModeClubHint": "For each game the RSK enters a club that provides the referees, or names and pairs as free text. Individual referees are not assigned.",
+    "assignmentModeClubLabel": "In addition to the SBK: RSK enters a club or free text",
+    "assignmentModeClubHint": "The SBK can still enter referees in the schedule. In addition, for each game the RSK enters a club that provides the referees, or names and pairs as free text. Individual referees are not assigned.",
     "assignmentModePersonLabel": "Assigner assigns individuals",
     "assignmentModePersonHint": "Requires the separate Assigner role. Referee pair and coach are assigned individually and notified. Only referees who have reported availability for that day can be assigned.",
-    "coachAssignmentLabel": "Also assign referee coaches",
-    "coachAssignmentHint": "The RSK additionally picks a coach with a valid B qualification for each game. The coach is notified by e-mail and reminded of the observation form at kick-off."
+    "coachAssignmentLabel": "RSK can assign referee coaches (optional)",
+    "coachAssignmentHint": "The RSK can pick a coach with a valid B qualification for each game, but does not have to. An assigned coach is notified by e-mail and reminded of the observation form at kick-off."
   },
   "notifications": {
     "confirmDelete": "Really delete state association \"{{ name }}\"?",
