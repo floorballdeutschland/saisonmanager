@@ -90,6 +90,7 @@
     "noGames": "No games found.",
     "courseHistory": "Course history",
     "noCourses": "No submitted course results.",
+    "coursesLoadFailed": "The course history is not available for this profile.",
     "colCourseDate": "Course date",
     "colCourseLevel": "License level",
     "colCourse1": "Course 1",

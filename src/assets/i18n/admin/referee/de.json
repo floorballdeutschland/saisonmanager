@@ -90,6 +90,7 @@
     "noGames": "Keine Spiele gefunden.",
     "courseHistory": "Kurshistorie",
     "noCourses": "Keine eingereichten Kursergebnisse.",
+    "coursesLoadFailed": "Die Kurshistorie ist für dieses Profil nicht verfügbar.",
     "colCourseDate": "Kursstichtag",
     "colCourseLevel": "Lizenzstufe",
     "colCourse1": "Kurs 1",

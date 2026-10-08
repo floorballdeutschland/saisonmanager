@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import {
   NotificationService,
   RefereeObservationService,
@@ -91,6 +91,11 @@ const courseResult: RefereeCourseResultSummary = {
 describe('RefereeDetailComponent', () => {
   let fixture: ComponentFixture<RefereeDetailComponent>;
   let adminGetCourses: jasmine.Spy;
+  let coursesResponse: Observable<RefereeCourseResultSummary[]>;
+
+  beforeEach(() => {
+    coursesResponse = of([courseResult]);
+  });
 
   async function setUp(
     games: RefereeAdminGame[],
@@ -100,7 +105,7 @@ describe('RefereeDetailComponent', () => {
     const shown = { ...referee, ...refereeOverrides } as RefereeAdmin;
     adminGetCourses = jasmine
       .createSpy('adminGetCourses')
-      .and.returnValue(of([courseResult]));
+      .and.callFake(() => coursesResponse);
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -114,6 +119,8 @@ describe('RefereeDetailComponent', () => {
               detail: {
                 gameHistory: 'Spielhistorie',
                 courseHistory: 'Kurshistorie',
+                noCourses: 'Keine eingereichten Kursergebnisse.',
+                coursesLoadFailed: 'Kurshistorie nicht verfügbar.',
                 exclusionsHeading: 'Vereins-Ausschlüsse',
                 coursePoints: '{{points}} Punkte',
                 courseTestVersion: 'Testversion {{version}}',
@@ -360,5 +367,19 @@ describe('RefereeDetailComponent', () => {
 
     expect(adminGetCourses).not.toHaveBeenCalled();
     expect(headings()).not.toContain('Kurshistorie');
+  });
+
+  // Mischrolle VM + LV-RSK: Profil ja, Kurse 403. Dann nicht „keine Kurse"
+  // behaupten, sondern sagen, dass sie hier nicht abrufbar sind.
+  it('meldet einen gescheiterten Abruf statt einer leeren Kurshistorie', async () => {
+    coursesResponse = throwError(() => ({ status: 403 }));
+    await setUp([], {
+      menu_item_referee_admin: true,
+      referee_course_history_view: true,
+    });
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Kurshistorie nicht verfügbar.');
+    expect(text).not.toContain('Keine eingereichten Kursergebnisse.');
   });
 });

@@ -60,6 +60,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   canViewCourses = false;
   courses: RefereeCourseResultSummary[] = [];
   coursesLoaded = false;
+  coursesFailed = false;
   coursesLoading = false;
 
   canViewFeedback = false;
@@ -240,6 +241,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         error: () => {
+          this.coursesFailed = true;
           this.coursesLoading = false;
           this._cdr.markForCheck();
         },

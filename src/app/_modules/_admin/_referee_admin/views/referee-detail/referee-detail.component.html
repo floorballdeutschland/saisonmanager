@@ -306,6 +306,10 @@
         <div class="text-fb-gray-500 text-sm py-4">
           {{ "refereeAdmin.detail.loading" | transloco }}
         </div>
+      } @else if (coursesFailed) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeAdmin.detail.coursesLoadFailed" | transloco }}
+        </p>
       } @else if (courses.length === 0) {
         <p class="text-fb-gray-500 text-sm">
           {{ "refereeAdmin.detail.noCourses" | transloco }}
