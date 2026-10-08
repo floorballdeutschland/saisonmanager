@@ -174,9 +174,8 @@ describe('StateAssociationEditComponent', () => {
     expect(component.setting('report_form_email_enabled')).toBeTrue();
     expect(component.setting('manual_proceeding_creation')).toBeTrue();
     expect(component.setting('requested_license_playable')).toBeTrue();
-    // Die drei gestaffelten Ansetzungs-Optionen ebenso.
-    expect(component.refereeAssignmentExternal).toBeTrue();
-    expect(component.refereeAssignmentPersonLevel).toBeTrue();
+    // Der Ansetzungsweg ebenso.
+    expect(component.assignmentMode).toBe('person');
     expect(component.personLevelAssignmentDefault).toBeTrue();
   });
 
@@ -256,8 +255,7 @@ describe('StateAssociationEditComponent', () => {
     component['_persistedParentId'] = null;
     component.setSetting('scan_required', true);
     component.setSetting('requested_license_playable', true);
-    component.refereeAssignmentExternal = true;
-    component.refereeAssignmentPersonLevel = true;
+    component.assignmentMode = 'person';
 
     component.submit();
 
@@ -273,6 +271,64 @@ describe('StateAssociationEditComponent', () => {
     // Maske, fehlte aber im handgeschriebenen Payload-Block — die Checkbox
     // liess sich anhaken und der Wert verschwand beim Speichern spurlos.
     expect(payload.requested_license_playable).toBeTrue();
+  });
+
+  describe('Ansetzungsweg', () => {
+    let component: StateAssociationEditComponent;
+
+    beforeEach(() => {
+      component = createComponent();
+      component.stateAssociation.parent_id = null;
+      component['_persistedParentId'] = null;
+    });
+
+    it('bildet die drei Schalter auf eine Auswahl ab', () => {
+      component.setSetting('referee_assignment_external_enabled', false);
+      expect(component.assignmentMode).toBe('none');
+
+      component.setSetting('referee_assignment_external_enabled', true);
+      component.setSetting('referee_assignment_enabled', false);
+      expect(component.assignmentMode).toBe('club');
+
+      component.setSetting('referee_assignment_enabled', true);
+      expect(component.assignmentMode).toBe('person');
+    });
+
+    it('sendet die Coach-Ansetzung im reduzierten Modus mit', () => {
+      component.assignmentMode = 'club';
+      component.coachAssignment = true;
+
+      component.submit();
+
+      const payload = service.adminUpdate.calls.mostRecent()
+        .args[1] as StateAssociation;
+      expect(payload.referee_assignment_external_enabled).toBeTrue();
+      expect(payload.referee_assignment_enabled).toBeFalse();
+      expect(payload.coach_assignment_enabled).toBeTrue();
+    });
+
+    // Sonst bliebe die Unteroption im Modell stehen und tauchte beim
+    // Zurückwechseln unerwartet aktiv wieder auf.
+    it('verwirft beim Wechsel die Unteroption der alten Moeglichkeit', () => {
+      component.assignmentMode = 'club';
+      component.coachAssignment = true;
+      component.assignmentMode = 'person';
+      component.personLevelAssignmentDefault = true;
+
+      expect(component.coachAssignment).toBeFalse();
+      component.assignmentMode = 'club';
+      expect(component.coachAssignment).toBeFalse();
+      expect(component.personLevelAssignmentDefault).toBeFalse();
+
+      component.assignmentMode = 'none';
+      component.submit();
+      const payload = service.adminUpdate.calls.mostRecent()
+        .args[1] as StateAssociation;
+      expect(payload.referee_assignment_external_enabled).toBeFalse();
+      expect(payload.referee_assignment_enabled).toBeFalse();
+      expect(payload.person_level_assignment_default).toBeFalse();
+      expect(payload.coach_assignment_enabled).toBeFalse();
+    });
   });
 
   // Der strukturelle Test unten prueft nur, DASS jede Einstellung im Payload

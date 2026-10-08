@@ -3215,10 +3215,7 @@
                         Die SBK trägt beim Anlegen des Spielplans einen Freitext
                         am Spiel ein. Kein eigener Menüpunkt.
                       </td>
-                      <td>
-                        <em>Ansetzungen außerhalb der SBK ermöglichen</em> ist
-                        aus
-                      </td>
+                      <td><em>Nur die SBK</em></td>
                     </tr>
                     <tr>
                       <td><strong>2 · Personenscharf</strong></td>
@@ -3227,10 +3224,7 @@
                         wählt einzelne Schiedsrichter aus, benachrichtigt und
                         veröffentlicht.
                       </td>
-                      <td>
-                        beide Optionen an
-                        <em>(außerhalb der SBK + Personenebene)</em>
-                      </td>
+                      <td><em>Ansetzer*in setzt Personen an</em></td>
                     </tr>
                     <tr>
                       <td>
@@ -3242,8 +3236,8 @@
                         oder die Namen als Freitext.
                       </td>
                       <td>
-                        nur <em>Ansetzungen außerhalb der SBK ermöglichen</em>
-                        ist an
+                        <em>RSK trägt Verein oder Freitext ein</em>, optional
+                        mit Coach-Ansetzung
                       </td>
                     </tr>
                   </tbody>
@@ -3289,7 +3283,7 @@
                 Welche Spiele in dieser Liste stehen, steuert die SBK je Spiel
                 über die Markierung <strong>durch Ansetzer*in</strong> im
                 Spiel-Editor. Steht am Verband
-                <em>Standardmäßig durch Ansetzer*in</em>, tragen neue Spiele und
+                <em>Neue Spiele standardmäßig personenscharf</em>, tragen neue Spiele und
                 Spielplan-Importe die Markierung von selbst. Solange kein
                 Freitext eingetragen ist, zeigt der öffentliche Spielplan bei
                 einem markierten Spiel den Hinweis
@@ -3351,6 +3345,21 @@
                 </div>
                 <div class="st success">Steht im Spielplan</div>
               </div>
+              <p class="proc-text">
+                Hat der Landesverband zusätzlich
+                <strong>Auch Schiedsrichtercoach*innen ansetzen</strong>
+                eingeschaltet, steht in der Tabelle eine weitere Spalte
+                <strong>Schiedsrichtercoach*in</strong>. Zur Auswahl stehen alle
+                Coaches des Landesverbands mit am Spieltag gültiger
+                B-Qualifikation. Wer für den Tag eine Verfügbarkeit gemeldet
+                hat, ist mit „verfügbar“ markiert, wer einem der beiden Vereine
+                angehört oder für ihn ausgeschlossen ist, mit „Vereinsbezug“.
+                Beides ist nur ein Hinweis. Gespeichert wird mit demselben
+                Knopf wie Verein und Freitext, und auch der Coach gilt sofort:
+                Er bekommt die <strong>Ansetzungsmail</strong>, ein abberufener
+                Coach die <strong>Änderungsmail</strong>, und zum Anpfiff
+                erinnert ihn der Saisonmanager an den Beobachtungsbogen.
+              </p>
               <div class="note">
                 <strong>Gesperrte Zeilen:</strong> Ist ein Spiel für die
                 personenscharfe Ansetzung markiert, schon namentlich besetzt
@@ -3359,8 +3368,8 @@
                 personenscharf läuft. So bearbeiten nie zwei Wege dasselbe
                 Spiel. Ist ein Konto zugleich RSK und Ansetzer*in, gewinnt
                 kontoweit die Personenebene. Verfügbarkeiten, Benachrichtigungen
-                und die Infos für die Schiedsrichter bleiben dem Personen-Weg
-                vorbehalten.
+                an die Schiedsrichter und die Infos für die Schiedsrichter
+                bleiben dem Personen-Weg vorbehalten.
               </div>
 
               <div class="proc-h">Infos für die Schiedsrichter</div>
@@ -3680,9 +3689,10 @@
               <div class="proc-h">Welche Spiele zur Auswahl stehen</div>
               <p class="proc-text">
                 Unter <em>Offene Spiele</em> stehen die Spiele, für die du als
-                Schiedsrichtercoach <strong>angesetzt</strong> warst. Setzt dein
-                Spielbetrieb nicht auf Personenebene an, gibt es dort keinen
-                Coach-Platz in der Ansetzung; dann kannst du zusätzlich jedes
+                Schiedsrichtercoach <strong>angesetzt</strong> warst, durch die
+                Ansetzer*in oder, wo der Landesverband das eingeschaltet hat,
+                durch die RSK. Setzt dein Spielbetrieb nicht auf Personenebene
+                an, kannst du zusätzlich jedes
                 Spiel deines eigenen Spielbetriebs frei wählen (gekennzeichnet
                 mit „ohne Ansetzung gewählt“). Beobachtet wird, was gespielt
                 wurde: Ein Spiel taucht erst am Spieltag auf. Ohne hinterlegtes
@@ -5659,38 +5669,40 @@
                       <td class="def">aus</td>
                     </tr>
                     <tr>
+                      <td><strong>Schiedsrichter-Ansetzung</strong></td>
                       <td>
-                        <strong
-                          >Ansetzungen außerhalb der SBK ermöglichen</strong
+                        Eine Auswahl aus drei Wegen.
+                        <strong>Nur die SBK</strong>: Die SBK trägt bei der
+                        Spielplanerstellung ein, den Menüpunkt
+                        <em>Ansetzungen</em> gibt es nicht.
+                        <strong>RSK trägt Verein oder Freitext ein</strong>:
+                        reduzierter Modus der RSK.
+                        <strong>Ansetzer*in setzt Personen an</strong>:
+                        personenscharfe Auswahl, Verfügbarkeiten, Benachrichtigen
+                        und Veröffentlichen durch die Rolle Ansetzer*in.
+                      </td>
+                      <td class="def">Nur die SBK</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>Auch Schiedsrichtercoach*innen ansetzen</strong>
+                        <span class="sub-flag"
+                          >nur bei „RSK trägt Verein oder Freitext ein"</span
                         >
                       </td>
                       <td>
-                        Schaltet den Menüpunkt <em>Ansetzungen</em> überhaupt
-                        frei. Ohne diese Option trägt allein die SBK bei der
-                        Spielplanerstellung ein.
+                        Die RSK wählt je Spiel zusätzlich einen Coach mit
+                        gültiger B-Qualifikation. Der Coach wird per E-Mail
+                        benachrichtigt und zum Anpfiff an den Beobachtungsbogen
+                        erinnert.
                       </td>
                       <td class="def">aus</td>
                     </tr>
                     <tr>
                       <td>
-                        <strong>Ansetzungen auf Personenebene</strong>
+                        <strong>Neue Spiele standardmäßig personenscharf</strong>
                         <span class="sub-flag"
-                          >setzt „außerhalb der SBK" voraus</span
-                        >
-                      </td>
-                      <td>
-                        Gibt die Ansetzung an die Rolle Ansetzer*in weiter
-                        (personenscharfe Auswahl, Verfügbarkeiten,
-                        Benachrichtigen und Veröffentlichen). Ohne diese Option
-                        bleibt es beim reduzierten Modus der RSK.
-                      </td>
-                      <td class="def">aus</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <strong>Standardmäßig durch Ansetzer*in</strong>
-                        <span class="sub-flag"
-                          >setzt „auf Personenebene" voraus</span
+                          >nur bei „Ansetzer*in setzt Personen an"</span
                         >
                       </td>
                       <td>
@@ -7303,15 +7315,14 @@
                   automatisch per E-Mail an die VSK übermittelt werden.
                 </li>
                 <li>
-                  Schiedsrichter-Ansetzung: drei gestaffelte Optionen, jede
-                  setzt die darüberliegende voraus.
-                  <em>Ansetzungen außerhalb der SBK ermöglichen</em> schaltet
-                  den Menüpunkt <em>Ansetzungen</em> überhaupt frei,
-                  <em>Ansetzungen auf Personenebene</em> gibt die Ansetzung an
-                  die Rolle Ansetzer*in weiter, und
-                  <em>Standardmäßig durch Ansetzer*in</em> markiert neue Spiele
-                  gleich beim Anlegen. Bleibt es bei der ersten Option, trägt
-                  die RSK Verein oder Freitext ein.
+                  Schiedsrichter-Ansetzung: eine Auswahl aus drei Wegen,
+                  <em>Nur die SBK</em>, <em>RSK trägt Verein oder Freitext
+                  ein</em> oder <em>Ansetzer*in setzt Personen an</em>. Unter
+                  dem RSK-Weg lässt sich zusätzlich
+                  <em>Auch Schiedsrichtercoach*innen ansetzen</em> einschalten,
+                  unter dem Ansetzer-Weg
+                  <em>Neue Spiele standardmäßig personenscharf</em>, das neue
+                  Spiele gleich beim Anlegen markiert.
                 </li>
                 <li>
                   Spieltagsbericht: Fragen anlegen, bearbeiten, löschen
@@ -7921,8 +7932,7 @@
             <div class="proc-body">
               <p class="proc-text">
                 Steht dein Landesverband auf
-                <em>Ansetzungen außerhalb der SBK ermöglichen</em>, ohne dass
-                die <em>Personenebene</em> aktiv ist, findest du unter
+                <em>RSK trägt Verein oder Freitext ein</em>, findest du unter
                 <code>Verwaltung &rarr; Ansetzungen</code> die Ansicht
                 <strong>Schiedsrichter eintragen</strong>. Sie zeigt die
                 anstehenden Spiele deiner Spielbetriebe, filterbar nach Saison
@@ -7947,11 +7957,22 @@
                 Auswahl stehen nur Vereine, die in der jeweiligen Liga eine
                 Mannschaft stellen.
               </p>
+              <p class="proc-text">
+                Hat dein Landesverband
+                <em>Auch Schiedsrichtercoach*innen ansetzen</em> eingeschaltet,
+                wählst du in einer weiteren Spalte je Spiel einen Coach. Zur
+                Auswahl stehen alle Coaches des Landesverbands mit am Spieltag
+                gültiger B-Qualifikation; „verfügbar“ und „Vereinsbezug“ sind
+                nur Hinweise. Anders als beim Verein gehen hier
+                <strong>E-Mails</strong> raus: die Ansetzungsmail an den
+                Coach, die Änderungsmail an einen abberufenen Coach, und zum
+                Anpfiff die Erinnerung an den Beobachtungsbogen.
+              </p>
               <div class="note">
                 <strong>Gesperrt bleiben Zeilen,</strong> deren Spiel für die
                 personenscharfe Ansetzung markiert ist, die schon namentlich
                 besetzt sind oder deren Anpfiff schon war. Nicht dabei sind
-                Verfügbarkeiten, Benachrichtigungen, das Veröffentlichen und die
+                Verfügbarkeiten, Benachrichtigungen an die Schiedsrichter, das Veröffentlichen und die
                 Infos für die Schiedsrichter, die gehören zum Personen-Weg.
                 Betreust du mehrere Verbände, kannst du nur in jene eintragen,
                 die auf dem reduzierten Weg stehen.
@@ -8318,11 +8339,10 @@
 
           <div class="note">
             <strong>Voraussetzung am Landesverband:</strong> Die Rolle greift
-            erst, wenn der Verband
-            <em>Ansetzungen außerhalb der SBK ermöglichen</em>
-            <strong>und</strong> <em>Ansetzungen auf Personenebene</em>
-            aktiviert hat. Fehlt die zweite Option, läuft die Ansetzung
-            stattdessen reduziert über die
+            erst, wenn der Verband unter <em>Schiedsrichter-Ansetzung</em>
+            den Weg <em>Ansetzer*in setzt Personen an</em> gewählt hat. Steht
+            er auf <em>RSK trägt Verein oder Freitext ein</em>, läuft die
+            Ansetzung stattdessen reduziert über die
             <a href="#panel-rsk-lv">RSK des Landesverbands</a>. Trägt ein Konto
             beide Rollen, gewinnt kontoweit die Personenebene, damit nie zwei
             Wege dasselbe Spiel bearbeiten.

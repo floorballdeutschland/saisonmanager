@@ -246,10 +246,12 @@
            der laufenden Einblendung nicht mehr an. -->
       <section class="dk-card">
         <div class="dk-label">Interview</div>
-        <select class="dk-select" id="iv-team"></select>
-        <select class="dk-select" id="iv-player"></select>
+        <!-- Knöpfe statt Auswahllisten: Ein Druck auf den Spieler blendet ihn
+             ein. Der Knopf darunter holt die letzte Wahl zurück. -->
+        <div class="dk-buttons" id="iv-teams"></div>
+        <div class="dk-roster" id="iv-players"></div>
         <button class="dk-btn" id="iv-show" type="button">
-          Interview einblenden
+          Gewählten wieder einblenden
         </button>
       </section>
 

@@ -104,6 +104,13 @@
     "expandAll": "Alle Spieltage aufklappen",
     "collapseAll": "Alle Spieltage zuklappen",
     "clubsFailed": "Vereinsliste konnte nicht geladen werden.",
-    "clubsRetry": "Erneut versuchen"
+    "clubsRetry": "Erneut versuchen",
+    "coachColumn": "Schiedsrichtercoach*in",
+    "noCoach": "Kein Coach",
+    "coachAvailable": "verfügbar",
+    "coachConflict": "Vereinsbezug",
+    "coachesFailed": "Coach-Liste konnte nicht geladen werden.",
+    "coachHint": "Coach-Ansetzungen gelten beim Speichern sofort: Der Coach bekommt eine E-Mail, ein abberufener Coach ebenfalls.",
+    "savedClubOnly": "Verein bzw. Freitext gespeichert, der Coach nicht."
   }
 }

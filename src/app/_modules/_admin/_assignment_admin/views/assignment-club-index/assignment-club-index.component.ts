@@ -5,20 +5,34 @@ import {
   OnInit,
 } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { Observable, of, switchMap, tap } from 'rxjs';
 import {
   NotificationService,
   RefereeService,
   SeasonInfo,
   SettingsService,
 } from '@floorball/core';
-import { AssignmentClub, RefereeAssignableGame } from '@floorball/types';
+import {
+  AssignmentClub,
+  ClubAssignmentCoach,
+  ClubAssignmentResult,
+  RefereeAssignableGame,
+} from '@floorball/types';
 
 // Zeilenzustand im reduzierten Modus (Weg 3, #403): je Spiel entweder ein Verein,
 // der das Gespann stellt, oder ein Freitext für Personen und Paare.
+// Dazu, wo der Verband es eingeschaltet hat, ein Schiedsrichtercoach.
 interface ClubRowState {
   clubId: number | null;
   freeText: string;
+  coachId: number | null;
   saving: boolean;
+}
+
+// Eintrag im Coach-Auswahlfeld.
+interface CoachOption {
+  id: number;
+  label: string;
 }
 
 interface LeagueOption {
@@ -76,6 +90,13 @@ export class AssignmentClubIndexComponent implements OnInit {
   // wäre ein Fehlschlag von „diese Liga hat keine Vereine“ nicht zu unterscheiden.
   clubsFailed: Record<number, boolean> = {};
   private _clubsLoading = new Set<number>();
+  // Coaches je Spieltag: Die Auswahl hängt am Datum (Gültigkeit der
+  // Qualifikation, Verfügbarkeit) und am Verband der Liga, beides ist für alle
+  // Spiele eines Spieltags gleich. Geladen nur für aufgeklappte Spieltage mit
+  // Coach-Ansetzung, Fehlschläge getrennt wie bei den Vereinen.
+  coachesByGameDay: Record<string, ClubAssignmentCoach[]> = {};
+  coachesFailed: Record<string, boolean> = {};
+  private _coachesLoading = new Set<string>();
   // Trennt „noch keine Entscheidung“ von „bewusst alles zugeklappt“. Beides
   // wäre sonst eine leere openGameDays-Liste, und jeder Neuaufbau risse die
   // zugeklappte Ansicht wieder auf.
@@ -124,6 +145,7 @@ export class AssignmentClubIndexComponent implements OnInit {
             freeText: game.assignment_club_id
               ? ''
               : (game.nominated_referee_string ?? ''),
+            coachId: game.coach_id ?? null,
             saving: false,
           };
         });
@@ -160,12 +182,71 @@ export class AssignmentClubIndexComponent implements OnInit {
     if (game.league_id) this._loadClubs(game.league_id);
   }
 
+  get hasCoachAssignment(): boolean {
+    return this.games.some((game) => game.coach_assignable);
+  }
+
+  groupHasCoach(group: GameDayGroup): boolean {
+    return group.games.some((game) => game.coach_assignable);
+  }
+
+  coachesFailedFor(game: RefereeAssignableGame): boolean {
+    return !!this.coachesFailed[this._groupKey(game)];
+  }
+
+  retryCoaches(game: RefereeAssignableGame): void {
+    this._loadCoaches(this._groupKey(game), game.id);
+  }
+
+  // Auswahl für die Zeile. Markiert, wer Verfügbarkeit gemeldet hat, und wer
+  // einem der beiden Vereine angehört oder für sie ausgeschlossen ist. Ein
+  // angesetzter Coach, der nicht mehr in der Liste steht (etwa weil seine
+  // Qualifikation inzwischen abgelaufen ist), bleibt als Eintrag sichtbar,
+  // sonst zeigte das Feld fälschlich „kein Coach“.
+  coachOptions(game: RefereeAssignableGame): CoachOption[] {
+    const coaches = this.coachesByGameDay[this._groupKey(game)] ?? [];
+    const teamClubs = [game.home_team_club_id, game.guest_team_club_id].filter(
+      (id): id is number => id != null
+    );
+    const options = coaches.map((coach) => {
+      const hints: string[] = [];
+      if (coach.available) {
+        hints.push(
+          this._transloco.translate('assignmentAdmin.club.coachAvailable')
+        );
+      }
+      const conflict = teamClubs.some(
+        (id) => coach.club_id === id || coach.excluded_club_ids.includes(id)
+      );
+      if (conflict) {
+        hints.push(
+          this._transloco.translate('assignmentAdmin.club.coachConflict')
+        );
+      }
+      const name = `${coach.nachname}, ${coach.vorname}`;
+      return {
+        id: coach.id,
+        label: hints.length ? `${name} (${hints.join(', ')})` : name,
+      };
+    });
+    if (
+      game.coach_id &&
+      !options.some((option) => option.id === game.coach_id)
+    ) {
+      options.unshift({
+        id: game.coach_id,
+        label: game.coach_name ?? `#${game.coach_id}`,
+      });
+    }
+    return options;
+  }
+
   toggleGameDay(key: string): void {
     this._openStateTouched = true;
     this.openGameDays = this.openGameDays.includes(key)
       ? this.openGameDays.filter((item) => item !== key)
       : [...this.openGameDays, key];
-    this._loadClubsForOpenGroups();
+    this._loadOptionsForOpenGroups();
   }
 
   get allExpanded(): boolean {
@@ -179,7 +260,7 @@ export class AssignmentClubIndexComponent implements OnInit {
     this.openGameDays = this.allExpanded
       ? []
       : this.groups.map((group) => group.key);
-    this._loadClubsForOpenGroups();
+    this._loadOptionsForOpenGroups();
   }
 
   // Zähler über die Spiele des Spieltags, die in dieser Liste stehen, also die
@@ -212,18 +293,24 @@ export class AssignmentClubIndexComponent implements OnInit {
     if (state?.freeText) state.clubId = null;
   }
 
+  // Hat die Zeile ungespeicherte Änderungen? Der Speichern-Knopf ist sonst
+  // gesperrt: Ein Klick ohne Änderung schickt nichts, und ein Knopf, der
+  // scheinbar nichts tut, sähe kaputt aus.
+  rowDirty(game: RefereeAssignableGame): boolean {
+    const state = this.rowStates[game.id];
+    return (
+      !!state &&
+      (this._clubPartDirty(game, state) || this._coachDirty(game, state))
+    );
+  }
+
   save(game: RefereeAssignableGame): void {
     const state = this.rowStates[game.id];
     if (!state || state.saving) return;
 
-    // Leeres Feld auf leerem Spiel ist keine Änderung. Ohne diese Bremse würde
-    // ein Speichern auf der noch nicht befüllten Zeile eine leere Ansetzung
-    // schreiben und den Erfolgs-Toast zeigen; steht dagegen schon etwas im
-    // Spiel, bleibt das Leeren die legitime Art, einen Eintrag zurückzunehmen.
-    const nothingEntered = !state.clubId && !state.freeText.trim();
-    const nothingStored =
-      game.assignment_club_id == null && !game.nominated_referee_string?.trim();
-    if (nothingEntered && nothingStored) return;
+    const clubDirty = this._clubPartDirty(game, state);
+    const coachDirty = this._coachDirty(game, state);
+    if (!clubDirty && !coachDirty) return;
 
     state.saving = true;
     this._cdr.markForCheck();
@@ -232,23 +319,98 @@ export class AssignmentClubIndexComponent implements OnInit {
       ? { club_id: state.clubId }
       : { nominated_referee_string: state.freeText };
 
-    this._refereeService.adminUpdateClubAssignment(game.id, payload).subscribe({
-      next: (result) => {
-        game.nominated_referee_string = result.nominated_referee_string;
-        game.assignment_club_id = result.assignment_club_id ?? null;
-        game.assignment_id = result.assignment_id ?? null;
-        state.saving = false;
-        this._notificationService.success(
-          this._transloco.translate('assignmentAdmin.club.saved'),
-          { autoClose: true, keepAfterRouteChange: false }
-        );
-        this._cdr.markForCheck();
-      },
-      error: () => {
-        state.saving = false;
-        this._cdr.markForCheck();
-      },
-    });
+    // Erst Verein bzw. Freitext, dann der Coach: Die Ansetzungsmail an den
+    // Coach nennt das Gespann, das muss also schon gespeichert sein.
+    const club$: Observable<ClubAssignmentResult | null> = clubDirty
+      ? this._refereeService.adminUpdateClubAssignment(game.id, payload)
+      : of(null);
+    let clubSaved = false;
+    club$
+      .pipe(
+        tap((result) => {
+          this._applyResult(game, result);
+          clubSaved = !!result;
+        }),
+        switchMap(
+          (): Observable<ClubAssignmentResult | null> =>
+            coachDirty
+              ? this._refereeService.adminUpdateClubCoach(
+                  game.id,
+                  state.coachId
+                )
+              : of(null)
+        ),
+        tap((result) => this._applyResult(game, result))
+      )
+      .subscribe({
+        next: () => {
+          state.saving = false;
+          this._notificationService.success(
+            this._transloco.translate('assignmentAdmin.club.saved'),
+            { autoClose: true, keepAfterRouteChange: false }
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          state.saving = false;
+          // Verein bzw. Freitext sind dann schon gespeichert und öffentlich,
+          // nur der Coach nicht. Die Fehlermeldung des Interceptors allein
+          // läse sich wie „nichts gespeichert“.
+          if (clubSaved) {
+            this._notificationService.success(
+              this._transloco.translate('assignmentAdmin.club.savedClubOnly'),
+              { autoClose: true, keepAfterRouteChange: false }
+            );
+          }
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Leeres Feld auf leerem Spiel ist keine Änderung. Ohne diese Bremse würde
+  // ein Speichern auf der noch nicht befüllten Zeile eine leere Ansetzung
+  // schreiben; steht dagegen schon etwas im Spiel, bleibt das Leeren die
+  // legitime Art, einen Eintrag zurückzunehmen.
+  private _clubPartDirty(
+    game: RefereeAssignableGame,
+    state: ClubRowState
+  ): boolean {
+    const nothingEntered = !state.clubId && !state.freeText.trim();
+    const nothingStored =
+      game.assignment_club_id == null && !game.nominated_referee_string?.trim();
+    return !(nothingEntered && nothingStored) && this._clubDirty(game, state);
+  }
+
+  // Ein Coach-Wechsel verschickt Mails. Deshalb nur, wenn er sich wirklich
+  // geändert hat, und nicht bei jedem Speichern der Zeile.
+  private _coachDirty(
+    game: RefereeAssignableGame,
+    state: ClubRowState
+  ): boolean {
+    return !!game.coach_assignable && state.coachId !== (game.coach_id ?? null);
+  }
+
+  // Verein bzw. Freitext weichen vom gespeicherten Stand ab. Steht ein Verein,
+  // gehört der Spielplantext ihm und das Freitextfeld ist leer.
+  private _clubDirty(
+    game: RefereeAssignableGame,
+    state: ClubRowState
+  ): boolean {
+    if (state.clubId !== (game.assignment_club_id ?? null)) return true;
+    if (state.clubId) return false;
+    return state.freeText !== (game.nominated_referee_string ?? '');
+  }
+
+  private _applyResult(
+    game: RefereeAssignableGame,
+    result: ClubAssignmentResult | null
+  ): void {
+    if (!result) return;
+    game.nominated_referee_string = result.nominated_referee_string;
+    game.assignment_club_id = result.assignment_club_id ?? null;
+    game.assignment_id = result.assignment_id ?? null;
+    game.coach_id = result.coach_id ?? null;
+    game.coach_name = result.coach_name ?? null;
   }
 
   private _buildLeagues(): void {
@@ -271,7 +433,8 @@ export class AssignmentClubIndexComponent implements OnInit {
     this.leagues = [...byId.values()]
       .map((league) => ({
         ...league,
-        label: (nameCount.get(league.name) ?? 0) > 1 ? league.label : league.name,
+        label:
+          (nameCount.get(league.name) ?? 0) > 1 ? league.label : league.name,
       }))
       .sort((a, b) => a.label.localeCompare(b.label, 'de'));
 
@@ -318,7 +481,7 @@ export class AssignmentClubIndexComponent implements OnInit {
 
     this.groups = [...byGameDay.values()];
     this._syncOpenGameDays();
-    this._loadClubsForOpenGroups();
+    this._loadOptionsForOpenGroups();
   }
 
   // Der Spieltag ist die Gruppe. Fehlt die Kennung, weil das Frontend vor der
@@ -355,10 +518,16 @@ export class AssignmentClubIndexComponent implements OnInit {
     this._knownGroupKeys = current;
   }
 
-  // Vereine werden erst geholt, wenn ein Spieltag offen ist. Sonst löste ein
+  // Vereine und Coaches werden erst geholt, wenn ein Spieltag offen ist. Sonst löste ein
   // Wechsel auf „Alle Ligen“ eine Anfrage je Liga des Verbands aus.
-  private _loadClubsForOpenGroups(): void {
+  private _loadOptionsForOpenGroups(): void {
     const open = new Set(this.openGameDays);
+    this.groups
+      .filter((group) => open.has(group.key))
+      .forEach((group) => {
+        const game = group.games.find((item) => item.coach_assignable);
+        if (game) this._loadCoaches(group.key, game.id);
+      });
     new Set(
       this.groups
         .filter((group) => open.has(group.key))
@@ -367,8 +536,30 @@ export class AssignmentClubIndexComponent implements OnInit {
     ).forEach((leagueId) => this._loadClubs(leagueId));
   }
 
+  private _loadCoaches(key: string, gameId: number): void {
+    if (this.coachesByGameDay[key] || this._coachesLoading.has(key)) return;
+
+    this._coachesLoading.add(key);
+    delete this.coachesFailed[key];
+    this._refereeService.adminGetClubCoaches(gameId).subscribe({
+      next: (coaches) => {
+        this.coachesByGameDay[key] = coaches;
+        this._coachesLoading.delete(key);
+        this._cdr.markForCheck();
+      },
+      // Wie bei den Vereinen: kein leeres Ergebnis zwischenspeichern, sonst
+      // würde der Spieltag nie wieder angefragt.
+      error: () => {
+        this._coachesLoading.delete(key);
+        this.coachesFailed[key] = true;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
   private _loadClubs(leagueId: number): void {
-    if (this.clubsByLeague[leagueId] || this._clubsLoading.has(leagueId)) return;
+    if (this.clubsByLeague[leagueId] || this._clubsLoading.has(leagueId))
+      return;
 
     this._clubsLoading.add(leagueId);
     delete this.clubsFailed[leagueId];

@@ -415,5 +415,243 @@ describe('AssignmentClubIndexComponent', () => {
     ]);
   });
 
+  describe('Coach-Ansetzung', () => {
+    // Als Fabrik: flush reicht das Objekt per Referenz durch und die
+    // Komponente schreibt Speicherergebnisse hinein. Eine geteilte Konstante
+    // trüge den Coach des einen Tests in den nächsten.
+    const coachGame = () => ({
+      id: 20,
+      league_id: 5,
+      game_day_id: 11,
+      home_team_club_id: 100,
+      guest_team_club_id: 200,
+      nominated_referee_string: 'SV Musterstadt',
+      assignment_club_id: 42,
+      coach_assignable: true,
+      coach_id: null,
+    });
+
+    function flushOptions(coaches: unknown[]) {
+      httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+      httpMock
+        .expectOne(
+          environment.apiURL +
+            'admin/referee_assignments/club_coaches?game_id=20'
+        )
+        .flush(coaches);
+    }
+
+    it('laedt die Coaches einmal je Spieltag und markiert Hinweise', () => {
+      flushInit([coachGame(), { ...coachGame(), id: 21 }]);
+      flushOptions([
+        {
+          id: 1,
+          vorname: 'Ada',
+          nachname: 'Arm',
+          club_id: 300,
+          available: true,
+          excluded_club_ids: [],
+        },
+        {
+          id: 2,
+          vorname: 'Bo',
+          nachname: 'Bein',
+          club_id: 100,
+          available: false,
+          excluded_club_ids: [],
+        },
+        {
+          id: 3,
+          vorname: 'Cem',
+          nachname: 'Coach',
+          club_id: 300,
+          available: false,
+          excluded_club_ids: [200],
+        },
+      ]);
+
+      const labels = component
+        .coachOptions(component.games[0])
+        .map((o) => o.label);
+      expect(labels[0]).toContain('Arm, Ada');
+      expect(labels[0]).not.toBe('Arm, Ada');
+      expect(labels[1]).not.toBe('Bein, Bo');
+      expect(labels[2]).not.toBe('Coach, Cem');
+      expect(component.coachOptions(component.games[1]).length).toBe(3);
+    });
+
+    it('zeigt den angesetzten Coach auch, wenn er nicht mehr in der Liste steht', () => {
+      flushInit([{ ...coachGame(), coach_id: 9, coach_name: 'Alt Coach' }]);
+      flushOptions([]);
+
+      expect(component.coachOptions(component.games[0])).toEqual([
+        { id: 9, label: 'Alt Coach' },
+      ]);
+    });
+
+    it('speichert nur den Coach, wenn sich am Verein nichts geaendert hat', () => {
+      flushInit([coachGame()]);
+      flushOptions([]);
+
+      component.rowStates[20].coachId = 1;
+      component.save(component.games[0]);
+
+      const req = httpMock.expectOne(
+        environment.apiURL + 'admin/referee_assignments/games/20/club_coach'
+      );
+      expect(req.request.body).toEqual({ coach_id: 1 });
+      req.flush({
+        game_id: 20,
+        nominated_referee_string: 'SV Musterstadt',
+        assignment_club_id: 42,
+        coach_id: 1,
+        coach_name: 'Ada Arm',
+      });
+      expect(component.games[0].coach_id).toBe(1);
+      expect(component.rowStates[20].saving).toBeFalse();
+    });
+
+    // Die Ansetzungsmail an den Coach nennt das Gespann. Es muss gespeichert
+    // sein, bevor der Coach-Aufruf die Mail ausloest.
+    it('speichert erst den Verein, dann den Coach', () => {
+      flushInit([coachGame()]);
+      flushOptions([]);
+
+      component.rowStates[20].clubId = 7;
+      component.rowStates[20].coachId = 1;
+      component.save(component.games[0]);
+
+      httpMock.expectNone((r) => r.url.includes('club_coach'));
+      httpMock
+        .expectOne((r) => r.url.includes('games/20/club_assignment'))
+        .flush({
+          game_id: 20,
+          nominated_referee_string: 'TV Nord',
+          assignment_club_id: 7,
+        });
+      httpMock
+        .expectOne((r) => r.url.includes('games/20/club_coach'))
+        .flush({
+          game_id: 20,
+          nominated_referee_string: 'TV Nord',
+          assignment_club_id: 7,
+          coach_id: 1,
+        });
+
+      expect(component.games[0].assignment_club_id).toBe(7);
+      expect(component.games[0].coach_id).toBe(1);
+    });
+
+    it('schickt nichts, wenn weder Verein noch Coach geaendert wurden', () => {
+      flushInit([coachGame()]);
+      flushOptions([]);
+
+      component.save(component.games[0]);
+
+      httpMock.expectNone((r) => r.url.includes('games/20/'));
+      expect(component.rowStates[20].saving).toBeFalse();
+    });
+
+    it('entfernt den Coach mit coach_id null', () => {
+      flushInit([{ ...coachGame(), coach_id: 1, coach_name: 'Ada Arm' }]);
+      flushOptions([]);
+
+      component.rowStates[20].coachId = null;
+      component.save(component.games[0]);
+
+      const req = httpMock.expectOne((r) =>
+        r.url.includes('games/20/club_coach')
+      );
+      expect(req.request.body).toEqual({ coach_id: null });
+      req.flush({
+        game_id: 20,
+        nominated_referee_string: 'SV Musterstadt',
+        assignment_club_id: 42,
+        coach_id: null,
+      });
+      expect(component.games[0].coach_id).toBeNull();
+    });
+
+    // Der Coach bleibt am Spiel, also darf ein reiner Vereinswechsel keinen
+    // Coach-Aufruf und damit keine zweite Ansetzungsmail ausloesen.
+    it('speichert einen Vereinswechsel ohne Coach-Aufruf', () => {
+      flushInit([{ ...coachGame(), coach_id: 1 }]);
+      flushOptions([]);
+
+      component.rowStates[20].clubId = 7;
+      component.save(component.games[0]);
+
+      httpMock
+        .expectOne((r) => r.url.includes('games/20/club_assignment'))
+        .flush({
+          game_id: 20,
+          nominated_referee_string: 'TV Nord',
+          assignment_club_id: 7,
+          coach_id: 1,
+        });
+      httpMock.expectNone((r) => r.url.includes('club_coach'));
+      expect(component.rowDirty(component.games[0])).toBeFalse();
+    });
+
+    it('meldet, dass der Verein gespeichert ist, wenn nur der Coach scheitert', () => {
+      flushInit([coachGame()]);
+      flushOptions([]);
+      const notify = spyOn(component['_notificationService'], 'success');
+
+      component.rowStates[20].clubId = 7;
+      component.rowStates[20].coachId = 1;
+      component.save(component.games[0]);
+      httpMock
+        .expectOne((r) => r.url.includes('games/20/club_assignment'))
+        .flush({
+          game_id: 20,
+          nominated_referee_string: 'TV Nord',
+          assignment_club_id: 7,
+        });
+      httpMock
+        .expectOne((r) => r.url.includes('games/20/club_coach'))
+        .flush(
+          { error: 'Coach nicht gefunden' },
+          { status: 404, statusText: 'Not Found' }
+        );
+
+      expect(notify).toHaveBeenCalledTimes(1);
+      expect(component.games[0].assignment_club_id).toBe(7);
+      expect(component.rowStates[20].saving).toBeFalse();
+      // Ein erneutes Speichern schickt nur noch den Coach.
+      expect(component.rowDirty(component.games[0])).toBeTrue();
+    });
+
+    it('laedt eine gescheiterte Coach-Liste erneut', () => {
+      flushInit([coachGame()]);
+      httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+      httpMock
+        .expectOne((r) => r.url.includes('club_coaches'))
+        .flush(null, { status: 500, statusText: 'Server Error' });
+      expect(component.coachesFailedFor(component.games[0])).toBeTrue();
+
+      component.retryCoaches(component.games[0]);
+      httpMock.expectOne((r) => r.url.includes('club_coaches')).flush([]);
+      expect(component.coachesFailedFor(component.games[0])).toBeFalse();
+    });
+
+    it('sperrt den Speichern-Knopf einer unveraenderten Zeile', () => {
+      flushInit([coachGame()]);
+      flushOptions([]);
+
+      expect(component.rowDirty(component.games[0])).toBeFalse();
+      component.rowStates[20].coachId = 1;
+      expect(component.rowDirty(component.games[0])).toBeTrue();
+    });
+
+    it('laedt keine Coaches fuer Spieltage ohne Coach-Ansetzung', () => {
+      flushInit([{ ...coachGame(), coach_assignable: false }]);
+      httpMock.expectOne((r) => r.url.includes('league_clubs')).flush([]);
+
+      httpMock.expectNone((r) => r.url.includes('club_coaches'));
+      expect(component.groupHasCoach(component.groups[0])).toBeFalse();
+    });
+  });
+
   afterEach(() => httpMock.verify());
 });
