@@ -34,7 +34,21 @@
     </div>
   }
 
-  @if (!loading && imports.length) {
+  @if (!loading && closedCount() > 0) {
+    <label class="inline-flex items-center gap-2 mb-4 text-sm cursor-pointer">
+      <input
+        type="checkbox"
+        [checked]="showClosed"
+        (change)="toggleShowClosed()"
+      />
+      {{
+        "refereeCourseAdmin.import.showClosed"
+          | transloco: { count: closedCount() }
+      }}
+    </label>
+  }
+
+  @if (!loading && visibleImports().length) {
     <table
       class="w-full border-collapse"
       [attr.aria-label]="'refereeCourseAdmin.import.tableLabel' | transloco"
@@ -60,8 +74,11 @@
         </tr>
       </thead>
       <tbody>
-        @for (imp of imports; track imp) {
-          <tr class="border-b border-fb-gray-100 hover:bg-fb-gray-50">
+        @for (imp of visibleImports(); track imp.id) {
+          <tr
+            class="border-b border-fb-gray-100 hover:bg-fb-gray-50"
+            [class.text-fb-gray-500]="isClosed(imp)"
+          >
             <td class="py-2 px-3 font-mono text-sm">{{ imp.filename }}</td>
             <td class="py-2 px-3">
               {{ imp.created_at | date: "dd.MM.yyyy HH:mm" }}
@@ -85,6 +102,12 @@
   @if (!loading && !imports.length) {
     <div class="text-fb-gray-500 py-12 text-center">
       {{ "refereeCourseAdmin.import.empty" | transloco }}
+    </div>
+  }
+
+  @if (!loading && imports.length && !visibleImports().length) {
+    <div class="text-fb-gray-500 py-12 text-center">
+      {{ "refereeCourseAdmin.import.allClosed" | transloco }}
     </div>
   }
 </div>

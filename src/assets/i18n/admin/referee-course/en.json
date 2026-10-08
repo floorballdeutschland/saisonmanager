@@ -18,7 +18,9 @@
     "statusSubmitted": "Submitted",
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
-    "statusPartiallySubmitted": "Partially submitted"
+    "statusPartiallySubmitted": "Partially submitted",
+    "showClosed": "Show completed imports ({{ count }})",
+    "allClosed": "No open imports. Completed ones can be shown with the checkbox above."
   },
   "detail": {
     "back": "← back to overview",

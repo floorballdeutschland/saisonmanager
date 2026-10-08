@@ -25,6 +25,9 @@ export class CourseImportIndexComponent implements OnInit, OnDestroy {
   imports: RefereeCourseImport[] = [];
   loading = false;
   uploading = false;
+  // Abgeschlossene Importe stehen standardmäßig nicht in der Liste: Mit jedem
+  // Kurs wächst sie, und die Arbeit steckt in den wenigen offenen.
+  showClosed = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -67,6 +70,32 @@ export class CourseImportIndexComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  /**
+   * Abgeschlossen heißt: Für den Import ist nichts mehr zu tun. Eingereicht
+   * zählt nur dazu, wenn keine Zeile mehr auf die Freigabe des
+   * Landesverbands wartet; sonst stünde ein Import mit offenen Reviews
+   * unsichtbar hinter dem Filter.
+   */
+  isClosed(imp: RefereeCourseImport): boolean {
+    if (imp.status === 'cancelled') return true;
+    if (imp.status !== 'submitted') return false;
+    return !(imp.progress?.pending_review ?? 0);
+  }
+
+  visibleImports(): RefereeCourseImport[] {
+    return this.showClosed
+      ? this.imports
+      : this.imports.filter((imp) => !this.isClosed(imp));
+  }
+
+  closedCount(): number {
+    return this.imports.filter((imp) => this.isClosed(imp)).length;
+  }
+
+  toggleShowClosed(): void {
+    this.showClosed = !this.showClosed;
   }
 
   static readonly MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
