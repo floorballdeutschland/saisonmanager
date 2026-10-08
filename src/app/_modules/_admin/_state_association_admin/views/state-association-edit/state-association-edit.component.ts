@@ -45,6 +45,7 @@ export const INHERITED_SETTINGS = [
   'referee_assignment_external_enabled',
   'referee_assignment_enabled',
   'person_level_assignment_default',
+  'coach_assignment_enabled',
   'report_form_email_enabled',
   'manual_proceeding_creation',
   'requested_license_playable',
@@ -52,6 +53,8 @@ export const INHERITED_SETTINGS = [
 ] as const;
 
 type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
+
+type AssignmentMode = 'none' | 'club' | 'person';
 
 // Zu jedem Feld der tatsaechlich greifende Wert aus dem Detail-Endpunkt.
 const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
@@ -62,6 +65,7 @@ const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
     'effective_referee_assignment_external_enabled',
   referee_assignment_enabled: 'effective_referee_assignment_enabled',
   person_level_assignment_default: 'effective_person_level_assignment_default',
+  coach_assignment_enabled: 'effective_coach_assignment_enabled',
   report_form_email_enabled: 'effective_report_form_email_enabled',
   manual_proceeding_creation: 'effective_manual_proceeding_creation',
   requested_license_playable: 'effective_requested_license_playable',
@@ -85,6 +89,7 @@ const SETTING_DEFAULT: Record<InheritedSetting, boolean> = {
   referee_assignment_external_enabled: false,
   referee_assignment_enabled: false,
   person_level_assignment_default: false,
+  coach_assignment_enabled: false,
   report_form_email_enabled: false,
   manual_proceeding_creation: false,
   requested_license_playable: false,
@@ -362,48 +367,53 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Die drei Ansetzungs-Optionen sind gestaffelt: die Personenebene setzt den
-  // Hauptschalter voraus, die Voreinstellung die Personenebene. Statt nur das
-  // Eingabefeld auszugrauen, wird der Wert selbst durchgereicht – sonst bliebe
-  // eine abgehakte untere Option im Modell stehen und tauchte beim erneuten
-  // Einschalten der oberen unerwartet aktiv wieder auf.
+  // Ansetzungsweg des Verbands. Die Maske zeigt ihn als eine Auswahl aus drei
+  // Möglichkeiten; gespeichert wird er weiter in den drei gestaffelten
+  // Schaltern, die das Backend ausschließlich in
+  // StateAssociation#referee_assignment_mode auswertet. Die Abbildung hier ist
+  // dieselbe:
   //
-  // Die Staffelung gilt auch für die geerbten Werte: Das Backend wertet die drei
-  // Schalter ausschließlich in StateAssociation#referee_assignment_mode aus, und
-  // dort setzt jede Stufe die darüberliegende voraus.
-  get refereeAssignmentExternal(): boolean {
-    return this.setting('referee_assignment_external_enabled');
+  //   none   – Hauptschalter aus (nur die SBK trägt ein)
+  //   club   – Hauptschalter an, Personenebene aus (RSK: Verein oder Freitext)
+  //   person – beide an (Ansetzer:in setzt personenscharf an)
+  //
+  // Die Unteroptionen gehören je zu einer Möglichkeit: die Voreinstellung zur
+  // Personenebene, die Coach-Ansetzung zum reduzierten Modus. Wer die
+  // Möglichkeit wechselt, verliert die Unteroption der alten. Sonst bliebe sie
+  // im Modell stehen und tauchte beim Zurückwechseln unerwartet aktiv wieder
+  // auf; der Server räumt dieselben Kombinationen zusätzlich auf.
+  get assignmentMode(): AssignmentMode {
+    if (!this.setting('referee_assignment_external_enabled')) return 'none';
+    return this.setting('referee_assignment_enabled') ? 'person' : 'club';
   }
 
-  set refereeAssignmentExternal(value: boolean) {
-    this.setSetting('referee_assignment_external_enabled', value);
-    if (!value) {
-      this.setSetting('referee_assignment_enabled', false);
+  set assignmentMode(mode: AssignmentMode) {
+    this.setSetting('referee_assignment_external_enabled', mode !== 'none');
+    this.setSetting('referee_assignment_enabled', mode === 'person');
+    if (mode !== 'person')
       this.setSetting('person_level_assignment_default', false);
-    }
-  }
-
-  get refereeAssignmentPersonLevel(): boolean {
-    return (
-      this.refereeAssignmentExternal &&
-      this.setting('referee_assignment_enabled')
-    );
-  }
-
-  set refereeAssignmentPersonLevel(value: boolean) {
-    this.setSetting('referee_assignment_enabled', value);
-    if (!value) this.setSetting('person_level_assignment_default', false);
+    if (mode !== 'club') this.setSetting('coach_assignment_enabled', false);
   }
 
   get personLevelAssignmentDefault(): boolean {
     return (
-      this.refereeAssignmentPersonLevel &&
+      this.assignmentMode === 'person' &&
       this.setting('person_level_assignment_default')
     );
   }
 
   set personLevelAssignmentDefault(value: boolean) {
     this.setSetting('person_level_assignment_default', value);
+  }
+
+  get coachAssignment(): boolean {
+    return (
+      this.assignmentMode === 'club' && this.setting('coach_assignment_enabled')
+    );
+  }
+
+  set coachAssignment(value: boolean) {
+    this.setSetting('coach_assignment_enabled', value);
   }
 
   submit(): void {
@@ -446,14 +456,16 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     // Genau so wäre `requested_license_playable` als toter Schalter in die
     // Verbandsmaske gekommen.
     //
-    // Die drei Ansetzungs-Optionen kommen aus ihren Gettern, damit die
-    // Staffelung schon im Payload steht; der Server räumt widersprüchliche
-    // Kombinationen zusätzlich auf.
+    // Die Ansetzungsschalter kommen aus dem Ansetzungsweg und seinen
+    // Unteroptionen, damit die Staffelung schon im Payload steht; der Server
+    // räumt widersprüchliche Kombinationen zusätzlich auf.
     if (!this.hasParent) {
+      const mode = this.assignmentMode;
       const staged: Partial<Record<InheritedSetting, boolean>> = {
-        referee_assignment_external_enabled: this.refereeAssignmentExternal,
-        referee_assignment_enabled: this.refereeAssignmentPersonLevel,
+        referee_assignment_external_enabled: mode !== 'none',
+        referee_assignment_enabled: mode === 'person',
         person_level_assignment_default: this.personLevelAssignmentDefault,
+        coach_assignment_enabled: this.coachAssignment,
       };
       Object.assign(
         payload,
