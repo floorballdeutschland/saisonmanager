@@ -99,4 +99,37 @@ describe('CourseImportIndexComponent', () => {
     expect(fixture.nativeElement.querySelector('table')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('allClosed');
   });
+
+  // `pending_review` zählt beides: Zeilen beim Importeur und eingereichte beim
+  // Landesverband. Die Übersicht trennt die beiden Lagen.
+  function zellen(el: HTMLElement, row: number): string[] {
+    return Array.from(el.querySelectorAll(`tbody tr:nth-child(${row}) td`)).map(
+      (td) => td.textContent?.trim() ?? ''
+    );
+  }
+
+  it('trennt "zu bearbeiten" von "offen beim LV"', () => {
+    const teilweise = imp(2, 'partially_submitted', 5);
+    teilweise.progress = {
+      total: 9,
+      pending_review: 5,
+      applied: 4,
+      rejected: 0,
+      deferred: 1,
+      submittable: 1,
+    };
+    const fixture = render([teilweise]);
+
+    // Datei, Datum, Datensätze, zu bearbeiten, beim LV, Status
+    expect(zellen(fixture.nativeElement, 1).slice(3, 5)).toEqual(['2', '3']);
+  });
+
+  it('zählt beim abgebrochenen Import nichts als offen', () => {
+    const abgebrochen = imp(5, 'cancelled', 3);
+    abgebrochen.progress!.submittable = 3;
+    const fixture = render([abgebrochen]);
+
+    expect(fixture.componentInstance.toEditCount(abgebrochen)).toBe(0);
+    expect(fixture.componentInstance.atLvCount(abgebrochen)).toBe(0);
+  });
 });
