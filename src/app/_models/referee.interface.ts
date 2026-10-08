@@ -632,6 +632,11 @@ export interface RefereeAssignableGame {
   // Aktueller Freitext im Spielplan – im reduzierten Modus das Eingabefeld.
   nominated_referee_string?: string | null;
   assignment_club_id?: number | null;
+  // Reduzierter Modus mit Coach-Ansetzung (Schalter am Landesverband), je
+  // Spiel, weil ein RSK-Scope mehrere Verbände umfassen kann.
+  coach_assignable?: boolean;
+  coach_id?: number | null;
+  coach_name?: string | null;
   // Freitext-Spielinformationen des Ansetzers, nur für das angesetzte Gespann
   // und den SR-Coach sichtbar (nie für die Mannschaften).
   referee_notes?: string | null;
@@ -645,6 +650,21 @@ export interface ClubAssignmentResult {
   nominated_referee_string: string | null;
   assignment_club_id?: number | null;
   assignment_id?: number | null;
+  coach_id?: number | null;
+  coach_name?: string | null;
+}
+
+// Wählbarer Coach im reduzierten Modus: alle Coaches des Landesverbands mit am
+// Spieltag gültiger B-Qualifikation. `available` (Verfügbarkeit gemeldet) ist
+// nur ein Hinweis, keine Voraussetzung.
+export interface ClubAssignmentCoach {
+  id: number;
+  vorname: string;
+  nachname: string;
+  lizenzstufe?: string | null;
+  club_id?: number | null;
+  available: boolean;
+  excluded_club_ids: number[];
 }
 
 export interface RefereeGameNotes {

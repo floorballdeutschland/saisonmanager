@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   AssignmentClub,
+  ClubAssignmentCoach,
   ClubAssignmentResult,
   ExclusionClub,
   PublicLicenseList,
@@ -562,6 +563,27 @@ export class RefereeService {
         gameId +
         '/club_assignment',
       data
+    );
+  }
+
+  // Reduzierter Modus mit Coach-Ansetzung: wählbare Coaches für ein Spiel.
+  public adminGetClubCoaches(gameId: number) {
+    return this.http.get<ClubAssignmentCoach[]>(
+      environment.apiURL +
+        'admin/referee_assignments/club_coaches?game_id=' +
+        gameId
+    );
+  }
+
+  // Coach setzen, tauschen oder mit null entfernen. Gilt sofort; die API
+  // schickt Ansetzungs- bzw. Änderungsmail.
+  public adminUpdateClubCoach(gameId: number, coachId: number | null) {
+    return this.http.patch<ClubAssignmentResult>(
+      environment.apiURL +
+        'admin/referee_assignments/games/' +
+        gameId +
+        '/club_coach',
+      { coach_id: coachId }
     );
   }
 

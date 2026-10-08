@@ -104,6 +104,12 @@
     "expandAll": "Expand all game days",
     "collapseAll": "Collapse all game days",
     "clubsFailed": "The club list could not be loaded.",
-    "clubsRetry": "Try again"
+    "clubsRetry": "Try again",
+    "coachColumn": "Referee coach",
+    "noCoach": "No coach",
+    "coachAvailable": "available",
+    "coachConflict": "club affiliation",
+    "coachesFailed": "The coach list could not be loaded.",
+    "coachHint": "Coach assignments take effect when saved: the coach receives an e-mail, and so does a coach who is removed."
   }
 }

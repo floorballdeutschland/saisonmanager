@@ -49,6 +49,7 @@ export interface StateAssociation {
   effective_referee_assignment_external_enabled?: boolean;
   effective_referee_assignment_enabled?: boolean;
   effective_person_level_assignment_default?: boolean;
+  effective_coach_assignment_enabled?: boolean;
   effective_report_form_email_enabled?: boolean;
   effective_manual_proceeding_creation?: boolean;
   effective_requested_license_playable?: boolean;
@@ -76,6 +77,8 @@ export interface StateAssociation {
   referee_assignment_external_enabled?: boolean;
   referee_assignment_enabled?: boolean;
   person_level_assignment_default?: boolean;
+  // Unteroption des reduzierten Modus: die RSK setzt auch Coaches an.
+  coach_assignment_enabled?: boolean;
   report_form_email_enabled?: boolean;
   logo_url?: string | null;
   banner_url?: string | null;

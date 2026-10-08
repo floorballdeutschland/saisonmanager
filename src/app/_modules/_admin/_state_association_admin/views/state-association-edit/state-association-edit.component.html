@@ -446,6 +446,11 @@
         </div>
       }
       <div class="flex flex-col gap-3">
+        <div
+          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+        >
+          {{ "stateAssociationAdmin.edit.licensesHeading" | transloco }}
+        </div>
         <label
           class="flex items-start gap-3"
           [class.cursor-not-allowed]="hasParent"
@@ -516,30 +521,13 @@
             }}</span>
           </span>
         </label>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
+      </div>
+      <div class="flex flex-col gap-3 mt-6">
+        <div
+          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
         >
-          <input
-            type="checkbox"
-            [ngModel]="setting('referee_license_review_enabled')"
-            (ngModelChange)="
-              setSetting('referee_license_review_enabled', $event)
-            "
-            name="referee_license_review_enabled"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.refereeReviewLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.refereeReviewHint" | transloco
-            }}</span>
-          </span>
-        </label>
+          {{ "stateAssociationAdmin.edit.reportsHeading" | transloco }}
+        </div>
         <label
           class="flex items-start gap-3"
           [class.cursor-not-allowed]="hasParent"
@@ -559,81 +547,6 @@
             }}</span>
             <span class="text-xs text-fb-gray-400">{{
               "stateAssociationAdmin.edit.scanRequiredHint" | transloco
-            }}</span>
-          </span>
-        </label>
-        <!-- Drei gestaffelte Ansetzungs-Optionen: jede ist nur wählbar, solange
-             die darüberliegende aktiv ist (sonst ausgegraut). -->
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [(ngModel)]="refereeAssignmentExternal"
-            [disabled]="hasParent"
-            name="referee_assignment_external_enabled"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.refereeAssignmentExternalLabel"
-                | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.refereeAssignmentExternalHint"
-                | transloco
-            }}</span>
-          </span>
-        </label>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent || !refereeAssignmentExternal"
-          [class.cursor-pointer]="!(hasParent || !refereeAssignmentExternal)"
-        >
-          <input
-            type="checkbox"
-            [(ngModel)]="refereeAssignmentPersonLevel"
-            [disabled]="hasParent || !refereeAssignmentExternal"
-            name="referee_assignment_enabled"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span
-            class="flex flex-col gap-0.5"
-            [class.opacity-40]="hasParent || !refereeAssignmentExternal"
-          >
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.refereeAssignmentLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.refereeAssignmentHint" | transloco
-            }}</span>
-          </span>
-        </label>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="
-            hasParent || !refereeAssignmentPersonLevel
-          "
-          [class.cursor-pointer]="!(hasParent || !refereeAssignmentPersonLevel)"
-        >
-          <input
-            type="checkbox"
-            [(ngModel)]="personLevelAssignmentDefault"
-            [disabled]="hasParent || !refereeAssignmentPersonLevel"
-            name="person_level_assignment_default"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span
-            class="flex flex-col gap-0.5"
-            [class.opacity-40]="hasParent || !refereeAssignmentPersonLevel"
-          >
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.personLevelDefaultLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.personLevelDefaultHint" | transloco
             }}</span>
           </span>
         </label>
@@ -660,7 +573,7 @@
           </span>
         </label>
         <label
-          class="flex items-start gap-3"
+          class="flex items-start gap-3 ml-7"
           [class.cursor-not-allowed]="
             hasParent || !setting('report_form_email_enabled')
           "
@@ -690,6 +603,180 @@
             }}</span>
           </span>
         </label>
+      </div>
+      <div class="flex flex-col gap-3 mt-6">
+        <div
+          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+        >
+          {{ "stateAssociationAdmin.edit.refereesHeading" | transloco }}
+        </div>
+        <label
+          class="flex items-start gap-3"
+          [class.cursor-not-allowed]="hasParent"
+          [class.cursor-pointer]="!hasParent"
+        >
+          <input
+            type="checkbox"
+            [ngModel]="setting('referee_license_review_enabled')"
+            (ngModelChange)="
+              setSetting('referee_license_review_enabled', $event)
+            "
+            name="referee_license_review_enabled"
+            [disabled]="hasParent"
+            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+          />
+          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
+            <span class="text-sm font-bold">{{
+              "stateAssociationAdmin.edit.refereeReviewLabel" | transloco
+            }}</span>
+            <span class="text-xs text-fb-gray-400">{{
+              "stateAssociationAdmin.edit.refereeReviewHint" | transloco
+            }}</span>
+          </span>
+        </label>
+      </div>
+      <div class="flex flex-col gap-3 mt-6">
+        <div
+          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+        >
+          {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
+        </div>
+        <div class="text-xs text-fb-gray-400">
+          {{ "stateAssociationAdmin.edit.assignmentIntro" | transloco }}
+        </div>
+        <!-- Der Ansetzungsweg ist eine Auswahl aus drei Möglichkeiten, keine drei
+             unabhängigen Schalter. Die Unteroptionen erscheinen nur unter der
+             Möglichkeit, zu der sie gehören (siehe assignmentMode). -->
+        <div
+          role="radiogroup"
+          class="flex flex-col gap-3"
+          [attr.aria-label]="
+            'stateAssociationAdmin.edit.assignmentHeading' | transloco
+          "
+        >
+          <label
+            class="flex items-start gap-3"
+            [class.cursor-not-allowed]="hasParent"
+            [class.cursor-pointer]="!hasParent"
+          >
+            <input
+              type="radio"
+              [(ngModel)]="assignmentMode"
+              value="none"
+              name="assignment_mode"
+              [disabled]="hasParent"
+              class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
+            />
+            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
+              <span class="text-sm font-bold">{{
+                "stateAssociationAdmin.edit.assignmentModeNoneLabel" | transloco
+              }}</span>
+              <span class="text-xs text-fb-gray-400">{{
+                "stateAssociationAdmin.edit.assignmentModeNoneHint" | transloco
+              }}</span>
+            </span>
+          </label>
+          <label
+            class="flex items-start gap-3"
+            [class.cursor-not-allowed]="hasParent"
+            [class.cursor-pointer]="!hasParent"
+          >
+            <input
+              type="radio"
+              [(ngModel)]="assignmentMode"
+              value="club"
+              name="assignment_mode"
+              [disabled]="hasParent"
+              class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
+            />
+            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
+              <span class="text-sm font-bold">{{
+                "stateAssociationAdmin.edit.assignmentModeClubLabel" | transloco
+              }}</span>
+              <span class="text-xs text-fb-gray-400">{{
+                "stateAssociationAdmin.edit.assignmentModeClubHint" | transloco
+              }}</span>
+            </span>
+          </label>
+          @if (assignmentMode === "club") {
+            <label
+              class="flex items-start gap-3 ml-7"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [(ngModel)]="coachAssignment"
+                [disabled]="hasParent"
+                name="coach_assignment_enabled"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.coachAssignmentLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.coachAssignmentHint" | transloco
+                }}</span>
+              </span>
+            </label>
+          }
+          <label
+            class="flex items-start gap-3"
+            [class.cursor-not-allowed]="hasParent"
+            [class.cursor-pointer]="!hasParent"
+          >
+            <input
+              type="radio"
+              [(ngModel)]="assignmentMode"
+              value="person"
+              name="assignment_mode"
+              [disabled]="hasParent"
+              class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
+            />
+            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
+              <span class="text-sm font-bold">{{
+                "stateAssociationAdmin.edit.assignmentModePersonLabel"
+                  | transloco
+              }}</span>
+              <span class="text-xs text-fb-gray-400">{{
+                "stateAssociationAdmin.edit.assignmentModePersonHint"
+                  | transloco
+              }}</span>
+            </span>
+          </label>
+          @if (assignmentMode === "person") {
+            <label
+              class="flex items-start gap-3 ml-7"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [(ngModel)]="personLevelAssignmentDefault"
+                [disabled]="hasParent"
+                name="person_level_assignment_default"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.personLevelDefaultLabel"
+                    | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.personLevelDefaultHint"
+                    | transloco
+                }}</span>
+              </span>
+            </label>
+          }
+        </div>
       </div>
     </div>
 

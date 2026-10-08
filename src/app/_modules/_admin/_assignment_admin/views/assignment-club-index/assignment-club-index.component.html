@@ -5,6 +5,11 @@
   <p class="text-sm text-fb-gray-500 mb-4">
     {{ "assignmentAdmin.club.intro" | transloco }}
   </p>
+  @if (hasCoachAssignment) {
+    <p class="text-sm text-fb-gray-500 mb-4">
+      {{ "assignmentAdmin.club.coachHint" | transloco }}
+    </p>
+  }
 </div>
 
 <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
@@ -189,6 +194,11 @@
                     <th class="py-2 pr-4">
                       {{ "assignmentAdmin.club.freeTextColumn" | transloco }}
                     </th>
+                    @if (groupHasCoach(group)) {
+                      <th class="py-2 pr-4">
+                        {{ "assignmentAdmin.club.coachColumn" | transloco }}
+                      </th>
+                    }
                     <th class="py-2"></th>
                   </tr>
                 </thead>
@@ -204,13 +214,18 @@
                       </td>
                       <td class="py-3 pr-4">
                         <div>{{ game.home_team }}</div>
-                        <div class="text-fb-gray-400">{{ game.guest_team }}</div>
+                        <div class="text-fb-gray-400">
+                          {{ game.guest_team }}
+                        </div>
                       </td>
                       @if (game.locked) {
                         <!-- Für die Personenebene markiert: hier gesperrt, damit sich
                              nicht zwei Wege auf dasselbe Spiel legen. Sichtbar statt
                              ausgeblendet, sonst bliebe unklar, warum das Spiel fehlt. -->
-                        <td class="py-3 pr-4" colspan="3">
+                        <td
+                          class="py-3 pr-4"
+                          [attr.colspan]="groupHasCoach(group) ? 4 : 3"
+                        >
                           <span
                             class="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700"
                           >
@@ -267,6 +282,50 @@
                             class="border border-fb-gray-600 rounded px-2 py-1 text-sm w-full min-w-[12rem]"
                           />
                         </td>
+                        @if (groupHasCoach(group)) {
+                          <td class="py-3 pr-4">
+                            @if (!game.coach_assignable) {
+                              <span class="text-fb-gray-400">–</span>
+                            } @else if (coachesFailedFor(game)) {
+                              <div class="text-xs text-red-700">
+                                {{
+                                  "assignmentAdmin.club.coachesFailed"
+                                    | transloco
+                                }}
+                                <button
+                                  type="button"
+                                  (click)="retryCoaches(game)"
+                                  class="underline hover:no-underline"
+                                >
+                                  {{
+                                    "assignmentAdmin.club.clubsRetry"
+                                      | transloco
+                                  }}
+                                </button>
+                              </div>
+                            } @else {
+                              <select
+                                [(ngModel)]="rowStates[game.id].coachId"
+                                [disabled]="rowStates[game.id].saving"
+                                class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[12rem]"
+                              >
+                                <option [ngValue]="null">
+                                  {{
+                                    "assignmentAdmin.club.noCoach" | transloco
+                                  }}
+                                </option>
+                                @for (
+                                  coach of coachOptions(game);
+                                  track coach.id
+                                ) {
+                                  <option [ngValue]="coach.id">
+                                    {{ coach.label }}
+                                  </option>
+                                }
+                              </select>
+                            }
+                          </td>
+                        }
                         <td class="py-3">
                           <fb-button
                             size="small"
