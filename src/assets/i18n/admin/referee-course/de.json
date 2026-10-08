@@ -67,6 +67,8 @@
     "badgePartial": "Teilmatch ({{ count }}/6)",
     "badgeNew": "Neuanlage",
     "progressDeferred": "• {{ count }} zurückgestellt",
+    "skippedSummary": "{{ count }} Zeilen übersprungen, weil sie schon in einem früheren Import angewendet oder noch offen sind",
+    "skippedInImport": "bereits in Import #{{ id }}",
     "deferHint": "Zeilen mit offener Klärung kannst du zurückstellen — sie bleiben liegen, während die übrigen eingereicht werden, und lassen sich danach nachreichen oder verwerfen.",
     "colRowAction": "Zeile",
     "deferredBadge": "⏸ Zurückgestellt",
