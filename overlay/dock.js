@@ -43,7 +43,7 @@
     writeInFlight: false,
     // Drücke, die während eines laufenden Schreibvorgangs anfielen.
     pendingChanges: null,
-    // Bleibt stehen, bis der nächste Schreibvorgang gelingt. Eine verlorene
+    // Bleibt stehen, bis der nächste Schreibvorgang beginnt. Eine verlorene
     // Änderung darf nicht nach zwei Sekunden hinter „Verbunden" verschwinden.
     writeError: null,
     // Endgültig abgewiesen (Token fehlt oder abgelaufen).
@@ -51,6 +51,8 @@
     // Interview: gewählte Mannschaft und Trikotnummer.
     ivSide: "home",
     ivNumber: null,
+    // Spiel, zu dem die Interview-Auswahl gehört.
+    ivGameId: null,
   };
 
   // Standardtext des Hinweises unter der Zeitanzeige. Steht hier und nicht nur
@@ -332,6 +334,10 @@
 
   function flushWrite() {
     state.writeInFlight = true;
+    // Der Fehler des vorigen Versuchs gilt nicht für diesen. Sonst stünde ein
+    // laufender Druck schon als „Nicht gespeichert“ da, bevor er gescheitert
+    // ist.
+    state.writeError = null;
 
     fetchWithTimeout(
       "/api/v2/public/overlay/state?token=" + encodeURIComponent(token),
@@ -379,7 +385,11 @@
         state.writeInFlight = false;
 
         if (state.pendingChanges) {
-          // Der eigene Zustand trägt die Änderung schon, nur der Server nicht.
+          // Die Antwort des Servers hat `control` eben durch seinen Stand
+          // ersetzt, und der kennt die gesammelten Drücke noch nicht. Ohne
+          // sie erneut aufzulegen, schickte das Nachsenden den Serverstand
+          // zurück und der letzte Druck (Spieler 9 statt 7) wäre still weg.
+          state.control = Object.assign({}, state.control, state.pendingChanges);
           state.pendingChanges = null;
           flushWrite();
         } else {
@@ -1171,6 +1181,22 @@
   function renderInterview() {
     // Siehe renderLowerThird: ältere Fassung des dock.html im Cache.
     if (!el["iv-teams"] || !el["iv-players"] || !el["iv-show"]) return;
+
+    // Eine Auswahl aus einem anderen Spiel oder eine Nummer, die aus dem
+    // Kader verschwunden ist, darf nicht auf Sendung gehen: Hotkey 5 schriebe
+    // sonst eine Nummer, die niemand für dieses Spiel gewählt hat.
+    var gameId = state.game && state.game.id;
+    if (state.ivGameId !== gameId) {
+      state.ivGameId = gameId;
+      state.ivNumber = null;
+    } else if (
+      state.ivNumber &&
+      !rosterFor(state.ivSide).some(function (player) {
+        return String(player.trikot_number) === String(state.ivNumber);
+      })
+    ) {
+      state.ivNumber = null;
+    }
 
     fillInterviewTeams();
     fillInterviewPlayers();
