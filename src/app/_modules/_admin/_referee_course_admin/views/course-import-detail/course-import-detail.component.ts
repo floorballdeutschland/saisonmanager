@@ -47,6 +47,16 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   // Per-row local edit state (debounced PATCH on blur/change)
   saving = new Set<number>();
 
+  /**
+   * Gesperrt, solange ein PATCH der Zeile oder ein Einreichen läuft. Während
+   * des Einreichens darf an keiner Zeile etwas geändert werden: Ein
+   * „Zurückstellen" kurz nach „Einreichen" landete sonst auf einer schon
+   * angewendeten Zeile.
+   */
+  rowBusy(result: RefereeCourseResult): boolean {
+    return this.submitting || this.saving.has(result.id);
+  }
+
   readonly conflictFields: MasterField[] = [
     'lizenznummer',
     'vorname',
@@ -347,7 +357,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
   ): void {
     // Skip wenn für diese Zeile bereits ein PATCH in flight ist — sonst
     // können Responses out-of-order kommen und ältere überschreiben neuere.
-    if (this.saving.has(result.id)) return;
+    if (this.rowBusy(result)) return;
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
@@ -375,7 +385,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
 
   updateLizenzstufe(result: RefereeCourseResult, value: string): void {
     if (result.lizenzstufe === value) return;
-    if (this.saving.has(result.id)) return;
+    if (this.rowBusy(result)) return;
     this.saving.add(result.id);
     const rowLabel = this.rowLabel(result);
     this._service
@@ -514,8 +524,7 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
       !result.deferred &&
       !!result.lizenzstufe &&
       this.licenseLevels.length > 0 &&
-      !this.submitting &&
-      !this.saving.has(result.id)
+      !this.rowBusy(result)
     );
   }
 
@@ -549,7 +558,11 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
                 { row: rowLabel }
               )
           );
+          // Neu laden: Ein 422 heisst meist, dass die Zeile woanders
+          // eingereicht, verworfen oder zurückgestellt wurde. Die alte Tabelle
+          // böte sonst denselben Knopf für denselben Fehler weiter an.
           this._cdr.markForCheck();
+          this.load(result.referee_course_import_id);
         },
       });
   }

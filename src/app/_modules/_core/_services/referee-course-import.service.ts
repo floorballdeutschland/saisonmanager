@@ -42,10 +42,10 @@ export class RefereeCourseImportService {
   }
 
   /**
-   * Reicht die nicht zurückgestellten Zeilen ein. Die Antwort trägt den Import
-   * **ohne** seine Zeilen (`full_hash`), der Aufrufer lädt danach neu.
+   * Reicht ohne `resultIds` alle nicht zurückgestellten Zeilen ein, sonst nur
+   * die genannten (alles oder nichts). Die Antwort trägt den Import **ohne**
+   * seine Zeilen (`full_hash`), der Aufrufer lädt danach neu.
    */
-  /** Ohne `resultIds` alle einreichbaren Zeilen, sonst nur die genannten. */
   submitImport(id: number, resultIds?: number[]) {
     return this.http.post<
       RefereeCourseImport & {

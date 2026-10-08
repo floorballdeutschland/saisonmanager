@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import {
   ClubService,
   getTranslocoTestingModule,
@@ -150,6 +150,7 @@ describe('CourseImportDetailComponent', () => {
           de: {
             refereeCourseAdmin: {
               detail: {
+                submitRow: 'Einreichen',
                 conflictLabel: 'Abweichung „{{ field }}":',
                 csvOption: 'CSV: {{ value }}',
                 dbOption: 'DB: {{ value }}',
@@ -316,10 +317,43 @@ describe('CourseImportDetailComponent', () => {
       importService.submitImport.and.returnValue(antwort);
 
       component.submitRow(r);
-      component.submitRow(zeile({ id: 2 }));
+      component.submitRow(component.importData.results[1]);
 
       expect(importService.submitImport).toHaveBeenCalledTimes(1);
       expect(component.submitting).toBeTrue();
+      // Auch die übrigen Bedienelemente jeder Zeile sind gesperrt: Ein
+      // „Zurückstellen" kurz nach „Einreichen" landete sonst auf einer schon
+      // angewendeten Zeile.
+      expect(component.rowBusy(component.importData.results[1])).toBeTrue();
+      component.toggleDeferred(r);
+      expect(importService.updateResult).not.toHaveBeenCalled();
+    });
+
+    it('meldet einen Fehler mit dem Text der API und lädt neu', () => {
+      const r = zeile({ id: 1 });
+      component.importData = importMit([r]);
+      importService.submitImport.and.returnValue(
+        throwError(() => ({ error: { error: 'Nicht einreichbar: Zeile #1' } }))
+      );
+      importService.getImport.calls.reset();
+
+      component.submitRow(r);
+
+      expect(notify.error).toHaveBeenCalledWith('Nicht einreichbar: Zeile #1');
+      expect(component.submitting).toBeFalse();
+      expect(importService.getImport).toHaveBeenCalledWith(9);
+    });
+
+    it('fällt ohne Text der API auf die eigene Meldung zurück', () => {
+      const r = zeile({ id: 1 });
+      component.importData = importMit([r]);
+      importService.submitImport.and.returnValue(throwError(() => ({})));
+
+      component.submitRow(r);
+
+      expect(notify.error).toHaveBeenCalledWith(
+        jasmine.stringContaining('submitFailedForRow')
+      );
     });
   });
 
@@ -335,6 +369,55 @@ describe('CourseImportDetailComponent', () => {
       fixture.detectChanges();
       return fixture;
     }
+
+    function einreichenKnopf(fixture: { nativeElement: HTMLElement }) {
+      return Array.from(
+        fixture.nativeElement.querySelectorAll<HTMLButtonElement>('button')
+      ).find((b) => b.textContent?.trim() === 'Einreichen');
+    }
+
+    it('zeigt „Einreichen" an einer offenen Zeile und reicht genau sie ein', () => {
+      importService.submitImport.and.returnValue(
+        of({ id: 9 } as RefereeCourseImport)
+      );
+      const fixture = render(importMit([zeile({ id: 1 }), zeile({ id: 7 })]));
+
+      const knoepfe = Array.from(
+        (
+          fixture.nativeElement as HTMLElement
+        ).querySelectorAll<HTMLButtonElement>('button')
+      ).filter((b) => b.textContent?.trim() === 'Einreichen');
+      expect(knoepfe.length).toBe(2);
+      knoepfe[1].click();
+
+      expect(importService.submitImport).toHaveBeenCalledOnceWith(9, [7]);
+    });
+
+    it('zeigt „Einreichen" nicht an zurückgestellten oder eingereichten Zeilen', () => {
+      expect(
+        einreichenKnopf(render(importMit([zeile({ id: 1, deferred: true })])))
+      ).toBeUndefined();
+      expect(
+        einreichenKnopf(
+          render(
+            importMit(
+              [zeile({ id: 1, submitted_at: '2026-09-08T11:00:00Z' })],
+              {
+                status: 'partially_submitted',
+              }
+            )
+          )
+        )
+      ).toBeUndefined();
+    });
+
+    it('sperrt „Einreichen" ohne Lizenzstufe', () => {
+      const knopf = einreichenKnopf(
+        render(importMit([zeile({ id: 1, lizenzstufe: null })]))
+      );
+      expect(knopf).toBeDefined();
+      expect(knopf!.disabled).toBeTrue();
+    });
 
     it('zeigt die Konflikt-Knöpfe einer eingereichten Zeile nicht', () => {
       const fixture = render(
