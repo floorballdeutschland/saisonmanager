@@ -409,6 +409,22 @@
               <td class="py-3 px-2">
                 @if (isRowEditable(r) && r.status === "pending_review") {
                   <div class="flex flex-col gap-1 items-start">
+                    @if (!r.deferred) {
+                      <button
+                        type="button"
+                        class="px-2 py-1 rounded text-xs font-bold whitespace-nowrap bg-black text-white hover:bg-fb-gray-500 disabled:opacity-50"
+                        [disabled]="!canSubmitRow(r)"
+                        [attr.title]="
+                          r.lizenzstufe
+                            ? null
+                            : ('refereeCourseAdmin.detail.submitRowNeedsLevel'
+                              | transloco)
+                        "
+                        (click)="submitRow(r)"
+                      >
+                        {{ "refereeCourseAdmin.detail.submitRow" | transloco }}
+                      </button>
+                    }
                     <button
                       type="button"
                       class="px-2 py-1 border rounded text-xs whitespace-nowrap"
@@ -519,7 +535,7 @@
       <div class="mt-6 p-4 bg-yellow-50 text-yellow-900 rounded">
         {{
           "refereeCourseAdmin.detail.partiallySubmittedInfo"
-            | transloco: { count: deferredCount() }
+            | transloco: { count: pendingCount() }
         }}
       </div>
     }

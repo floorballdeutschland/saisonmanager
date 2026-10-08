@@ -25,7 +25,7 @@
     "loading": "Lade...",
     "uploadedAt": "Hochgeladen am {{ date }}",
     "progress": "{{ total }} Datensätze • {{ pending }} offen • {{ applied }} angewendet",
-    "reviewHint": "Wähle pro Datensatz die Lizenzstufe und ggf. die korrekten Stammdaten. Erst nach „Einreichen\" werden die Datensätze – bei aktiviertem Landesverband-Kontrollprozess – zur Freigabe vorgelegt.",
+    "reviewHint": "Wähle pro Datensatz die Lizenzstufe und ggf. die korrekten Stammdaten. Eine geklärte Zeile kannst du sofort mit „Einreichen“ in der Zeile einreichen, oder alle offenen Zeilen gesammelt über den Knopf unten. Erst nach dem Einreichen werden die Datensätze – bei aktiviertem Landesverband-Kontrollprozess – zur Freigabe vorgelegt.",
     "colMatch": "Match",
     "colMaster": "Stammdaten",
     "colCourse": "Kurs / Stichtag",
@@ -76,7 +76,7 @@
     "discardSubmitTitle": "Zeile verwerfen",
     "submitCount": "{{ count }} von {{ total }} einreichen",
     "allDeferred": "Alle offenen Zeilen sind zurückgestellt — es gibt nichts einzureichen.",
-    "partiallySubmittedInfo": "Teilweise eingereicht. {{ count }} zurückgestellte Zeile(n) warten noch auf eine Klärung: Nimm sie nach der Klärung wieder auf und reiche sie ein, oder verwirf sie. Danach ist der Import abgeschlossen.",
+    "partiallySubmittedInfo": "Teilweise eingereicht. {{ count }} Zeile(n) sind noch offen: Reiche sie einzeln oder gesammelt ein, zurückgestellte nach der Klärung oder verwirf sie. Danach ist der Import abgeschlossen.",
     "nothingOpen": "Keine offene Zeile mehr — alle Zeilen sind eingereicht oder verworfen. Der Import kann abgebrochen werden.",
     "rejectedByLvBadge": "✕ Vom Landesverband zurückgewiesen",
     "clubMatchAlias": "über die Namensliste zugeordnet",
@@ -88,7 +88,9 @@
     "clubSelect": "Verein der Zeile",
     "clubPlaceholder": "Verein suchen",
     "clubReset": "kein Verein",
-    "clubUnavailable": "Vereinsliste nicht verfügbar, Auswahl gesperrt."
+    "clubUnavailable": "Vereinsliste nicht verfügbar, Auswahl gesperrt.",
+    "submitRow": "Einreichen",
+    "submitRowNeedsLevel": "Erst eine Lizenzstufe wählen"
   },
   "review": {
     "title": "Schiedsrichter-Kursergebnisse: Freigabe",
@@ -148,6 +150,8 @@
     "loadClubsError": "Vereinsliste konnte nicht geladen werden. Die Vereinsauswahl bleibt gesperrt.",
     "partiallySubmitted": "Import teilweise eingereicht — die zurückgestellten Zeilen liegen weiter offen",
     "discardFailedForRow": "Verwerfen fehlgeschlagen für {{ row }}",
-    "rowBusy": "Für {{ row }} läuft noch eine Änderung — bitte kurz warten."
+    "rowBusy": "Für {{ row }} läuft noch eine Änderung — bitte kurz warten.",
+    "rowSubmitted": "{{ row }} eingereicht",
+    "submitFailedForRow": "Einreichen fehlgeschlagen für {{ row }}"
   }
 }

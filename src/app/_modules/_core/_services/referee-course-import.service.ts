@@ -45,13 +45,17 @@ export class RefereeCourseImportService {
    * Reicht die nicht zurückgestellten Zeilen ein. Die Antwort trägt den Import
    * **ohne** seine Zeilen (`full_hash`), der Aufrufer lädt danach neu.
    */
-  submitImport(id: number) {
+  /** Ohne `resultIds` alle einreichbaren Zeilen, sonst nur die genannten. */
+  submitImport(id: number, resultIds?: number[]) {
     return this.http.post<
       RefereeCourseImport & {
         license_notifications?: number;
         license_notifications_unreachable?: number;
       }
-    >(BASE + 'referee_course_imports/' + id + '/submit', {});
+    >(
+      BASE + 'referee_course_imports/' + id + '/submit',
+      resultIds ? { result_ids: resultIds } : {}
+    );
   }
 
   updateResult(

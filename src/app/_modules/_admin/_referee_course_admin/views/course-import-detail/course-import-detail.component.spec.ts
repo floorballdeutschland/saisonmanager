@@ -257,6 +257,72 @@ describe('CourseImportDetailComponent', () => {
     });
   });
 
+  // Eine geklärte Zeile sofort einreichen, statt bei 147 Zeilen erst alle
+  // anderen zurückzustellen.
+  describe('Zeile einzeln einreichen', () => {
+    const ANTWORT = {
+      id: 9,
+      filename: 'kurs.csv',
+      status: 'partially_submitted',
+      total_rows: 2,
+      uploaded_by_user_id: 1,
+      created_at: '2026-09-08T10:00:00Z',
+    } as RefereeCourseImport;
+
+    it('reicht nur die gewählte Zeile ein und lädt neu', () => {
+      const r = zeile({ id: 2 });
+      component.importData = importMit([zeile({ id: 1 }), r]);
+      importService.submitImport.and.returnValue(of(ANTWORT));
+      importService.getImport.calls.reset();
+
+      component.submitRow(r);
+
+      expect(importService.submitImport).toHaveBeenCalledOnceWith(9, [2]);
+      expect(notify.success).toHaveBeenCalled();
+      expect(importService.getImport).toHaveBeenCalledWith(9);
+      expect(component.submitting).toBeFalse();
+    });
+
+    it('ist ohne Lizenzstufe gesperrt', () => {
+      const r = zeile({ id: 1, lizenzstufe: null });
+      component.importData = importMit([r]);
+
+      expect(component.canSubmitRow(r)).toBeFalse();
+      component.submitRow(r);
+      expect(importService.submitImport).not.toHaveBeenCalled();
+    });
+
+    it('gilt nicht für zurückgestellte, eingereichte oder laufende Zeilen', () => {
+      const zurueck = zeile({ id: 1, deferred: true });
+      const eingereicht = zeile({
+        id: 2,
+        submitted_at: '2026-09-08T11:00:00Z',
+      });
+      const laeuft = zeile({ id: 3 });
+      component.importData = importMit([zurueck, eingereicht, laeuft]);
+      component.saving.add(3);
+
+      expect(component.canSubmitRow(zurueck)).toBeFalse();
+      expect(component.canSubmitRow(eingereicht)).toBeFalse();
+      expect(component.canSubmitRow(laeuft)).toBeFalse();
+    });
+
+    // Ein zweiter Klick, während der erste noch läuft, darf keinen zweiten
+    // Submit auslösen.
+    it('sperrt, solange ein Einreichen läuft', () => {
+      const r = zeile({ id: 1 });
+      component.importData = importMit([r, zeile({ id: 2 })]);
+      const antwort = new Subject<RefereeCourseImport>();
+      importService.submitImport.and.returnValue(antwort);
+
+      component.submitRow(r);
+      component.submitRow(zeile({ id: 2 }));
+
+      expect(importService.submitImport).toHaveBeenCalledTimes(1);
+      expect(component.submitting).toBeTrue();
+    });
+  });
+
   // Die Fälle, die die Maske tatsächlich rendern — die Getter darüber prüfen
   // die Logik, hier geht es um die Riegel im Template. Ein 403 der API führt
   // über den ErrorInterceptor auf die Startseite; ein Knopf, der einen

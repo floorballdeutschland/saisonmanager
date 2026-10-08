@@ -204,10 +204,9 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
     // sonst wie ein erfolgtes Verwerfen aus.
     if (this.saving.has(result.id)) {
       this._notify.error(
-        this._transloco.translate(
-          'refereeCourseAdmin.notifications.rowBusy',
-          { row: this.rowLabel(result) }
-        )
+        this._transloco.translate('refereeCourseAdmin.notifications.rowBusy', {
+          row: this.rowLabel(result),
+        })
       );
       return;
     }
@@ -258,7 +257,10 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
    * Schiedsrichters.
    */
   clubMatchHint(result: RefereeCourseResult): string | null {
-    if (result.csv_club_match && result.csv_club_match.id !== result.matched_club?.id) {
+    if (
+      result.csv_club_match &&
+      result.csv_club_match.id !== result.matched_club?.id
+    ) {
       return null;
     }
     const key = clubMatchHintKey(result);
@@ -493,6 +495,58 @@ export class CourseImportDetailComponent implements OnInit, OnDestroy {
             err?.error?.error ??
               this._transloco.translate(
                 'refereeCourseAdmin.notifications.submitFailed'
+              )
+          );
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  /**
+   * Eine einzelne Zeile einreichen, sobald sie geklärt ist — ohne erst alle
+   * übrigen zurückzustellen. Eine zurückgestellte Zeile reicht nur der
+   * Importeur selbst wieder ein, indem er sie aufnimmt: Der Knopf steht an ihr
+   * deshalb nicht.
+   */
+  canSubmitRow(result: RefereeCourseResult): boolean {
+    return (
+      this.isRowEditable(result) &&
+      !result.deferred &&
+      !!result.lizenzstufe &&
+      this.licenseLevels.length > 0 &&
+      !this.submitting &&
+      !this.saving.has(result.id)
+    );
+  }
+
+  submitRow(result: RefereeCourseResult): void {
+    if (!this.importData || !this.canSubmitRow(result)) return;
+    this.submitting = true;
+    const rowLabel = this.rowLabel(result);
+    this._service
+      .submitImport(this.importData.id, [result.id])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (data) => {
+          this.submitting = false;
+          this._notify.success(
+            this._transloco.translate(
+              'refereeCourseAdmin.notifications.rowSubmitted',
+              { row: rowLabel }
+            )
+          );
+          // Neu laden: Der Import wechselt dabei auf „teilweise eingereicht"
+          // oder, war es die letzte offene Zeile, auf „eingereicht".
+          this._cdr.markForCheck();
+          this.load(data.id);
+        },
+        error: (err) => {
+          this.submitting = false;
+          this._notify.error(
+            err?.error?.error ??
+              this._transloco.translate(
+                'refereeCourseAdmin.notifications.submitFailedForRow',
+                { row: rowLabel }
               )
           );
           this._cdr.markForCheck();
