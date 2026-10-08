@@ -110,6 +110,7 @@
     "coachAvailable": "verfügbar",
     "coachConflict": "Vereinsbezug",
     "coachesFailed": "Coach-Liste konnte nicht geladen werden.",
-    "coachHint": "Coach-Ansetzungen gelten beim Speichern sofort: Der Coach bekommt eine E-Mail, ein abberufener Coach ebenfalls."
+    "coachHint": "Coach-Ansetzungen gelten beim Speichern sofort: Der Coach bekommt eine E-Mail, ein abberufener Coach ebenfalls.",
+    "savedClubOnly": "Verein bzw. Freitext gespeichert, der Coach nicht."
   }
 }

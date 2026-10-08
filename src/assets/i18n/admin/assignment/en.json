@@ -110,6 +110,7 @@
     "coachAvailable": "available",
     "coachConflict": "club affiliation",
     "coachesFailed": "The coach list could not be loaded.",
-    "coachHint": "Coach assignments take effect when saved: the coach receives an e-mail, and so does a coach who is removed."
+    "coachHint": "Coach assignments take effect when saved: the coach receives an e-mail, and so does a coach who is removed.",
+    "savedClubOnly": "Club or free text saved, but not the coach."
   }
 }

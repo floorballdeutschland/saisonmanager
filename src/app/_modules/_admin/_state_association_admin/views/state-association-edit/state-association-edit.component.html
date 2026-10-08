@@ -641,19 +641,21 @@
         >
           {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
         </div>
-        <div class="text-xs text-fb-gray-400">
+        <div id="assignment-intro" class="text-xs text-fb-gray-400">
           {{ "stateAssociationAdmin.edit.assignmentIntro" | transloco }}
         </div>
         <!-- Der Ansetzungsweg ist eine Auswahl aus drei Möglichkeiten, keine drei
              unabhängigen Schalter. Die Unteroptionen erscheinen nur unter der
-             Möglichkeit, zu der sie gehören (siehe assignmentMode). -->
-        <div
-          role="radiogroup"
+             Möglichkeit, zu der sie gehören (siehe assignmentMode). Ein
+             fieldset statt role="radiogroup", weil die Unteroptionen
+             Checkboxen sind und eine radiogroup nur Radios enthalten soll. -->
+        <fieldset
           class="flex flex-col gap-3"
-          [attr.aria-label]="
-            'stateAssociationAdmin.edit.assignmentHeading' | transloco
-          "
+          aria-describedby="assignment-intro"
         >
+          <legend class="sr-only">
+            {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
+          </legend>
           <label
             class="flex items-start gap-3"
             [class.cursor-not-allowed]="hasParent"
@@ -776,7 +778,7 @@
               </span>
             </label>
           }
-        </div>
+        </fieldset>
       </div>
     </div>
 

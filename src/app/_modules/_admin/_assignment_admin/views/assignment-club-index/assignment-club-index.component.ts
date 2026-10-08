@@ -293,23 +293,23 @@ export class AssignmentClubIndexComponent implements OnInit {
     if (state?.freeText) state.clubId = null;
   }
 
+  // Hat die Zeile ungespeicherte Änderungen? Der Speichern-Knopf ist sonst
+  // gesperrt: Ein Klick ohne Änderung schickt nichts, und ein Knopf, der
+  // scheinbar nichts tut, sähe kaputt aus.
+  rowDirty(game: RefereeAssignableGame): boolean {
+    const state = this.rowStates[game.id];
+    return (
+      !!state &&
+      (this._clubPartDirty(game, state) || this._coachDirty(game, state))
+    );
+  }
+
   save(game: RefereeAssignableGame): void {
     const state = this.rowStates[game.id];
     if (!state || state.saving) return;
 
-    // Leeres Feld auf leerem Spiel ist keine Änderung. Ohne diese Bremse würde
-    // ein Speichern auf der noch nicht befüllten Zeile eine leere Ansetzung
-    // schreiben und den Erfolgs-Toast zeigen; steht dagegen schon etwas im
-    // Spiel, bleibt das Leeren die legitime Art, einen Eintrag zurückzunehmen.
-    const nothingEntered = !state.clubId && !state.freeText.trim();
-    const nothingStored =
-      game.assignment_club_id == null && !game.nominated_referee_string?.trim();
-    const clubDirty =
-      !(nothingEntered && nothingStored) && this._clubDirty(game, state);
-    // Ein Coach-Wechsel verschickt Mails. Deshalb nur, wenn er sich wirklich
-    // geändert hat, und nicht bei jedem Speichern der Zeile.
-    const coachDirty =
-      !!game.coach_assignable && state.coachId !== (game.coach_id ?? null);
+    const clubDirty = this._clubPartDirty(game, state);
+    const coachDirty = this._coachDirty(game, state);
     if (!clubDirty && !coachDirty) return;
 
     state.saving = true;
@@ -324,9 +324,13 @@ export class AssignmentClubIndexComponent implements OnInit {
     const club$: Observable<ClubAssignmentResult | null> = clubDirty
       ? this._refereeService.adminUpdateClubAssignment(game.id, payload)
       : of(null);
+    let clubSaved = false;
     club$
       .pipe(
-        tap((result) => this._applyResult(game, result)),
+        tap((result) => {
+          this._applyResult(game, result);
+          clubSaved = !!result;
+        }),
         switchMap(
           (): Observable<ClubAssignmentResult | null> =>
             coachDirty
@@ -349,9 +353,41 @@ export class AssignmentClubIndexComponent implements OnInit {
         },
         error: () => {
           state.saving = false;
+          // Verein bzw. Freitext sind dann schon gespeichert und öffentlich,
+          // nur der Coach nicht. Die Fehlermeldung des Interceptors allein
+          // läse sich wie „nichts gespeichert“.
+          if (clubSaved) {
+            this._notificationService.success(
+              this._transloco.translate('assignmentAdmin.club.savedClubOnly'),
+              { autoClose: true, keepAfterRouteChange: false }
+            );
+          }
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Leeres Feld auf leerem Spiel ist keine Änderung. Ohne diese Bremse würde
+  // ein Speichern auf der noch nicht befüllten Zeile eine leere Ansetzung
+  // schreiben; steht dagegen schon etwas im Spiel, bleibt das Leeren die
+  // legitime Art, einen Eintrag zurückzunehmen.
+  private _clubPartDirty(
+    game: RefereeAssignableGame,
+    state: ClubRowState
+  ): boolean {
+    const nothingEntered = !state.clubId && !state.freeText.trim();
+    const nothingStored =
+      game.assignment_club_id == null && !game.nominated_referee_string?.trim();
+    return !(nothingEntered && nothingStored) && this._clubDirty(game, state);
+  }
+
+  // Ein Coach-Wechsel verschickt Mails. Deshalb nur, wenn er sich wirklich
+  // geändert hat, und nicht bei jedem Speichern der Zeile.
+  private _coachDirty(
+    game: RefereeAssignableGame,
+    state: ClubRowState
+  ): boolean {
+    return !!game.coach_assignable && state.coachId !== (game.coach_id ?? null);
   }
 
   // Verein bzw. Freitext weichen vom gespeicherten Stand ab. Steht ein Verein,

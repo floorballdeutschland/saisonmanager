@@ -306,6 +306,9 @@
                             } @else {
                               <select
                                 [(ngModel)]="rowStates[game.id].coachId"
+                                [attr.aria-label]="
+                                  'assignmentAdmin.club.coachColumn' | transloco
+                                "
                                 [disabled]="rowStates[game.id].saving"
                                 class="border border-fb-gray-600 rounded px-2 py-1 text-sm min-w-[12rem]"
                               >
@@ -330,7 +333,9 @@
                           <fb-button
                             size="small"
                             icon="save"
-                            [disabled]="rowStates[game.id].saving"
+                            [disabled]="
+                              rowStates[game.id].saving || !rowDirty(game)
+                            "
                             (click)="save(game)"
                           >
                             {{ "assignmentAdmin.club.save" | transloco }}
