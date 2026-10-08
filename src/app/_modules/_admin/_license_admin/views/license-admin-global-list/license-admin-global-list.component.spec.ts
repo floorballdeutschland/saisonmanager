@@ -7,8 +7,8 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { config as rxjsConfig, of } from 'rxjs';
-import { AdminLicenseEntry, Season } from '@floorball/types';
-import { AssociationService } from '@floorball/core';
+import { AdminLicenseEntry, Season, User } from '@floorball/types';
+import { AssociationService, SessionService } from '@floorball/core';
 
 import { LicenseAdminGlobalListComponent } from './license-admin-global-list.component';
 
@@ -1151,6 +1151,41 @@ describe('LicenseAdminGlobalListComponent', () => {
         );
 
       expect(second.component.currentPage).toBe(2);
+    });
+
+    // Ab- und Anmelden laedt die Seite nicht neu. Die naechste Person im selben
+    // Tab saehe sonst die Suchbegriffe der vorigen.
+    it('stellt die Auswahl eines anderen Kontos nicht wieder her', () => {
+      const session = TestBed.inject(SessionService);
+      session.currentUser = { id: 1 } as User;
+      const first = open();
+      first.licenseRequests().forEach((r) => r.flush([]));
+      first.component.clubSearch = 'Berlin';
+      first.destroy();
+
+      session.currentUser = { id: 2 } as User;
+      const second = open();
+
+      expect(second.component.clubSearch).toBe('');
+    });
+
+    // Ein Verband, der in der neuen Liste nicht mehr vorkommt, stuende im
+    // Auswahlfeld leer da und filterte die Liste trotzdem leer.
+    it('verwirft einen wiederhergestellten Verband ohne Eintraege', () => {
+      const first = open();
+      first
+        .licenseRequests()
+        .forEach((r) => r.flush([{ ...entry('A'), game_operation_id: 7 }]));
+      first.component.filterGameOperationId = 7;
+      first.destroy();
+
+      const second = open();
+      second
+        .licenseRequests()
+        .forEach((r) => r.flush([{ ...entry('B'), game_operation_id: 8 }]));
+
+      expect(second.component.filterGameOperationId).toBeNull();
+      expect(second.component.filteredEntries.length).toBe(1);
     });
 
     it('beginnt ohne vorigen Besuch mit der aktuellen Saison und ohne Filter', () => {

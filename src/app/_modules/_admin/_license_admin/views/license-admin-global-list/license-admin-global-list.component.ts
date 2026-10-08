@@ -163,7 +163,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   private restoreFilters(): void {
-    const saved = this._filterState.filters;
+    const saved = this._filterState.filtersFor(this._currentUserId());
     if (!saved) return;
 
     const { currentPage, ...filters } = saved;
@@ -190,7 +190,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       filterExpressOnly: this.filterExpressOnly,
       currentPage: this.currentPage,
     };
-    this._filterState.save(filters);
+    this._filterState.save(filters, this._currentUserId());
+  }
+
+  private _currentUserId(): number | null {
+    return this._sessionService.currentUser?.id ?? null;
   }
 
   // Eine gespeicherte Größe außerhalb der angebotenen Werte (alter Stand,
@@ -296,6 +300,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       next: (entries) => {
         this.allEntries = entries;
         this.buildFilterOptions();
+        this.dropUnavailableFilters();
         this.applyFilters();
         if (this._restoredPage !== null) {
           this.currentPage = Math.min(this._restoredPage, this.numberOfPages);
@@ -615,6 +620,29 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     return `${String(d.getDate()).padStart(2, '0')}.${String(
       d.getMonth() + 1
     ).padStart(2, '0')}.${d.getFullYear()}`;
+  }
+
+  // Eine wiederhergestellte Auswahl kann auf einen Verband oder eine Liga
+  // zeigen, die in der neu geladenen Liste nicht mehr vorkommt. Das Auswahlfeld
+  // stünde dann leer da, der Filter griffe aber weiter und die Liste bliebe
+  // ohne erkennbaren Grund leer.
+  private dropUnavailableFilters(): void {
+    if (
+      this.filterGameOperationId !== null &&
+      !this.gameOperationOptions.some(
+        (o) => o.value === this.filterGameOperationId
+      )
+    ) {
+      this.filterGameOperationId = null;
+      // Die Ligaauswahl hing am verworfenen Verband.
+      this.buildLeagueOptions();
+    }
+    if (
+      this.filterLeagueId !== null &&
+      !this.leagueOptions.some((o) => o.value === this.filterLeagueId)
+    ) {
+      this.filterLeagueId = null;
+    }
   }
 
   private buildFilterOptions(): void {
