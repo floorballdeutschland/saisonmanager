@@ -18,7 +18,9 @@
     "statusSubmitted": "Eingereicht",
     "statusCompleted": "Abgeschlossen",
     "statusCancelled": "Abgebrochen",
-    "statusPartiallySubmitted": "Teilweise eingereicht"
+    "statusPartiallySubmitted": "Teilweise eingereicht",
+    "showClosed": "Abgeschlossene Importe anzeigen ({{ count }})",
+    "allClosed": "Keine offenen Importe. Abgeschlossene lassen sich über das Häkchen oben einblenden."
   },
   "detail": {
     "back": "← zurück zur Übersicht",
