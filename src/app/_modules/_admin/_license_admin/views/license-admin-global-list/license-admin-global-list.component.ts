@@ -20,6 +20,10 @@ import { TranslocoService } from '@jsverse/transloco';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 import { licenseStatusBadgeClass } from 'src/app/_helpers/_utils/license-status';
 import { readUploadedAt } from '../../_utils/document-upload-date';
+import {
+  LicenseGlobalListFilterState,
+  LicenseGlobalListFilters,
+} from '../../_utils/global-list-filter-state';
 
 interface FilterOption {
   value: string | number | boolean | null;
@@ -134,6 +138,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   // "(aktuell)"-Suffix) auch dann neu gebaut werden, wenn der Scope erst nach
   // dem synchronen seasons$-Emit geladen ist.
   private _seasons: Season[] = [];
+  // Mit wiederhergestellter Auswahl steht filterSeasonId schon vor dem ersten
+  // seasons$-Emit, die Saison-Vorbelegung fällt dann weg. Die Liste muss
+  // trotzdem einmal geladen werden.
+  private _restoredLoadPending = false;
+  // Seite der wiederhergestellten Auswahl. applyFilters() setzt beim ersten
+  // Laden auf Seite 1 zurück, deshalb kommt sie erst danach zum Zug.
+  private _restoredPage: number | null = null;
 
   constructor(
     private _leagueService: LeagueService,
@@ -144,9 +155,42 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService,
-    private _storageService: StorageService
+    private _storageService: StorageService,
+    private _filterState: LicenseGlobalListFilterState
   ) {
     this.restorePageSize();
+    this.restoreFilters();
+  }
+
+  private restoreFilters(): void {
+    const saved = this._filterState.filters;
+    if (!saved) return;
+
+    const { currentPage, ...filters } = saved;
+    Object.assign(this, filters);
+    this._restoredPage = currentPage;
+    this._restoredLoadPending = true;
+  }
+
+  private saveFilters(): void {
+    const filters: LicenseGlobalListFilters = {
+      search: this.search,
+      clubSearch: this.clubSearch,
+      filterSeasonId: this.filterSeasonId,
+      filterGameOperationId: this.filterGameOperationId,
+      filterLeagueId: this.filterLeagueId,
+      filterFieldSize: this.filterFieldSize,
+      filterFemale: this.filterFemale,
+      filterAgeGroup: this.filterAgeGroup,
+      filterLeagueClassId: this.filterLeagueClassId,
+      filterLeagueType: this.filterLeagueType,
+      filterStatusId: this.filterStatusId,
+      filterLicenseType: this.filterLicenseType,
+      filterGfRole: this.filterGfRole,
+      filterExpressOnly: this.filterExpressOnly,
+      currentPage: this.currentPage,
+    };
+    this._filterState.save(filters);
   }
 
   // Eine gespeicherte Größe außerhalb der angebotenen Werte (alter Stand,
@@ -228,8 +272,9 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         this.buildSeasonOptions(this._seasons);
         const current = (seasons ?? []).find((s) => s.current);
         this._currentSeasonId = current?.id ?? null;
-        if (this.filterSeasonId === null) {
-          this.filterSeasonId = this._currentSeasonId;
+        if (this.filterSeasonId === null || this._restoredLoadPending) {
+          this._restoredLoadPending = false;
+          this.filterSeasonId ??= this._currentSeasonId;
           this.load();
         }
         this._cdr.markForCheck();
@@ -237,6 +282,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.saveFilters();
     this._destroy$.next();
     this._destroy$.complete();
   }
@@ -251,6 +297,10 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         this.allEntries = entries;
         this.buildFilterOptions();
         this.applyFilters();
+        if (this._restoredPage !== null) {
+          this.currentPage = Math.min(this._restoredPage, this.numberOfPages);
+          this._restoredPage = null;
+        }
         this.loading = false;
         this._cdr.markForCheck();
       },
