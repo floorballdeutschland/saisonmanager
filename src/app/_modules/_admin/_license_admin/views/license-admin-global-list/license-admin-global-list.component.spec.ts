@@ -6,8 +6,9 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { config as rxjsConfig } from 'rxjs';
-import { AdminLicenseEntry } from '@floorball/types';
+import { config as rxjsConfig, of } from 'rxjs';
+import { AdminLicenseEntry, Season, User } from '@floorball/types';
+import { AssociationService, SessionService } from '@floorball/core';
 
 import { LicenseAdminGlobalListComponent } from './license-admin-global-list.component';
 
@@ -1031,6 +1032,170 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(zeile('Haupt')).toContain('"Hauptlizenz"');
       expect(zeile('Zusatz')).toContain('"Zusatzlizenz"');
       expect(zeile('Abgelehnt')).not.toContain('lizenz"');
+    });
+  });
+
+  // Rueckmeldung LV: Wer nach "beantragt" filtert, einen Antrag oeffnet und
+  // genehmigt, landete nach dem Ruecksprung wieder bei "Alle Status" (fe#527).
+  describe('Filterauswahl nach dem Ruecksprung', () => {
+    const seasons = [
+      { id: 17, name: '2025/2026', current: false },
+      { id: 18, name: '2026/2027', current: true },
+    ] as Season[];
+
+    function open(): {
+      component: LicenseAdminGlobalListComponent;
+      destroy: () => void;
+      licenseRequests: () => ReturnType<HttpTestingController['match']>;
+    } {
+      TestBed.inject(AssociationService).seasons$ = of(seasons);
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      fixture.detectChanges();
+      const http = TestBed.inject(HttpTestingController);
+      return {
+        component: fixture.componentInstance,
+        destroy: () => fixture.destroy(),
+        licenseRequests: () =>
+          http.match((r) => r.url.endsWith('admin/licenses.json')),
+      };
+    }
+
+    function requested(lastName: string): AdminLicenseEntry {
+      return { ...entry(lastName), license_status_id: 2 } as AdminLicenseEntry;
+    }
+
+    it('stellt Status und uebrige Filter der vorigen Liste wieder her', () => {
+      const first = open();
+      first.licenseRequests().forEach((r) => r.flush([]));
+      first.component.filterStatusId = 2;
+      first.component.clubSearch = 'Berlin';
+      first.component.filterExpressOnly = true;
+      first.destroy();
+
+      const second = open();
+
+      expect(second.component.filterStatusId).toBe(2);
+      expect(second.component.clubSearch).toBe('Berlin');
+      expect(second.component.filterExpressOnly).toBeTrue();
+    });
+
+    it('filtert die neu geladene Liste mit der wiederhergestellten Auswahl', () => {
+      const first = open();
+      first.licenseRequests().forEach((r) => r.flush([]));
+      first.component.filterStatusId = 2;
+      first.destroy();
+
+      const second = open();
+      second
+        .licenseRequests()
+        .forEach((r) => r.flush([entry('Erteilt'), requested('Offen')]));
+
+      expect(
+        second.component.filteredEntries.map((e) => e.player_last_name)
+      ).toEqual(['Offen']);
+    });
+
+    // Die Saison steuert, welche Lizenzen die API liefert. Ohne eigenen
+    // Ladeaufruf bliebe die Liste mit gesetzter Saison leer, weil die
+    // Vorbelegung auf die aktuelle Saison (und mit ihr der Aufruf) entfaellt.
+    it('laedt die Liste der zuvor gewaehlten Saison', () => {
+      const first = open();
+      first.licenseRequests().forEach((r) => r.flush([]));
+      first.component.filterSeasonId = 17;
+      first.destroy();
+
+      const second = open();
+      const requests = second.licenseRequests();
+
+      expect(requests.length).toBe(1);
+      expect(requests[0].request.params.get('season_id')).toBe('17');
+    });
+
+    it('kehrt auf die zuvor offene Seite zurueck', () => {
+      const first = open();
+      first
+        .licenseRequests()
+        .forEach((r) =>
+          r.flush(Array.from({ length: 60 }, (_, i) => requested(`S${i}`)))
+        );
+      first.component.changePage(3);
+      first.destroy();
+
+      const second = open();
+      second
+        .licenseRequests()
+        .forEach((r) =>
+          r.flush(Array.from({ length: 60 }, (_, i) => requested(`S${i}`)))
+        );
+
+      expect(second.component.currentPage).toBe(3);
+    });
+
+    // Sind seit dem Verlassen Antraege weggefallen (genehmigt, also nicht mehr
+    // "beantragt"), kann die alte Seite hinter dem Ende liegen.
+    it('bleibt auf der letzten Seite, wenn die Treffer weniger geworden sind', () => {
+      const first = open();
+      first
+        .licenseRequests()
+        .forEach((r) =>
+          r.flush(Array.from({ length: 60 }, (_, i) => requested(`S${i}`)))
+        );
+      first.component.changePage(3);
+      first.destroy();
+
+      const second = open();
+      second
+        .licenseRequests()
+        .forEach((r) =>
+          r.flush(Array.from({ length: 30 }, (_, i) => requested(`S${i}`)))
+        );
+
+      expect(second.component.currentPage).toBe(2);
+    });
+
+    // Ab- und Anmelden laedt die Seite nicht neu. Die naechste Person im selben
+    // Tab saehe sonst die Suchbegriffe der vorigen.
+    it('stellt die Auswahl eines anderen Kontos nicht wieder her', () => {
+      const session = TestBed.inject(SessionService);
+      session.currentUser = { id: 1 } as User;
+      const first = open();
+      first.licenseRequests().forEach((r) => r.flush([]));
+      first.component.clubSearch = 'Berlin';
+      first.destroy();
+
+      session.currentUser = { id: 2 } as User;
+      const second = open();
+
+      expect(second.component.clubSearch).toBe('');
+    });
+
+    // Ein Verband, der in der neuen Liste nicht mehr vorkommt, stuende im
+    // Auswahlfeld leer da und filterte die Liste trotzdem leer.
+    it('verwirft einen wiederhergestellten Verband ohne Eintraege', () => {
+      const first = open();
+      first
+        .licenseRequests()
+        .forEach((r) => r.flush([{ ...entry('A'), game_operation_id: 7 }]));
+      first.component.filterGameOperationId = 7;
+      first.destroy();
+
+      const second = open();
+      second
+        .licenseRequests()
+        .forEach((r) => r.flush([{ ...entry('B'), game_operation_id: 8 }]));
+
+      expect(second.component.filterGameOperationId).toBeNull();
+      expect(second.component.filteredEntries.length).toBe(1);
+    });
+
+    it('beginnt ohne vorigen Besuch mit der aktuellen Saison und ohne Filter', () => {
+      const { component, licenseRequests } = open();
+      const requests = licenseRequests();
+
+      expect(component.filterStatusId).toBeNull();
+      expect(component.filterSeasonId).toBe(18);
+      expect(requests.length).toBe(1);
+      expect(requests[0].request.params.get('season_id')).toBe('18');
     });
   });
 });
