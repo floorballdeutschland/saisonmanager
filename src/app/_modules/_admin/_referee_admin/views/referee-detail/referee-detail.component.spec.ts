@@ -14,6 +14,7 @@ import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloc
 import {
   RefereeAdmin,
   RefereeAdminGame,
+  RefereeCourseResultSummary,
   RefereeObservation,
   RefereeObservationAdminResponse,
   User,
@@ -67,8 +68,29 @@ const observationResponse: RefereeObservationAdminResponse = {
   observations: [{ id: 3, status: 'visible' } as RefereeObservation],
 };
 
+const courseResult: RefereeCourseResultSummary = {
+  id: 31,
+  lizenzstufe: 'L2',
+  gueltigkeit: '30.09.2028',
+  kursstichtag: '15.08.2026',
+  status: 'applied',
+  applied_at: '2026-08-20T10:00:00Z',
+  rejection_reason: null,
+  course_data: {
+    kurs_1: {
+      stufe: 'L2',
+      datum: '15.08.2026',
+      testversion: 'B',
+      punkte: '27',
+    },
+    kurs_2: { stufe: null, datum: null, testversion: null, punkte: null },
+    ausbilder: 'Max Lehrer',
+  },
+};
+
 describe('RefereeDetailComponent', () => {
   let fixture: ComponentFixture<RefereeDetailComponent>;
+  let adminGetCourses: jasmine.Spy;
 
   async function setUp(
     games: RefereeAdminGame[],
@@ -76,6 +98,9 @@ describe('RefereeDetailComponent', () => {
     refereeOverrides: Partial<RefereeAdmin> = {}
   ) {
     const shown = { ...referee, ...refereeOverrides } as RefereeAdmin;
+    adminGetCourses = jasmine
+      .createSpy('adminGetCourses')
+      .and.returnValue(of([courseResult]));
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -88,6 +113,10 @@ describe('RefereeDetailComponent', () => {
             refereeAdmin: {
               detail: {
                 gameHistory: 'Spielhistorie',
+                courseHistory: 'Kurshistorie',
+                exclusionsHeading: 'Vereins-Ausschlüsse',
+                coursePoints: '{{points}} Punkte',
+                courseTestVersion: 'Testversion {{version}}',
                 openMatch: 'Zum Spiel / Spielbericht',
                 phone: 'Telefon',
                 shortNotice: 'Kurzfristig mobil',
@@ -105,6 +134,9 @@ describe('RefereeDetailComponent', () => {
             adminGetAll: () => of([shown]),
             adminGetById: () => of(shown),
             adminGetGames: () => of(games),
+            adminGetCourses,
+            adminGetRefereeClubExclusions: () =>
+              of({ club_exclusions: [], club_exclusion_requests: [] }),
           },
         },
         {
@@ -296,5 +328,37 @@ describe('RefereeDetailComponent', () => {
     expect(fixture.nativeElement.textContent).not.toContain(
       'Kurzfristig mobil'
     );
+  });
+
+  // Kurshistorie: nur mit eigenem Recht. Der Vereinsmanager sieht das Profil,
+  // die API verweigert ihm die Kursergebnisse aber mit 403.
+  const headings = (): string[] =>
+    Array.from(
+      fixture.nativeElement.querySelectorAll('h2') as NodeListOf<HTMLElement>
+    ).map((h) => h.textContent?.trim() ?? '');
+
+  it('zeigt die Kurshistorie zwischen Spielhistorie und Vereins-Ausschlüssen', async () => {
+    await setUp([], {
+      menu_item_referee_admin: true,
+      referee_course_history_view: true,
+      menu_item_referee_exclusions: true,
+    });
+
+    expect(adminGetCourses).toHaveBeenCalledWith(referee.id);
+    expect(headings()).toEqual([
+      'Spielhistorie',
+      'Kurshistorie',
+      'Vereins-Ausschlüsse',
+    ]);
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('L2, 15.08.2026, Testversion B, 27 Punkte');
+    expect(text).toContain('Max Lehrer');
+  });
+
+  it('laedt die Kurshistorie ohne das Recht gar nicht erst', async () => {
+    await setUp([]);
+
+    expect(adminGetCourses).not.toHaveBeenCalled();
+    expect(headings()).not.toContain('Kurshistorie');
   });
 });

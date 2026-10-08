@@ -22,6 +22,8 @@ import {
   RefereeClubExclusion,
   RefereeClubExclusionPayload,
   RefereeClubExclusionRequest,
+  RefereeCourseResultCourseData,
+  RefereeCourseResultSummary,
   RefereeFeedbackProfileResponse,
   RefereeObservationAdminResponse,
 } from '@floorball/types';
@@ -51,6 +53,14 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   loading = false;
   gamesLoading = false;
   selectedSeasonId?: number;
+
+  // Kurshistorie aus dem Kursimport. Nur Admin, RSK und Ansetzung; der
+  // Vereinsmanager sieht das Profil seiner Vereinsschiris, aber keine
+  // Testpunkte (die API antwortet ihm mit 403).
+  canViewCourses = false;
+  courses: RefereeCourseResultSummary[] = [];
+  coursesLoaded = false;
+  coursesLoading = false;
 
   canViewFeedback = false;
   feedback?: RefereeFeedbackProfileResponse;
@@ -101,6 +111,8 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (user) => {
+          this.canViewCourses =
+            !!user?.permissions['referee_course_history_view'];
           this.canViewFeedback = !!user?.permissions['referee_feedback_view'];
           this.canViewObservations =
             !!user?.permissions['referee_observation_view'];
@@ -108,6 +120,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
             !!user?.permissions['referee_observation_moderate'];
           this.canManageExclusions =
             !!user?.permissions['menu_item_referee_exclusions'];
+          this._maybeLoadCourses();
           this._maybeLoadFeedback();
           this._maybeLoadObservations();
           this._maybeLoadExclusions();
@@ -130,6 +143,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
             this.loading = false;
             this._cdr.markForCheck();
             this.loadGames(r.id);
+            this._maybeLoadCourses();
             this._maybeLoadFeedback();
             this._maybeLoadObservations();
             this._maybeLoadExclusions();
@@ -154,6 +168,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
                     this.loading = false;
                     this._cdr.markForCheck();
                     this.loadGames(r.id);
+                    this._maybeLoadCourses();
                     this._maybeLoadFeedback();
                     this._maybeLoadObservations();
                     this._maybeLoadExclusions();
@@ -201,6 +216,58 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  // Lädt die Kurshistorie, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  private _maybeLoadCourses(): void {
+    if (
+      !this.canViewCourses ||
+      !this.referee ||
+      this.coursesLoaded ||
+      this.coursesLoading
+    )
+      return;
+
+    this.coursesLoading = true;
+    this._refereeService
+      .adminGetCourses(this.referee.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (result) => {
+          this.courses = result;
+          this.coursesLoaded = true;
+          this.coursesLoading = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.coursesLoading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Ein Kursblock als eine Zeile: Stufe, Datum, Testversion, Punkte. Leere
+  // Angaben fallen weg; ein ganz leerer Block (Kurs 2 fehlt oft) ergibt null.
+  courseLine(data?: RefereeCourseResultCourseData): string | null {
+    if (!data) return null;
+    const parts: string[] = [];
+    if (data.stufe) parts.push(data.stufe);
+    if (data.datum) parts.push(data.datum);
+    if (data.testversion) {
+      parts.push(
+        this._transloco.translate('refereeAdmin.detail.courseTestVersion', {
+          version: data.testversion,
+        })
+      );
+    }
+    if (data.punkte) {
+      parts.push(
+        this._transloco.translate('refereeAdmin.detail.coursePoints', {
+          points: data.punkte,
+        })
+      );
+    }
+    return parts.length ? parts.join(', ') : null;
   }
 
   // Lädt das Schiri-Feedback, sobald Berechtigung und Schiri-Datensatz vorliegen.
