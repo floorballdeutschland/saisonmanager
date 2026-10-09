@@ -85,6 +85,9 @@
             [placeholder]="
               'refereeCourseAdmin.courseDetail.searchPlaceholder' | transloco
             "
+            [attr.aria-label]="
+              'refereeCourseAdmin.courseDetail.searchPlaceholder' | transloco
+            "
             [value]="query"
             (input)="search($any($event.target).value)"
           />
@@ -121,6 +124,9 @@
               data-test="lead-user-name"
               class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
               [placeholder]="'refereeCourseAdmin.leads.userName' | transloco"
+              [attr.aria-label]="
+                'refereeCourseAdmin.leads.userName' | transloco
+              "
               [(ngModel)]="userName"
             />
             <button
@@ -142,6 +148,9 @@
               [placeholder]="
                 'refereeCourseAdmin.courseDetail.vorname' | transloco
               "
+              [attr.aria-label]="
+                'refereeCourseAdmin.courseDetail.vorname' | transloco
+              "
               [(ngModel)]="firstName"
             />
             <input
@@ -151,6 +160,9 @@
               [placeholder]="
                 'refereeCourseAdmin.courseDetail.nachname' | transloco
               "
+              [attr.aria-label]="
+                'refereeCourseAdmin.courseDetail.nachname' | transloco
+              "
               [(ngModel)]="lastName"
             />
             <input
@@ -158,6 +170,9 @@
               data-test="lead-email"
               class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
               [placeholder]="
+                'refereeCourseAdmin.courseDetail.email' | transloco
+              "
+              [attr.aria-label]="
                 'refereeCourseAdmin.courseDetail.email' | transloco
               "
               [(ngModel)]="email"

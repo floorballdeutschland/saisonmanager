@@ -113,6 +113,9 @@
                     <select
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
                       [attr.data-test]="'attendance-' + r.id"
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.leadView.attendance' | transloco
+                      "
                       [disabled]="busy || !course.editable"
                       [ngModel]="r.status"
                       (ngModelChange)="update(r, { status: $event })"
@@ -135,6 +138,9 @@
                       type="text"
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20"
                       [disabled]="busy || !course.editable"
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.leadView.testVersion' | transloco
+                      "
                       [value]="r.test_version ?? ''"
                       (change)="
                         testVersionChanged(r, $any($event.target).value)
@@ -147,6 +153,9 @@
                       inputmode="decimal"
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20"
                       [disabled]="busy || !course.editable"
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.courseDetail.colPoints' | transloco
+                      "
                       [value]="r.points ?? ''"
                       (change)="pointsChanged(r, $any($event.target).value)"
                     />
@@ -155,6 +164,9 @@
                     <select
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
                       [disabled]="busy || !course.editable"
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.courseDetail.colResult' | transloco
+                      "
                       [ngModel]="r.result"
                       (ngModelChange)="update(r, { result: $event })"
                     >

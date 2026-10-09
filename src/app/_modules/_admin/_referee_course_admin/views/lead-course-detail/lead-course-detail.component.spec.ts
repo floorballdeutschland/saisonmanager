@@ -5,7 +5,7 @@ import {
   convertToParamMap,
   provideRouter,
 } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   getTranslocoTestingModule,
   RefereeCourseService,
@@ -93,5 +93,17 @@ describe('LeadCourseDetailComponent', () => {
     service.leadUpdateRegistration.calls.reset();
     c.pointsChanged(c.seated[0], '');
     expect(service.leadUpdateRegistration).not.toHaveBeenCalled();
+  });
+
+  it('setzt die Zeile zurueck, wenn die API ablehnt', () => {
+    const { fixture, service } = render();
+    const c = fixture.componentInstance;
+    const before = c.seated[0];
+    service.leadUpdateRegistration.and.returnValue(
+      throwError(() => ({ status: 422 }))
+    );
+    c.update(before, { status: 'attended' });
+    expect(c.seated[0]).not.toBe(before);
+    expect(c.seated[0].status).toBe('registered');
   });
 });

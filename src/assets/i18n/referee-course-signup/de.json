@@ -124,7 +124,7 @@
     "club": "Verein",
     "noClub": "Kein Verein / sonstige Interessierte",
     "billingAddress": "Rechnungsanschrift (ohne Verein)",
-    "guardianHint": "Du bist am ersten Kurstag jünger als 16 Jahre. Deine Erziehungsberechtigten bekommen nach deiner Bestätigung eine E-Mail und müssen einwilligen, bevor die Anmeldung gilt.",
+    "guardianHint": "Du bist am ersten Kurstag jünger als 16 Jahre. Bitte gib deine Erziehungsberechtigten an. Sie bekommen nach deiner Bestätigung eine E-Mail und müssen einwilligen, bevor die Anmeldung gilt (bei einer bekannten Lizenznummer entfällt das).",
     "consent": "Ich willige ein, dass meine Angaben für die Durchführung des Kurses, die Abrechnung und die Lizenzvergabe verarbeitet werden. Hinweise zum Datenschutz:",
     "privacy": "Datenschutzerklärung",
     "sentTitle": "Fast geschafft",
@@ -149,6 +149,8 @@
       "late": "Die Abmeldefrist ist vorbei, die Kursgebühr bleibt fällig.",
       "done": "Die Abmeldung ist erledigt.",
       "doneLate": "Die Abmeldung ist erledigt. Weil die Abmeldefrist vorbei war, bleibt die Kursgebühr fällig."
-    }
-  }
+    },
+    "failed": "Das hat gerade nicht geklappt, der Link ist aber weiter gültig. Bitte gleich noch einmal versuchen."
+  },
+  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?"
 }

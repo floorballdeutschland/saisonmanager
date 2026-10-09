@@ -201,7 +201,7 @@
             }
             @if (error) {
               <p class="text-sm text-red-700" data-test="error">
-                {{ error | transloco }}
+                {{ error.key ? (error.key | transloco) : error.text }}
               </p>
             }
             <div>
