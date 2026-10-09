@@ -76,6 +76,36 @@
       </div>
     </div>
 
+    @if (course.status === "held") {
+      <section
+        class="mb-8 p-4 border border-black rounded-[5px] text-sm"
+        data-test="submit-box"
+      >
+        <h2 class="font-bold mb-1">
+          {{ "refereeCourseAdmin.courseDetail.submitTitle" | transloco }}
+        </h2>
+        <p class="text-fb-gray-500 mb-2">
+          {{ "refereeCourseAdmin.courseDetail.submitIntro" | transloco }}
+        </p>
+        @if (submissionProblems.length) {
+          <ul class="list-disc pl-5 mb-2 text-red-700" data-test="problems">
+            @for (problem of submissionProblems; track problem) {
+              <li>{{ problem }}</li>
+            }
+          </ul>
+        }
+        <button
+          type="button"
+          data-test="submit-results"
+          class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+          [disabled]="busy || submissionProblems.length > 0"
+          (click)="submitResults()"
+        >
+          {{ "refereeCourseAdmin.courseDetail.submitButton" | transloco }}
+        </button>
+      </section>
+    }
+
     <!-- Eckdaten -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-sm">
       <div class="p-4 border border-fb-gray-700 rounded-[5px]">
@@ -589,34 +619,45 @@
                       (change)="pointsChanged(r, $any($event.target).value)"
                     />
                   </td>
-                  <td class="py-2 px-2">
-                    @if (courseLevels.length) {
-                      <select
-                        class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
-                        [disabled]="
-                          busy || !editable || r.status.startsWith('cancelled')
-                        "
-                        [ngModel]="r.awarded_license_level_id"
-                        (ngModelChange)="
-                          updateRegistration(r, {
-                            awarded_license_level_id: $event,
-                          })
-                        "
-                      >
-                        <option [ngValue]="null">–</option>
-                        @for (level of courseLevels; track level.id) {
-                          <option [ngValue]="level.id">{{ level.name }}</option>
+                  <td class="py-2 px-2" data-test="license-cell">
+                    @if (r.license) {
+                      @switch (r.license.status) {
+                        @case ("applied") {
+                          <span class="font-bold">{{
+                            r.license.lizenzstufe
+                          }}</span>
+                          <span class="block text-xs text-fb-gray-500">{{
+                            "refereeCourseAdmin.courseDetail.licenseUntil"
+                              | transloco
+                                : {
+                                    date:
+                                      (r.license.gueltigkeit
+                                      | date: "dd.MM.yyyy"),
+                                  }
+                          }}</span>
                         }
-                      </select>
-                      @if (r.desired_license_level_id) {
-                        <span class="block text-xs text-fb-gray-500">{{
-                          "refereeCourseAdmin.courseDetail.desired"
-                            | transloco
-                              : {
-                                  level: levelName(r.desired_license_level_id),
-                                }
-                        }}</span>
+                        @case ("rejected") {
+                          <span class="text-red-700">{{
+                            "refereeCourseAdmin.courseDetail.licenseRejected"
+                              | transloco
+                          }}</span>
+                          <span class="block text-xs">{{
+                            r.license.rejection_reason
+                          }}</span>
+                        }
+                        @default {
+                          {{
+                            "refereeCourseAdmin.courseDetail.licensePending"
+                              | transloco
+                          }}
+                        }
                       }
+                    } @else if (r.desired_license_level_id) {
+                      <span class="text-xs text-fb-gray-500">{{
+                        "refereeCourseAdmin.courseDetail.desired"
+                          | transloco
+                            : { level: levelName(r.desired_license_level_id) }
+                      }}</span>
                     } @else {
                       –
                     }

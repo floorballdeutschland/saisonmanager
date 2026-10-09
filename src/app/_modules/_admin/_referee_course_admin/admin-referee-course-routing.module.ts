@@ -42,6 +42,14 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: { scrollTop: true, permission: 'menu_item_referee_courses' },
   })),
+  // Lizenzvergabe durch FD für Kurse im System.
+  {
+    path: 'verwaltung/schiri-kurse-lizenzen',
+    pathMatch: 'full',
+    component: Views.CourseLicensingComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_course_licensing' },
+  },
   // „Meine Kurse" der Kursleitung.
   {
     path: 'verwaltung/meine-kurse',

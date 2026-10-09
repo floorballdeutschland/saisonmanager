@@ -92,7 +92,10 @@ function reg(
 }
 
 describe('CourseDetailComponent', () => {
-  function render(registrations: RefereeCourseRegistration[]) {
+  function render(
+    registrations: RefereeCourseRegistration[],
+    course: RefereeCourse = COURSE
+  ) {
     const service = jasmine.createSpyObj('RefereeCourseService', [
       'get',
       'options',
@@ -101,7 +104,7 @@ describe('CourseDetailComponent', () => {
       'createRegistration',
       'updateRegistration',
     ]);
-    service.get.and.returnValue(of(COURSE));
+    service.get.and.returnValue(of(course));
     service.options.and.returnValue(of(OPTIONS));
     service.listRegistrations.and.returnValue(of(registrations));
     service.update.and.callFake((_id: number, patch: object) =>
@@ -210,5 +213,22 @@ describe('CourseDetailComponent', () => {
       reg(1, 'registered', { custom_answers: { '11': 'M' } }),
     ]);
     expect(fixture.nativeElement.textContent).toContain('T-Shirt: M');
+  });
+
+  it('bietet das Einreichen nur bei durchgefuehrtem Kurs und ohne offene Punkte', () => {
+    const { fixture } = render([], {
+      ...COURSE,
+      status: 'held',
+      submission_problems: ['Anwesenheit fehlt bei: A B'],
+    });
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('[data-test="problems"]')).not.toBeNull();
+    expect(
+      (root.querySelector('[data-test="submit-results"]') as HTMLButtonElement)
+        .disabled
+    ).toBeTrue();
+    expect(fixture.componentInstance.transitions).not.toContain(
+      'results_submitted'
+    );
   });
 });
