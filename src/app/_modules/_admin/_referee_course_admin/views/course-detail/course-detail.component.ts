@@ -297,6 +297,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     this.addMode = mode;
     this.refereeQuery = '';
     this.refereeResults = [];
+    // distinctUntilChanged soll dieselbe Suche nach dem Schließen wieder
+    // durchlassen.
+    this._search$.next('');
     this.newPerson = emptyPerson();
     this.overCapacity = false;
     if (mode === 'person' && this.clubs.length === 0) {
@@ -360,14 +363,20 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
         this.replace(updated);
         // Die offenen Punkte fürs Einreichen hängen an der Teilnehmerliste.
         if (this.course?.status === 'held') this.reloadCourse();
-      }
+      },
+      // Abgelehnt: die Zeile neu setzen, damit Auswahl und Felder wieder den
+      // gespeicherten Wert zeigen (ngModel schreibt sonst nicht zurück).
+      () => this.replace({ ...registration })
     );
   }
 
   pointsChanged(registration: RefereeCourseRegistration, value: string) {
     const text = value.trim().replace(',', '.');
     const points = text === '' ? null : Number(text);
-    if (points !== null && Number.isNaN(points)) return;
+    if (points !== null && Number.isNaN(points)) {
+      this.replace({ ...registration });
+      return;
+    }
     if (points === registration.points) return;
     this.updateRegistration(registration, { points });
   }
@@ -441,7 +450,11 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   }
 
   /** Eine Schreibaktion mit Sperre; Fehlermeldungen zeigt der Interceptor. */
-  private run<T>(request: Observable<T>, done: (value: T) => void): void {
+  private run<T>(
+    request: Observable<T>,
+    done: (value: T) => void,
+    failed?: () => void
+  ): void {
     this.busy = true;
     request.pipe(takeUntil(this._destroy$)).subscribe({
       next: (value) => {
@@ -451,9 +464,15 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.busy = false;
+        failed?.();
         this._cdr.markForCheck();
       },
     });
+  }
+
+  /** Wartende Anmeldungen (E-Mail/Eltern) stellt die Verwaltung nicht um. */
+  isPending(registration: RefereeCourseRegistration): boolean {
+    return registration.status.startsWith('pending');
   }
 }
 

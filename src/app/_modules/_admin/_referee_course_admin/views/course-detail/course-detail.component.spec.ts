@@ -5,7 +5,7 @@ import {
   convertToParamMap,
   provideRouter,
 } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   ClubService,
   getTranslocoTestingModule,
@@ -230,5 +230,29 @@ describe('CourseDetailComponent', () => {
     expect(fixture.componentInstance.transitions).not.toContain(
       'results_submitted'
     );
+  });
+
+  it('setzt die Zeile nach einer abgelehnten Aenderung zurueck', () => {
+    const r = reg(1, 'registered');
+    const { fixture, service } = render([r]);
+    const c = fixture.componentInstance;
+    service.updateRegistration.and.returnValue(
+      throwError(() => ({ status: 422 }))
+    );
+    c.updateRegistration(c.registrations[0], { status: 'attended' });
+    expect(c.registrations[0]).not.toBe(r);
+    expect(c.registrations[0].status).toBe('registered');
+  });
+
+  it('stellt wartende Anmeldungen nicht als Auswahl dar', () => {
+    const { fixture } = render([reg(1, 'pending_guardian')]);
+    expect(
+      fixture.componentInstance.isPending(
+        fixture.componentInstance.registrations[0]
+      )
+    ).toBeTrue();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="status-1"]')
+    ).toBeNull();
   });
 });

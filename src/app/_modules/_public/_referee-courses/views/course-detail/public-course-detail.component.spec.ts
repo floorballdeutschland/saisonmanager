@@ -114,7 +114,7 @@ describe('PublicCourseDetailComponent', () => {
     expect(c.state).toBe('sent');
   });
 
-  it('fragt unter 16 nach den Erziehungsberechtigten, mit Lizenznummer nicht', () => {
+  it('fragt unter 16 immer nach den Erziehungsberechtigten, auch mit Lizenznummer', () => {
     const { fixture } = render();
     const c = fixture.componentInstance;
     fill(c);
@@ -123,7 +123,28 @@ describe('PublicCourseDetailComponent', () => {
     expect(c.needsGuardian).toBeTrue();
     expect(c.valid).toBeFalse();
     c.lizenznummer = '4711';
-    expect(c.needsGuardian).toBeFalse();
+    expect(c.needsGuardian).toBeTrue();
+    c.guardianName = 'Eva';
+    c.guardianEmail = 'eva@example.org';
+    expect(c.valid).toBeTrue();
+  });
+
+  it('zeigt Fehlermeldungen der API im Klartext', () => {
+    const { fixture, service } = render();
+    const c = fixture.componentInstance;
+    fill(c);
+    c.consent = true;
+    service.publicRegister.and.returnValue(
+      throwError(() => ({
+        status: 422,
+        error: { error: 'Der Anmeldeschluss ist vorbei' },
+      }))
+    );
+    c.submit();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="error"]').textContent
+    ).toContain('Der Anmeldeschluss ist vorbei');
   });
 
   it('zeigt den Grund, wenn die Anmeldung geschlossen ist', () => {

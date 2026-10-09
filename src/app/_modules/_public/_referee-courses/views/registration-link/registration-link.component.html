@@ -6,6 +6,9 @@
     @case ("loading") {
       <p class="text-fb-gray-500">{{ "courseSignup.loading" | transloco }}</p>
     }
+    @case ("failed") {
+      <p data-test="failed">{{ "courseSignup.link.failed" | transloco }}</p>
+    }
     @case ("invalid") {
       <p data-test="invalid">{{ "courseSignup.link.invalid" | transloco }}</p>
     }
@@ -67,6 +70,11 @@
         >
           {{ "courseSignup.link." + kind + ".button" | transloco }}
         </button>
+        @if (failedSubmit) {
+          <p class="text-sm text-red-700 mt-2" data-test="retry">
+            {{ "courseSignup.link.failed" | transloco }}
+          </p>
+        }
       }
     }
   }

@@ -24,7 +24,8 @@ import { PublicRegistrationLinkInfo } from '@floorball/types';
 export class RegistrationLinkComponent implements OnInit, OnDestroy {
   kind: 'confirm' | 'cancel' = 'confirm';
   info: PublicRegistrationLinkInfo | null = null;
-  state: 'loading' | 'open' | 'done' | 'invalid' = 'loading';
+  state: 'loading' | 'open' | 'done' | 'invalid' | 'failed' = 'loading';
+  failedSubmit = false;
   resultStatus: string | null = null;
   lateCancellation = false;
   busy = false;
@@ -51,8 +52,8 @@ export class RegistrationLinkComponent implements OnInit, OnDestroy {
           this.state = 'open';
           this._cdr.markForCheck();
         },
-        error: () => {
-          this.state = 'invalid';
+        error: (err: { status?: number }) => {
+          this.state = isInvalidLink(err) ? 'invalid' : 'failed';
           this._cdr.markForCheck();
         },
       });
@@ -77,11 +78,18 @@ export class RegistrationLinkComponent implements OnInit, OnDestroy {
           this.state = 'done';
           this._cdr.markForCheck();
         },
-        error: () => {
+        // Nur 404/422 heißt „Link ungültig“; sonst bleibt der Knopf zum
+        // erneuten Versuch stehen.
+        error: (err: { status?: number }) => {
           this.busy = false;
-          this.state = 'invalid';
+          if (isInvalidLink(err)) this.state = 'invalid';
+          else this.failedSubmit = true;
           this._cdr.markForCheck();
         },
       });
   }
+}
+
+function isInvalidLink(err: { status?: number }): boolean {
+  return err?.status === 404 || err?.status === 422 || err?.status === 410;
 }
