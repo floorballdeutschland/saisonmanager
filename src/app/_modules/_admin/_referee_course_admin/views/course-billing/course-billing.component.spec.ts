@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import {
   getTranslocoTestingModule,
   NotificationService,
@@ -88,5 +88,38 @@ describe('CourseBillingComponent', () => {
     expect(service.billingCreate).toHaveBeenCalled();
     expect(service.billingDownload).toHaveBeenCalledWith(9);
     expect(confirmSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('verwirft eine veraltete Vorschau und exportiert nur die gezeigte Auswahl', () => {
+    const { fixture, service } = render();
+    const c = fixture.componentInstance;
+    const slow = new Subject<unknown>();
+    const fast = new Subject<unknown>();
+    service.billingPreview.and.returnValues(slow, fast);
+    c.from = '2026-01-01';
+    c.loadPreview();
+    c.from = '2026-06-01';
+    c.loadPreview();
+    fast.next({
+      headers: [],
+      rows: [],
+      row_count: 3,
+      total_cents: 0,
+      waiting_for_license: [],
+    });
+    slow.next({
+      headers: [],
+      rows: [],
+      row_count: 9,
+      total_cents: 0,
+      waiting_for_license: [],
+    });
+    expect(c.preview?.row_count).toBe(3);
+    expect(c.previewQuery?.from).toBe('2026-06-01');
+
+    c.from = '2026-09-01';
+    spyOn(window, 'confirm').and.returnValue(true);
+    c.createExport();
+    expect(service.billingCreate).not.toHaveBeenCalled();
   });
 });

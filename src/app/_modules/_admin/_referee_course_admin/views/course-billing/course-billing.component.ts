@@ -37,6 +37,9 @@ export class CourseBillingComponent implements OnInit, OnDestroy {
   includeBilled = false;
 
   preview: CourseBillingPreview | null = null;
+  /** Die Auswahl, zu der die angezeigte Vorschau gehört. */
+  previewQuery: CourseBillingQuery | null = null;
+  private _previewSeq = 0;
   exports: CourseBillingExport[] = [];
   busy = false;
 
@@ -85,20 +88,34 @@ export class CourseBillingComponent implements OnInit, OnDestroy {
     return (this.preview?.rows ?? []).filter((r) => r.warnings.length).length;
   }
 
+  /** Vorschau passt noch zur aktuellen Auswahl? Erst dann darf exportiert werden. */
+  get previewCurrent(): boolean {
+    return (
+      !!this.previewQuery &&
+      JSON.stringify(this.previewQuery) === JSON.stringify(this.query)
+    );
+  }
+
   loadPreview(): void {
     const query = this.query;
     if (!query) return;
+    // Nur die Antwort auf die letzte Anfrage zählt: Bei schnellem Umschalten
+    // überholt sonst eine langsame Antwort die neue Auswahl.
+    const seq = ++this._previewSeq;
     this.busy = true;
     this._service
       .billingPreview(query)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (preview) => {
+          if (seq !== this._previewSeq) return;
           this.preview = preview;
+          this.previewQuery = query;
           this.busy = false;
           this._cdr.markForCheck();
         },
         error: () => {
+          if (seq !== this._previewSeq) return;
           this.busy = false;
           this._cdr.markForCheck();
         },
@@ -116,8 +133,9 @@ export class CourseBillingComponent implements OnInit, OnDestroy {
   }
 
   createExport(): void {
-    const query = this.query;
-    if (!query || !this.preview?.row_count) return;
+    // Exportiert wird genau die Auswahl, die die Vorschau zeigt.
+    const query = this.previewQuery;
+    if (!query || !this.previewCurrent || !this.preview?.row_count) return;
     if (
       !confirm(
         this._transloco.translate('refereeCourseAdmin.billing.confirm', {

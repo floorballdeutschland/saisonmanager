@@ -81,7 +81,7 @@
           type="button"
           data-test="create-export"
           class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
-          [disabled]="busy || preview.row_count === 0"
+          [disabled]="busy || !previewCurrent || preview.row_count === 0"
           (click)="createExport()"
         >
           {{ "refereeCourseAdmin.billing.create" | transloco }}
