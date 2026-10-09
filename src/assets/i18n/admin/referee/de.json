@@ -415,5 +415,20 @@
     "retry": "Erneut versuchen",
     "mailFailed": "Mail nicht verschickt",
     "mailFailedTitle": "Das Konto ist angelegt, die Willkommensmail ging aber nicht raus. Bitte das Passwort manuell zurücksetzen lassen."
+  },
+  "courseProcesses": {
+    "title": "Kursprozesse",
+    "intro": "Wie Kursergebnisse ins System kommen: per CSV-Import oder über Kurse, die im Saisonmanager angelegt und abgeschlossen werden. Beide Wege können in der Übergangszeit gleichzeitig laufen.",
+    "csvImport": "CSV-Import von Kursergebnissen",
+    "csvImportHint": "Aus: Neue Uploads sind gesperrt. Offene Importe lassen sich weiter bearbeiten und einreichen, die LV-Freigabe läuft weiter.",
+    "openImportRows": "Noch {{count}} offene Zeilen in laufenden Importen. Der Menüpunkt „Kursergebnisse“ bleibt sichtbar, bis sie abgearbeitet sind.",
+    "courses": "Kurse im System",
+    "coursesHint": "Kurse anlegen, Anmeldung, Ergebnisse und Lizenzvergabe direkt im Saisonmanager.",
+    "stateAssociations": "Freigeschaltete Landesverbände",
+    "stateAssociationsHint": "Keine Auswahl heißt: alle Landesverbände. Bundesweite Kurse hängen nur am Hauptschalter.",
+    "bothOff": "Beide Wege sind aus. Dann kann kein Kursergebnis mehr zu einer Lizenz führen.",
+    "reloginHint": "Die Sperre wirkt sofort. Menüpunkte ändern sich für Betroffene erst nach einer neuen Anmeldung.",
+    "lastChange": "Zuletzt geändert am {{date}} von {{user}}.",
+    "saved": "Kursprozesse gespeichert."
   }
 }

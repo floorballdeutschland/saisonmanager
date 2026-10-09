@@ -415,5 +415,20 @@
     "retry": "Try again",
     "mailFailed": "mail not sent",
     "mailFailedTitle": "The account exists but the welcome mail did not go out. Please have the password reset manually."
+  },
+  "courseProcesses": {
+    "title": "Course processes",
+    "intro": "How course results enter the system: by CSV import or through courses created and completed in Saisonmanager. Both can run at the same time during the transition.",
+    "csvImport": "CSV import of course results",
+    "csvImportHint": "Off: new uploads are blocked. Open imports can still be edited and submitted, and state association review continues.",
+    "openImportRows": "{{count}} rows are still open in running imports. The \"Course results\" menu item stays visible until they are processed.",
+    "courses": "Courses in the system",
+    "coursesHint": "Create courses, handle registration, results and licensing directly in Saisonmanager.",
+    "stateAssociations": "Enabled state associations",
+    "stateAssociationsHint": "No selection means all state associations. National courses only depend on the main switch.",
+    "bothOff": "Both are off. No course result can lead to a license anymore.",
+    "reloginHint": "The block applies immediately. Menu items change for affected users after their next login.",
+    "lastChange": "Last changed on {{date}} by {{user}}.",
+    "saved": "Course processes saved."
   }
 }

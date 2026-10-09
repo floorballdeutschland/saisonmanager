@@ -27,6 +27,7 @@ import * as Views from './views';
     Views.RefereeTagsComponent,
     Views.RefereeLicenseLevelsComponent,
     Views.RefereeSettingsComponent,
+    Views.RefereeCourseProcessSettingsComponent,
     Views.RefereeMergeComponent,
     Views.RefereeExclusionRequestsComponent,
     Views.RefereeChangeRequestsComponent,
