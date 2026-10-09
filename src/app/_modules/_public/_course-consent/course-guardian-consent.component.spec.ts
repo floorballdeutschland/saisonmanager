@@ -59,4 +59,10 @@ describe('CourseGuardianConsentComponent', () => {
     const { fixture } = render(throwError(() => ({ status: 404 })));
     expect(el(fixture.nativeElement, 'invalid')).not.toBeNull();
   });
+
+  it('zeigt bei einem Serverfehler nicht „Link ungueltig“', () => {
+    const { fixture } = render(throwError(() => ({ status: 500 })));
+    expect(el(fixture.nativeElement, 'failed')).not.toBeNull();
+    expect(el(fixture.nativeElement, 'invalid')).toBeNull();
+  });
 });

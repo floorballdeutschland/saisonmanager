@@ -100,5 +100,9 @@
     "doneWaitlist": "Vielen Dank. Der Kurs ist inzwischen voll, die Anmeldung steht auf der Warteliste und rückt automatisch nach, wenn ein Platz frei wird.",
     "invalid": "Dieser Link ist ungültig oder abgelaufen. Bitte wenden Sie sich an den Verein oder die Kursorganisation.",
     "questions": "Fragen zum Kurs:"
+  },
+  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?",
+  "link": {
+    "failed": "Das hat gerade nicht geklappt, der Link ist aber weiter gültig. Bitte gleich noch einmal versuchen."
   }
 }
