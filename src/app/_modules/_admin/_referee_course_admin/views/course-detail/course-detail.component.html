@@ -224,6 +224,9 @@
             <input
               type="search"
               data-test="referee-query"
+              [attr.aria-label]="
+                'refereeCourseAdmin.courseDetail.searchPlaceholder' | transloco
+              "
               class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
               [placeholder]="
                 'refereeCourseAdmin.courseDetail.searchPlaceholder' | transloco
@@ -443,7 +446,11 @@
                     }
                   </td>
                   <td class="py-2 px-2">
-                    @if (r.status.startsWith("cancelled") || !editable) {
+                    @if (
+                      r.status.startsWith("cancelled") ||
+                      isPending(r) ||
+                      !editable
+                    ) {
                       {{
                         "refereeCourseAdmin.courseDetail.regStatus." + r.status
                           | transloco
@@ -457,6 +464,10 @@
                       <select
                         class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
                         [attr.data-test]="'status-' + r.id"
+                        [attr.aria-label]="
+                          'refereeCourseAdmin.courseDetail.colStatus'
+                            | transloco
+                        "
                         [disabled]="busy"
                         [ngModel]="r.status"
                         (ngModelChange)="
@@ -488,6 +499,9 @@
                       [disabled]="
                         busy || !editable || r.status.startsWith('cancelled')
                       "
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.courseDetail.colResult' | transloco
+                      "
                       [ngModel]="r.result"
                       (ngModelChange)="
                         updateRegistration(r, { result: $event })
@@ -513,6 +527,9 @@
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20"
                       [disabled]="
                         busy || !editable || r.status.startsWith('cancelled')
+                      "
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.courseDetail.colPoints' | transloco
                       "
                       [value]="r.points ?? ''"
                       (change)="pointsChanged(r, $any($event.target).value)"
