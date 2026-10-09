@@ -1,0 +1,52 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <a
+    [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung']"
+    class="text-fb-gray-500 hover:text-black text-sm"
+    >{{ "refereeCourseAdmin.courses.back" | transloco }}</a
+  >
+  <h1 class="text-3xl font-bold mt-1 mb-2">
+    {{ "refereeCourseAdmin.templates.title" | transloco }}
+  </h1>
+  <p class="text-fb-gray-500 text-sm mb-6">
+    {{ "refereeCourseAdmin.templates.intro" | transloco }}
+  </p>
+
+  @if (options) {
+    @if (
+      options.state_associations.length + (options.national_allowed ? 1 : 0) > 1
+    ) {
+      <label class="flex flex-col gap-1 text-xs font-bold mb-6 max-w-sm">
+        {{ "refereeCourseAdmin.courses.colStateAssociation" | transloco }}
+        <select
+          data-test="template-sa"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [ngModel]="stateAssociationId"
+          (ngModelChange)="select($event)"
+        >
+          @if (options.national_allowed) {
+            <option [ngValue]="null">
+              {{ "refereeCourseAdmin.courses.national" | transloco }}
+            </option>
+          }
+          @for (sa of options.state_associations; track sa.id) {
+            <option [ngValue]="sa.id">{{ sa.name }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    @if (loading) {
+      <div class="text-fb-gray-500">
+        {{ "refereeCourseAdmin.import.loading" | transloco }}
+      </div>
+    } @else {
+      <fb-course-field-editor
+        [fields]="templates"
+        [busy]="busy"
+        (created)="create($event)"
+        (updated)="update($event)"
+        (removed)="remove($event)"
+      ></fb-course-field-editor>
+    }
+  }
+</div>

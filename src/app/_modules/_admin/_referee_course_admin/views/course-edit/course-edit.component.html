@@ -1,0 +1,505 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <a
+    [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung']"
+    class="text-fb-gray-500 hover:text-black text-sm"
+    >{{ "refereeCourseAdmin.courses.back" | transloco }}</a
+  >
+  <h1 class="text-3xl font-bold mt-1 mb-6">
+    {{
+      (courseId
+        ? "refereeCourseAdmin.edit.titleEdit"
+        : "refereeCourseAdmin.edit.titleNew"
+      ) | transloco
+    }}
+  </h1>
+
+  @if (loading) {
+    <div class="text-fb-gray-500">
+      {{ "refereeCourseAdmin.import.loading" | transloco }}
+    </div>
+  }
+
+  @if (options && !loading) {
+    <form class="flex flex-col gap-8" (ngSubmit)="save()">
+      <!-- Grunddaten -->
+      <fieldset class="flex flex-col gap-4">
+        <legend class="text-lg font-bold mb-2">
+          {{ "refereeCourseAdmin.edit.basics" | transloco }}
+        </legend>
+        <label class="flex flex-col gap-1 text-xs font-bold">
+          {{ "refereeCourseAdmin.edit.courseTitle" | transloco }} *
+          <input
+            type="text"
+            name="title"
+            data-test="title"
+            required
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+            [(ngModel)]="title"
+          />
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label class="flex flex-col gap-1 text-xs font-bold">
+            {{ "refereeCourseAdmin.courses.colType" | transloco }}
+            <select
+              name="courseType"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+              [(ngModel)]="courseType"
+            >
+              @for (type of options.course_types; track type) {
+                <option [ngValue]="type">
+                  {{ "refereeCourseAdmin.courses.type." + type | transloco }}
+                </option>
+              }
+            </select>
+          </label>
+          <label class="flex flex-col gap-1 text-xs font-bold">
+            {{ "refereeCourseAdmin.courses.colStateAssociation" | transloco }}
+            <select
+              name="stateAssociation"
+              data-test="state-association"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+              [disabled]="stateAssociationLocked"
+              [(ngModel)]="stateAssociationId"
+            >
+              @if (
+                options.national_allowed ||
+                (courseId && !currentStateAssociation)
+              ) {
+                <option [ngValue]="null" [disabled]="!options.national_allowed">
+                  {{ "refereeCourseAdmin.courses.national" | transloco }}
+                </option>
+              }
+              @for (sa of stateAssociationChoices; track sa.id) {
+                <option [ngValue]="sa.id" [disabled]="sa.locked">
+                  {{ sa.name }}
+                </option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div>
+          <span class="text-xs font-bold">{{
+            "refereeCourseAdmin.edit.licenseLevels" | transloco
+          }}</span>
+          <p class="text-xs text-fb-gray-500 mb-1">
+            {{ "refereeCourseAdmin.edit.licenseLevelsHint" | transloco }}
+          </p>
+          <div class="flex flex-wrap gap-x-4 gap-y-1">
+            @for (level of options.license_levels; track level.id) {
+              <label class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  [attr.data-test]="'level-' + level.id"
+                  [checked]="licenseLevelIds.includes(level.id)"
+                  (change)="
+                    toggle(
+                      'licenseLevelIds',
+                      level.id,
+                      $any($event.target).checked
+                    )
+                  "
+                />
+                {{ level.name }}
+              </label>
+            }
+          </div>
+        </div>
+
+        <details>
+          <summary class="text-xs font-bold cursor-pointer">
+            {{ "refereeCourseAdmin.edit.partners" | transloco }}
+            @if (partnerIds.length) {
+              ({{ partnerIds.length }})
+            }
+          </summary>
+          <p class="text-xs text-fb-gray-500 my-1">
+            {{ "refereeCourseAdmin.edit.partnersHint" | transloco }}
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
+            @for (sa of partnerOptions; track sa.id) {
+              <label class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  [checked]="partnerIds.includes(sa.id)"
+                  (change)="
+                    toggle('partnerIds', sa.id, $any($event.target).checked)
+                  "
+                />
+                {{ sa.name }}
+              </label>
+            }
+          </div>
+        </details>
+
+        <label class="flex flex-col gap-1 text-xs font-bold">
+          {{ "refereeCourseAdmin.edit.prerequisites" | transloco }}
+          <input
+            type="text"
+            name="prerequisitesNote"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+            [placeholder]="
+              'refereeCourseAdmin.edit.prerequisitesPlaceholder' | transloco
+            "
+            [(ngModel)]="prerequisitesNote"
+          />
+        </label>
+      </fieldset>
+
+      <!-- Termine -->
+      <fieldset class="flex flex-col gap-4">
+        <legend class="text-lg font-bold mb-2">
+          {{ "refereeCourseAdmin.edit.schedule" | transloco }}
+        </legend>
+        <div class="flex flex-wrap gap-4 text-sm">
+          @for (f of ["in_person", "online", "hybrid"]; track f) {
+            <label class="flex items-center gap-2">
+              <input
+                type="radio"
+                name="format"
+                [attr.data-test]="'format-' + f"
+                [value]="f"
+                [(ngModel)]="format"
+              />
+              {{ "refereeCourseAdmin.courses.format." + f | transloco }}
+            </label>
+          }
+        </div>
+        @if (format !== "in_person") {
+          <label class="flex flex-col gap-1 text-xs font-bold">
+            {{ "refereeCourseAdmin.edit.onlinePlatform" | transloco }}
+            <input
+              type="text"
+              name="onlinePlatform"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+              placeholder="Zoom, Teams …"
+              [(ngModel)]="onlinePlatform"
+            />
+          </label>
+        }
+
+        @for (session of sessions; track $index; let i = $index) {
+          <div
+            class="p-3 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
+            data-test="session"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold">{{
+                "refereeCourseAdmin.edit.session" | transloco: { n: i + 1 }
+              }}</span>
+              @if (sessions.length > 1) {
+                <button
+                  type="button"
+                  class="text-sm text-red-700 hover:underline"
+                  (click)="removeSession(i)"
+                >
+                  {{ "refereeCourseAdmin.fields.delete" | transloco }}
+                </button>
+              }
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "refereeCourseAdmin.edit.startsAt" | transloco }} *
+                <input
+                  type="datetime-local"
+                  [name]="'startsAt' + i"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                  [(ngModel)]="session.starts_at"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "refereeCourseAdmin.edit.endsAt" | transloco }}
+                <input
+                  type="datetime-local"
+                  [name]="'endsAt' + i"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                  [(ngModel)]="session.ends_at"
+                />
+              </label>
+            </div>
+            @if (format === "hybrid") {
+              <div class="flex gap-4 text-sm">
+                <label class="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    [name]="'sessionFormat' + i"
+                    value="in_person"
+                    [(ngModel)]="session.format"
+                  />
+                  {{
+                    "refereeCourseAdmin.courses.format.in_person" | transloco
+                  }}
+                </label>
+                <label class="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    [name]="'sessionFormat' + i"
+                    value="online"
+                    [(ngModel)]="session.format"
+                  />
+                  {{ "refereeCourseAdmin.courses.format.online" | transloco }}
+                </label>
+              </div>
+            }
+            @if (
+              format === "in_person" ||
+              (format === "hybrid" && session.format === "in_person")
+            ) {
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "refereeCourseAdmin.edit.location" | transloco }}
+                <input
+                  type="text"
+                  [name]="'location' + i"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                  [(ngModel)]="session.location"
+                />
+              </label>
+            } @else {
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "refereeCourseAdmin.edit.onlineUrl" | transloco }}
+                <input
+                  type="url"
+                  [name]="'onlineUrl' + i"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                  [(ngModel)]="session.online_url"
+                />
+                <span class="font-normal text-fb-gray-500">{{
+                  "refereeCourseAdmin.edit.onlineUrlHint" | transloco
+                }}</span>
+              </label>
+            }
+          </div>
+        }
+        <div>
+          <button
+            type="button"
+            data-test="add-session"
+            class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+            (click)="addSession()"
+          >
+            {{ "refereeCourseAdmin.edit.addSession" | transloco }}
+          </button>
+        </div>
+      </fieldset>
+
+      <!-- Anmeldung -->
+      <fieldset class="flex flex-col gap-4">
+        <legend class="text-lg font-bold mb-2">
+          {{ "refereeCourseAdmin.edit.registration" | transloco }}
+        </legend>
+        <div class="flex flex-col gap-1 text-sm">
+          <label class="flex items-center gap-2">
+            <input
+              type="radio"
+              name="registrationMode"
+              value="open"
+              [(ngModel)]="registrationMode"
+            />
+            {{ "refereeCourseAdmin.edit.modeOpen" | transloco }}
+          </label>
+          <label class="flex items-center gap-2">
+            <input
+              type="radio"
+              name="registrationMode"
+              value="none"
+              [(ngModel)]="registrationMode"
+            />
+            {{ "refereeCourseAdmin.edit.modeNone" | transloco }}
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" name="public" [(ngModel)]="isPublic" />
+            {{ "refereeCourseAdmin.edit.public" | transloco }}
+          </label>
+        </div>
+        @if (registrationMode === "open") {
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "refereeCourseAdmin.edit.minParticipants" | transloco }}
+              <input
+                type="number"
+                min="0"
+                name="minParticipants"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                [(ngModel)]="minParticipants"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "refereeCourseAdmin.edit.maxParticipants" | transloco }}
+              <input
+                type="number"
+                min="0"
+                name="maxParticipants"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                [(ngModel)]="maxParticipants"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "refereeCourseAdmin.edit.minAge" | transloco }}
+              <input
+                type="number"
+                min="0"
+                name="minAge"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                [(ngModel)]="minAge"
+              />
+            </label>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "refereeCourseAdmin.edit.opensAt" | transloco }}
+              <input
+                type="datetime-local"
+                name="opensAt"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                [(ngModel)]="registrationOpensAt"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "refereeCourseAdmin.edit.deadline" | transloco }}
+              <input
+                type="datetime-local"
+                name="deadline"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                [(ngModel)]="registrationDeadline"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "refereeCourseAdmin.edit.cancellationDeadline" | transloco }}
+              <input
+                type="datetime-local"
+                name="cancellationDeadline"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+                [(ngModel)]="cancellationDeadline"
+              />
+            </label>
+          </div>
+          <div>
+            <button
+              type="button"
+              class="text-sm font-bold hover:underline"
+              (click)="suggestDeadlines()"
+            >
+              {{ "refereeCourseAdmin.edit.suggestDeadlines" | transloco }}
+            </button>
+          </div>
+        }
+        <label class="flex flex-col gap-1 text-xs font-bold">
+          {{ "refereeCourseAdmin.edit.contactEmail" | transloco }}
+          <input
+            type="email"
+            name="contactEmail"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+            [(ngModel)]="contactEmail"
+          />
+        </label>
+      </fieldset>
+
+      <!-- Gebühr -->
+      <fieldset class="flex flex-col gap-4">
+        <legend class="text-lg font-bold mb-2">
+          {{ "refereeCourseAdmin.edit.fee" | transloco }}
+        </legend>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1 text-xs font-bold">
+            {{ "refereeCourseAdmin.edit.feeMember" | transloco }}
+            <input
+              type="text"
+              inputmode="decimal"
+              name="feeMember"
+              data-test="fee-member"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+              placeholder="25,00"
+              [(ngModel)]="feeMember"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-xs font-bold">
+            {{ "refereeCourseAdmin.edit.feeNonMember" | transloco }}
+            <input
+              type="text"
+              inputmode="decimal"
+              name="feeNonMember"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+              [placeholder]="
+                'refereeCourseAdmin.edit.feeNonMemberPlaceholder' | transloco
+              "
+              [(ngModel)]="feeNonMember"
+            />
+          </label>
+        </div>
+        @if (feeError) {
+          <p class="text-sm text-red-700" data-test="fee-error">
+            {{ "refereeCourseAdmin.edit.feeError" | transloco }}
+          </p>
+        }
+        <div class="flex flex-col gap-1 text-sm">
+          <label class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="feeOnlyOnLicense"
+              [(ngModel)]="feeOnlyOnLicense"
+            />
+            {{ "refereeCourseAdmin.edit.feeOnlyOnLicense" | transloco }}
+          </label>
+          <label class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="noShowBillable"
+              [(ngModel)]="noShowBillable"
+            />
+            {{ "refereeCourseAdmin.edit.noShowBillable" | transloco }}
+          </label>
+          @if (isNational) {
+            <label class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="billStateAssociation"
+                [(ngModel)]="billStateAssociation"
+              />
+              {{ "refereeCourseAdmin.edit.billStateAssociation" | transloco }}
+            </label>
+          }
+        </div>
+        <label class="flex flex-col gap-1 text-xs font-bold">
+          {{ "refereeCourseAdmin.edit.feeNote" | transloco }}
+          <input
+            type="text"
+            name="feeNote"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+            [(ngModel)]="feeNote"
+          />
+        </label>
+      </fieldset>
+
+      <!-- Beschreibung -->
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.edit.description" | transloco }}
+        <textarea
+          rows="5"
+          name="description"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+          [(ngModel)]="description"
+        ></textarea>
+      </label>
+
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          data-test="save"
+          class="px-5 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+          [disabled]="!valid || saving"
+        >
+          {{ "refereeCourseAdmin.fields.save" | transloco }}
+        </button>
+        <a
+          [routerLink]="
+            courseId
+              ? ['/', 'verwaltung', 'schiri-kurse-planung', courseId]
+              : ['/', 'verwaltung', 'schiri-kurse-planung']
+          "
+          class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px]"
+          >{{ "refereeCourseAdmin.fields.cancel" | transloco }}</a
+        >
+      </div>
+    </form>
+  }
+</div>
