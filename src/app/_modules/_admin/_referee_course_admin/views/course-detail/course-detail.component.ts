@@ -37,6 +37,7 @@ import {
 import { TranslocoService } from '@jsverse/transloco';
 import { CourseFieldChange } from '../../components/course-field-editor/course-field-editor.component';
 import { centsToEuro } from '../../course-format';
+import { downloadBlob } from 'src/app/_helpers/_utils/result-tile';
 
 interface NewPerson {
   vorname: string;
@@ -232,6 +233,16 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
           : 'refereeCourseAdmin.courseDetail.no'
       );
     return String(value);
+  }
+
+  /** Teilnehmerliste als CSV (Kontaktdaten, Zusatzfelder) für die Orga. */
+  downloadParticipants(): void {
+    if (!this.course) return;
+    const course = this.course;
+    this._service
+      .participantsCsv(course.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((blob) => downloadBlob(blob, `teilnehmende-${course.id}.csv`));
   }
 
   // --- Status ----------------------------------------------------------------

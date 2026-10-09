@@ -8,3 +8,4 @@ export { CourseFieldTemplatesComponent } from './course-field-templates/course-f
 export { LeadCourseIndexComponent } from './lead-course-index/lead-course-index.component';
 export { LeadCourseDetailComponent } from './lead-course-detail/lead-course-detail.component';
 export { CourseLicensingComponent } from './course-licensing/course-licensing.component';
+export { CourseBillingComponent } from './course-billing/course-billing.component';

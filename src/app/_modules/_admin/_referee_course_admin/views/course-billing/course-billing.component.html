@@ -1,0 +1,173 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-2">
+    {{ "refereeCourseAdmin.billing.title" | transloco }}
+  </h1>
+  <p class="text-fb-gray-500 text-sm mb-6">
+    {{ "refereeCourseAdmin.billing.intro" | transloco }}
+  </p>
+
+  @if (options) {
+    <div class="flex flex-wrap items-end gap-3 mb-6">
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.courses.colStateAssociation" | transloco }}
+        <select
+          data-test="billing-sa"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [(ngModel)]="stateAssociationId"
+          (ngModelChange)="loadPreview()"
+        >
+          @if (options.national_allowed) {
+            <option ngValue="national">
+              {{ "refereeCourseAdmin.courses.national" | transloco }}
+            </option>
+          }
+          @for (sa of options.state_associations; track sa.id) {
+            <option [ngValue]="sa.id">{{ sa.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.billing.from" | transloco }}
+        <input
+          type="date"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [(ngModel)]="from"
+          (change)="loadPreview()"
+        />
+      </label>
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.billing.to" | transloco }}
+        <input
+          type="date"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [(ngModel)]="to"
+          (change)="loadPreview()"
+        />
+      </label>
+      <label class="flex items-center gap-2 text-sm pb-2">
+        <input
+          type="checkbox"
+          [(ngModel)]="includeBilled"
+          (ngModelChange)="loadPreview()"
+        />
+        {{ "refereeCourseAdmin.billing.includeBilled" | transloco }}
+      </label>
+    </div>
+  }
+
+  @if (preview) {
+    <section class="mb-10" data-test="preview">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <p class="text-sm">
+          {{
+            "refereeCourseAdmin.billing.summary"
+              | transloco
+                : {
+                    count: preview.row_count,
+                    total: centsToEuro(preview.total_cents),
+                  }
+          }}
+          @if (warningCount) {
+            <span class="text-red-700" data-test="warning-count">
+              ·
+              {{
+                "refereeCourseAdmin.billing.warnings"
+                  | transloco: { count: warningCount }
+              }}</span
+            >
+          }
+        </p>
+        <button
+          type="button"
+          data-test="create-export"
+          class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+          [disabled]="busy || preview.row_count === 0"
+          (click)="createExport()"
+        >
+          {{ "refereeCourseAdmin.billing.create" | transloco }}
+        </button>
+      </div>
+      @if (preview.waiting_for_license.length) {
+        <p class="text-sm text-fb-gray-500 mb-2" data-test="waiting">
+          {{
+            "refereeCourseAdmin.billing.waitingForLicense"
+              | transloco: { names: preview.waiting_for_license.join(", ") }
+          }}
+        </p>
+      }
+      @if (preview.rows.length) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-fb-gray-700">
+                @for (h of preview.headers; track $index) {
+                  <th class="py-1 px-2 whitespace-nowrap">{{ h }}</th>
+                }
+                <th class="py-1 px-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of preview.rows; track row.registration_id) {
+                <tr class="border-b border-fb-gray-800" data-test="billing-row">
+                  @for (value of row.values; track $index) {
+                    <td class="py-1 px-2 whitespace-nowrap">{{ value }}</td>
+                  }
+                  <td class="py-1 px-2 text-red-700 whitespace-nowrap">
+                    {{ row.warnings.join(" · ") }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  <section>
+    <h2 class="text-lg font-bold mb-2">
+      {{ "refereeCourseAdmin.billing.previous" | transloco }}
+    </h2>
+    @if (exports.length === 0) {
+      <p class="text-sm text-fb-gray-500">
+        {{ "refereeCourseAdmin.billing.noExports" | transloco }}
+      </p>
+    } @else {
+      <ul class="text-sm flex flex-col gap-1">
+        @for (entry of exports; track entry.id) {
+          <li
+            class="flex flex-wrap items-center gap-2"
+            data-test="export-entry"
+          >
+            <span>
+              {{ entry.created_at | date: "dd.MM.yyyy HH:mm" }} ·
+              {{
+                entry.state_association?.name ??
+                  ("refereeCourseAdmin.courses.national" | transloco)
+              }}
+              ·
+              {{
+                "refereeCourseAdmin.billing.summary"
+                  | transloco
+                    : {
+                        count: entry.row_count,
+                        total: centsToEuro(entry.total_cents),
+                      }
+              }}
+              @if (entry.created_by) {
+                · {{ entry.created_by }}
+              }
+            </span>
+            <button
+              type="button"
+              class="font-bold hover:underline"
+              (click)="download(entry)"
+            >
+              {{ "refereeCourseAdmin.billing.download" | transloco }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

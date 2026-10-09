@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
+  CourseBillingExport,
+  CourseBillingPreview,
+  CourseBillingQuery,
   CourseLicensingRow,
   CourseLeadCourse,
   CourseLeadRegistration,
@@ -20,6 +23,7 @@ const BASE = environment.apiURL + 'admin/referee_courses';
 const TEMPLATES = environment.apiURL + 'admin/referee_course_field_templates';
 const LEAD = environment.apiURL + 'course_lead/courses';
 const LICENSING = environment.apiURL + 'admin/referee_course_licensing';
+const BILLING = environment.apiURL + 'admin/referee_course_billing_exports';
 
 /** Schiedsrichterkurse im System, Verwaltung durch RSK und Admin. */
 @Injectable({
@@ -222,4 +226,40 @@ export class RefereeCourseService {
       rejection_reason: rejectionReason,
     });
   }
+
+  // --- Rechnungsexport und Teilnehmerliste -------------------------------
+
+  billingPreview(query: CourseBillingQuery) {
+    return this.http.get<CourseBillingPreview>(`${BILLING}/preview`, {
+      params: billingParams(query),
+    });
+  }
+
+  billingCreate(query: CourseBillingQuery) {
+    return this.http.post<CourseBillingExport>(BILLING, billingParams(query));
+  }
+
+  billingExports() {
+    return this.http.get<CourseBillingExport[]>(BILLING);
+  }
+
+  billingDownload(id: number) {
+    return this.http.get(`${BILLING}/${id}/download`, { responseType: 'blob' });
+  }
+
+  participantsCsv(courseId: number) {
+    return this.http.get(`${BASE}/${courseId}/participants`, {
+      responseType: 'blob',
+    });
+  }
+}
+
+function billingParams(query: CourseBillingQuery): Record<string, string> {
+  const params: Record<string, string> = {
+    state_association_id: String(query.state_association_id),
+  };
+  if (query.from) params['from'] = query.from;
+  if (query.to) params['to'] = query.to;
+  if (query.include_billed) params['include_billed'] = 'true';
+  return params;
 }
