@@ -440,7 +440,65 @@
                             | transloco
                         }}
                       }
+                      ·
+                      {{
+                        "refereeCourseAdmin.courseDetail.source." + r.source
+                          | transloco
+                      }}
                     </span>
+                    @if (r.identity_match === "needs_review" && !r.referee_id) {
+                      <div
+                        class="mt-1 p-2 border border-fb-gray-700 rounded-[5px] text-xs"
+                        data-test="candidates"
+                      >
+                        <span class="font-bold">{{
+                          "refereeCourseAdmin.courseDetail.candidates"
+                            | transloco
+                        }}</span>
+                        @for (c of r.match_candidates; track c.id) {
+                          <span class="flex items-center justify-between gap-2">
+                            <span
+                              >{{ c.nachname }}, {{ c.vorname }} ·
+                              {{ c.geburtsdatum | date: "dd.MM.yyyy" }} ·
+                              {{ c.lizenznummer ?? "–" }} ·
+                              {{ c.club ?? "–" }}</span
+                            >
+                            @if (editable) {
+                              <button
+                                type="button"
+                                class="font-bold hover:underline"
+                                [disabled]="busy"
+                                (click)="
+                                  updateRegistration(r, { referee_id: c.id })
+                                "
+                              >
+                                {{
+                                  "refereeCourseAdmin.courseDetail.assign"
+                                    | transloco
+                                }}
+                              </button>
+                            }
+                          </span>
+                        }
+                        @if (editable) {
+                          <button
+                            type="button"
+                            class="mt-1 hover:underline"
+                            [disabled]="busy"
+                            (click)="
+                              updateRegistration(r, {
+                                identity_match: 'new_person',
+                              })
+                            "
+                          >
+                            {{
+                              "refereeCourseAdmin.courseDetail.confirmNew"
+                                | transloco
+                            }}
+                          </button>
+                        }
+                      </div>
+                    }
                     @for (field of course.fields; track field.id) {
                       @if (answer(r, field)) {
                         <span class="block text-xs"

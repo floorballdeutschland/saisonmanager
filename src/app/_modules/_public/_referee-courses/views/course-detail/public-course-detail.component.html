@@ -1,0 +1,228 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <a
+    [routerLink]="['/', 'schiri-kurse']"
+    class="text-fb-gray-500 hover:text-black text-sm"
+    >{{ "courseSignup.public.back" | transloco }}</a
+  >
+
+  @switch (state) {
+    @case ("loading") {
+      <p class="text-fb-gray-500 mt-4">
+        {{ "courseSignup.loading" | transloco }}
+      </p>
+    }
+    @case ("missing") {
+      <p class="mt-4" data-test="missing">
+        {{ "courseSignup.public.notFound" | transloco }}
+      </p>
+    }
+    @case ("sent") {
+      <div class="mt-4 p-4 border border-black rounded-[5px]" data-test="sent">
+        <h2 class="font-bold mb-2">
+          {{ "courseSignup.public.sentTitle" | transloco }}
+        </h2>
+        <p class="text-sm">{{ "courseSignup.public.sentText" | transloco }}</p>
+      </div>
+    }
+    @case ("form") {
+      @if (course) {
+        <div class="mt-2 mb-6">
+          <fb-course-offer [offer]="course"></fb-course-offer>
+        </div>
+
+        @if (course.registration_mode === "none") {
+          <p class="text-sm">
+            {{ "courseSignup.announcementOnly" | transloco }}
+          </p>
+        } @else if (course.registration_closed_reason) {
+          <p class="text-sm" data-test="closed">
+            {{ course.registration_closed_reason }}
+          </p>
+        } @else {
+          <section class="flex flex-col gap-4" data-test="form">
+            <h2 class="text-lg font-bold">
+              {{ "courseSignup.public.formTitle" | transloco }}
+            </h2>
+            <p class="text-sm text-fb-gray-500">
+              {{ "courseSignup.public.accountHint" | transloco }}
+              <a
+                class="underline"
+                [routerLink]="['/', 'login']"
+                [queryParams]="{ returnUrl: '/schiedsrichter/kurse' }"
+                >{{ "courseSignup.public.login" | transloco }}</a
+              >
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.vorname" | transloco }} *
+                <input
+                  type="text"
+                  data-test="vorname"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="vorname"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.nachname" | transloco }} *
+                <input
+                  type="text"
+                  data-test="nachname"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="nachname"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.geburtsdatum" | transloco }} *
+                <input
+                  type="date"
+                  data-test="geburtsdatum"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="geburtsdatum"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.public.email" | transloco }} *
+                <input
+                  type="email"
+                  data-test="email"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="email"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.public.phone" | transloco }}
+                <input
+                  type="tel"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="telefon"
+                />
+              </label>
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.public.licenseNumber" | transloco }}
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  data-test="lizenznummer"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="lizenznummer"
+                />
+                <span class="font-normal text-fb-gray-500">{{
+                  "courseSignup.public.licenseNumberHint" | transloco
+                }}</span>
+              </label>
+            </div>
+
+            <label class="flex flex-col gap-1 text-xs font-bold">
+              {{ "courseSignup.public.club" | transloco }}
+              <select
+                data-test="club"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                [(ngModel)]="clubId"
+              >
+                <option [ngValue]="null">
+                  {{ "courseSignup.public.noClub" | transloco }}
+                </option>
+                @for (club of sortedClubs; track club.id) {
+                  <option [ngValue]="club.id">{{ club.name }}</option>
+                }
+              </select>
+            </label>
+            @if (!clubId) {
+              <label class="flex flex-col gap-1 text-xs font-bold">
+                {{ "courseSignup.public.billingAddress" | transloco }}
+                <textarea
+                  rows="3"
+                  data-test="billing-address"
+                  class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                  [(ngModel)]="billingAddress"
+                ></textarea>
+              </label>
+            }
+
+            @if (needsGuardian) {
+              <div
+                class="p-3 border border-fb-gray-700 rounded-[5px] flex flex-col gap-2"
+                data-test="guardian"
+              >
+                <p class="text-sm">
+                  {{ "courseSignup.public.guardianHint" | transloco }}
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    data-test="guardian-name"
+                    class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                    [placeholder]="'courseSignup.guardianName' | transloco"
+                    [(ngModel)]="guardianName"
+                  />
+                  <input
+                    type="email"
+                    data-test="guardian-email"
+                    class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                    [placeholder]="'courseSignup.guardianEmail' | transloco"
+                    [(ngModel)]="guardianEmail"
+                  />
+                </div>
+              </div>
+            }
+
+            <fb-course-signup-fields
+              [offer]="course"
+              [(answers)]="answers"
+            ></fb-course-signup-fields>
+
+            <label class="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                class="mt-1"
+                data-test="consent"
+                [(ngModel)]="consent"
+              />
+              <span>
+                {{ "courseSignup.public.consent" | transloco }}
+                <a
+                  class="underline"
+                  href="https://floorball.de/datenschutz/"
+                  target="_blank"
+                  rel="noopener"
+                  >{{ "courseSignup.public.privacy" | transloco }}</a
+                >
+              </span>
+            </label>
+
+            @if (missing.length) {
+              <p class="text-xs text-fb-gray-500">
+                {{
+                  "courseSignup.missing"
+                    | transloco: { fields: missing.join(", ") }
+                }}
+              </p>
+            }
+            @if (error) {
+              <p class="text-sm text-red-700" data-test="error">
+                {{ error.key ? (error.key | transloco) : error.text }}
+              </p>
+            }
+            <div>
+              <button
+                type="button"
+                data-test="submit"
+                class="px-5 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+                [disabled]="!valid || busy"
+                (click)="submit()"
+              >
+                {{
+                  (course.free_seats === 0
+                    ? "courseSignup.joinWaitlist"
+                    : "courseSignup.register"
+                  ) | transloco
+                }}
+              </button>
+            </div>
+          </section>
+        }
+      }
+    }
+  }
+</div>

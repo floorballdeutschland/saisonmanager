@@ -407,6 +407,15 @@ export const routes: Routes = [
       ),
   },
   {
+    // Öffentliche Kursseite (/schiri-kurse) und die Links aus den
+    // Anmeldemails. Ohne Guard und ohne Vorabladen.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/referee-courses').then(
+        (m) => m.PublicRefereeCoursesModule
+      ),
+  },
+  {
     path: '',
     loadChildren: () =>
       import('@floorball/public/license-list').then(

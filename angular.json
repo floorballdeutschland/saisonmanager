@@ -47,6 +47,11 @@
                 "glob": "**/*",
                 "input": "overlay",
                 "output": "overlay"
+              },
+              {
+                "glob": "**/*",
+                "input": "kurse-einbettung",
+                "output": "kurse-einbettung"
               }
             ],
             "styles": ["src/styles.css"],

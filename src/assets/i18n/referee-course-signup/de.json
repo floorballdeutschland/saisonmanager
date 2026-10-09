@@ -101,8 +101,56 @@
     "invalid": "Dieser Link ist ungültig oder abgelaufen. Bitte wenden Sie sich an den Verein oder die Kursorganisation.",
     "questions": "Fragen zum Kurs:"
   },
-  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?",
+  "public": {
+    "title": "Schiedsrichterkurse",
+    "intro": "Hier findest du die Schiedsrichterkurse der Landesverbände und von Floorball Deutschland und kannst dich direkt anmelden.",
+    "filterVerband": "Landesverband",
+    "allVerbaende": "Alle Landesverbände",
+    "filterFormat": "Format",
+    "allFormats": "Alle Formate",
+    "filterType": "Kurstyp",
+    "allTypes": "Alle Kurstypen",
+    "toRegistration": "Details und Anmeldung",
+    "toDetails": "Details",
+    "back": "← Alle Kurse",
+    "notFound": "Diesen Kurs gibt es nicht oder er ist nicht mehr ausgeschrieben.",
+    "formTitle": "Anmeldung",
+    "accountHint": "Du hast schon ein Schiedsrichter-Konto im Saisonmanager? Dann melde dich an und nutze die Kursanmeldung dort:",
+    "login": "Zum Login",
+    "email": "E-Mail",
+    "phone": "Telefon (optional)",
+    "licenseNumber": "Lizenznummer (falls vorhanden)",
+    "licenseNumberHint": "Mit Lizenznummer geht die Bestätigung an die Adresse, die beim Schiedsrichterwesen hinterlegt ist.",
+    "club": "Verein",
+    "noClub": "Kein Verein / sonstige Interessierte",
+    "billingAddress": "Rechnungsanschrift (ohne Verein)",
+    "guardianHint": "Du bist am ersten Kurstag jünger als 16 Jahre. Bitte gib deine Erziehungsberechtigten an. Sie bekommen nach deiner Bestätigung eine E-Mail und müssen einwilligen, bevor die Anmeldung gilt (bei einer bekannten Lizenznummer entfällt das).",
+    "consent": "Ich willige ein, dass meine Angaben für die Durchführung des Kurses, die Abrechnung und die Lizenzvergabe verarbeitet werden. Hinweise zum Datenschutz:",
+    "privacy": "Datenschutzerklärung",
+    "sentTitle": "Fast geschafft",
+    "sentText": "Wir haben eine E-Mail mit einem Bestätigungslink verschickt. Erst mit dem Klick darauf gilt die Anmeldung. Wenn du eine Lizenznummer angegeben hast, geht die E-Mail an die dort hinterlegte Adresse. Der Link ist drei Tage gültig.",
+    "tooMany": "Zu viele Anmeldungen von diesem Anschluss. Bitte später erneut versuchen.",
+    "failed": "Die Anmeldung hat nicht geklappt. Bitte prüfe deine Angaben."
+  },
   "link": {
+    "invalid": "Dieser Link ist ungültig oder abgelaufen.",
+    "confirm": {
+      "title": "Anmeldung bestätigen",
+      "intro": "Anmeldung von {{name}} zum Kurs „{{course}}“ bestätigen.",
+      "button": "Anmeldung bestätigen",
+      "done": "Danke, die Anmeldung gilt. Eine Bestätigung mit allen Angaben kommt per E-Mail.",
+      "doneWaitlist": "Danke. Der Kurs ist voll, die Anmeldung steht auf der Warteliste und rückt automatisch nach.",
+      "doneGuardian": "Danke. Jetzt fehlt noch die Einwilligung deiner Erziehungsberechtigten; sie haben eine E-Mail bekommen."
+    },
+    "cancel": {
+      "title": "Vom Kurs abmelden",
+      "intro": "{{name}} vom Kurs „{{course}}“ abmelden?",
+      "button": "Abmelden",
+      "late": "Die Abmeldefrist ist vorbei, die Kursgebühr bleibt fällig.",
+      "done": "Die Abmeldung ist erledigt.",
+      "doneLate": "Die Abmeldung ist erledigt. Weil die Abmeldefrist vorbei war, bleibt die Kursgebühr fällig."
+    },
     "failed": "Das hat gerade nicht geklappt, der Link ist aber weiter gültig. Bitte gleich noch einmal versuchen."
-  }
+  },
+  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?"
 }

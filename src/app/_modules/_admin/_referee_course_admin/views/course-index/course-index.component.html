@@ -18,6 +18,36 @@
     </div>
   </div>
 
+  @if (options?.state_associations?.length) {
+    <details class="mb-6 text-sm" data-test="embed">
+      <summary class="cursor-pointer font-bold">
+        {{ "refereeCourseAdmin.courses.embedTitle" | transloco }}
+      </summary>
+      <p class="text-fb-gray-500 my-2">
+        {{ "refereeCourseAdmin.courses.embedIntro" | transloco }}
+      </p>
+      @for (sa of options!.state_associations; track sa.id) {
+        <div class="mb-3">
+          <span class="font-bold">{{ sa.name }}</span>
+          <a
+            class="block underline break-all"
+            [href]="publicUrl(sa.id)"
+            target="_blank"
+            rel="noopener"
+            >{{ publicUrl(sa.id) }}</a
+          >
+          <textarea
+            readonly
+            rows="4"
+            class="w-full mt-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 font-mono text-xs"
+            [value]="embedCode(sa.id)"
+            (focus)="$any($event.target).select()"
+          ></textarea>
+        </div>
+      }
+    </details>
+  }
+
   <label class="inline-flex items-center gap-2 mb-4 text-sm cursor-pointer">
     <input
       type="checkbox"

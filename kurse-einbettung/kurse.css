@@ -1,0 +1,65 @@
+:root {
+  --akzent: #000000;
+  --text: #1a1a1a;
+  --grau: #6b6b6b;
+  --rand: #d4d4d4;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 8px;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text);
+  background: transparent;
+}
+.kurs {
+  border: 1px solid var(--rand);
+  border-radius: 5px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.kurs h2 {
+  margin: 0 0 2px;
+  font-size: 17px;
+}
+.meta,
+.hinweis {
+  color: var(--grau);
+  font-size: 13px;
+  margin: 0 0 6px;
+}
+.termine {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+.zeile {
+  margin: 2px 0;
+  font-size: 14px;
+}
+.voll {
+  color: #b00020;
+}
+.knopf {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 7px 14px;
+  border-radius: 5px;
+  background: var(--akzent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+}
+.knopf:hover,
+.knopf:focus {
+  opacity: 0.85;
+}

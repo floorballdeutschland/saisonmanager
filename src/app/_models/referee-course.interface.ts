@@ -223,10 +223,22 @@ export interface RefereeCourseRegistration {
     | 'confirmed_existing'
     | 'new_person'
     | 'needs_review';
-  match_candidates: unknown[];
+  match_candidates: RefereeMatchCandidate[];
   custom_answers: Record<string, unknown>;
   fee_cents: number | null;
+  source: 'admin' | 'portal' | 'club' | 'public';
   created_at: string;
+}
+
+/** Möglicher Bestandsschiri zu einer Anmeldung (RefereeIdentityMatcher). */
+export interface RefereeMatchCandidate {
+  id: number;
+  lizenznummer: number | null;
+  vorname: string;
+  nachname: string;
+  geburtsdatum: string | null;
+  club: string | null;
+  lizenzstufe: string | null;
 }
 
 export type RefereeCourseRegistrationInput = Partial<
@@ -253,6 +265,7 @@ export type RefereeCourseRegistrationInput = Partial<
   club_id?: number | null;
   billing_club_id?: number | null;
   over_capacity?: boolean;
+  identity_match?: 'new_person';
 };
 
 /** Kursangebot für Anmeldende (Portal, Verein, öffentlich), ohne Online-Link. */
@@ -357,5 +370,50 @@ export interface GuardianConsentInfo {
     | 'fee_non_member_cents'
     | 'contact_email'
     | 'description'
+  >;
+}
+
+export interface PublicCoursesResponse {
+  enabled: boolean;
+  consent_version?: string;
+  state_associations: { id: number; name: string }[];
+  courses: RefereeCourseOffer[];
+}
+
+export interface PublicClub {
+  id: number;
+  name: string;
+  state_association_id: number | null;
+}
+
+/** Anmeldung ohne Konto (öffentliches Formular). */
+export interface PublicCourseRegistrationInput extends CourseSignupAnswers {
+  vorname: string;
+  nachname: string;
+  geburtsdatum: string;
+  email: string;
+  telefon?: string | null;
+  club_id: number | null;
+  billing_address?: string | null;
+  lizenznummer?: string | null;
+  guardian_name?: string | null;
+  guardian_email?: string | null;
+  consent: boolean;
+}
+
+/** Was die Links aus den Mails (bestätigen, abmelden) anzeigen. */
+export interface PublicRegistrationLinkInfo {
+  name: string;
+  status: RefereeCourseRegistrationStatus;
+  late?: boolean;
+  course: Pick<
+    RefereeCourseOffer,
+    | 'id'
+    | 'title'
+    | 'course_type'
+    | 'format'
+    | 'sessions'
+    | 'starts_on'
+    | 'contact_email'
   >;
 }
