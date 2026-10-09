@@ -100,5 +100,55 @@
     "doneWaitlist": "Thank you. The course has filled up in the meantime; the registration is on the waiting list and moves up automatically when a seat becomes free.",
     "invalid": "This link is invalid or has expired. Please contact the club or the course organisers.",
     "questions": "Questions about the course:"
+  },
+  "public": {
+    "title": "Referee courses",
+    "intro": "Referee courses of the state associations and Floorball Deutschland. You can register directly.",
+    "filterVerband": "State association",
+    "allVerbaende": "All state associations",
+    "filterFormat": "Format",
+    "allFormats": "All formats",
+    "filterType": "Course type",
+    "allTypes": "All course types",
+    "toRegistration": "Details and registration",
+    "toDetails": "Details",
+    "back": "← All courses",
+    "notFound": "This course does not exist or is no longer open.",
+    "formTitle": "Registration",
+    "accountHint": "Already have a referee account in Saisonmanager? Log in and use the course registration there:",
+    "login": "Log in",
+    "email": "E-mail",
+    "phone": "Phone (optional)",
+    "licenseNumber": "License number (if any)",
+    "licenseNumberHint": "With a license number, the confirmation goes to the address on file with the referee department.",
+    "club": "Club",
+    "noClub": "No club / other interested person",
+    "billingAddress": "Billing address (without club)",
+    "guardianHint": "You are under 16 on the first course day. After your confirmation, your parents or guardians receive an e-mail and must consent before the registration is valid.",
+    "consent": "I consent to my data being processed for running the course, invoicing and granting the license. Privacy information:",
+    "privacy": "Privacy policy",
+    "sentTitle": "Almost done",
+    "sentText": "We have sent an e-mail with a confirmation link. The registration is only valid after you click it. If you entered a license number, the e-mail goes to the address on file. The link is valid for three days.",
+    "tooMany": "Too many registrations from this connection. Please try again later.",
+    "failed": "The registration did not work. Please check your details."
+  },
+  "link": {
+    "invalid": "This link is invalid or has expired.",
+    "confirm": {
+      "title": "Confirm registration",
+      "intro": "Confirm the registration of {{name}} for „{{course}}“.",
+      "button": "Confirm registration",
+      "done": "Thank you, the registration is valid. A confirmation with all details is sent by e-mail.",
+      "doneWaitlist": "Thank you. The course is full, the registration is on the waiting list and moves up automatically.",
+      "doneGuardian": "Thank you. Your parents or guardians still need to consent; they have received an e-mail."
+    },
+    "cancel": {
+      "title": "Deregister from course",
+      "intro": "Deregister {{name}} from „{{course}}“?",
+      "button": "Deregister",
+      "late": "The cancellation deadline has passed, the course fee remains due.",
+      "done": "You have been deregistered.",
+      "doneLate": "You have been deregistered. As the cancellation deadline had passed, the course fee remains due."
+    }
   }
 }

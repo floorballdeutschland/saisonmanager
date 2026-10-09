@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { RefereeCourseService } from '@floorball/core';
-import { RefereeCourseSummary } from '@floorball/types';
+import { RefereeCourseOptions, RefereeCourseSummary } from '@floorball/types';
 
 /** Kursplanung: Liste der Kurse, die das Konto verwalten darf. */
 @Component({
@@ -23,6 +23,8 @@ export class CourseIndexComponent implements OnInit, OnDestroy {
   // Vergangene Kurse sind standardmäßig ausgeblendet, die Arbeit steckt in den
   // kommenden.
   showPast = false;
+  options: RefereeCourseOptions | null = null;
+  readonly origin = typeof window === 'undefined' ? '' : window.location.origin;
 
   private _destroy$ = new Subject<void>();
 
@@ -33,6 +35,26 @@ export class CourseIndexComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
+    this._service
+      .options()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((options) => {
+        this.options = options;
+        this._cdr.markForCheck();
+      });
+  }
+
+  /** Öffentliche Kursseite eines LV, zum Verlinken. */
+  publicUrl(stateAssociationId: number): string {
+    return `${this.origin}/schiri-kurse?verband=${stateAssociationId}`;
+  }
+
+  /** iframe-Code für die Verbandsseite (statische Seite ohne Seitenleiste). */
+  embedCode(stateAssociationId: number): string {
+    return (
+      `<iframe src="${this.origin}/kurse-einbettung/?verband=${stateAssociationId}" ` +
+      `style="width:100%;min-height:600px;border:0" title="Schiedsrichterkurse"></iframe>`
+    );
   }
 
   ngOnDestroy(): void {

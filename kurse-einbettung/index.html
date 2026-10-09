@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Schiedsrichterkurse</title>
+    <link rel="stylesheet" href="kurse.css" />
+  </head>
+  <body>
+    <!--
+      Kursliste zum Einbetten auf Verbandsseiten, ohne Angular und ohne
+      Seitenleiste. Einbinden:
+
+        <iframe src="https://saisonmanager.de/kurse-einbettung/?verband=3"
+                style="width:100%;border:0" title="Schiedsrichterkurse"></iframe>
+
+      Parameter: verband (id des Landesverbands), format (in_person, online,
+      hybrid), typ (j, g, f, ...), akzent (Farbe ohne #, z. B. 0055a5).
+      Die Seite meldet ihre Hoehe per postMessage ({ type:
+      'saisonmanager-kurse-hoehe', height }), damit die einbettende Seite das
+      iframe mitwachsen lassen kann. Angemeldet wird auf der vollen Seite im
+      Saisonmanager (neuer Tab), weil Bestaetigungslinks und Cookies im iframe
+      unzuverlaessig sind.
+    -->
+    <main id="kurse" aria-live="polite">
+      <p class="hinweis">Kurse werden geladen …</p>
+    </main>
+    <script src="kurse.js"></script>
+  </body>
+</html>

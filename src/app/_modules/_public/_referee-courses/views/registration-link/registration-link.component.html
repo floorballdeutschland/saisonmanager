@@ -1,0 +1,73 @@
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold mb-4">
+    {{ "courseSignup.link." + kind + ".title" | transloco }}
+  </h1>
+  @switch (state) {
+    @case ("loading") {
+      <p class="text-fb-gray-500">{{ "courseSignup.loading" | transloco }}</p>
+    }
+    @case ("invalid") {
+      <p data-test="invalid">{{ "courseSignup.link.invalid" | transloco }}</p>
+    }
+    @case ("done") {
+      <p data-test="done">
+        @if (kind === "cancel") {
+          {{
+            (lateCancellation
+              ? "courseSignup.link.cancel.doneLate"
+              : "courseSignup.link.cancel.done"
+            ) | transloco
+          }}
+        } @else {
+          {{
+            (resultStatus === "pending_guardian"
+              ? "courseSignup.link.confirm.doneGuardian"
+              : resultStatus === "waitlisted"
+                ? "courseSignup.link.confirm.doneWaitlist"
+                : "courseSignup.link.confirm.done"
+            ) | transloco
+          }}
+        }
+      </p>
+    }
+    @case ("open") {
+      @if (info) {
+        <p class="mb-2">
+          {{
+            "courseSignup.link." + kind + ".intro"
+              | transloco: { name: info.name, course: info.course.title }
+          }}
+        </p>
+        <ul class="mb-4 text-sm">
+          @for (session of info.course.sessions; track $index) {
+            <li>
+              {{ session.starts_at | date: "EEEE, dd.MM.yyyy HH:mm" }}
+              @if (session.location) {
+                · {{ session.location }}
+              }
+            </li>
+          }
+        </ul>
+        @if (kind === "cancel" && info.late) {
+          <p class="text-sm text-red-700 mb-4" data-test="late">
+            {{ "courseSignup.link.cancel.late" | transloco }}
+          </p>
+        }
+        <button
+          type="button"
+          data-test="submit"
+          class="px-5 py-2 text-sm font-bold rounded-[5px] disabled:opacity-50"
+          [class]="
+            kind === 'cancel'
+              ? 'border border-red-500 text-red-700'
+              : 'bg-black text-white'
+          "
+          [disabled]="busy"
+          (click)="submit()"
+        >
+          {{ "courseSignup.link." + kind + ".button" | transloco }}
+        </button>
+      }
+    }
+  }
+</div>

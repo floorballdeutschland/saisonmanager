@@ -35,8 +35,20 @@ function course(
 
 describe('CourseIndexComponent', () => {
   function render(courses: RefereeCourseSummary[]) {
-    const service = jasmine.createSpyObj('RefereeCourseService', ['list']);
+    const service = jasmine.createSpyObj('RefereeCourseService', [
+      'list',
+      'options',
+    ]);
     service.list.and.returnValue(of(courses));
+    service.options.and.returnValue(
+      of({
+        state_associations: [{ id: 3, name: 'Hessen' }],
+        partner_state_associations: [],
+        national_allowed: false,
+        license_levels: [],
+        course_types: [],
+      })
+    );
     TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule()],
       declarations: [CourseIndexComponent],
@@ -69,5 +81,15 @@ describe('CourseIndexComponent', () => {
       fixture.nativeElement.querySelectorAll('[data-test="below-minimum"]')
         .length
     ).toBe(1);
+  });
+
+  it('zeigt Link und iframe-Code fuer die Verbandsseite', () => {
+    const { fixture } = render([]);
+    const c = fixture.componentInstance;
+    expect(c.publicUrl(3)).toMatch(/\/schiri-kurse\?verband=3$/);
+    expect(c.embedCode(3)).toContain('/kurse-einbettung/?verband=3');
+    expect(
+      fixture.nativeElement.querySelector('[data-test="embed"]')
+    ).not.toBeNull();
   });
 });
