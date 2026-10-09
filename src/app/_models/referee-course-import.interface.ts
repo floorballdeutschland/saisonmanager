@@ -205,3 +205,18 @@ export interface RefereeCourseResult {
 export interface RefereeCourseImportWithResults extends RefereeCourseImport {
   results: RefereeCourseResult[];
 }
+
+/**
+ * Schalter für die Kursprozesse in den Schiri-Einstellungen
+ * (`admin/referee_course_settings`, nur Admin).
+ */
+export interface RefereeCourseProcessSettings {
+  csv_import_enabled: boolean;
+  courses_enabled: boolean;
+  /** Leer heißt: Kurse für alle Landesverbände. */
+  courses_state_association_ids: number[];
+  updated_at?: string | null;
+  updated_by?: string | null;
+  /** Offene Zeilen in nicht abgebrochenen Importen. */
+  open_import_rows?: number;
+}

@@ -5,6 +5,7 @@ import {
   RefereeCourseImportWithResults,
   RefereeCourseMasterFields,
   RefereeCourseResult,
+  RefereeCourseProcessSettings,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -97,6 +98,21 @@ export class RefereeCourseImportService {
     return this.http.post<RefereeCourseResult>(
       BASE + 'referee_course_results/' + id + '/approve',
       masterFinal ? { master_final: masterFinal } : {}
+    );
+  }
+
+  // --- Schalter (Schiri-Einstellungen, nur Admin) ------------------------
+
+  getProcessSettings() {
+    return this.http.get<RefereeCourseProcessSettings>(
+      BASE + 'referee_course_settings'
+    );
+  }
+
+  updateProcessSettings(settings: Partial<RefereeCourseProcessSettings>) {
+    return this.http.patch<RefereeCourseProcessSettings>(
+      BASE + 'referee_course_settings',
+      { referee_course_settings: settings }
     );
   }
 }

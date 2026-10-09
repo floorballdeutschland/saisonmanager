@@ -12,6 +12,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import {
   NotificationService,
   RefereeCourseImportService,
+  SessionService,
 } from '@floorball/core';
 import { RefereeCourseImport } from '@floorball/types';
 
@@ -28,6 +29,11 @@ export class CourseImportIndexComponent implements OnInit, OnDestroy {
   // Abgeschlossene Importe stehen standardmäßig nicht in der Liste: Mit jedem
   // Kurs wächst sie, und die Arbeit steckt in den wenigen offenen.
   showClosed = false;
+  // Der CSV-Import laesst sich in den Schiri-Einstellungen abschalten; dann
+  // gibt es keinen Upload mehr, offene Importe bleiben bearbeitbar. Ein Konto,
+  // das sich vor Einfuehrung des Rechts angemeldet hat, kennt den Schluessel
+  // noch nicht: Fehlt er, bleibt der Knopf stehen und die API entscheidet.
+  canUpload = true;
 
   private _destroy$ = new Subject<void>();
 
@@ -36,10 +42,15 @@ export class CourseImportIndexComponent implements OnInit, OnDestroy {
     private _notify: NotificationService,
     private _router: Router,
     private _transloco: TranslocoService,
+    private _session: SessionService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.canUpload =
+      this._session.currentUserValue?.permissions?.[
+        'referee_course_import_upload'
+      ] !== false;
     this.load();
   }
 

@@ -5,6 +5,7 @@ import {
   getTranslocoTestingModule,
   NotificationService,
   RefereeCourseImportService,
+  SessionService,
 } from '@floorball/core';
 import { RefereeCourseImport } from '@floorball/types';
 import { CourseImportIndexComponent } from './course-import-index.component';
@@ -34,7 +35,12 @@ describe('CourseImportIndexComponent', () => {
     imp(5, 'cancelled'),
   ];
 
-  function render(imports: RefereeCourseImport[]) {
+  function render(
+    imports: RefereeCourseImport[],
+    permissions: Record<string, boolean> = {
+      referee_course_import_upload: true,
+    }
+  ) {
     const service = jasmine.createSpyObj('RefereeCourseImportService', [
       'listImports',
     ]);
@@ -47,6 +53,10 @@ describe('CourseImportIndexComponent', () => {
         {
           provide: NotificationService,
           useValue: jasmine.createSpyObj('NotificationService', ['error']),
+        },
+        {
+          provide: SessionService,
+          useValue: { currentUserValue: { permissions } },
         },
         provideRouter([]),
       ],
@@ -131,5 +141,38 @@ describe('CourseImportIndexComponent', () => {
 
     expect(fixture.componentInstance.toEditCount(abgebrochen)).toBe(0);
     expect(fixture.componentInstance.atLvCount(abgebrochen)).toBe(0);
+  });
+
+  // Der CSV-Import laesst sich in den Schiri-Einstellungen abschalten.
+  function uploadFeld(el: HTMLElement): HTMLInputElement | null {
+    return el.querySelector('input[type="file"]');
+  }
+
+  it('zeigt den Upload, solange der Import an ist', () => {
+    const fixture = render([imp(1, 'in_review', 3)]);
+
+    expect(uploadFeld(fixture.nativeElement)).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="import-disabled"]')
+    ).toBeNull();
+  });
+
+  it('blendet den Upload bei abgeschaltetem Import aus, offene Importe bleiben', () => {
+    const fixture = render([imp(1, 'in_review', 3)], {
+      referee_course_import_upload: false,
+    });
+
+    expect(uploadFeld(fixture.nativeElement)).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="import-disabled"]')
+    ).not.toBeNull();
+    expect(dateinamen(fixture.nativeElement)).toEqual(['kurs-1.csv']);
+  });
+
+  it('laesst den Upload stehen, wenn das Konto das Recht noch nicht kennt', () => {
+    // Angemeldet vor Einfuehrung des Rechts: Die API entscheidet.
+    const fixture = render([imp(1, 'in_review', 3)], {});
+
+    expect(uploadFeld(fixture.nativeElement)).not.toBeNull();
   });
 });
