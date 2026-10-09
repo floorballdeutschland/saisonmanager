@@ -1,0 +1,80 @@
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold mb-4">
+    {{ "courseSignup.consent.title" | transloco }}
+  </h1>
+  @switch (state) {
+    @case ("loading") {
+      <p class="text-fb-gray-500">{{ "courseSignup.loading" | transloco }}</p>
+    }
+    @case ("failed") {
+      <p data-test="failed">{{ "courseSignup.link.failed" | transloco }}</p>
+    }
+    @case ("invalid") {
+      <p data-test="invalid">
+        {{ "courseSignup.consent.invalid" | transloco }}
+      </p>
+    }
+    @case ("done") {
+      <p data-test="done">
+        {{
+          (resultStatus === "waitlisted"
+            ? "courseSignup.consent.doneWaitlist"
+            : "courseSignup.consent.done"
+          ) | transloco
+        }}
+      </p>
+    }
+    @case ("open") {
+      @if (info) {
+        <p class="mb-4">
+          {{
+            "courseSignup.consent.intro"
+              | transloco: { name: info.name, course: info.course.title }
+          }}
+        </p>
+        <ul class="mb-4 text-sm">
+          @for (session of info.course.sessions; track $index) {
+            <li>
+              {{ session.starts_at | date: "EEEE, dd.MM.yyyy HH:mm" }}
+              @if (session.location) {
+                · {{ session.location }}
+              }
+            </li>
+          }
+        </ul>
+        @if (info.course.description) {
+          <p class="text-sm whitespace-pre-line mb-4">
+            {{ info.course.description }}
+          </p>
+        }
+        <p class="text-sm mb-4">
+          {{ "courseSignup.consent.text" | transloco }}
+        </p>
+        <button
+          type="button"
+          data-test="confirm"
+          class="px-5 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+          [disabled]="busy"
+          (click)="confirm()"
+        >
+          {{ "courseSignup.consent.button" | transloco }}
+        </button>
+        @if (failedSubmit) {
+          <p class="text-sm text-red-700 mt-2" data-test="retry">
+            {{ "courseSignup.link.failed" | transloco }}
+          </p>
+        }
+        @if (info.course.contact_email) {
+          <p class="text-sm text-fb-gray-500 mt-4">
+            {{ "courseSignup.consent.questions" | transloco }}
+            <a
+              class="underline"
+              [href]="'mailto:' + info.course.contact_email"
+              >{{ info.course.contact_email }}</a
+            >
+          </p>
+        }
+      }
+    }
+  }
+</div>

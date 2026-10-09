@@ -192,6 +192,8 @@
     showItem("menu_item_referee_course_review") ||
     showItem("menu_item_referee_courses") ||
     showItem("menu_item_referee_courses_lead") ||
+    showItem("menu_item_referee_courses_portal") ||
+    showItem("menu_item_club_referee_courses") ||
     showItem("menu_item_referee_profile") ||
     showItem("show_page_referee_observations") ||
     showItem("menu_item_referee_vm") ||
@@ -257,6 +259,16 @@
               [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung']"
               (click)="closeMenu()"
               >{{ "nav.coursePlanning" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_courses_portal")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'schiedsrichter', 'kurse']"
+              (click)="closeMenu()"
+              >{{ "nav.courseSignup" | transloco }}</a
             >
           </li>
         }
@@ -347,6 +359,16 @@
               [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
               (click)="closeMenu()"
               >{{ "nav.refereesVm" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_club_referee_courses")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verein', 'schiri-kurse']"
+              (click)="closeMenu()"
+              >{{ "nav.clubCourseSignup" | transloco }}</a
             >
           </li>
         }

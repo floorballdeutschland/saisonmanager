@@ -160,6 +160,12 @@
       "@floorball/access-card": ["src/app/_modules/_access_card"],
       "@floorball/stream-thumbnails": ["src/app/_modules/_stream_thumbnails"],
       "@floorball/referee-feedback": ["src/app/_modules/_referee_feedback"],
+      "@floorball/referee-course-signup": [
+        "src/app/_modules/_referee_course_signup"
+      ],
+      "@floorball/public/course-consent": [
+        "src/app/_modules/_public/_course-consent"
+      ],
       "@floorball/referee-observation": [
         "src/app/_modules/_referee_observation"
       ],

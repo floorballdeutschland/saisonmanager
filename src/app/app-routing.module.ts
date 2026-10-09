@@ -239,6 +239,16 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'menu_item_referee_profile' },
       },
+      {
+        // Kursanmeldung im Schiri-Portal und durch den Verein. Eigener Einstieg,
+        // weil beides nicht an menu_item_referee_profile hängt; die Guards
+        // stehen an den Kind-Routen.
+        path: '',
+        loadChildren: () =>
+          import('@floorball/referee-course-signup').then(
+            (m) => m.RefereeCourseSignupModule
+          ),
+      },
       // Eigener Einstieg neben @floorball/referee: Die Beobachtungsbögen
       // hängen nicht an menu_item_referee_profile, das nur ein reines
       // Schiedsrichterkonto bekommt. Die feinere Prüfung je Route (schreiben
@@ -385,6 +395,15 @@ export const routes: Routes = [
     loadChildren: () =>
       import('@floorball/public/referee-feedback').then(
         (m) => m.PublicRefereeFeedbackModule
+      ),
+  },
+  {
+    // Einwilligung der Erziehungsberechtigten zu einer Kursanmeldung. Bewusst
+    // ohne Guard: Der Link aus der Mail ist die Berechtigung.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/course-consent').then(
+        (m) => m.PublicCourseConsentModule
       ),
   },
   {
