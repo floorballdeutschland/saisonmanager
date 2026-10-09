@@ -60,11 +60,14 @@ export class CourseFieldTemplatesComponent implements OnInit, OnDestroy {
   load(): void {
     this.loading = true;
     this._cdr.markForCheck();
+    const requested = this.stateAssociationId;
     this._service
-      .listTemplates(this.stateAssociationId)
+      .listTemplates(requested)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (templates) => {
+          // Eine langsame Antwort für den vorher gewählten LV verwerfen.
+          if (requested !== this.stateAssociationId) return;
           this.templates = templates;
           this.loading = false;
           this._cdr.markForCheck();

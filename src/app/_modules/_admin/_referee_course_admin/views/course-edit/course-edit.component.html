@@ -58,15 +58,21 @@
               name="stateAssociation"
               data-test="state-association"
               class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
+              [disabled]="stateAssociationLocked"
               [(ngModel)]="stateAssociationId"
             >
-              @if (options.national_allowed) {
-                <option [ngValue]="null">
+              @if (
+                options.national_allowed ||
+                (courseId && !currentStateAssociation)
+              ) {
+                <option [ngValue]="null" [disabled]="!options.national_allowed">
                   {{ "refereeCourseAdmin.courses.national" | transloco }}
                 </option>
               }
-              @for (sa of options.state_associations; track sa.id) {
-                <option [ngValue]="sa.id">{{ sa.name }}</option>
+              @for (sa of stateAssociationChoices; track sa.id) {
+                <option [ngValue]="sa.id" [disabled]="sa.locked">
+                  {{ sa.name }}
+                </option>
               }
             </select>
           </label>

@@ -122,6 +122,35 @@ export class CourseEditComponent implements OnInit, OnDestroy {
     return this.stateAssociationId === null;
   }
 
+  /** Der verantwortliche LV des Kurses, falls das Konto ihn nicht zuordnen darf. */
+  currentStateAssociation: { id: number; name: string } | null = null;
+  private _originalStateAssociationId: number | null | undefined = undefined;
+
+  /**
+   * Auswahl des verantwortlichen LV. Ein Partner-LV darf den Kurs bearbeiten,
+   * den verantwortlichen LV aber nicht zuordnen. Er steht trotzdem in der
+   * Liste (gesperrt), sonst wäre die Auswahl leer und ein Klick hängte den
+   * Kurs versehentlich um.
+   */
+  get stateAssociationChoices(): {
+    id: number;
+    name: string;
+    locked?: boolean;
+  }[] {
+    const list = this.options?.state_associations ?? [];
+    const current = this.currentStateAssociation;
+    if (current && !list.some((sa) => sa.id === current.id)) {
+      return [{ ...current, locked: true }, ...list];
+    }
+    return list;
+  }
+
+  get stateAssociationLocked(): boolean {
+    return this.stateAssociationChoices.some(
+      (sa) => sa.locked && sa.id === this.stateAssociationId
+    );
+  }
+
   get partnerOptions(): { id: number; name: string }[] {
     return (this.options?.partner_state_associations ?? []).filter(
       (sa) => sa.id !== this.stateAssociationId
@@ -175,7 +204,9 @@ export class CourseEditComponent implements OnInit, OnDestroy {
       this.title.trim() !== '' &&
       !this.feeError &&
       this.sessions.every((s) => !!s.starts_at) &&
-      (this.stateAssociationId !== null || !!this.options?.national_allowed)
+      (this.stateAssociationId !== null ||
+        !!this.options?.national_allowed ||
+        this._originalStateAssociationId === null)
     );
   }
 
@@ -207,11 +238,21 @@ export class CourseEditComponent implements OnInit, OnDestroy {
   }
 
   payload(): RefereeCourseInput {
+    // Verantwortlichen LV und Partner nur mitschicken, wenn das Konto sie
+    // ändern darf: Für einen Partner-LV lehnt die API das sonst ab.
+    const ownerLocked =
+      this.stateAssociationLocked ||
+      (this._originalStateAssociationId === null &&
+        !this.options?.national_allowed);
     return {
       title: this.title.trim(),
       course_type: this.courseType,
-      state_association_id: this.stateAssociationId,
-      partner_state_association_ids: this.partnerIds,
+      ...(ownerLocked
+        ? {}
+        : {
+            state_association_id: this.stateAssociationId,
+            partner_state_association_ids: this.partnerIds,
+          }),
       license_level_ids: this.licenseLevelIds,
       format: this.format,
       sessions: this.sessions.map((s) => ({
@@ -246,6 +287,8 @@ export class CourseEditComponent implements OnInit, OnDestroy {
     this.title = course.title;
     this.courseType = course.course_type;
     this.stateAssociationId = course.state_association?.id ?? null;
+    this.currentStateAssociation = course.state_association;
+    this._originalStateAssociationId = this.stateAssociationId;
     this.partnerIds = [...course.partner_state_association_ids];
     this.licenseLevelIds = [...course.license_level_ids];
     this.format = course.format;
