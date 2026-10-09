@@ -40,7 +40,8 @@ export class PublicCourseDetailComponent implements OnInit, OnDestroy {
   clubs: PublicClub[] = [];
   state: 'loading' | 'form' | 'sent' | 'missing' = 'loading';
   busy = false;
-  error: string | null = null;
+  /** Eigener Übersetzungsschlüssel oder Klartext der API. */
+  error: { key?: string; text?: string } | null = null;
 
   vorname = '';
   nachname = '';
@@ -121,10 +122,14 @@ export class PublicCourseDetailComponent implements OnInit, OnDestroy {
     return age;
   }
 
-  /** Ohne Lizenznummer gilt die Person als neu; die API entscheidet endgültig. */
+  /**
+   * Unter 16 immer, auch mit Lizenznummer: Die API prüft die Angaben, bevor sie
+   * nach der Nummer sucht, damit die Antwort nichts über die Nummer verrät.
+   * Ist die Nummer bekannt, entfällt die Einwilligung später trotzdem.
+   */
   get needsGuardian(): boolean {
     const age = this.ageAtCourse;
-    return age !== null && age < GUARDIAN_AGE && !this.lizenznummer.trim();
+    return age !== null && age < GUARDIAN_AGE;
   }
 
   get missing(): string[] {
@@ -174,10 +179,13 @@ export class PublicCourseDetailComponent implements OnInit, OnDestroy {
         },
         error: (err: HttpErrorResponse) => {
           this.busy = false;
+          // Die API meldet deutschen Klartext; nur die eigenen Fälle übersetzen.
           this.error =
             err.status === 429
-              ? 'courseSignup.public.tooMany'
-              : (err.error?.error ?? 'courseSignup.public.failed');
+              ? { key: 'courseSignup.public.tooMany' }
+              : err.error?.error
+                ? { text: err.error.error }
+                : { key: 'courseSignup.public.failed' };
           this._cdr.markForCheck();
         },
       });

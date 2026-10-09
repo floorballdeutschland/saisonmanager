@@ -49,11 +49,19 @@ export class CourseIndexComponent implements OnInit, OnDestroy {
     return `${this.origin}/schiri-kurse?verband=${stateAssociationId}`;
   }
 
-  /** iframe-Code für die Verbandsseite (statische Seite ohne Seitenleiste). */
+  /**
+   * iframe-Code für die Verbandsseite (statische Seite ohne Seitenleiste). Das
+   * kleine Skript lässt das iframe mitwachsen: Die Seite meldet ihre Höhe per
+   * postMessage, angenommen wird nur unsere Herkunft.
+   */
   embedCode(stateAssociationId: number): string {
+    const id = `sm-kurse-${stateAssociationId}`;
     return (
-      `<iframe src="${this.origin}/kurse-einbettung/?verband=${stateAssociationId}" ` +
-      `style="width:100%;min-height:600px;border:0" title="Schiedsrichterkurse"></iframe>`
+      `<iframe id="${id}" src="${this.origin}/kurse-einbettung/?verband=${stateAssociationId}" ` +
+      `style="width:100%;min-height:400px;border:0" title="Schiedsrichterkurse"></iframe>\n` +
+      `<script>window.addEventListener("message",function(e){` +
+      `if(e.origin!=="${this.origin}"||!e.data||e.data.type!=="saisonmanager-kurse-hoehe")return;` +
+      `var f=document.getElementById("${id}");if(f)f.style.height=e.data.height+"px";});</script>`
     );
   }
 

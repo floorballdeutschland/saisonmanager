@@ -88,6 +88,7 @@ describe('CourseIndexComponent', () => {
     const c = fixture.componentInstance;
     expect(c.publicUrl(3)).toMatch(/\/schiri-kurse\?verband=3$/);
     expect(c.embedCode(3)).toContain('/kurse-einbettung/?verband=3');
+    expect(c.embedCode(3)).toContain('saisonmanager-kurse-hoehe');
     expect(
       fixture.nativeElement.querySelector('[data-test="embed"]')
     ).not.toBeNull();
