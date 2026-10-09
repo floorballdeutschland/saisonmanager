@@ -219,10 +219,28 @@ export class ClubCoursesComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Abmeldung nach der Frist mit Platz: Die Gebühr bleibt fällig, und die
+   * Rechnung geht an den Verein. Vorher deutlich warnen.
+   */
+  lateCancellation(registration: OwnCourseRegistration): boolean {
+    const course = this.courses.find(
+      (c) => c.id === registration.referee_course_id
+    );
+    const deadline = course?.cancellation_deadline;
+    const seated = ['registered', 'attended', 'no_show'].includes(
+      registration.status
+    );
+    return seated && !!deadline && new Date(deadline) < new Date();
+  }
+
   cancel(registration: OwnCourseRegistration): void {
+    const key = this.lateCancellation(registration)
+      ? 'courseSignup.confirmCancelPersonLate'
+      : 'courseSignup.confirmCancelPerson';
     if (
       !confirm(
-        this._transloco.translate('courseSignup.confirmCancelPerson', {
+        this._transloco.translate(key, {
           name: `${registration.vorname} ${registration.nachname}`,
           course: registration.course_title,
         })

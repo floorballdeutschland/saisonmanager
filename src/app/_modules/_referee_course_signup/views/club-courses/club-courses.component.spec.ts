@@ -110,4 +110,16 @@ describe('ClubCoursesComponent', () => {
     expect(c.ageAtCourse(c.courses[0])).toBe(16);
     expect(c.needsGuardian(c.courses[0])).toBeFalse();
   });
+
+  it('warnt bei Abmeldung nach der Frist, nicht bei Wartenden', () => {
+    const { fixture } = render();
+    const c = fixture.componentInstance;
+    c.courses = [
+      { ...c.courses[0], cancellation_deadline: '2020-01-01T00:00:00Z' },
+    ];
+    expect(c.lateCancellation(c.registrations[0])).toBeTrue();
+    expect(
+      c.lateCancellation({ ...c.registrations[0], status: 'waitlisted' })
+    ).toBeFalse();
+  });
 });

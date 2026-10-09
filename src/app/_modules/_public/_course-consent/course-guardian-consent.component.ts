@@ -24,9 +24,10 @@ import { GuardianConsentInfo } from '@floorball/types';
 })
 export class CourseGuardianConsentComponent implements OnInit, OnDestroy {
   info: GuardianConsentInfo | null = null;
-  state: 'loading' | 'open' | 'done' | 'invalid' = 'loading';
+  state: 'loading' | 'open' | 'done' | 'invalid' | 'failed' = 'loading';
   resultStatus: string | null = null;
   busy = false;
+  failedSubmit = false;
 
   private _token = '';
   private _destroy$ = new Subject<void>();
@@ -48,8 +49,8 @@ export class CourseGuardianConsentComponent implements OnInit, OnDestroy {
           this.state = 'open';
           this._cdr.markForCheck();
         },
-        error: () => {
-          this.state = 'invalid';
+        error: (err: { status?: number }) => {
+          this.state = isInvalidLink(err) ? 'invalid' : 'failed';
           this._cdr.markForCheck();
         },
       });
@@ -73,11 +74,19 @@ export class CourseGuardianConsentComponent implements OnInit, OnDestroy {
           this.state = 'done';
           this._cdr.markForCheck();
         },
-        error: () => {
+        // Nur 404/422 heißt „Link ungültig“. Ein Netzwerk- oder Serverfehler
+        // lässt den Knopf stehen, der Link gilt ja weiter.
+        error: (err: { status?: number }) => {
           this.busy = false;
-          this.state = 'invalid';
+          if (isInvalidLink(err)) this.state = 'invalid';
+          else this.failedSubmit = true;
           this._cdr.markForCheck();
         },
       });
   }
+}
+
+/** Der Link selbst taugt nicht mehr (unbekannt, abgelaufen, schon benutzt). */
+export function isInvalidLink(err: { status?: number }): boolean {
+  return err?.status === 404 || err?.status === 422 || err?.status === 410;
 }

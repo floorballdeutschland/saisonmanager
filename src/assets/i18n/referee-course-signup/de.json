@@ -149,6 +149,8 @@
       "late": "Die Abmeldefrist ist vorbei, die Kursgebühr bleibt fällig.",
       "done": "Die Abmeldung ist erledigt.",
       "doneLate": "Die Abmeldung ist erledigt. Weil die Abmeldefrist vorbei war, bleibt die Kursgebühr fällig."
-    }
-  }
+    },
+    "failed": "Das hat gerade nicht geklappt, der Link ist aber weiter gültig. Bitte gleich noch einmal versuchen."
+  },
+  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?"
 }

@@ -149,6 +149,8 @@
       "late": "The cancellation deadline has passed, the course fee remains due.",
       "done": "You have been deregistered.",
       "doneLate": "You have been deregistered. As the cancellation deadline had passed, the course fee remains due."
-    }
-  }
+    },
+    "failed": "That did not work just now, but the link is still valid. Please try again shortly."
+  },
+  "confirmCancelPersonLate": "The cancellation deadline has passed: the course fee remains due and is invoiced to the club. Deregister {{name}} from „{{course}}“ anyway?"
 }
