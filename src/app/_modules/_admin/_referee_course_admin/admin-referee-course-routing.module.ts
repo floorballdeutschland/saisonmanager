@@ -42,6 +42,14 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: { scrollTop: true, permission: 'menu_item_referee_courses' },
   })),
+  // Rechnungsexport der Kurse je Landesverband.
+  {
+    path: 'verwaltung/schiri-kurse-abrechnung',
+    pathMatch: 'full',
+    component: Views.CourseBillingComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_course_billing' },
+  },
   // Lizenzvergabe durch FD für Kurse im System.
   {
     path: 'verwaltung/schiri-kurse-lizenzen',

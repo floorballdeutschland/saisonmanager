@@ -5,6 +5,11 @@
     </h1>
     <div class="flex gap-2">
       <a
+        [routerLink]="['/', 'verwaltung', 'schiri-kurse-abrechnung']"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >{{ "refereeCourseAdmin.courses.billing" | transloco }}</a
+      >
+      <a
         [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung', 'vorlagen']"
         class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
         >{{ "refereeCourseAdmin.courses.templates" | transloco }}</a

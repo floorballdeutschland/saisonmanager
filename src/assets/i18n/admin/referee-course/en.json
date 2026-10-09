@@ -203,7 +203,8 @@
       "cancelled": "Cancelled"
     },
     "embedTitle": "Show courses on the association website",
-    "embedIntro": "Link the public course page or embed it via iframe on the association website. Registration happens in Saisonmanager. Online links never appear there."
+    "embedIntro": "Link the public course page or embed it via iframe on the association website. Registration happens in Saisonmanager. Online links never appear there.",
+    "billing": "Billing"
   },
   "edit": {
     "titleNew": "New course",
@@ -356,7 +357,8 @@
     "submitIntro": "FD decides the license. All passed participations are submitted; the course cannot be changed afterwards.",
     "submitButton": "Submit to FD",
     "confirmSubmit": "Submit the results to FD now? The course cannot be changed afterwards.",
-    "submitted": "{{count}} results sent to FD."
+    "submitted": "{{count}} results sent to FD.",
+    "participantsCsv": "Participant list (CSV)"
   },
   "leads": {
     "title": "Course lead",
@@ -408,5 +410,20 @@
     "rejectPrompt": "Reason for rejecting {{name}}:",
     "approvedMany": "{{count}} licenses granted.",
     "accountCreated": "{{name}} received a user account."
+  },
+  "billing": {
+    "title": "Course billing",
+    "intro": "CSV for accounting: one row per billable participation (attended, no-show if charged, deregistration after the deadline). Exported rows count as billed and do not appear in the next export.",
+    "from": "Course end from",
+    "to": "Course end to",
+    "includeBilled": "Include already billed",
+    "summary": "{{count}} rows, {{total}} €",
+    "warnings": "{{count}} with missing club details",
+    "create": "Create CSV and mark as billed",
+    "confirm": "Export {{count}} rows and mark them as billed?",
+    "waitingForLicense": "Still waiting for the license (fee only if licensed): {{names}}",
+    "previous": "Previous exports",
+    "noExports": "No exports yet.",
+    "download": "Download"
   }
 }
