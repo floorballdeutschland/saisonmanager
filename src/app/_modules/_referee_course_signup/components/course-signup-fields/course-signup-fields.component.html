@@ -1,0 +1,125 @@
+<div class="flex flex-col gap-3">
+  @if (offer.license_levels.length > 1) {
+    <label class="flex flex-col gap-1 text-xs font-bold">
+      {{ "courseSignup.desiredLevel" | transloco }}
+      <select
+        data-test="desired-level"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+        [ngModel]="answers.desired_license_level_id"
+        (ngModelChange)="setLevel($event)"
+      >
+        <option [ngValue]="null">–</option>
+        @for (level of offer.license_levels; track level.id) {
+          <option [ngValue]="level.id">{{ level.name }}</option>
+        }
+      </select>
+    </label>
+  }
+
+  @for (field of fields; track field.id) {
+    @switch (field.field_type) {
+      @case ("checkbox") {
+        <label class="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            class="mt-1"
+            [attr.data-test]="'field-' + field.id"
+            [checked]="value(field) === true"
+            (change)="set(field, $any($event.target).checked)"
+          />
+          <span>
+            {{ field.label }}
+            @if (field.required) {
+              <span class="text-red-700">*</span>
+            }
+            @if (field.help_text) {
+              <span class="block text-xs text-fb-gray-500">{{
+                field.help_text
+              }}</span>
+            }
+          </span>
+        </label>
+      }
+      @case ("multi_select") {
+        <fieldset class="text-sm">
+          <legend class="text-xs font-bold">
+            {{ field.label }}
+            @if (field.required) {
+              <span class="text-red-700">*</span>
+            }
+          </legend>
+          @for (option of field.options; track option) {
+            <label class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                [checked]="checked(field, option)"
+                (change)="
+                  toggleOption(field, option, $any($event.target).checked)
+                "
+              />
+              {{ option }}
+            </label>
+          }
+        </fieldset>
+      }
+      @default {
+        <label class="flex flex-col gap-1 text-xs font-bold">
+          <span>
+            {{ field.label }}
+            @if (field.required) {
+              <span class="text-red-700">*</span>
+            }
+          </span>
+          @if (field.field_type === "select") {
+            <select
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+              [attr.data-test]="'field-' + field.id"
+              [ngModel]="value(field) ?? null"
+              (ngModelChange)="set(field, $event)"
+            >
+              <option [ngValue]="null">–</option>
+              @for (option of field.options; track option) {
+                <option [ngValue]="option">{{ option }}</option>
+              }
+            </select>
+          } @else if (field.field_type === "textarea") {
+            <textarea
+              rows="3"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+              [attr.data-test]="'field-' + field.id"
+              [value]="value(field) ?? ''"
+              (input)="set(field, $any($event.target).value)"
+            ></textarea>
+          } @else {
+            <input
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+              [attr.data-test]="'field-' + field.id"
+              [type]="field.field_type === 'date' ? 'date' : 'text'"
+              [attr.inputmode]="
+                field.field_type === 'number' ? 'decimal' : null
+              "
+              [value]="value(field) ?? ''"
+              (input)="set(field, $any($event.target).value)"
+            />
+          }
+          @if (field.help_text) {
+            <span class="font-normal text-fb-gray-500">{{
+              field.help_text
+            }}</span>
+          }
+        </label>
+      }
+    }
+  }
+
+  <label class="flex flex-col gap-1 text-xs font-bold">
+    {{ "courseSignup.remarks" | transloco }}
+    <textarea
+      rows="2"
+      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+      maxlength="1000"
+      [value]="answers.remarks"
+      (input)="setRemarks($any($event.target).value)"
+    ></textarea>
+  </label>
+</div>

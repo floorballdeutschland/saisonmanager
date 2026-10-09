@@ -254,3 +254,108 @@ export type RefereeCourseRegistrationInput = Partial<
   billing_club_id?: number | null;
   over_capacity?: boolean;
 };
+
+/** Kursangebot für Anmeldende (Portal, Verein, öffentlich), ohne Online-Link. */
+export interface RefereeCourseOffer {
+  id: number;
+  title: string;
+  course_type: RefereeCourseType;
+  format: RefereeCourseFormat;
+  status: RefereeCourseStatus;
+  registration_mode: 'open' | 'none';
+  state_association: { id: number; name: string } | null;
+  partner_state_association_ids: number[];
+  hosting_club: { id: number; name: string } | null;
+  starts_on: string | null;
+  ends_on: string | null;
+  sessions: RefereeCourseSession[];
+  online_platform: string | null;
+  min_participants: number | null;
+  max_participants: number | null;
+  free_seats: number | null;
+  registration_opens_at: string | null;
+  registration_deadline: string | null;
+  cancellation_deadline: string | null;
+  /** null: Anmeldung möglich, sonst der Grund in Klartext. */
+  registration_closed_reason: string | null;
+  min_age: number | null;
+  fee_member_cents: number | null;
+  fee_non_member_cents: number | null;
+  fee_only_on_license: boolean;
+  fee_note: string | null;
+  prerequisites_note: string | null;
+  contact_email: string | null;
+  description: string | null;
+  license_levels: { id: number; name: string }[];
+  fields: RefereeCourseField[];
+  /** Nur im Portal: eigene aktive Anmeldung zu diesem Kurs. */
+  my_registration_id?: number | null;
+}
+
+/** Eigene Anmeldung bzw. Anmeldung des Vereins. */
+export interface OwnCourseRegistration {
+  id: number;
+  referee_course_id: number;
+  course_title: string;
+  starts_on: string | null;
+  vorname: string;
+  nachname: string;
+  geburtsdatum: string;
+  club: { id: number; name: string } | null;
+  referee_id: number | null;
+  status: RefereeCourseRegistrationStatus;
+  cancelled_at: string | null;
+  late_cancellation: boolean;
+  result: 'passed' | 'failed' | null;
+  desired_license_level_id: number | null;
+  remarks: string | null;
+  custom_answers: Record<string, unknown>;
+  fee_cents: number | null;
+  source: 'admin' | 'portal' | 'club' | 'public';
+  cancellable: boolean;
+}
+
+export interface CourseSignupAnswers {
+  desired_license_level_id: number | null;
+  remarks: string;
+  custom_answers: Record<string, unknown>;
+}
+
+export interface PortalCoursesResponse {
+  own_state_association_id: number | null;
+  courses: RefereeCourseOffer[];
+  registrations: OwnCourseRegistration[];
+}
+
+export interface ClubCoursesResponse {
+  clubs: { id: number; name: string }[];
+  courses: RefereeCourseOffer[];
+  registrations: OwnCourseRegistration[];
+}
+
+export interface ClubCourseReferee {
+  id: number;
+  vorname: string;
+  nachname: string;
+  lizenznummer: number | null;
+  lizenzstufe: string | null;
+  club_id: number;
+}
+
+export interface GuardianConsentInfo {
+  name: string;
+  club: string | null;
+  course: Pick<
+    RefereeCourseOffer,
+    | 'title'
+    | 'course_type'
+    | 'format'
+    | 'sessions'
+    | 'starts_on'
+    | 'ends_on'
+    | 'fee_member_cents'
+    | 'fee_non_member_cents'
+    | 'contact_email'
+    | 'description'
+  >;
+}

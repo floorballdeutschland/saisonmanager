@@ -1,0 +1,133 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">
+    {{ "courseSignup.portalTitle" | transloco }}
+  </h1>
+
+  @if (loading) {
+    <div class="text-fb-gray-500">{{ "courseSignup.loading" | transloco }}</div>
+  } @else {
+    @if (activeRegistrations.length) {
+      <section class="mb-8" data-test="my-registrations">
+        <h2 class="text-lg font-bold mb-2">
+          {{ "courseSignup.myRegistrations" | transloco }}
+        </h2>
+        <ul class="flex flex-col gap-2">
+          @for (r of activeRegistrations; track r.id) {
+            <li
+              class="flex flex-wrap items-center justify-between gap-2 p-3 border border-fb-gray-700 rounded-[5px] text-sm"
+            >
+              <span>
+                <span class="font-bold">{{ r.course_title }}</span>
+                · {{ r.starts_on | date: "dd.MM.yyyy" }} ·
+                {{ "courseSignup.status." + r.status | transloco }}
+              </span>
+              @if (r.cancellable) {
+                <button
+                  type="button"
+                  class="text-red-700 hover:underline"
+                  [attr.data-test]="'cancel-' + r.id"
+                  [disabled]="busy"
+                  (click)="cancel(r)"
+                >
+                  {{ "courseSignup.cancel" | transloco }}
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section>
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="text-lg font-bold">
+          {{ "courseSignup.offers" | transloco }}
+        </h2>
+        @if (ownStateAssociationId !== null) {
+          <label class="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              data-test="only-own"
+              [checked]="onlyOwn"
+              (change)="onlyOwn = $any($event.target).checked"
+            />
+            {{ "courseSignup.onlyOwn" | transloco }}
+          </label>
+        }
+      </div>
+      @if (visibleCourses.length === 0) {
+        <p class="text-fb-gray-500" data-test="no-offers">
+          {{ "courseSignup.noOffers" | transloco }}
+        </p>
+      }
+      <div class="flex flex-col gap-4">
+        @for (course of visibleCourses; track course.id) {
+          <fb-course-offer [offer]="course">
+            @if (course.my_registration_id) {
+              <p class="text-sm font-bold" data-test="already">
+                {{ "courseSignup.alreadyRegistered" | transloco }}
+              </p>
+            } @else if (course.registration_mode === "none") {
+              <p class="text-sm text-fb-gray-500">
+                {{ "courseSignup.announcementOnly" | transloco }}
+              </p>
+            } @else if (course.registration_closed_reason) {
+              <p class="text-sm text-fb-gray-500">
+                {{ course.registration_closed_reason }}
+              </p>
+            } @else if (openId === course.id) {
+              <div class="border-t border-fb-gray-700 pt-3 flex flex-col gap-3">
+                <fb-course-signup-fields
+                  [offer]="course"
+                  [(answers)]="answers"
+                ></fb-course-signup-fields>
+                @if (missing(course).length) {
+                  <p class="text-xs text-fb-gray-500">
+                    {{
+                      "courseSignup.missing"
+                        | transloco: { fields: missing(course).join(", ") }
+                    }}
+                  </p>
+                }
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    data-test="submit"
+                    class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+                    [disabled]="busy || missing(course).length > 0"
+                    (click)="register(course)"
+                  >
+                    {{
+                      (course.free_seats === 0
+                        ? "courseSignup.joinWaitlist"
+                        : "courseSignup.register"
+                      ) | transloco
+                    }}
+                  </button>
+                  <button
+                    type="button"
+                    class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px]"
+                    (click)="openId = null"
+                  >
+                    {{ "courseSignup.abort" | transloco }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div>
+                <button
+                  type="button"
+                  [attr.data-test]="'open-' + course.id"
+                  class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px]"
+                  (click)="open(course)"
+                >
+                  {{ "courseSignup.registerOpen" | transloco }}
+                </button>
+              </div>
+            }
+          </fb-course-offer>
+        }
+      </div>
+    </section>
+  }
+</div>
