@@ -391,7 +391,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  private reloadCourse(): void {
+  reloadCourse(): void {
     if (!this.course) return;
     this._service
       .get(this.course.id)

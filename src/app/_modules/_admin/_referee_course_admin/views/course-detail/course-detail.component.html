@@ -156,6 +156,19 @@
       </div>
     </section>
 
+    <!-- Kursleitung -->
+    <section class="mb-10 max-w-3xl">
+      <h2 class="text-lg font-bold mb-3">
+        {{ "refereeCourseAdmin.leads.title" | transloco }}
+      </h2>
+      <fb-course-leads
+        [courseId]="course.id"
+        [leads]="course.leads"
+        [editable]="editable"
+        (changed)="reloadCourse()"
+      ></fb-course-leads>
+    </section>
+
     <!-- Zusatzfelder -->
     <section class="mb-10 max-w-3xl">
       <h2 class="text-lg font-bold">
