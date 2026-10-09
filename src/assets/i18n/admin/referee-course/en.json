@@ -338,5 +338,31 @@
       "attended": "attended",
       "no_show": "no-show"
     }
+  },
+  "leads": {
+    "title": "Course lead",
+    "empty": "No course lead assigned yet.",
+    "main": "Main responsibility",
+    "setMain": "Make main responsible",
+    "unsetMain": "Remove main responsibility",
+    "fromReferee": "+ Existing referee",
+    "fromAccount": "+ Existing account",
+    "invite": "+ Invite new person",
+    "refereeHint": "If the referee has no account yet, one is created and the usual welcome mail is sent.",
+    "userName": "User name",
+    "inviteHint": "Creates an account kl-lastname and sends an invitation with a link to set the password.",
+    "inviteButton": "Invite",
+    "invited": "Account {{user}} created, the invitation is on its way.",
+    "confirmRemove": "Remove {{name}} as course lead?"
+  },
+  "leadView": {
+    "title": "My courses",
+    "empty": "No course has been assigned to you yet.",
+    "back": "← My courses",
+    "participants": "{{count}} participants",
+    "attendance": "Attendance",
+    "testVersion": "Test version",
+    "years": "years",
+    "submitHint": "The RSK submits the results, then the licenses are granted."
   }
 }

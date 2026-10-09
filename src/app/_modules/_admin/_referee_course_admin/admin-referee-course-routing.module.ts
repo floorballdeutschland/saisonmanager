@@ -42,6 +42,21 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: { scrollTop: true, permission: 'menu_item_referee_courses' },
   })),
+  // „Meine Kurse" der Kursleitung.
+  {
+    path: 'verwaltung/meine-kurse',
+    pathMatch: 'full',
+    component: Views.LeadCourseIndexComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_courses_lead' },
+  },
+  {
+    path: 'verwaltung/meine-kurse/:id',
+    pathMatch: 'full',
+    component: Views.LeadCourseDetailComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_courses_lead' },
+  },
 ];
 
 @NgModule({

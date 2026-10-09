@@ -1,0 +1,193 @@
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <a
+    [routerLink]="['/', 'verwaltung', 'meine-kurse']"
+    class="text-fb-gray-500 hover:text-black text-sm"
+    >{{ "refereeCourseAdmin.leadView.back" | transloco }}</a
+  >
+  @if (loading) {
+    <div class="text-fb-gray-500 mt-4">
+      {{ "refereeCourseAdmin.import.loading" | transloco }}
+    </div>
+  }
+  @if (course) {
+    <h1 class="text-3xl font-bold mt-1">{{ course.title }}</h1>
+    <p class="text-fb-gray-500 text-sm mb-6">
+      {{ "refereeCourseAdmin.courses.type." + course.course_type | transloco }}
+      ·
+      {{ "refereeCourseAdmin.courses.status." + course.status | transloco }}
+    </p>
+
+    <section class="mb-8 text-sm">
+      <h2 class="font-bold mb-2">
+        {{ "refereeCourseAdmin.edit.schedule" | transloco }}
+      </h2>
+      @for (session of course.sessions; track $index) {
+        <p class="mb-1">
+          {{ session.starts_at | date: "EEEE, dd.MM.yyyy HH:mm" }}
+          @if (session.ends_at) {
+            – {{ session.ends_at | date: "HH:mm" }}
+          }
+          @if (session.location) {
+            <span class="block text-fb-gray-500">{{ session.location }}</span>
+          }
+          @if (session.online_url) {
+            <a
+              class="block underline break-all"
+              [href]="session.online_url"
+              target="_blank"
+              rel="noopener"
+              >{{ session.online_url }}</a
+            >
+          }
+        </p>
+      }
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold mb-3">
+        {{ "refereeCourseAdmin.courseDetail.participants" | transloco }}
+        ({{ seated.length }})
+      </h2>
+      @if (seated.length === 0) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeCourseAdmin.courseDetail.noParticipants" | transloco }}
+        </p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700">
+                <th class="py-2 px-2">
+                  {{ "refereeCourseAdmin.courseDetail.colName" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "refereeCourseAdmin.courseDetail.colClub" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "refereeCourseAdmin.leadView.attendance" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "refereeCourseAdmin.leadView.testVersion" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "refereeCourseAdmin.courseDetail.colPoints" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "refereeCourseAdmin.courseDetail.colResult" | transloco }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of seated; track r.id) {
+                <tr
+                  class="border-b border-fb-gray-800 align-top"
+                  data-test="lead-row"
+                >
+                  <td class="py-2 px-2">
+                    <span class="font-bold"
+                      >{{ r.nachname }}, {{ r.vorname }}</span
+                    >
+                    <span class="block text-xs text-fb-gray-500">
+                      @if (r.age_at_course !== null) {
+                        {{ r.age_at_course }}
+                        {{ "refereeCourseAdmin.leadView.years" | transloco }}
+                      }
+                      @if (r.lizenznummer) {
+                        ·
+                        {{
+                          "refereeCourseAdmin.courseDetail.license" | transloco
+                        }}
+                        {{ r.lizenznummer }}
+                      }
+                    </span>
+                    @for (field of course.fields; track field.id) {
+                      @if (answer(r, field)) {
+                        <span class="block text-xs"
+                          >{{ field.label }}: {{ answer(r, field) }}</span
+                        >
+                      }
+                    }
+                  </td>
+                  <td class="py-2 px-2">{{ r.club?.name ?? "–" }}</td>
+                  <td class="py-2 px-2">
+                    <select
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+                      [attr.data-test]="'attendance-' + r.id"
+                      [disabled]="busy || !course.editable"
+                      [ngModel]="r.status"
+                      (ngModelChange)="update(r, { status: $event })"
+                    >
+                      @for (
+                        s of ["registered", "attended", "no_show"];
+                        track s
+                      ) {
+                        <option [ngValue]="s">
+                          {{
+                            "refereeCourseAdmin.courseDetail.regStatus." + s
+                              | transloco
+                          }}
+                        </option>
+                      }
+                    </select>
+                  </td>
+                  <td class="py-2 px-2">
+                    <input
+                      type="text"
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20"
+                      [disabled]="busy || !course.editable"
+                      [value]="r.test_version ?? ''"
+                      (change)="
+                        testVersionChanged(r, $any($event.target).value)
+                      "
+                    />
+                  </td>
+                  <td class="py-2 px-2">
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20"
+                      [disabled]="busy || !course.editable"
+                      [value]="r.points ?? ''"
+                      (change)="pointsChanged(r, $any($event.target).value)"
+                    />
+                  </td>
+                  <td class="py-2 px-2">
+                    <select
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+                      [disabled]="busy || !course.editable"
+                      [ngModel]="r.result"
+                      (ngModelChange)="update(r, { result: $event })"
+                    >
+                      <option [ngValue]="null">–</option>
+                      <option ngValue="passed">
+                        {{
+                          "refereeCourseAdmin.courseDetail.passed" | transloco
+                        }}
+                      </option>
+                      <option ngValue="failed">
+                        {{
+                          "refereeCourseAdmin.courseDetail.failed" | transloco
+                        }}
+                      </option>
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @if (waitlisted.length) {
+        <p class="text-sm text-fb-gray-500 mt-3">
+          {{
+            "refereeCourseAdmin.courses.waitlist"
+              | transloco: { count: waitlisted.length }
+          }}
+        </p>
+      }
+      <p class="text-xs text-fb-gray-500 mt-4">
+        {{ "refereeCourseAdmin.leadView.submitHint" | transloco }}
+      </p>
+    </section>
+  }
+</div>

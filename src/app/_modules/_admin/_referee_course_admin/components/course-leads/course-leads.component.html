@@ -1,0 +1,193 @@
+<div class="flex flex-col gap-2">
+  @if (leads.length === 0) {
+    <p class="text-fb-gray-500 text-sm" data-test="no-leads">
+      {{ "refereeCourseAdmin.leads.empty" | transloco }}
+    </p>
+  }
+  @for (lead of leads; track lead.id) {
+    <div
+      class="flex flex-wrap items-center justify-between gap-2 p-3 border border-fb-gray-700 rounded-[5px] text-sm"
+      data-test="lead-row"
+    >
+      <span>
+        <span class="font-bold">{{ lead.name }}</span>
+        <span class="text-fb-gray-500"> · {{ lead.user_name }}</span>
+        @if (lead.lead) {
+          <span class="ml-1 px-2 py-0.5 text-xs bg-black text-white rounded">{{
+            "refereeCourseAdmin.leads.main" | transloco
+          }}</span>
+        }
+      </span>
+      @if (editable) {
+        <span class="flex gap-3">
+          <button
+            type="button"
+            class="hover:underline"
+            [disabled]="busy"
+            (click)="toggleMain(lead)"
+          >
+            {{
+              (lead.lead
+                ? "refereeCourseAdmin.leads.unsetMain"
+                : "refereeCourseAdmin.leads.setMain"
+              ) | transloco
+            }}
+          </button>
+          <button
+            type="button"
+            class="text-red-700 hover:underline"
+            [disabled]="busy"
+            (click)="remove(lead)"
+          >
+            {{ "refereeCourseAdmin.fields.delete" | transloco }}
+          </button>
+        </span>
+      }
+    </div>
+  }
+
+  @if (editable) {
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        data-test="lead-referee"
+        class="px-3 py-1 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        (click)="open('referee')"
+      >
+        {{ "refereeCourseAdmin.leads.fromReferee" | transloco }}
+      </button>
+      <button
+        type="button"
+        data-test="lead-account"
+        class="px-3 py-1 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        (click)="open('account')"
+      >
+        {{ "refereeCourseAdmin.leads.fromAccount" | transloco }}
+      </button>
+      <button
+        type="button"
+        data-test="lead-new"
+        class="px-3 py-1 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        (click)="open('new')"
+      >
+        {{ "refereeCourseAdmin.leads.invite" | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (mode) {
+    <div class="p-3 border border-black rounded-[5px] flex flex-col gap-2">
+      @switch (mode) {
+        @case ("referee") {
+          <input
+            type="search"
+            class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+            [placeholder]="
+              'refereeCourseAdmin.courseDetail.searchPlaceholder' | transloco
+            "
+            [value]="query"
+            (input)="search($any($event.target).value)"
+          />
+          <ul>
+            @for (referee of results; track referee.id) {
+              <li
+                class="flex items-center justify-between gap-2 py-1 border-b border-fb-gray-800 text-sm"
+              >
+                <span
+                  >{{ referee.nachname }}, {{ referee.vorname }}
+                  <span class="text-fb-gray-500"
+                    >· {{ referee.lizenznummer_display }}</span
+                  ></span
+                >
+                <button
+                  type="button"
+                  class="font-bold hover:underline"
+                  [disabled]="busy"
+                  (click)="addReferee(referee)"
+                >
+                  {{ "refereeCourseAdmin.courseDetail.add" | transloco }}
+                </button>
+              </li>
+            }
+          </ul>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeCourseAdmin.leads.refereeHint" | transloco }}
+          </p>
+        }
+        @case ("account") {
+          <div class="flex gap-2">
+            <input
+              type="text"
+              data-test="lead-user-name"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+              [placeholder]="'refereeCourseAdmin.leads.userName' | transloco"
+              [(ngModel)]="userName"
+            />
+            <button
+              type="button"
+              class="px-3 py-1 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+              [disabled]="busy || !userName.trim()"
+              (click)="addAccount()"
+            >
+              {{ "refereeCourseAdmin.courseDetail.add" | transloco }}
+            </button>
+          </div>
+        }
+        @case ("new") {
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              type="text"
+              data-test="lead-first-name"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+              [placeholder]="
+                'refereeCourseAdmin.courseDetail.vorname' | transloco
+              "
+              [(ngModel)]="firstName"
+            />
+            <input
+              type="text"
+              data-test="lead-last-name"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+              [placeholder]="
+                'refereeCourseAdmin.courseDetail.nachname' | transloco
+              "
+              [(ngModel)]="lastName"
+            />
+            <input
+              type="email"
+              data-test="lead-email"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+              [placeholder]="
+                'refereeCourseAdmin.courseDetail.email' | transloco
+              "
+              [(ngModel)]="email"
+            />
+          </div>
+          <p class="text-xs text-fb-gray-500">
+            {{ "refereeCourseAdmin.leads.inviteHint" | transloco }}
+          </p>
+          <div>
+            <button
+              type="button"
+              data-test="lead-invite"
+              class="px-3 py-1 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+              [disabled]="busy || !newValid"
+              (click)="addNew()"
+            >
+              {{ "refereeCourseAdmin.leads.inviteButton" | transloco }}
+            </button>
+          </div>
+        }
+      }
+      <div>
+        <button
+          type="button"
+          class="text-sm hover:underline"
+          (click)="mode = null"
+        >
+          {{ "refereeCourseAdmin.fields.cancel" | transloco }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -7,6 +7,7 @@ import { AdminRefereeCourseRoutingModule } from './admin-referee-course-routing.
 
 import * as Views from './views';
 import { CourseFieldEditorComponent } from './components/course-field-editor/course-field-editor.component';
+import { CourseLeadsComponent } from './components/course-leads/course-leads.component';
 
 @NgModule({
   imports: [
@@ -23,7 +24,10 @@ import { CourseFieldEditorComponent } from './components/course-field-editor/cou
     Views.CourseEditComponent,
     Views.CourseDetailComponent,
     Views.CourseFieldTemplatesComponent,
+    Views.LeadCourseIndexComponent,
+    Views.LeadCourseDetailComponent,
     CourseFieldEditorComponent,
+    CourseLeadsComponent,
   ],
   providers: [
     {
