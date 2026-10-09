@@ -6,6 +6,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import { AdminRefereeCourseRoutingModule } from './admin-referee-course-routing.module';
 
 import * as Views from './views';
+import { CourseFieldEditorComponent } from './components/course-field-editor/course-field-editor.component';
 
 @NgModule({
   imports: [
@@ -18,6 +19,11 @@ import * as Views from './views';
     Views.CourseImportIndexComponent,
     Views.CourseImportDetailComponent,
     Views.CourseReviewIndexComponent,
+    Views.CourseIndexComponent,
+    Views.CourseEditComponent,
+    Views.CourseDetailComponent,
+    Views.CourseFieldTemplatesComponent,
+    CourseFieldEditorComponent,
   ],
   providers: [
     {
