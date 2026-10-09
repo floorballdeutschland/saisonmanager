@@ -317,7 +317,7 @@
     "colStatus": "Status",
     "colResult": "Result",
     "colPoints": "Points",
-    "colLevel": "License",
+    "colLevel": "License (FD)",
     "colFee": "Fee",
     "license": "Lic.",
     "newPerson": "new",
@@ -348,7 +348,15 @@
       "portal": "via the portal",
       "club": "by the club",
       "public": "via the public page"
-    }
+    },
+    "licenseUntil": "valid until {{date}}",
+    "licenseRejected": "no license",
+    "licensePending": "under review at FD",
+    "submitTitle": "Submit results to FD",
+    "submitIntro": "FD decides the license. All passed participations are submitted; the course cannot be changed afterwards.",
+    "submitButton": "Submit to FD",
+    "confirmSubmit": "Submit the results to FD now? The course cannot be changed afterwards.",
+    "submitted": "{{count}} results sent to FD."
   },
   "leads": {
     "title": "Course lead",
@@ -375,5 +383,30 @@
     "testVersion": "Test version",
     "years": "years",
     "submitHint": "The RSK submits the results, then the licenses are granted."
+  },
+  "licensing": {
+    "title": "Licensing from courses",
+    "intro": "Passed participations from submitted courses. FD sets the license level, checks the assignment and grants or rejects with a reason. The desired level is only a hint from the person.",
+    "pending": "Open",
+    "done": "Decided (60 days)",
+    "approveSelected": "Grant selected ({{count}})",
+    "empty": "Nothing open.",
+    "courseLevels": "Course levels:",
+    "colPerson": "Person",
+    "colReferee": "Referee",
+    "colTest": "Test",
+    "colLicense": "License",
+    "select": "Select for bulk grant",
+    "desired": "desired: {{level}}",
+    "careerEnded": "Career ended, basic course required",
+    "asNew": "treat as new person",
+    "newReferee": "new, license number will be assigned",
+    "assignTo": "→ {{name}} ({{nr}})",
+    "points": "points",
+    "approve": "Grant",
+    "reject": "Reject",
+    "rejectPrompt": "Reason for rejecting {{name}}:",
+    "approvedMany": "{{count}} licenses granted.",
+    "accountCreated": "{{name}} received a user account."
   }
 }

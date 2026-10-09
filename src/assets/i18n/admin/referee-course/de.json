@@ -317,7 +317,7 @@
     "colStatus": "Status",
     "colResult": "Ergebnis",
     "colPoints": "Punkte",
-    "colLevel": "Lizenz",
+    "colLevel": "Lizenz (FD)",
     "colFee": "Gebühr",
     "license": "Liz.",
     "newPerson": "neu",
@@ -348,7 +348,15 @@
       "portal": "über das Portal",
       "club": "vom Verein",
       "public": "über die öffentliche Seite"
-    }
+    },
+    "licenseUntil": "gültig bis {{date}}",
+    "licenseRejected": "keine Lizenz",
+    "licensePending": "bei FD in Prüfung",
+    "submitTitle": "Ergebnisse an FD einreichen",
+    "submitIntro": "Die Lizenz legt FD fest. Eingereicht werden alle bestandenen Teilnahmen; danach lässt sich der Kurs nicht mehr ändern.",
+    "submitButton": "An FD einreichen",
+    "confirmSubmit": "Ergebnisse jetzt an FD einreichen? Danach lässt sich der Kurs nicht mehr ändern.",
+    "submitted": "{{count}} Ergebnisse an FD übermittelt."
   },
   "leads": {
     "title": "Kursleitung",
@@ -375,5 +383,30 @@
     "testVersion": "Testversion",
     "years": "Jahre",
     "submitHint": "Die Ergebnisse reicht die RSK ein, danach werden die Lizenzen vergeben."
+  },
+  "licensing": {
+    "title": "Lizenzvergabe aus Kursen",
+    "intro": "Bestandene Teilnahmen aus eingereichten Kursen. FD legt die Lizenzstufe fest, prüft die Zuordnung und erteilt oder lehnt mit Begründung ab. Die angestrebte Stufe ist nur ein Hinweis der Person.",
+    "pending": "Offen",
+    "done": "Entschieden (60 Tage)",
+    "approveSelected": "Ausgewählte erteilen ({{count}})",
+    "empty": "Nichts offen.",
+    "courseLevels": "Kursstufen:",
+    "colPerson": "Person",
+    "colReferee": "Schiri",
+    "colTest": "Test",
+    "colLicense": "Lizenz",
+    "select": "Für Sammelfreigabe auswählen",
+    "desired": "angestrebt: {{level}}",
+    "careerEnded": "Karriere beendet, Grundkurs erforderlich",
+    "asNew": "als neue Person behandeln",
+    "newReferee": "neu, Lizenznummer wird vergeben",
+    "assignTo": "→ {{name}} ({{nr}})",
+    "points": "Punkte",
+    "approve": "Erteilen",
+    "reject": "Ablehnen",
+    "rejectPrompt": "Grund für die Ablehnung bei {{name}}:",
+    "approvedMany": "{{count}} Lizenzen erteilt.",
+    "accountCreated": "{{name}} hat ein Benutzerkonto bekommen."
   }
 }

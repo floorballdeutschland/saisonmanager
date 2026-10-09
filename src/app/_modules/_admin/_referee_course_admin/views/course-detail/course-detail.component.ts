@@ -140,8 +140,40 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   // --- Anzeige -------------------------------------------------------------
 
+  /** Statuswechsel von Hand; „eingereicht“ geht nur über submitResults. */
   get transitions(): RefereeCourseStatus[] {
-    return this.course ? REFEREE_COURSE_TRANSITIONS[this.course.status] : [];
+    return this.course
+      ? REFEREE_COURSE_TRANSITIONS[this.course.status].filter(
+          (s) => s !== 'results_submitted'
+        )
+      : [];
+  }
+
+  get submissionProblems(): string[] {
+    return this.course?.submission_problems ?? [];
+  }
+
+  /** Ergebnisse an FD zur Lizenzvergabe. Danach ist der Kurs gesperrt. */
+  submitResults(): void {
+    if (
+      !this.course ||
+      this.submissionProblems.length ||
+      !confirm(
+        this._transloco.translate(
+          'refereeCourseAdmin.courseDetail.confirmSubmit'
+        )
+      )
+    )
+      return;
+    this.run(this._service.submitResults(this.course.id), (course) => {
+      this.course = course;
+      this._notify.success(
+        this._transloco.translate('refereeCourseAdmin.courseDetail.submitted', {
+          count: course.submitted_results,
+        })
+      );
+      this.reloadRegistrations();
+    });
   }
 
   get editable(): boolean {
@@ -327,7 +359,11 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
         registration.id,
         changes
       ),
-      (updated) => this.replace(updated),
+      (updated) => {
+        this.replace(updated);
+        // Die offenen Punkte fürs Einreichen hängen an der Teilnehmerliste.
+        if (this.course?.status === 'held') this.reloadCourse();
+      },
       // Abgelehnt: die Zeile neu setzen, damit Auswahl und Felder wieder den
       // gespeicherten Wert zeigen (ngModel schreibt sonst nicht zurück).
       () => this.replace({ ...registration })

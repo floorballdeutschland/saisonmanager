@@ -24,6 +24,7 @@ import { CourseLeadsComponent } from './components/course-leads/course-leads.com
     Views.CourseEditComponent,
     Views.CourseDetailComponent,
     Views.CourseFieldTemplatesComponent,
+    Views.CourseLicensingComponent,
     Views.LeadCourseIndexComponent,
     Views.LeadCourseDetailComponent,
     CourseFieldEditorComponent,
