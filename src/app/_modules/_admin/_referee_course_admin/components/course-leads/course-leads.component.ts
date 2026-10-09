@@ -99,6 +99,7 @@ export class CourseLeadsComponent implements OnInit, OnDestroy {
     this.mode = mode;
     this.query = '';
     this.results = [];
+    this._search$.next('');
     this.userName = '';
     this.firstName = '';
     this.lastName = '';

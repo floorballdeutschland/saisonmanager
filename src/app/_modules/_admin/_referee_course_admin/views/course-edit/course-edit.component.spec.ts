@@ -29,7 +29,7 @@ const OPTIONS: RefereeCourseOptions = {
 };
 
 describe('CourseEditComponent', () => {
-  function render() {
+  function render(id: string | null = null, course: object | null = null) {
     const service = jasmine.createSpyObj('RefereeCourseService', [
       'options',
       'get',
@@ -37,6 +37,8 @@ describe('CourseEditComponent', () => {
       'update',
     ]);
     service.options.and.returnValue(of(OPTIONS));
+    service.get.and.returnValue(of(course));
+    service.update.and.returnValue(of({ id: 9 }));
     service.create.and.returnValue(of({ id: 9 }));
     TestBed.configureTestingModule({
       imports: [FormsModule, getTranslocoTestingModule()],
@@ -46,7 +48,9 @@ describe('CourseEditComponent', () => {
         { provide: RefereeCourseService, useValue: service },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({}) } },
+          useValue: {
+            snapshot: { paramMap: convertToParamMap(id ? { id } : {}) },
+          },
         },
         {
           provide: NotificationService,
@@ -109,5 +113,33 @@ describe('CourseEditComponent', () => {
     c.suggestDeadlines();
     expect(c.registrationDeadline).toBe('2026-10-31T23:59');
     expect(c.cancellationDeadline).toBe('2026-11-07T23:59');
+  });
+
+  it('Partner-LV: verantwortlicher LV bleibt sichtbar, wird aber nicht mitgeschickt', () => {
+    const { fixture, service } = render('9', {
+      id: 9,
+      title: 'Gemeinsamer Kurs',
+      course_type: 'g',
+      state_association: { id: 7, name: 'Fremd-LV' },
+      partner_state_association_ids: [3],
+      license_level_ids: [],
+      format: 'in_person',
+      sessions: [{ starts_at: '2026-11-21T09:00:00+01:00' }],
+      registration_mode: 'open',
+      public: true,
+      fee_only_on_license: false,
+      no_show_billable: false,
+      bill_state_association: false,
+    });
+    const c = fixture.componentInstance;
+    expect(c.stateAssociationChoices[0]).toEqual(
+      jasmine.objectContaining({ id: 7, locked: true })
+    );
+    expect(c.stateAssociationLocked).toBeTrue();
+    expect(c.valid).toBeTrue();
+    c.save();
+    const payload = service.update.calls.mostRecent().args[1];
+    expect('state_association_id' in payload).toBeFalse();
+    expect('partner_state_association_ids' in payload).toBeFalse();
   });
 });

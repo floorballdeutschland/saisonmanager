@@ -144,13 +144,13 @@ export class RefereeCourseProcessSettingsComponent
       });
   }
 
+  // Sortiert ablegen: `dirty` vergleicht die Listen in Reihenfolge, und
+  // toggleStateAssociation sortiert den Entwurf.
   private apply(settings: RefereeCourseProcessSettings): void {
-    this.settings = settings;
-    this.draft = {
-      ...settings,
-      courses_state_association_ids: [
-        ...settings.courses_state_association_ids,
-      ],
-    };
+    const ids = [...settings.courses_state_association_ids].sort(
+      (a, b) => a - b
+    );
+    this.settings = { ...settings, courses_state_association_ids: ids };
+    this.draft = { ...settings, courses_state_association_ids: [...ids] };
   }
 }

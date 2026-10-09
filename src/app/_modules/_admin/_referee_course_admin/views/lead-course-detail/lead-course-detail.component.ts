@@ -103,17 +103,33 @@ export class LeadCourseDetailComponent implements OnInit, OnDestroy {
           this.busy = false;
           this._cdr.markForCheck();
         },
+        // Abgelehnt: Zeile neu setzen, damit die Felder den gespeicherten Wert
+        // zeigen (ngModel schreibt sonst nicht zurück).
         error: () => {
           this.busy = false;
+          this.resetRow(r);
           this._cdr.markForCheck();
         },
       });
   }
 
+  private resetRow(r: CourseLeadRegistration): void {
+    if (!this.course) return;
+    this.course = {
+      ...this.course,
+      registrations: this.course.registrations.map((x) =>
+        x.id === r.id ? { ...x } : x
+      ),
+    };
+  }
+
   pointsChanged(r: CourseLeadRegistration, value: string): void {
     const text = value.trim().replace(',', '.');
     const points = text === '' ? null : Number(text);
-    if (points !== null && Number.isNaN(points)) return;
+    if (points !== null && Number.isNaN(points)) {
+      this.resetRow(r);
+      return;
+    }
     if (points === r.points) return;
     this.update(r, { points });
   }
