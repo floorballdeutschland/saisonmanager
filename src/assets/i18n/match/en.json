@@ -1,0 +1,19 @@
+{
+  "refereeReport": {
+    "title": "Upload incident report",
+    "hint": "The referees are required to submit an incident report for this game. Referees can upload the completed report form here (PDF, PNG or JPEG, max. 5 MB).",
+    "forwardedTo": {
+      "vsk": "It is forwarded automatically to the responsible disciplinary committee (VSK).",
+      "sbk": "It is forwarded automatically to the responsible game operations office (SBK).",
+      "vsk_and_sbk": "It is forwarded automatically to the responsible disciplinary committee (VSK) and game operations office (SBK)."
+    },
+    "uploaded": {
+      "vsk": "{{ filename }} was uploaded and forwarded to the VSK.",
+      "sbk": "{{ filename }} was uploaded and forwarded to the SBK.",
+      "vsk_and_sbk": "{{ filename }} was uploaded and forwarded to the VSK and the SBK."
+    },
+    "choose": "Choose file and upload",
+    "uploading": "Uploading…",
+    "tooLarge": "The file must not exceed 5 MB."
+  }
+}

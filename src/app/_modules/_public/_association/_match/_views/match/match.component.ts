@@ -14,7 +14,12 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { Game, GameAdditionalFields, GameOperation } from '@floorball/types';
+import {
+  Game,
+  GameAdditionalFields,
+  GameOperation,
+  RefereeReportRecipient,
+} from '@floorball/types';
 import {
   AssociationService,
   GameService,
@@ -24,6 +29,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   templateUrl: './match.component.html',
@@ -46,6 +52,8 @@ export class MatchComponent implements OnInit, OnDestroy {
   refereeReportUploading = false;
   refereeReportUploaded = false;
   refereeReportFilename = '';
+  refereeReportRequired = false;
+  refereeReportRecipient: RefereeReportRecipient | null = null;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -58,7 +66,8 @@ export class MatchComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _cdr: ChangeDetectorRef,
     private _location: Location,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     // _router.events.pipe(takeUntil(this._destroy$)).subscribe(() => {
     //   const matchId = this._route.snapshot?.paramMap.get('matchId');
@@ -154,10 +163,14 @@ export class MatchComponent implements OnInit, OnDestroy {
                     .getRefereeReport(parseInt(id, 10), silent)
                     .subscribe({
                       next: (report) => {
-                        if (report.uploaded) {
-                          this.refereeReportUploaded = true;
-                          this.refereeReportFilename = report.filename ?? '';
-                        }
+                        if (!stillCurrent()) return;
+
+                        this.refereeReportRequired = !!report.required;
+                        this.refereeReportRecipient = report.recipient ?? null;
+                        // Auch zurücksetzen: Die Seite bleibt beim Wechsel in ein
+                        // anderes Spiel dieselbe Komponente.
+                        this.refereeReportUploaded = !!report.uploaded;
+                        this.refereeReportFilename = report.filename ?? '';
                         this._cdr.markForCheck();
                       },
                     });
@@ -201,18 +214,12 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._location.back();
   }
 
+  // Ob ein Berichtsformular verlangt ist und wohin es geht, entscheidet die
+  // API (GET referee_report, api#789). Die Seite leitet das nicht mehr selbst
+  // aus den Strafen ab: Sie prüfte die Straf-id 5, und das ist die technische
+  // Matchstrafe, die volle Matchstrafe blieb ohne Upload-Bereich.
   get hasIncidentReport(): boolean {
-    if (!this.game) return false;
-    const events =
-      (this.game as Game & { events?: { penalty_id?: string | number }[] })
-        .events ?? [];
-    const hasSpielausschluss = events.some(
-      (e) => e.penalty_id?.toString() === '5'
-    );
-    // Besonderes Ereignis oder Spielausschluss (rote Karte) lösen nach
-    // Spielbericht-Abschluss die Erinnerungs-E-Mail an die Schiris aus, die
-    // den Berichtsformular-Upload einfordert.
-    return !!(this.additionalFields?.special_event || hasSpielausschluss);
+    return this.refereeReportRequired;
   }
 
   // Der Upload wird erst nach Abschluss des Spielberichts angeboten – also
@@ -231,7 +238,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     if (!file || !this.game) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Die Datei darf maximal 5 MB groß sein.');
+      alert(this._transloco.translate('match.refereeReport.tooLarge'));
       return;
     }
 

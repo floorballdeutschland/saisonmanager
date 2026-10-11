@@ -27,6 +27,7 @@ import {
   StartingPlayer,
   AwardDefinitions,
   AwardPlayer,
+  RefereeReportStatus,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -611,15 +612,10 @@ export class GameService {
   }
 
   public getRefereeReport(gameId: number, silent = false) {
-    return this.http.get<{
-      uploaded: boolean;
-      filename?: string;
-      content_type?: string;
-      uploaded_at?: string;
-      url?: string;
-    }>(environment.apiURL + 'games/' + gameId + '/referee_report', {
-      context: refreshContext(silent),
-    });
+    return this.http.get<RefereeReportStatus>(
+      environment.apiURL + 'games/' + gameId + '/referee_report',
+      { context: refreshContext(silent) }
+    );
   }
 
   public uploadRefereeReport(gameId: number, file: File) {
