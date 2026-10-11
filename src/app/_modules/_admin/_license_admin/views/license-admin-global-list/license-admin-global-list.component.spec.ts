@@ -955,26 +955,73 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(filtered(8)).toEqual([8]);
     });
 
-    it('zeigt bei einer ungueltigen Lizenz Grund und Datum, aber keinen Widerruf', () => {
+    function renderRow(row: Partial<AdminLicenseEntry>): HTMLElement {
       const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
       const component = fixture.componentInstance;
-      component.allEntries = [
-        {
-          ...withStatus(4),
-          license_id: 'lic-4',
-          status_reason: 'Doppelt beantragt',
-          status_changed_at: '2026-10-01T10:00:00Z',
-        },
-      ];
+      component.allEntries = [{ ...entry('Muster'), ...row }];
       component.applyFilters();
       component.loading = false;
       fixture.detectChanges();
+      return fixture.nativeElement;
+    }
 
-      const root: HTMLElement = fixture.nativeElement;
+    it('zeigt bei einer geloeschten Lizenz Grund und Datum der Statusaenderung', () => {
+      const root = renderRow({
+        license_status_id: 4,
+        license_id: 'lic-4',
+        status_reason: 'Doppelt beantragt',
+        status_changed_at: '2026-10-01T10:00:00Z',
+      });
+
       const reason = root.querySelector('[data-testid="invalid-reason"]');
       expect(reason?.textContent).toContain('Doppelt beantragt');
       expect(reason?.textContent).toContain('01.10.2026');
+    });
+
+    // Widerruf haengt an "abgelehnt", Aufheben an einer Sperre; eine
+    // ungueltige Lizenz hat keins von beidem.
+    it('bietet bei einer ungueltigen Lizenz weder Widerruf noch Aufheben an', () => {
+      const root = renderRow({
+        license_status_id: 6,
+        license_id: 'lic-6',
+        status_reason: 'Transfer',
+      });
+
       expect(root.querySelector('[data-testid="revoke-rejection"]')).toBeNull();
+      expect(root.querySelector('[data-testid="lift-suspension"]')).toBeNull();
+    });
+
+    it('zeigt ohne Grund und Datum keine leere Zeile unter dem Status', () => {
+      const root = renderRow({ license_status_id: 7, license_id: 'lic-7' });
+
+      expect(root.querySelector('[data-testid="invalid-reason"]')).toBeNull();
+    });
+
+    it('zeigt den Grund nur bei ungueltigen Lizenzen, nicht bei zurueckgezogenen', () => {
+      const root = renderRow({
+        license_status_id: 8,
+        license_id: 'lic-8',
+        status_reason: 'Vom Verein zurueckgezogen',
+        status_changed_at: '2026-10-01T10:00:00Z',
+      });
+
+      expect(root.querySelector('[data-testid="invalid-reason"]')).toBeNull();
+    });
+
+    // Bei einer ungueltigen Lizenz ist ein fehlendes Dokument kein
+    // Handlungsbedarf mehr.
+    it('markiert fehlende Dokumente einer ungueltigen Lizenz nicht rot', () => {
+      const missing = {
+        license_id: 'lic-x',
+        required_documents: ['parental_consent', 'id_copy'],
+        documents: { parental_consent: false, id_copy: false },
+      };
+
+      const invalid = renderRow({ ...missing, license_status_id: 4 });
+      expect(invalid.querySelectorAll('td .bg-red-100').length).toBe(0);
+
+      const approved = renderRow({ ...missing, license_status_id: 1 });
+      expect(approved.querySelectorAll('td .bg-red-100').length).toBe(2);
     });
   });
 
