@@ -18,7 +18,13 @@ import { Title } from '@angular/platform-browser';
 import { Subject, finalize, take, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
-import { licenseStatusBadgeClass } from 'src/app/_helpers/_utils/license-status';
+import {
+  INVALID_LICENSE_STATUSES,
+  LICENSE_STATUS_DELETED,
+  LICENSE_STATUS_SUSPENDED,
+  isInvalidLicenseStatus,
+  licenseStatusBadgeClass,
+} from 'src/app/_helpers/_utils/license-status';
 import { readUploadedAt } from '../../_utils/document-upload-date';
 import {
   LicenseGlobalListFilterState,
@@ -68,9 +74,15 @@ const LEAGUE_CLASS_KEYS: { value: string; labelKey: string }[] = [
 // Filtermenge auf einmal und wird mit deren Umfang langsamer, deshalb ist es
 // nicht die Voreinstellung.
 // Lizenz-Status (License::* auf der API-Seite): 1 erteilt, 2 beantragt,
-// 3 abgelehnt, 8 zurueckgezogen.
+// 3 abgelehnt, 4 geloescht, 6 ungueltig wg. Transfer, 7 ignoriert,
+// 8 zurueckgezogen, 9 gesperrt.
 const STATUS_REQUESTED = 2;
 const STATUS_REJECTED = 3;
+
+// Der Filter "ungueltig" fasst 4, 6 und 7 zusammen (api#787). Er traegt den
+// Wert 4, damit der gespeicherte Filterzustand eine Zahl bleibt; den genauen
+// Grund nennt die Statusspalte bzw. die CSV-Ausfuhr.
+const STATUS_FILTER_INVALID = LICENSE_STATUS_DELETED;
 
 // Grund des Widerrufs. Er landet als Klartext in der Chronik der Lizenz und
 // bleibt deshalb deutsch, unabhaengig von der Sprache der Oberflaeche – wie die
@@ -241,6 +253,14 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       { value: 2, label: t('licenseAdmin.globalList.statusRequested') },
       { value: 3, label: t('licenseAdmin.globalList.statusRejected') },
       { value: 8, label: t('licenseAdmin.globalList.statusWithdrawn') },
+      {
+        value: STATUS_FILTER_INVALID,
+        label: t('licenseAdmin.globalList.statusInvalid'),
+      },
+      {
+        value: LICENSE_STATUS_SUSPENDED,
+        label: t('licenseAdmin.globalList.statusSuspended'),
+      },
     ];
     this.fieldSizeOptions = [
       { value: null, label: t('licenseAdmin.globalList.filterAllFieldSizes') },
@@ -364,7 +384,7 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         return false;
       if (
         this.filterStatusId !== null &&
-        e.license_status_id !== this.filterStatusId
+        !this.matchesStatusFilter(e.license_status_id)
       )
         return false;
       if (this.filterLicenseType && e.license_type !== this.filterLicenseType)
@@ -424,6 +444,13 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  private matchesStatusFilter(statusId: number): boolean {
+    if (this.filterStatusId === STATUS_FILTER_INVALID) {
+      return INVALID_LICENSE_STATUSES.includes(statusId);
+    }
+    return statusId === this.filterStatusId;
+  }
+
   public resetFilters(): void {
     this.search = '';
     this.clubSearch = '';
@@ -469,6 +496,9 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
       t('licenseAdmin.globalList.csvFreeRejection'),
       t('licenseAdmin.globalList.csvRequested'),
       t('licenseAdmin.globalList.csvApproved'),
+      t('licenseAdmin.globalList.csvStatusChangedAt'),
+      t('licenseAdmin.globalList.csvStatusChangedBy'),
+      t('licenseAdmin.globalList.csvStatusReason'),
     ];
     const rows = this.filteredEntries.map((e) => [
       // Nummer und volles Geburtsdatum nur in der Ausfuhr, nicht in der
@@ -518,6 +548,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
         : t('licenseAdmin.globalList.csvNo'),
       e.requested_at ? this._formatDate(e.requested_at) : '',
       e.approved_at ? this._formatDate(e.approved_at) : '',
+      // Warum eine Lizenz ungueltig ist, steht nur in der letzten
+      // Statusaenderung: genauer Status oben, Zeitpunkt, Person und Grund hier.
+      e.status_changed_at ? this._formatDate(e.status_changed_at) : '',
+      e.status_changed_by_name ?? '',
+      e.status_reason ?? '',
     ]);
 
     downloadCsv('lizenzen', headers, rows);
@@ -725,6 +760,10 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   // Zurueck geht es nur auf "beantragt", nicht direkt auf "erteilt": Die
   // Genehmigung bleibt eine bewusste Handlung mit Gueltigkeitsdatum und
   // gegebenenfalls Erst-/Zweitlizenz-Zuordnung.
+
+  public isInvalid(entry: AdminLicenseEntry): boolean {
+    return isInvalidLicenseStatus(entry.license_status_id);
+  }
 
   public isRejected(entry: AdminLicenseEntry): boolean {
     return entry.license_status_id === STATUS_REJECTED;

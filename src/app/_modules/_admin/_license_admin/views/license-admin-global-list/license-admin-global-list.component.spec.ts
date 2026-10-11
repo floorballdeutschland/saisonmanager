@@ -40,6 +40,9 @@ describe('LicenseAdminGlobalListComponent', () => {
                 csvReactivation: 'Reaktivierung',
                 csvFreeRejection: 'Kostenfrei abgelehnt',
                 csvRequested: 'Beantragt am',
+                csvStatusChangedAt: 'Statusaenderung am',
+                csvStatusChangedBy: 'Statusaenderung durch',
+                csvStatusReason: 'Grund',
                 csvYes: 'Ja',
                 csvNo: 'Nein',
                 freeRejectionBadge: 'Kostenfrei abgelehnt',
@@ -907,6 +910,74 @@ describe('LicenseAdminGlobalListComponent', () => {
     });
   });
 
+  // Seit api#787 liefert die API auch geloeschte (4), transferungueltige (6)
+  // und ignorierte (7) Lizenzen. Der Filter fasst sie zu "ungueltig" zusammen.
+  describe('Statusfilter ungueltig und gesperrt', () => {
+    function withStatus(id: number): AdminLicenseEntry {
+      return { ...entry(`Status${id}`), license_status_id: id };
+    }
+
+    function filtered(statusId: number): number[] {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      component.allEntries = [1, 2, 3, 4, 6, 7, 8, 9].map(withStatus);
+      component.filterStatusId = statusId;
+      component.applyFilters();
+      return component.filteredEntries.map((e) => e.license_status_id);
+    }
+
+    it('bietet ungueltig und gesperrt als Optionen an', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      component['buildStaticLabels']();
+      expect(component.statusOptions.map((o) => o.value)).toEqual([
+        null,
+        1,
+        2,
+        3,
+        8,
+        4,
+        9,
+      ]);
+    });
+
+    it('fasst geloescht, Transfer und ignoriert unter ungueltig zusammen', () => {
+      expect(filtered(4)).toEqual([4, 6, 7]);
+    });
+
+    it('findet gesperrte Lizenzen', () => {
+      expect(filtered(9)).toEqual([9]);
+    });
+
+    it('laesst die uebrigen Filter exakt', () => {
+      expect(filtered(8)).toEqual([8]);
+    });
+
+    it('zeigt bei einer ungueltigen Lizenz Grund und Datum, aber keinen Widerruf', () => {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = [
+        {
+          ...withStatus(4),
+          license_id: 'lic-4',
+          status_reason: 'Doppelt beantragt',
+          status_changed_at: '2026-10-01T10:00:00Z',
+        },
+      ];
+      component.applyFilters();
+      component.loading = false;
+      fixture.detectChanges();
+
+      const root: HTMLElement = fixture.nativeElement;
+      const reason = root.querySelector('[data-testid="invalid-reason"]');
+      expect(reason?.textContent).toContain('Doppelt beantragt');
+      expect(reason?.textContent).toContain('01.10.2026');
+      expect(root.querySelector('[data-testid="revoke-rejection"]')).toBeNull();
+    });
+  });
+
   describe('CSV-Ausfuhr', () => {
     let blobs: Blob[];
 
@@ -933,6 +1004,29 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(blobs.length).toBe(1);
       return blobs[0].text().then((text) => text.split('\r\n'));
     }
+
+    // Warum eine Lizenz ungueltig ist, steht nur in der letzten
+    // Statusaenderung (api#787).
+    it('fuehrt Zeitpunkt, Person und Grund der letzten Statusaenderung hinten', async () => {
+      const [header, row] = await exportRows([
+        {
+          ...entry('Muster'),
+          license_status_id: 4,
+          license_status: 'ungültig: gelöscht',
+          status_changed_at: '2026-10-01T10:00:00Z',
+          status_changed_by_name: 'Erika Muster',
+          status_reason: 'Doppelt beantragt',
+        } as AdminLicenseEntry,
+      ]);
+
+      expect(
+        header.endsWith('"Statusaenderung am";"Statusaenderung durch";"Grund"')
+      ).toBeTrue();
+      expect(row).toContain('"ungültig: gelöscht"');
+      expect(
+        row.endsWith('"01.10.2026";"Erika Muster";"Doppelt beantragt"')
+      ).toBeTrue();
+    });
 
     it('fuehrt Spielernummer und volles Geburtsdatum vorne', async () => {
       const [header, row] = await exportRows([
