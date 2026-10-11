@@ -473,3 +473,35 @@ export interface CourseLicensingRow {
   license_mail?: string;
   account?: string;
 }
+
+/** Rechnungsexport der Kurse: Vorschau und erzeugte Exporte. */
+export interface CourseBillingPreview {
+  headers: string[];
+  rows: {
+    registration_id: number;
+    values: (string | number | null)[];
+    warnings: string[];
+  }[];
+  row_count: number;
+  total_cents: number;
+  waiting_for_license: string[];
+}
+
+export interface CourseBillingExport {
+  id: number;
+  state_association: { id: number; name: string } | null;
+  from_date: string | null;
+  to_date: string | null;
+  row_count: number;
+  total_cents: number;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface CourseBillingQuery {
+  /** Id oder 'national' für bundesweite Kurse. */
+  state_association_id: number | 'national';
+  from?: string | null;
+  to?: string | null;
+  include_billed?: boolean;
+}
