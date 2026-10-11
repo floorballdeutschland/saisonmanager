@@ -99,6 +99,7 @@
     "done": "Thank you. The registration is now valid, a confirmation is sent by e-mail.",
     "doneWaitlist": "Thank you. The course has filled up in the meantime; the registration is on the waiting list and moves up automatically when a seat becomes free.",
     "invalid": "This link is invalid or has expired. Please contact the club or the course organisers.",
+    "maybeDone": "The consent may already have been saved on the first attempt, so the link has been used up. Please check your inbox for the confirmation; if none arrives, contact the course organisers.",
     "questions": "Questions about the course:"
   },
   "confirmCancelPersonLate": "The cancellation deadline has passed: the course fee remains due and is invoiced to the club. Deregister {{name}} from „{{course}}“ anyway?",

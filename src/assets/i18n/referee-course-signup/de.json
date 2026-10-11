@@ -99,6 +99,7 @@
     "done": "Vielen Dank. Die Anmeldung gilt jetzt, eine Bestätigung kommt per E-Mail.",
     "doneWaitlist": "Vielen Dank. Der Kurs ist inzwischen voll, die Anmeldung steht auf der Warteliste und rückt automatisch nach, wenn ein Platz frei wird.",
     "invalid": "Dieser Link ist ungültig oder abgelaufen. Bitte wenden Sie sich an den Verein oder die Kursorganisation.",
+    "maybeDone": "Die Einwilligung wurde möglicherweise schon beim ersten Versuch gespeichert, der Link ist inzwischen verbraucht. Bitte prüfen Sie Ihr E-Mail-Postfach auf die Bestätigung; kommt keine, wenden Sie sich an die Kursorganisation.",
     "questions": "Fragen zum Kurs:"
   },
   "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?",
