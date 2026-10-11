@@ -151,6 +151,19 @@ export class CourseEditComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Verband und Partner-LV darf nur ändern, wer den Kurs besitzt. Ein
+   * Partner-LV oder ein LV-Konto an einem bundesweiten Kurs sieht beides nur;
+   * die Maske schickt es dann auch nicht mit.
+   */
+  get ownerLocked(): boolean {
+    return (
+      this.stateAssociationLocked ||
+      (this._originalStateAssociationId === null &&
+        !this.options?.national_allowed)
+    );
+  }
+
   get partnerOptions(): { id: number; name: string }[] {
     return (this.options?.partner_state_associations ?? []).filter(
       (sa) => sa.id !== this.stateAssociationId
@@ -240,14 +253,10 @@ export class CourseEditComponent implements OnInit, OnDestroy {
   payload(): RefereeCourseInput {
     // Verantwortlichen LV und Partner nur mitschicken, wenn das Konto sie
     // ändern darf: Für einen Partner-LV lehnt die API das sonst ab.
-    const ownerLocked =
-      this.stateAssociationLocked ||
-      (this._originalStateAssociationId === null &&
-        !this.options?.national_allowed);
     return {
       title: this.title.trim(),
       course_type: this.courseType,
-      ...(ownerLocked
+      ...(this.ownerLocked
         ? {}
         : {
             state_association_id: this.stateAssociationId,

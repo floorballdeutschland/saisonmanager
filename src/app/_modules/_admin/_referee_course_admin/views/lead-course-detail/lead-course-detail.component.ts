@@ -35,6 +35,7 @@ export class LeadCourseDetailComponent implements OnInit, OnDestroy {
   busy = false;
 
   private _destroy$ = new Subject<void>();
+  private _rowRevision = new WeakMap<CourseLeadRegistration, number>();
 
   constructor(
     private _service: RefereeCourseService,
@@ -103,8 +104,6 @@ export class LeadCourseDetailComponent implements OnInit, OnDestroy {
           this.busy = false;
           this._cdr.markForCheck();
         },
-        // Abgelehnt: Zeile neu setzen, damit die Felder den gespeicherten Wert
-        // zeigen (ngModel schreibt sonst nicht zurück).
         error: () => {
           this.busy = false;
           this.resetRow(r);
@@ -113,12 +112,25 @@ export class LeadCourseDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Schlüssel für `@for`. Nach einer Ablehnung muss die Zeile neu gerendert
+   * werden, sonst zeigen Auswahl und Feld weiter den abgelehnten Wert: Der
+   * gebundene Wert hat sich ja nicht geändert. Die Zählung hängt am Objekt,
+   * weil `@for` auch den Schlüssel der alten Zeile neu berechnet.
+   */
+  rowKey(r: CourseLeadRegistration): string {
+    return `${r.id}:${this._rowRevision.get(r) ?? 0}`;
+  }
+
   private resetRow(r: CourseLeadRegistration): void {
     if (!this.course) return;
+    const current = this.course.registrations.find((x) => x.id === r.id) ?? r;
+    const copy = { ...current };
+    this._rowRevision.set(copy, (this._rowRevision.get(current) ?? 0) + 1);
     this.course = {
       ...this.course,
       registrations: this.course.registrations.map((x) =>
-        x.id === r.id ? { ...x } : x
+        x.id === r.id ? copy : x
       ),
     };
   }

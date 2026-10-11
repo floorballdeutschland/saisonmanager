@@ -411,7 +411,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (r of visibleRegistrations; track r.id) {
+              @for (r of visibleRegistrations; track rowKey(r)) {
                 <tr
                   class="border-b border-fb-gray-800 align-top"
                   data-test="registration-row"
@@ -602,6 +602,7 @@
                       [attr.aria-label]="
                         'refereeCourseAdmin.courseDetail.colPoints' | transloco
                       "
+                      [attr.data-test]="'points-' + r.id"
                       [value]="r.points ?? ''"
                       (change)="pointsChanged(r, $any($event.target).value)"
                     />

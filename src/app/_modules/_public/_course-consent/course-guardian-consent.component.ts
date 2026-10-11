@@ -24,7 +24,8 @@ import { GuardianConsentInfo } from '@floorball/types';
 })
 export class CourseGuardianConsentComponent implements OnInit, OnDestroy {
   info: GuardianConsentInfo | null = null;
-  state: 'loading' | 'open' | 'done' | 'invalid' | 'failed' = 'loading';
+  state: 'loading' | 'open' | 'done' | 'invalid' | 'maybeDone' | 'failed' =
+    'loading';
   resultStatus: string | null = null;
   busy = false;
   failedSubmit = false;
@@ -75,10 +76,13 @@ export class CourseGuardianConsentComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         // Nur 404/422 heißt „Link ungültig“. Ein Netzwerk- oder Serverfehler
-        // lässt den Knopf stehen, der Link gilt ja weiter.
+        // lässt den Knopf stehen, der Link gilt ja weiter. Kommt „ungültig“
+        // erst beim erneuten Versuch, ging der erste womöglich durch und nur
+        // die Antwort verloren: dann nicht „ungültig“ behaupten.
         error: (err: { status?: number }) => {
           this.busy = false;
-          if (isInvalidLink(err)) this.state = 'invalid';
+          if (isInvalidLink(err))
+            this.state = this.failedSubmit ? 'maybeDone' : 'invalid';
           else this.failedSubmit = true;
           this._cdr.markForCheck();
         },
