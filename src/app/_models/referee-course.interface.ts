@@ -194,6 +194,22 @@ export type RefereeCourseRegistrationStatus =
   | 'attended'
   | 'no_show';
 
+/** Belegen einen Kursplatz (`SEAT_STATUSES` der API). */
+export const REFEREE_COURSE_SEAT_STATUSES: readonly string[] = [
+  'registered',
+  'attended',
+  'no_show',
+];
+
+/**
+ * Beendete Anmeldung: abgemeldet, abgesagt oder vom Verein abgelehnt
+ * (`CANCELLED_STATUSES` der API). Sie hält keinen Platz und sperrt keine neue
+ * Anmeldung derselben Person.
+ */
+export function isClosedCourseRegistration(status: string): boolean {
+  return status.startsWith('cancelled') || status === 'declined_by_club';
+}
+
 export interface RefereeCourseRegistration {
   id: number;
   referee_id: number | null;

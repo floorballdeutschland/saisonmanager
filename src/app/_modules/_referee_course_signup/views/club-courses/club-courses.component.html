@@ -136,7 +136,7 @@
                     {{ euro(r.fee_cents) }}
                   </td>
                   <td class="py-2 px-2">
-                    @if (r.cancellable) {
+                    @if (canCancel(r)) {
                       <button
                         type="button"
                         class="text-red-700 hover:underline"

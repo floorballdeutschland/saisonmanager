@@ -102,7 +102,8 @@
     "doneWaitlist": "Thank you. The course has filled up in the meantime; the registration is on the waiting list and moves up automatically when a seat becomes free.",
     "invalid": "This link is invalid or has expired. Please contact the club or the course organisers.",
     "maybeDone": "The consent may already have been saved on the first attempt, so the link has been used up. Please check your inbox for the confirmation; if none arrives, contact the course organisers.",
-    "questions": "Questions about the course:"
+    "questions": "Questions about the course:",
+    "doneClub": "Thank you. The club still has to confirm that it pays the course fee; a confirmation follows by e-mail afterwards."
   },
   "public": {
     "title": "Referee courses",
@@ -144,7 +145,8 @@
       "done": "Thank you, the registration is valid. A confirmation with all details is sent by e-mail.",
       "doneWaitlist": "Thank you. The course is full, the registration is on the waiting list and moves up automatically.",
       "doneGuardian": "Thank you. Your parents or guardians still need to consent; they have received an e-mail.",
-      "maybeDone": "The confirmation probably went through on the first attempt, so the link has been used up. Please check your inbox; if no confirmation arrives, contact the course organisers."
+      "maybeDone": "The confirmation probably went through on the first attempt, so the link has been used up. Please check your inbox; if no confirmation arrives, contact the course organisers.",
+      "doneClub": "Thank you. Your club still has to confirm that it pays the course fee. You will get an e-mail as soon as it has done so."
     },
     "cancel": {
       "title": "Deregister from course",
@@ -163,6 +165,8 @@
   "toConfirmIntro": "These people registered themselves and named your club as payer. They only get a seat once you confirm.",
   "confirmClub": "Confirm",
   "declineClub": "Decline",
+  "declinedReason": "The club's reason: {{reason}}.",
+  "declinedHint": "The club will not pay the course fee. If you have questions, please contact the course organisers.",
   "declinePrompt": "Why does the club not pay the fee for {{name}}? (The person receives the reason by e-mail.)",
   "paidBy": "paid by: {{club}}"
 }

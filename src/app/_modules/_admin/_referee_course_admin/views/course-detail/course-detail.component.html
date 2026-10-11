@@ -555,11 +555,7 @@
                     }
                   </td>
                   <td class="py-2 px-2">
-                    @if (
-                      r.status.startsWith("cancelled") ||
-                      isPending(r) ||
-                      !editable
-                    ) {
+                    @if (isClosed(r) || isPending(r) || !editable) {
                       {{
                         "refereeCourseAdmin.courseDetail.regStatus." + r.status
                           | transloco
@@ -605,9 +601,7 @@
                   <td class="py-2 px-2">
                     <select
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
-                      [disabled]="
-                        busy || !editable || r.status.startsWith('cancelled')
-                      "
+                      [disabled]="busy || !editable || isClosed(r)"
                       [attr.aria-label]="
                         'refereeCourseAdmin.courseDetail.colResult' | transloco
                       "
@@ -634,9 +628,7 @@
                       type="text"
                       inputmode="decimal"
                       class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm w-20"
-                      [disabled]="
-                        busy || !editable || r.status.startsWith('cancelled')
-                      "
+                      [disabled]="busy || !editable || isClosed(r)"
                       [attr.aria-label]="
                         'refereeCourseAdmin.courseDetail.colPoints' | transloco
                       "
@@ -695,7 +687,7 @@
                     }
                   </td>
                   <td class="py-2 px-2">
-                    @if (editable && !r.status.startsWith("cancelled")) {
+                    @if (editable && !isClosed(r)) {
                       <button
                         type="button"
                         class="text-red-700 hover:underline"

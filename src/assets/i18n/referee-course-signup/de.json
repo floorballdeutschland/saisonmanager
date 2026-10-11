@@ -102,7 +102,8 @@
     "doneWaitlist": "Vielen Dank. Der Kurs ist inzwischen voll, die Anmeldung steht auf der Warteliste und rückt automatisch nach, wenn ein Platz frei wird.",
     "invalid": "Dieser Link ist ungültig oder abgelaufen. Bitte wenden Sie sich an den Verein oder die Kursorganisation.",
     "maybeDone": "Die Einwilligung wurde möglicherweise schon beim ersten Versuch gespeichert, der Link ist inzwischen verbraucht. Bitte prüfen Sie Ihr E-Mail-Postfach auf die Bestätigung; kommt keine, wenden Sie sich an die Kursorganisation.",
-    "questions": "Fragen zum Kurs:"
+    "questions": "Fragen zum Kurs:",
+    "doneClub": "Vielen Dank. Jetzt muss noch der Verein bestätigen, dass er die Kursgebühr übernimmt; danach kommt eine Bestätigung per E-Mail."
   },
   "public": {
     "title": "Schiedsrichterkurse",
@@ -144,7 +145,8 @@
       "done": "Danke, die Anmeldung gilt. Eine Bestätigung mit allen Angaben kommt per E-Mail.",
       "doneWaitlist": "Danke. Der Kurs ist voll, die Anmeldung steht auf der Warteliste und rückt automatisch nach.",
       "doneGuardian": "Danke. Jetzt fehlt noch die Einwilligung deiner Erziehungsberechtigten; sie haben eine E-Mail bekommen.",
-      "maybeDone": "Die Bestätigung ist vermutlich schon beim ersten Versuch durchgegangen, der Link ist inzwischen verbraucht. Bitte schau in dein E-Mail-Postfach; kommt keine Bestätigung, wende dich an die Kursorganisation."
+      "maybeDone": "Die Bestätigung ist vermutlich schon beim ersten Versuch durchgegangen, der Link ist inzwischen verbraucht. Bitte schau in dein E-Mail-Postfach; kommt keine Bestätigung, wende dich an die Kursorganisation.",
+      "doneClub": "Danke. Jetzt muss noch dein Verein bestätigen, dass er die Kursgebühr übernimmt. Sobald er das getan hat, bekommst du eine E-Mail."
     },
     "cancel": {
       "title": "Vom Kurs abmelden",
@@ -163,6 +165,8 @@
   "toConfirmIntro": "Diese Personen haben sich selbst angemeldet und euren Verein als Zahler angegeben. Erst mit eurer Bestätigung bekommen sie einen Platz.",
   "confirmClub": "Bestätigen",
   "declineClub": "Ablehnen",
+  "declinedReason": "Begründung des Vereins: {{reason}}.",
+  "declinedHint": "Der Verein übernimmt die Kursgebühr nicht. Bei Fragen wende dich bitte an die Kursorganisation.",
   "declinePrompt": "Warum übernimmt der Verein die Gebühr für {{name}} nicht? (Die Person bekommt den Grund per Mail.)",
   "paidBy": "zahlt: {{club}}"
 }

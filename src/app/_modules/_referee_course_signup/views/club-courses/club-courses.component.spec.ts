@@ -154,4 +154,31 @@ describe('ClubCoursesComponent', () => {
     c.declineClub(c.toConfirm[0]);
     expect(service.clubDecline).toHaveBeenCalledWith(11, 'Kein Mitglied');
   });
+
+  it('Ablehnung durch den Verein zaehlt wie eine Abmeldung', () => {
+    const { fixture } = render();
+    const c = fixture.componentInstance;
+    c.registrations = [
+      ownRegistration(20, {
+        referee_id: 40,
+        status: 'declined_by_club',
+        club_decline_reason: 'kein Mitglied',
+      }),
+    ];
+    expect(c.visibleRegistrations).toEqual([]);
+    expect(c.alreadyRegistered(c.courses[0], 40)).toBeFalse();
+    expect(c.registeredFor(c.courses[0])).toBe(0);
+  });
+
+  it('bietet Abmelden nur fuer Mitglieder des eigenen Vereins an', () => {
+    const { fixture } = render();
+    const c = fixture.componentInstance;
+    const own = ownRegistration(21, { club: { id: 5, name: 'TV Kassel' } });
+    const foreign = ownRegistration(22, {
+      club: { id: 99, name: 'Fremd' },
+      billing_club: { id: 5, name: 'TV Kassel' },
+    });
+    expect(c.canCancel(own)).toBeTrue();
+    expect(c.canCancel(foreign)).toBeFalse();
+  });
 });

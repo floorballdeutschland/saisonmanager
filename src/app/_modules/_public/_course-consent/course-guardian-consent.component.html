@@ -22,9 +22,11 @@
     @case ("done") {
       <p data-test="done">
         {{
-          (resultStatus === "waitlisted"
-            ? "courseSignup.consent.doneWaitlist"
-            : "courseSignup.consent.done"
+          (resultStatus === "pending_club"
+            ? "courseSignup.consent.doneClub"
+            : resultStatus === "waitlisted"
+              ? "courseSignup.consent.doneWaitlist"
+              : "courseSignup.consent.done"
           ) | transloco
         }}
       </p>

@@ -107,4 +107,32 @@ describe('PortalCoursesComponent', () => {
       fixture.nativeElement.querySelector('[data-test="already"]')
     ).not.toBeNull();
   });
+
+  it('zeigt eine Ablehnung des Vereins mit Grund und Kontakt', () => {
+    const res = {
+      ...base,
+      courses: [offer(1, { contact_email: 'rsk@lv.example' })],
+      registrations: [
+        ownRegistration(5, {
+          status: 'declined_by_club',
+          club_decline_reason: 'kein Mitglied',
+          cancellable: false,
+        }),
+        ownRegistration(6, { status: 'cancelled_by_participant' }),
+      ],
+    };
+    const { fixture } = render(res);
+    const c = fixture.componentInstance;
+    expect(c.activeRegistrations.map((r) => r.id)).toEqual([5]);
+    const hint = fixture.nativeElement.querySelector(
+      '[data-test="declined-5"]'
+    ) as HTMLElement;
+    expect(hint).not.toBeNull();
+    expect(hint.querySelector('a')?.getAttribute('href')).toBe(
+      'mailto:rsk@lv.example'
+    );
+    expect(
+      c.lateCancellation({ ...res.registrations[0], status: 'pending_club' })
+    ).toBeFalse();
+  });
 });

@@ -14,7 +14,9 @@ import {
 import {
   ClubCourseReferee,
   CourseSignupAnswers,
+  isClosedCourseRegistration,
   OwnCourseRegistration,
+  REFEREE_COURSE_SEAT_STATUSES,
   RefereeCourseOffer,
 } from '@floorball/types';
 import { TranslocoService } from '@jsverse/transloco';
@@ -116,6 +118,19 @@ export class ClubCoursesComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Abmelden kann der Verein nur Anmeldungen seiner Mitglieder. Zahlt er nur
+   * für jemand anderen, sieht er die Zeile, die API fände sie beim Abmelden
+   * aber nicht.
+   */
+  canCancel(registration: OwnCourseRegistration): boolean {
+    return (
+      registration.cancellable &&
+      !!registration.club &&
+      this.clubs.some((c) => c.id === registration.club?.id)
+    );
+  }
+
   confirmClub(registration: OwnCourseRegistration): void {
     this.busy = true;
     this._service
@@ -158,14 +173,15 @@ export class ClubCoursesComponent implements OnInit, OnDestroy {
 
   get visibleRegistrations(): OwnCourseRegistration[] {
     return this.registrations.filter(
-      (r) => this.showCancelled || !r.status.startsWith('cancelled')
+      (r) => this.showCancelled || !isClosedCourseRegistration(r.status)
     );
   }
 
   registeredFor(course: RefereeCourseOffer): number {
     return this.registrations.filter(
       (r) =>
-        r.referee_course_id === course.id && !r.status.startsWith('cancelled')
+        r.referee_course_id === course.id &&
+        !isClosedCourseRegistration(r.status)
     ).length;
   }
 
@@ -174,7 +190,7 @@ export class ClubCoursesComponent implements OnInit, OnDestroy {
       (r) =>
         r.referee_course_id === course.id &&
         r.referee_id === refereeId &&
-        !r.status.startsWith('cancelled')
+        !isClosedCourseRegistration(r.status)
     );
   }
 
@@ -279,9 +295,7 @@ export class ClubCoursesComponent implements OnInit, OnDestroy {
       (c) => c.id === registration.referee_course_id
     );
     const deadline = course?.cancellation_deadline;
-    const seated = ['registered', 'attended', 'no_show'].includes(
-      registration.status
-    );
+    const seated = REFEREE_COURSE_SEAT_STATUSES.includes(registration.status);
     return seated && !!deadline && new Date(deadline) < new Date();
   }
 

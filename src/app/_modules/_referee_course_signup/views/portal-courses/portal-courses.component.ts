@@ -13,7 +13,9 @@ import {
 } from '@floorball/core';
 import {
   CourseSignupAnswers,
+  isClosedCourseRegistration,
   OwnCourseRegistration,
+  REFEREE_COURSE_SEAT_STATUSES,
   RefereeCourseOffer,
 } from '@floorball/types';
 import { TranslocoService } from '@jsverse/transloco';
@@ -91,8 +93,20 @@ export class PortalCoursesComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Laufende Anmeldungen. Eine Ablehnung durch den Verein bleibt sichtbar,
+   * damit die Person den Grund und die Ansprechperson sieht.
+   */
   get activeRegistrations(): OwnCourseRegistration[] {
-    return this.registrations.filter((r) => !r.status.startsWith('cancelled'));
+    return this.registrations.filter(
+      (r) =>
+        !isClosedCourseRegistration(r.status) || r.status === 'declined_by_club'
+    );
+  }
+
+  /** Kontakt für Rückfragen zu einer Anmeldung, aus dem Kursangebot. */
+  contactFor(registration: OwnCourseRegistration): string | null {
+    return this.courseFor(registration)?.contact_email ?? null;
   }
 
   open(course: RefereeCourseOffer): void {
@@ -148,9 +162,7 @@ export class PortalCoursesComponent implements OnInit, OnDestroy {
    */
   lateCancellation(registration: OwnCourseRegistration): boolean {
     const deadline = this.courseFor(registration)?.cancellation_deadline;
-    const seated = ['registered', 'attended', 'no_show'].includes(
-      registration.status
-    );
+    const seated = REFEREE_COURSE_SEAT_STATUSES.includes(registration.status);
     return seated && !!deadline && new Date(deadline) < new Date();
   }
 
