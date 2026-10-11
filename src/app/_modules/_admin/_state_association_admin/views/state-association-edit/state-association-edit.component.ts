@@ -50,6 +50,7 @@ export const INHERITED_SETTINGS = [
   'manual_proceeding_creation',
   'requested_license_playable',
   'team_info_editable_during_season',
+  'course_club_confirmation_required',
 ] as const;
 
 type InheritedSetting = (typeof INHERITED_SETTINGS)[number];
@@ -71,6 +72,8 @@ const EFFECTIVE_SETTING: Record<InheritedSetting, keyof StateAssociation> = {
   requested_license_playable: 'effective_requested_license_playable',
   team_info_editable_during_season:
     'effective_team_info_editable_during_season',
+  course_club_confirmation_required:
+    'effective_course_club_confirmation_required',
 };
 
 // Der Spaltenstandard jeder Einstellung, gebraucht fuer die Anlage-Maske: Dort
@@ -94,6 +97,7 @@ const SETTING_DEFAULT: Record<InheritedSetting, boolean> = {
   manual_proceeding_creation: false,
   requested_license_playable: false,
   team_info_editable_during_season: true,
+  course_club_confirmation_required: false,
 };
 
 @Component({

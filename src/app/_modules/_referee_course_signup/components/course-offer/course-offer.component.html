@@ -1,0 +1,114 @@
+<article
+  class="p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-2"
+  data-test="course-offer"
+>
+  <header>
+    <h3 class="text-lg font-bold">{{ offer.title }}</h3>
+    <p class="text-sm text-fb-gray-500">
+      {{ "courseSignup.type." + offer.course_type | transloco }}
+      ·
+      {{
+        offer.state_association?.name ?? ("courseSignup.national" | transloco)
+      }}
+      ·
+      {{ "courseSignup.format." + offer.format | transloco }}
+      @if (offer.license_levels.length) {
+        ·
+        {{ "courseSignup.leadsTo" | transloco }}
+        @for (level of offer.license_levels; track level.id; let last = $last) {
+          {{ level.name }}{{ last ? "" : "/" }}
+        }
+      }
+    </p>
+  </header>
+
+  <ul class="text-sm">
+    @for (session of offer.sessions; track $index) {
+      <li>
+        {{ session.starts_at | date: "EEE, dd.MM.yyyy HH:mm" }}
+        @if (session.ends_at) {
+          – {{ session.ends_at | date: "HH:mm" }}
+        }
+        @if (session.location) {
+          · {{ session.location }}
+        } @else if (session.format === "online" || offer.format === "online") {
+          · {{ "courseSignup.onlineLinkLater" | transloco }}
+        }
+      </li>
+    }
+  </ul>
+
+  <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+    @if (offer.registration_deadline) {
+      <dt class="text-fb-gray-500">
+        {{ "courseSignup.deadline" | transloco }}
+      </dt>
+      <dd>{{ offer.registration_deadline | date: "dd.MM.yyyy HH:mm" }}</dd>
+    }
+    @if (offer.max_participants !== null) {
+      <dt class="text-fb-gray-500">{{ "courseSignup.seats" | transloco }}</dt>
+      <dd data-test="seats">
+        @if (offer.free_seats) {
+          {{
+            "courseSignup.freeSeats"
+              | transloco
+                : { free: offer.free_seats, max: offer.max_participants }
+          }}
+        } @else {
+          {{ "courseSignup.full" | transloco }}
+        }
+      </dd>
+    }
+    @if (offer.fee_member_cents !== null) {
+      <dt class="text-fb-gray-500">{{ "courseSignup.fee" | transloco }}</dt>
+      <dd>
+        {{ euro(offer.fee_member_cents) }} €
+        @if (differentPrices) {
+          {{
+            "courseSignup.nonMember"
+              | transloco: { fee: euro(offer.fee_non_member_cents) }
+          }}
+        }
+        @if (offer.fee_only_on_license) {
+          <span class="block text-xs text-fb-gray-500">{{
+            "courseSignup.feeOnlyOnLicense" | transloco
+          }}</span>
+        }
+        @if (offer.fee_note) {
+          <span class="block text-xs text-fb-gray-500">{{
+            offer.fee_note
+          }}</span>
+        }
+      </dd>
+    }
+    @if (offer.min_age) {
+      <dt class="text-fb-gray-500">{{ "courseSignup.minAge" | transloco }}</dt>
+      <dd>{{ "courseSignup.years" | transloco: { age: offer.min_age } }}</dd>
+    }
+    @if (offer.prerequisites_note) {
+      <dt class="text-fb-gray-500">
+        {{ "courseSignup.prerequisites" | transloco }}
+      </dt>
+      <dd>{{ offer.prerequisites_note }}</dd>
+    }
+    @if (offer.contact_email) {
+      <dt class="text-fb-gray-500">{{ "courseSignup.contact" | transloco }}</dt>
+      <dd>
+        <a class="underline" [href]="'mailto:' + offer.contact_email">{{
+          offer.contact_email
+        }}</a>
+      </dd>
+    }
+  </dl>
+
+  @if (offer.description) {
+    <details class="text-sm">
+      <summary class="cursor-pointer font-bold">
+        {{ "courseSignup.details" | transloco }}
+      </summary>
+      <p class="whitespace-pre-line mt-1">{{ offer.description }}</p>
+    </details>
+  }
+
+  <ng-content></ng-content>
+</article>

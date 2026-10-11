@@ -1,0 +1,204 @@
+<div class="flex flex-col gap-2">
+  @if (activeFields.length === 0 && !showNew) {
+    <p class="text-fb-gray-500 text-sm" data-test="no-fields">
+      {{ "refereeCourseAdmin.fields.empty" | transloco }}
+    </p>
+  }
+
+  @for (
+    field of activeFields;
+    track field.id;
+    let first = $first;
+    let last = $last
+  ) {
+    @if (editingId === field.id) {
+      <ng-container *ngTemplateOutlet="form"></ng-container>
+    } @else {
+      <div
+        class="flex flex-wrap items-center justify-between gap-2 p-3 border border-fb-gray-700 rounded-[5px]"
+        data-test="field-row"
+      >
+        <div>
+          <span class="font-bold text-sm">{{ field.label }}</span>
+          @if (field.required) {
+            <span class="text-red-700">*</span>
+          }
+          <span class="block text-xs text-fb-gray-500">
+            {{
+              "refereeCourseAdmin.fields.type." + field.field_type | transloco
+            }}
+            @if (field.options.length) {
+              · {{ field.options.join(", ") }}
+            }
+            @if (!field.visible_to_lead) {
+              · {{ "refereeCourseAdmin.fields.hiddenFromLead" | transloco }}
+            }
+            @if (field.include_in_billing_export) {
+              · {{ "refereeCourseAdmin.fields.inBillingExport" | transloco }}
+            }
+          </span>
+        </div>
+        <div class="flex gap-1 text-sm">
+          <button
+            type="button"
+            class="px-2 disabled:opacity-30"
+            [disabled]="first || busy"
+            (click)="move(field, -1)"
+            [attr.aria-label]="'refereeCourseAdmin.fields.up' | transloco"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            class="px-2 disabled:opacity-30"
+            [disabled]="last || busy"
+            (click)="move(field, 1)"
+            [attr.aria-label]="'refereeCourseAdmin.fields.down' | transloco"
+          >
+            ↓
+          </button>
+          <button
+            type="button"
+            class="px-2 font-bold hover:underline"
+            [disabled]="busy"
+            (click)="startEdit(field)"
+          >
+            {{ "refereeCourseAdmin.fields.edit" | transloco }}
+          </button>
+          <button
+            type="button"
+            class="px-2 text-red-700 hover:underline"
+            [disabled]="busy"
+            (click)="removed.emit(field)"
+          >
+            {{
+              (locked
+                ? "refereeCourseAdmin.fields.archive"
+                : "refereeCourseAdmin.fields.delete"
+              ) | transloco
+            }}
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  @if (showNew) {
+    <ng-container *ngTemplateOutlet="form"></ng-container>
+  } @else if (editingId === null) {
+    <div>
+      <button
+        type="button"
+        data-test="add-field"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        [disabled]="busy"
+        (click)="startNew()"
+      >
+        {{ "refereeCourseAdmin.fields.add" | transloco }}
+      </button>
+    </div>
+  }
+</div>
+
+<ng-template #form>
+  @if (draft) {
+    <div
+      class="p-4 border border-black rounded-[5px] flex flex-col gap-3"
+      data-test="field-form"
+    >
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.fields.label" | transloco }}
+        <input
+          type="text"
+          data-test="field-label"
+          maxlength="200"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [(ngModel)]="draft.label"
+        />
+      </label>
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.fields.fieldType" | transloco }}
+        <select
+          data-test="field-type"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [disabled]="meaningLocked"
+          [(ngModel)]="draft.field_type"
+        >
+          @for (type of fieldTypes; track type) {
+            <option [ngValue]="type">
+              {{ "refereeCourseAdmin.fields.type." + type | transloco }}
+            </option>
+          }
+        </select>
+      </label>
+      @if (isChoice(draft.field_type)) {
+        <label class="flex flex-col gap-1 text-xs font-bold">
+          {{ "refereeCourseAdmin.fields.options" | transloco }}
+          <textarea
+            rows="4"
+            data-test="field-options"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+            [disabled]="meaningLocked"
+            [(ngModel)]="optionsText"
+          ></textarea>
+        </label>
+      }
+      <label class="flex flex-col gap-1 text-xs font-bold">
+        {{ "refereeCourseAdmin.fields.helpText" | transloco }}
+        <input
+          type="text"
+          maxlength="500"
+          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+          [(ngModel)]="draft.help_text"
+        />
+      </label>
+      <div class="flex flex-col gap-1 text-sm">
+        <label class="flex items-center gap-2">
+          <input
+            type="checkbox"
+            [disabled]="meaningLocked"
+            [(ngModel)]="draft.required"
+          />
+          {{ "refereeCourseAdmin.fields.required" | transloco }}
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" [(ngModel)]="draft.visible_to_lead" />
+          {{ "refereeCourseAdmin.fields.visibleToLead" | transloco }}
+        </label>
+        <label class="flex items-center gap-2">
+          <input
+            type="checkbox"
+            [(ngModel)]="draft.include_in_billing_export"
+          />
+          {{ "refereeCourseAdmin.fields.includeInBilling" | transloco }}
+        </label>
+      </div>
+      @if (meaningLocked) {
+        <p class="text-xs text-fb-gray-500">
+          {{ "refereeCourseAdmin.fields.lockedHint" | transloco }}
+        </p>
+      }
+      <p class="text-xs text-fb-gray-500">
+        {{ "refereeCourseAdmin.fields.healthHint" | transloco }}
+      </p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          data-test="field-save"
+          class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+          [disabled]="!valid || busy"
+          (click)="save()"
+        >
+          {{ "refereeCourseAdmin.fields.save" | transloco }}
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px]"
+          (click)="cancel()"
+        >
+          {{ "refereeCourseAdmin.fields.cancel" | transloco }}
+        </button>
+      </div>
+    </div>
+  }
+</ng-template>
