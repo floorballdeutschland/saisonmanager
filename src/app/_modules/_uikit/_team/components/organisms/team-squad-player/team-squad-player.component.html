@@ -70,7 +70,8 @@
       (focusin)="handleFocusChange()"
       [(ngModel)]="trikotNumber"
       (change)="handleTrikotNumberChange()"
-      [disabled]="hasGameEvents()"
+      [disabled]="hasGameEvents() || addBlocked()"
+      [title]="addBlocked() ? 'Kader voll' : ''"
       class="py-2 w-16 block shadow-sm text-center focus:ring-gray-500 focus:border-gray-500 sm:max-w-xs sm:text-sm border border-gray-200 rounded-md"
       [ngClass]="hasError ? 'border-red-600' : ''"
     />
