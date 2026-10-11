@@ -61,13 +61,17 @@
     return (cents / 100).toFixed(2).replace(".", ",") + " €";
   }
 
+  // Gemessen wird der Inhalt, nicht das Dokument: scrollHeight des Dokuments
+  // ist nie kleiner als das iframe selbst, das iframe koennte dann nur wachsen
+  // und nie schrumpfen (etwa wenn die Seite breiter wird).
   function hoeheMelden() {
     if (window.parent === window) return;
+    var unten = parseFloat(window.getComputedStyle(document.body).paddingBottom);
+    var hoehe = Math.ceil(
+      root.getBoundingClientRect().bottom + window.pageYOffset + (unten || 0)
+    );
     window.parent.postMessage(
-      {
-        type: "saisonmanager-kurse-hoehe",
-        height: document.documentElement.scrollHeight,
-      },
+      { type: "saisonmanager-kurse-hoehe", height: hoehe },
       "*"
     );
   }
@@ -179,4 +183,8 @@
     });
 
   window.addEventListener("resize", hoeheMelden);
+  // Umbrueche nach Schriftladen oder Breitenwechsel aendern die Hoehe ohne
+  // resize-Ereignis. Die Hoehe des Inhalts haengt nur an der Breite, eine
+  // Schleife ueber die gemeldete iframe-Hoehe entsteht also nicht.
+  if (window.ResizeObserver) new ResizeObserver(hoeheMelden).observe(root);
 })();

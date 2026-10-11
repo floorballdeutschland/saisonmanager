@@ -89,8 +89,42 @@ describe('CourseIndexComponent', () => {
     expect(c.publicUrl(3)).toMatch(/\/schiri-kurse\?verband=3$/);
     expect(c.embedCode(3)).toContain('/kurse-einbettung/?verband=3');
     expect(c.embedCode(3)).toContain('saisonmanager-kurse-hoehe');
+    expect(c.embedCode(3)).toContain('e.source!==f.contentWindow');
+    expect(c.embedCode(3)).not.toContain(' id=');
     expect(
       fixture.nativeElement.querySelector('[data-test="embed"]')
     ).not.toBeNull();
+  });
+
+  it('iframe-Code setzt nur die Hoehe des eigenen iframes', () => {
+    const { fixture } = render([]);
+    const c = fixture.componentInstance;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const frames: HTMLIFrameElement[] = [];
+    for (const sa of [3, 4]) {
+      const code = c.embedCode(sa);
+      const tpl = document.createElement('template');
+      tpl.innerHTML = code;
+      const frame = tpl.content.querySelector('iframe') as HTMLIFrameElement;
+      frame.removeAttribute('src');
+      host.appendChild(frame);
+      const script = document.createElement('script');
+      script.textContent = (
+        tpl.content.querySelector('script') as HTMLScriptElement
+      ).textContent;
+      host.appendChild(script);
+      frames.push(frame);
+    }
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: c.origin,
+        source: frames[1].contentWindow,
+        data: { type: 'saisonmanager-kurse-hoehe', height: 777 },
+      })
+    );
+    expect(frames[1].style.height).toBe('777px');
+    expect(frames[0].style.height).toBe('');
+    host.remove();
   });
 });

@@ -141,7 +141,8 @@
       "button": "Anmeldung bestätigen",
       "done": "Danke, die Anmeldung gilt. Eine Bestätigung mit allen Angaben kommt per E-Mail.",
       "doneWaitlist": "Danke. Der Kurs ist voll, die Anmeldung steht auf der Warteliste und rückt automatisch nach.",
-      "doneGuardian": "Danke. Jetzt fehlt noch die Einwilligung deiner Erziehungsberechtigten; sie haben eine E-Mail bekommen."
+      "doneGuardian": "Danke. Jetzt fehlt noch die Einwilligung deiner Erziehungsberechtigten; sie haben eine E-Mail bekommen.",
+      "maybeDone": "Die Bestätigung ist vermutlich schon beim ersten Versuch durchgegangen, der Link ist inzwischen verbraucht. Bitte schau in dein E-Mail-Postfach; kommt keine Bestätigung, wende dich an die Kursorganisation."
     },
     "cancel": {
       "title": "Vom Kurs abmelden",
@@ -149,7 +150,8 @@
       "button": "Abmelden",
       "late": "Die Abmeldefrist ist vorbei, die Kursgebühr bleibt fällig.",
       "done": "Die Abmeldung ist erledigt.",
-      "doneLate": "Die Abmeldung ist erledigt. Weil die Abmeldefrist vorbei war, bleibt die Kursgebühr fällig."
+      "doneLate": "Die Abmeldung ist erledigt. Weil die Abmeldefrist vorbei war, bleibt die Kursgebühr fällig.",
+      "maybeDone": "Die Abmeldung ist vermutlich schon beim ersten Versuch durchgegangen, der Link ist inzwischen verbraucht. Bitte schau in dein E-Mail-Postfach; kommt keine Bestätigung, wende dich an die Kursorganisation."
     },
     "failed": "Das hat gerade nicht geklappt, der Link ist aber weiter gültig. Bitte gleich noch einmal versuchen."
   },
