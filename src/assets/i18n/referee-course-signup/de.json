@@ -37,7 +37,9 @@
     "cancelled_by_participant": "abgemeldet",
     "cancelled_by_organizer": "von der Kursorganisation abgemeldet",
     "attended": "teilgenommen",
-    "no_show": "nicht erschienen"
+    "no_show": "nicht erschienen",
+    "pending_club": "wartet auf Bestätigung des Vereins",
+    "declined_by_club": "vom Verein nicht bestätigt"
   },
   "result": {
     "passed": "bestanden",
@@ -152,5 +154,12 @@
     },
     "failed": "Das hat gerade nicht geklappt, der Link ist aber weiter gültig. Bitte gleich noch einmal versuchen."
   },
-  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?"
+  "confirmCancelPersonLate": "Die Abmeldefrist ist vorbei: Die Kursgebühr bleibt fällig und wird dem Verein berechnet. {{name}} trotzdem vom Kurs „{{course}}“ abmelden?",
+  "pendingClub": "Angemeldet. Dein Verein übernimmt die Gebühr und muss die Anmeldung noch bestätigen; danach bekommst du eine Mail.",
+  "toConfirmTitle": "Zu bestätigen",
+  "toConfirmIntro": "Diese Personen haben sich selbst angemeldet und euren Verein als Zahler angegeben. Erst mit eurer Bestätigung bekommen sie einen Platz.",
+  "confirmClub": "Bestätigen",
+  "declineClub": "Ablehnen",
+  "declinePrompt": "Warum übernimmt der Verein die Gebühr für {{name}} nicht? (Die Person bekommt den Grund per Mail.)",
+  "paidBy": "zahlt: {{club}}"
 }

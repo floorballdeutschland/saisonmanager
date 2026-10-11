@@ -17,7 +17,11 @@ describe('ClubCoursesComponent', () => {
       'clubReferees',
       'clubRegister',
       'clubCancel',
+      'clubConfirm',
+      'clubDecline',
     ]);
+    service.clubConfirm.and.returnValue(of(ownRegistration(11)));
+    service.clubDecline.and.returnValue(of(ownRegistration(11)));
     service.club.and.returnValue(
       of({
         clubs: [{ id: 5, name: 'TV Kassel' }],
@@ -25,6 +29,16 @@ describe('ClubCoursesComponent', () => {
         registrations: [
           ownRegistration(7, { referee_id: 40, source: 'club' }),
           ownRegistration(8, { status: 'cancelled_by_participant' }),
+          ownRegistration(11, {
+            referee_course_id: 2,
+            status: 'pending_club',
+            billing_club: { id: 5, name: 'TV Kassel' },
+          }),
+          ownRegistration(12, {
+            referee_course_id: 2,
+            status: 'pending_club',
+            billing_club: { id: 99, name: 'Fremd' },
+          }),
         ],
       })
     );
@@ -66,7 +80,7 @@ describe('ClubCoursesComponent', () => {
   it('blendet Abgemeldete aus und erkennt bereits angemeldete Schiris', () => {
     const { fixture } = render();
     const c = fixture.componentInstance;
-    expect(c.visibleRegistrations.map((r) => r.id)).toEqual([7]);
+    expect(c.visibleRegistrations.map((r) => r.id)).toEqual([7, 11, 12]);
     expect(c.alreadyRegistered(c.courses[0], 40)).toBeTrue();
     expect(c.registeredFor(c.courses[0])).toBe(1);
   });
@@ -121,5 +135,23 @@ describe('ClubCoursesComponent', () => {
     expect(
       c.lateCancellation({ ...c.registrations[0], status: 'waitlisted' })
     ).toBeFalse();
+  });
+
+  it('listet nur Anmeldungen, fuer die der eigene Verein zahlen soll', () => {
+    const { fixture, service } = render();
+    const c = fixture.componentInstance;
+    expect(c.toConfirm.map((r) => r.id)).toEqual([11]);
+    c.confirmClub(c.toConfirm[0]);
+    expect(service.clubConfirm).toHaveBeenCalledWith(11);
+  });
+
+  it('lehnt nur mit Grund ab', () => {
+    const { fixture, service } = render();
+    const c = fixture.componentInstance;
+    spyOn(window, 'prompt').and.returnValues('', 'Kein Mitglied');
+    c.declineClub(c.toConfirm[0]);
+    expect(service.clubDecline).not.toHaveBeenCalled();
+    c.declineClub(c.toConfirm[0]);
+    expect(service.clubDecline).toHaveBeenCalledWith(11, 'Kein Mitglied');
   });
 });

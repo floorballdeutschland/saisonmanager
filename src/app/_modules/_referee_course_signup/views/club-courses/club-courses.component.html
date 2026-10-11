@@ -9,6 +9,60 @@
   @if (loading) {
     <div class="text-fb-gray-500">{{ "courseSignup.loading" | transloco }}</div>
   } @else {
+    @if (toConfirm.length) {
+      <section
+        class="mb-10 p-4 border border-black rounded-[5px]"
+        data-test="to-confirm"
+      >
+        <h2 class="text-lg font-bold mb-1">
+          {{ "courseSignup.toConfirmTitle" | transloco }}
+        </h2>
+        <p class="text-sm text-fb-gray-500 mb-3">
+          {{ "courseSignup.toConfirmIntro" | transloco }}
+        </p>
+        <ul class="flex flex-col gap-2">
+          @for (r of toConfirm; track r.id) {
+            <li
+              class="flex flex-wrap items-center justify-between gap-2 text-sm"
+              data-test="confirm-row"
+            >
+              <span>
+                <span class="font-bold">{{ r.nachname }}, {{ r.vorname }}</span>
+                · {{ r.course_title }} ·
+                {{ r.starts_on | date: "dd.MM.yyyy" }} · {{ euro(r.fee_cents) }}
+                @if (r.billing_club && r.club?.id !== r.billing_club.id) {
+                  ·
+                  {{
+                    "courseSignup.paidBy"
+                      | transloco: { club: r.billing_club.name }
+                  }}
+                }
+              </span>
+              <span class="flex gap-2">
+                <button
+                  type="button"
+                  [attr.data-test]="'confirm-' + r.id"
+                  class="px-3 py-1 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+                  [disabled]="busy"
+                  (click)="confirmClub(r)"
+                >
+                  {{ "courseSignup.confirmClub" | transloco }}
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1 text-sm text-red-700 hover:underline"
+                  [disabled]="busy"
+                  (click)="declineClub(r)"
+                >
+                  {{ "courseSignup.declineClub" | transloco }}
+                </button>
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
     <section class="mb-10" data-test="club-registrations">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
         <h2 class="text-lg font-bold">
@@ -66,6 +120,11 @@
                     {{ "courseSignup.status." + r.status | transloco }}
                     @if (r.result) {
                       · {{ "courseSignup.result." + r.result | transloco }}
+                    }
+                    @if (r.club_decline_reason) {
+                      <span class="block text-xs text-fb-gray-500">{{
+                        r.club_decline_reason
+                      }}</span>
                     }
                     @if (r.late_cancellation) {
                       <span class="block text-xs text-red-700">{{

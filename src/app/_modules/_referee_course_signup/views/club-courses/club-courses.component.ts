@@ -105,6 +105,57 @@ export class ClubCoursesComponent implements OnInit, OnDestroy {
       });
   }
 
+  /** Selbstanmeldungen, bei denen einer der eigenen Vereine zahlen soll. */
+  get toConfirm(): OwnCourseRegistration[] {
+    const ids = this.clubs.map((c) => c.id);
+    return this.registrations.filter(
+      (r) =>
+        r.status === 'pending_club' &&
+        !!r.billing_club &&
+        ids.includes(r.billing_club.id)
+    );
+  }
+
+  confirmClub(registration: OwnCourseRegistration): void {
+    this.busy = true;
+    this._service
+      .clubConfirm(registration.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.busy = false;
+          this.load();
+        },
+        error: () => {
+          this.busy = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  declineClub(registration: OwnCourseRegistration): void {
+    const reason = prompt(
+      this._transloco.translate('courseSignup.declinePrompt', {
+        name: `${registration.vorname} ${registration.nachname}`,
+      })
+    );
+    if (!reason || !reason.trim()) return;
+    this.busy = true;
+    this._service
+      .clubDecline(registration.id, reason.trim())
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: () => {
+          this.busy = false;
+          this.load();
+        },
+        error: () => {
+          this.busy = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   get visibleRegistrations(): OwnCourseRegistration[] {
     return this.registrations.filter(
       (r) => this.showCancelled || !r.status.startsWith('cancelled')

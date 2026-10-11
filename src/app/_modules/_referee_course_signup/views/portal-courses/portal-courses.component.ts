@@ -119,9 +119,11 @@ export class PortalCoursesComponent implements OnInit, OnDestroy {
           this.openId = null;
           this._notify.success(
             this._transloco.translate(
-              registration.status === 'waitlisted'
-                ? 'courseSignup.waitlisted'
-                : 'courseSignup.registered'
+              registration.status === 'pending_club'
+                ? 'courseSignup.pendingClub'
+                : registration.status === 'waitlisted'
+                  ? 'courseSignup.waitlisted'
+                  : 'courseSignup.registered'
             )
           );
           this.load();

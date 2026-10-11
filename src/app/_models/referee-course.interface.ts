@@ -185,6 +185,8 @@ export interface RefereeCourseOptions {
 export type RefereeCourseRegistrationStatus =
   | 'pending_email'
   | 'pending_guardian'
+  | 'pending_club'
+  | 'declined_by_club'
   | 'registered'
   | 'waitlisted'
   | 'cancelled_by_participant'
@@ -329,6 +331,9 @@ export interface OwnCourseRegistration {
   fee_cents: number | null;
   source: 'admin' | 'portal' | 'club' | 'public';
   cancellable: boolean;
+  /** Zahlender Verein; bei `pending_club` muss er bestätigen. */
+  billing_club?: { id: number; name: string } | null;
+  club_decline_reason?: string | null;
 }
 
 export interface CourseSignupAnswers {
