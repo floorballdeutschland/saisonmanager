@@ -173,7 +173,11 @@ describe('TeamSquadComponent', () => {
   });
 
   describe('Obergrenze (api#784)', () => {
-    function open(maxPlayers: number | null, count: number) {
+    function open(
+      maxPlayers: number | null,
+      count: number,
+      currentRequests: unknown[] = []
+    ) {
       const fixture = TestBed.createComponent(TeamSquadComponent);
       fixture.componentRef.setInput('teamId', 7);
       fixture.componentRef.setInput('side', 'home');
@@ -188,9 +192,26 @@ describe('TeamSquadComponent', () => {
       fixture.detectChanges();
       http
         .expectOne(`${environment.apiURL}user/team/7/licenses.json`)
-        .flush({ team: { id: 7 }, current_requests: [] });
+        .flush({ team: { id: 7 }, current_requests: currentRequests });
       fixture.detectChanges();
       return fixture.nativeElement as HTMLElement;
+    }
+
+    // Eine nicht aufgestellte Person mit erteilter Lizenz, damit eine Zeile
+    // gerendert wird und die Weitergabe der Sperre pruefbar ist.
+    const freeRequest = {
+      id: 99,
+      last_name: 'Frei',
+      first_name: 'Fritz',
+      current_status: { license_status_id: 1 },
+    };
+
+    function rowLineupFull(el: HTMLElement): unknown {
+      const row = el.querySelector('fb-team-squad-player') as
+        | (HTMLElement & { lineupFull?: boolean })
+        | null;
+      expect(row).withContext('Zeile gerendert').toBeTruthy();
+      return row?.lineupFull;
     }
 
     function count(el: HTMLElement) {
@@ -208,7 +229,18 @@ describe('TeamSquadComponent', () => {
 
     it('meldet den vollen Kader', () => {
       const el = open(14, 14);
+      expect(count(el)).toBe('Spieler/innen im Kader: 14 / 14');
       expect(el.querySelector('[data-testid="squad-full"]')).toBeTruthy();
+    });
+
+    // Die Zeile ist hier ein unbekanntes Element (NO_ERRORS_SCHEMA), die
+    // Bindung [lineupFull] landet deshalb als Eigenschaft am DOM-Element.
+    it('gibt den vollen Kader an die Zeilen weiter', () => {
+      expect(rowLineupFull(open(14, 14, [freeRequest]))).toBeTrue();
+    });
+
+    it('gibt bei freiem Platz keine Sperre an die Zeilen weiter', () => {
+      expect(rowLineupFull(open(14, 13, [freeRequest]))).toBeFalse();
     });
 
     it('ohne Grenzwert weder Grenze im Zähler noch Sperre', () => {

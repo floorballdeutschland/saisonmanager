@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { TeamSquadPlayerComponent } from './team-squad-player.component';
 import {
@@ -9,6 +11,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { PlayerWithLicense } from '@floorball/types';
+import { CurrentAgePipe } from 'src/app/_modules/_uikit/_player/pipes/current-age.pipe';
 
 describe('TeamSquadPlayerComponent', () => {
   beforeEach(async () => {
@@ -87,8 +90,60 @@ describe('TeamSquadPlayerComponent', () => {
       http
         .expectOne((r) => r.url.includes('/lineup/home/remove_player'))
         .flush([]);
-      http.expectOne((r) => r.url.includes('/lineup/home/add_player'));
+      const add = http.expectOne((r) =>
+        r.url.includes('/lineup/home/add_player')
+      );
+      expect(add.request.body.trikot_number).toBe('19');
+      expect(component.addBlocked()).toBeFalse();
       http.verify();
     });
+  });
+});
+
+// Mit echter Vorlage: Die Sperre greift in der Oberflaeche ueber das
+// disabled-Attribut des Nummernfelds, nicht erst in addLinupPlayer().
+describe('TeamSquadPlayerComponent Vorlage bei vollem Kader (api#784)', () => {
+  beforeEach(async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, RouterTestingModule, FormsModule],
+      declarations: [TeamSquadPlayerComponent, CurrentAgePipe],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+  });
+
+  async function numberInput(
+    entry: { trikot_number: number } | null,
+    lineupFull: boolean
+  ): Promise<HTMLInputElement> {
+    const fixture = TestBed.createComponent(TeamSquadPlayerComponent);
+    fixture.componentRef.setInput('gameId', 61889);
+    fixture.componentRef.setInput('side', 'home');
+    fixture.componentRef.setInput('lineup', entry ? [entry] : []);
+    fixture.componentRef.setInput('gamePlayerEntry', entry);
+    fixture.componentRef.setInput('player', {
+      id: 21082,
+    } as PlayerWithLicense);
+    fixture.componentRef.setInput('lineupFull', lineupFull);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('input[type="number"]');
+  }
+
+  it('sperrt das Nummernfeld einer nicht aufgestellten Person', async () => {
+    const input = await numberInput(null, true);
+    expect(input.disabled).toBeTrue();
+    expect(input.title).toBe('Kader voll');
+  });
+
+  it('laesst das Nummernfeld einer aufgestellten Person offen', async () => {
+    expect(
+      (await numberInput({ trikot_number: 7 }, true)).disabled
+    ).toBeFalse();
+  });
+
+  it('laesst das Nummernfeld offen, solange Platz ist', async () => {
+    expect((await numberInput(null, false)).disabled).toBeFalse();
   });
 });
