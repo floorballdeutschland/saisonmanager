@@ -40,6 +40,9 @@ describe('LicenseAdminGlobalListComponent', () => {
                 csvReactivation: 'Reaktivierung',
                 csvFreeRejection: 'Kostenfrei abgelehnt',
                 csvRequested: 'Beantragt am',
+                csvStatusChangedAt: 'Statusaenderung am',
+                csvStatusChangedBy: 'Statusaenderung durch',
+                csvStatusReason: 'Grund',
                 csvYes: 'Ja',
                 csvNo: 'Nein',
                 freeRejectionBadge: 'Kostenfrei abgelehnt',
@@ -907,6 +910,121 @@ describe('LicenseAdminGlobalListComponent', () => {
     });
   });
 
+  // Seit api#787 liefert die API auch geloeschte (4), transferungueltige (6)
+  // und ignorierte (7) Lizenzen. Der Filter fasst sie zu "ungueltig" zusammen.
+  describe('Statusfilter ungueltig und gesperrt', () => {
+    function withStatus(id: number): AdminLicenseEntry {
+      return { ...entry(`Status${id}`), license_status_id: id };
+    }
+
+    function filtered(statusId: number): number[] {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      component.allEntries = [1, 2, 3, 4, 6, 7, 8, 9].map(withStatus);
+      component.filterStatusId = statusId;
+      component.applyFilters();
+      return component.filteredEntries.map((e) => e.license_status_id);
+    }
+
+    it('bietet ungueltig und gesperrt als Optionen an', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminGlobalListComponent
+      ).componentInstance;
+      component['buildStaticLabels']();
+      expect(component.statusOptions.map((o) => o.value)).toEqual([
+        null,
+        1,
+        2,
+        3,
+        8,
+        4,
+        9,
+      ]);
+    });
+
+    it('fasst geloescht, Transfer und ignoriert unter ungueltig zusammen', () => {
+      expect(filtered(4)).toEqual([4, 6, 7]);
+    });
+
+    it('findet gesperrte Lizenzen', () => {
+      expect(filtered(9)).toEqual([9]);
+    });
+
+    it('laesst die uebrigen Filter exakt', () => {
+      expect(filtered(8)).toEqual([8]);
+    });
+
+    function renderRow(row: Partial<AdminLicenseEntry>): HTMLElement {
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      const component = fixture.componentInstance;
+      component.allEntries = [{ ...entry('Muster'), ...row }];
+      component.applyFilters();
+      component.loading = false;
+      fixture.detectChanges();
+      return fixture.nativeElement;
+    }
+
+    it('zeigt bei einer geloeschten Lizenz Grund und Datum der Statusaenderung', () => {
+      const root = renderRow({
+        license_status_id: 4,
+        license_id: 'lic-4',
+        status_reason: 'Doppelt beantragt',
+        status_changed_at: '2026-10-01T10:00:00Z',
+      });
+
+      const reason = root.querySelector('[data-testid="invalid-reason"]');
+      expect(reason?.textContent).toContain('Doppelt beantragt');
+      expect(reason?.textContent).toContain('01.10.2026');
+    });
+
+    // Widerruf haengt an "abgelehnt", Aufheben an einer Sperre; eine
+    // ungueltige Lizenz hat keins von beidem.
+    it('bietet bei einer ungueltigen Lizenz weder Widerruf noch Aufheben an', () => {
+      const root = renderRow({
+        license_status_id: 6,
+        license_id: 'lic-6',
+        status_reason: 'Transfer',
+      });
+
+      expect(root.querySelector('[data-testid="revoke-rejection"]')).toBeNull();
+      expect(root.querySelector('[data-testid="lift-suspension"]')).toBeNull();
+    });
+
+    it('zeigt ohne Grund und Datum keine leere Zeile unter dem Status', () => {
+      const root = renderRow({ license_status_id: 7, license_id: 'lic-7' });
+
+      expect(root.querySelector('[data-testid="invalid-reason"]')).toBeNull();
+    });
+
+    it('zeigt den Grund nur bei ungueltigen Lizenzen, nicht bei zurueckgezogenen', () => {
+      const root = renderRow({
+        license_status_id: 8,
+        license_id: 'lic-8',
+        status_reason: 'Vom Verein zurueckgezogen',
+        status_changed_at: '2026-10-01T10:00:00Z',
+      });
+
+      expect(root.querySelector('[data-testid="invalid-reason"]')).toBeNull();
+    });
+
+    // Bei einer ungueltigen Lizenz ist ein fehlendes Dokument kein
+    // Handlungsbedarf mehr.
+    it('markiert fehlende Dokumente einer ungueltigen Lizenz nicht rot', () => {
+      const missing = {
+        license_id: 'lic-x',
+        required_documents: ['parental_consent', 'id_copy'],
+        documents: { parental_consent: false, id_copy: false },
+      };
+
+      const invalid = renderRow({ ...missing, license_status_id: 4 });
+      expect(invalid.querySelectorAll('td .bg-red-100').length).toBe(0);
+
+      const approved = renderRow({ ...missing, license_status_id: 1 });
+      expect(approved.querySelectorAll('td .bg-red-100').length).toBe(2);
+    });
+  });
+
   describe('CSV-Ausfuhr', () => {
     let blobs: Blob[];
 
@@ -933,6 +1051,29 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(blobs.length).toBe(1);
       return blobs[0].text().then((text) => text.split('\r\n'));
     }
+
+    // Warum eine Lizenz ungueltig ist, steht nur in der letzten
+    // Statusaenderung (api#787).
+    it('fuehrt Zeitpunkt, Person und Grund der letzten Statusaenderung hinten', async () => {
+      const [header, row] = await exportRows([
+        {
+          ...entry('Muster'),
+          license_status_id: 4,
+          license_status: 'ungültig: gelöscht',
+          status_changed_at: '2026-10-01T10:00:00Z',
+          status_changed_by_name: 'Erika Muster',
+          status_reason: 'Doppelt beantragt',
+        } as AdminLicenseEntry,
+      ]);
+
+      expect(
+        header.endsWith('"Statusaenderung am";"Statusaenderung durch";"Grund"')
+      ).toBeTrue();
+      expect(row).toContain('"ungültig: gelöscht"');
+      expect(
+        row.endsWith('"01.10.2026";"Erika Muster";"Doppelt beantragt"')
+      ).toBeTrue();
+    });
 
     it('fuehrt Spielernummer und volles Geburtsdatum vorne', async () => {
       const [header, row] = await exportRows([
