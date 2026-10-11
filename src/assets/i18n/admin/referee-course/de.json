@@ -339,7 +339,9 @@
       "cancelled_by_participant": "selbst abgemeldet",
       "cancelled_by_organizer": "abgemeldet",
       "attended": "teilgenommen",
-      "no_show": "nicht erschienen"
+      "no_show": "nicht erschienen",
+      "pending_club": "wartet auf Bestätigung des Vereins",
+      "declined_by_club": "vom Verein nicht bestätigt"
     },
     "candidates": "Mögliche Bestandsschiris:",
     "assign": "Zuordnen",

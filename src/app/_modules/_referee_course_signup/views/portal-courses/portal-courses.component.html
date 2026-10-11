@@ -20,6 +20,25 @@
                 <span class="font-bold">{{ r.course_title }}</span>
                 · {{ r.starts_on | date: "dd.MM.yyyy" }} ·
                 {{ "courseSignup.status." + r.status | transloco }}
+                @if (r.status === "declined_by_club") {
+                  <span
+                    class="block text-xs text-fb-gray-500 mt-1"
+                    [attr.data-test]="'declined-' + r.id"
+                  >
+                    @if (r.club_decline_reason) {
+                      {{
+                        "courseSignup.declinedReason"
+                          | transloco: { reason: r.club_decline_reason }
+                      }}
+                    }
+                    {{ "courseSignup.declinedHint" | transloco }}
+                    @if (contactFor(r); as contact) {
+                      <a class="underline" [href]="'mailto:' + contact">{{
+                        contact
+                      }}</a>
+                    }
+                  </span>
+                }
               </span>
               @if (r.cancellable) {
                 <button

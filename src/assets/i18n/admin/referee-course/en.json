@@ -339,7 +339,9 @@
       "cancelled_by_participant": "deregistered themselves",
       "cancelled_by_organizer": "deregistered",
       "attended": "attended",
-      "no_show": "no-show"
+      "no_show": "no-show",
+      "pending_club": "waiting for club confirmation",
+      "declined_by_club": "not confirmed by the club"
     },
     "candidates": "Possible existing referees:",
     "assign": "Assign",

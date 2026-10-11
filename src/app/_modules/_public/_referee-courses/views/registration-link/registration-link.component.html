@@ -30,9 +30,11 @@
           {{
             (resultStatus === "pending_guardian"
               ? "courseSignup.link.confirm.doneGuardian"
-              : resultStatus === "waitlisted"
-                ? "courseSignup.link.confirm.doneWaitlist"
-                : "courseSignup.link.confirm.done"
+              : resultStatus === "pending_club"
+                ? "courseSignup.link.confirm.doneClub"
+                : resultStatus === "waitlisted"
+                  ? "courseSignup.link.confirm.doneWaitlist"
+                  : "courseSignup.link.confirm.done"
             ) | transloco
           }}
         }
