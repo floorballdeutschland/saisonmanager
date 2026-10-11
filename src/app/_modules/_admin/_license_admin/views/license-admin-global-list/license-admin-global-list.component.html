@@ -522,6 +522,27 @@
                     [ngClass]="statusBadgeClass(e.license_status_id)"
                     >{{ e.license_status }}</span
                   >
+                  @if (
+                    isInvalid(e) && (e.status_reason || e.status_changed_at)
+                  ) {
+                    <!-- Warum die Lizenz nicht mehr gilt (api#787). -->
+                    <span
+                      data-testid="invalid-reason"
+                      class="mt-1 block text-[11px] text-fb-gray-500"
+                      [title]="e.status_changed_by_name || ''"
+                    >
+                      {{ e.status_reason }}
+                      @if (e.status_reason && e.status_changed_at) {
+                        ·
+                      }
+                      @if (e.status_changed_at) {
+                        {{
+                          e.status_changed_at
+                            | date: "dd.MM.yyyy" : "Europe/Berlin"
+                        }}
+                      }
+                    </span>
+                  }
                   @if (e.suspension; as sperre) {
                     <!-- Die Sperre steht am Status, nicht in einer eigenen
                          Spalte: Sie IST der Status dieser Zeile, und der
@@ -701,7 +722,9 @@
                     <span class="text-gray-300">–</span>
                   }
                 </td>
-                <!-- Dokumentenstatus -->
+                <!-- Dokumentenstatus. Bei einer ungueltigen Lizenz (geloescht,
+                     Transfer, ignoriert) ist ein fehlendes Dokument kein
+                     Handlungsbedarf mehr; der Marker bleibt dann grau. -->
                 <td class="px-4 py-3 whitespace-nowrap">
                   <div class="flex gap-1.5 items-center">
                     <!-- Elternzustimmung (nur wenn die Liga sie verlangt) -->
@@ -750,6 +773,7 @@
                         <span
                           class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
                           [ngClass]="
+                            !isInvalid(e) &&
                             e.documents?.parental_consent === false
                               ? 'bg-red-100 text-red-600'
                               : 'bg-gray-100 text-gray-400'
@@ -827,7 +851,7 @@
                         <span
                           class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
                           [ngClass]="
-                            e.documents?.[docType] === false
+                            !isInvalid(e) && e.documents?.[docType] === false
                               ? 'bg-red-100 text-red-600'
                               : 'bg-gray-100 text-gray-400'
                           "

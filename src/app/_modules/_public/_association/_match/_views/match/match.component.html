@@ -102,8 +102,9 @@
     Schiri: Berichtsformular-Upload. Nur für eingeloggte User, nur nach
     Abschluss des Spielberichts (reportClosed) und nur in der öffentlichen
     Ansicht – nicht während der Spielberichtseingabe. Dies ist das Upload-Ziel
-    der Erinnerungs-E-Mail, die bei besonderem Ereignis/Spielausschluss nach
-    Abschluss an die Schiris geht.
+    der Erinnerungs-E-Mail, die bei Matchstrafe, technischer Matchstrafe oder
+    besonderem Ereignis nach Abschluss an die Schiris geht. Ob ein Bericht
+    verlangt ist und wohin er geht, liefert die API (hasIncidentReport).
   -->
   @if (
     (isLoggedIn$ | async) &&
@@ -113,12 +114,17 @@
   ) {
     <div class="container mx-auto px-4 lg:px-8 py-6 max-w-2xl">
       <div class="border border-fb-gray-600 rounded-[5px] p-4">
-        <h3 class="font-bold text-sm mb-1">Berichtsformular hochladen</h3>
+        <h3 class="font-bold text-sm mb-1">
+          {{ "match.refereeReport.title" | transloco }}
+        </h3>
         <p class="text-xs text-fb-gray-400 mb-3">
-          Für dieses Spiel ist ein besonderes Ereignis oder ein Spielausschluss
-          vermerkt. Schiedsrichter können hier das ausgefüllte Berichtsformular
-          hochladen (PDF, PNG oder JPEG, max. 5 MB). Es wird automatisch an die
-          zuständige VSK weitergeleitet.
+          {{ "match.refereeReport.hint" | transloco }}
+          @if (refereeReportRecipient) {
+            {{
+              "match.refereeReport.forwardedTo." + refereeReportRecipient
+                | transloco
+            }}
+          }
         </p>
         @if (!refereeReportUploaded) {
           <div>
@@ -127,9 +133,10 @@
               [class.opacity-50]="refereeReportUploading"
             >
               <span>{{
-                refereeReportUploading
-                  ? "Hochladen…"
-                  : "Datei wählen und hochladen"
+                (refereeReportUploading
+                  ? "match.refereeReport.uploading"
+                  : "match.refereeReport.choose"
+                ) | transloco
               }}</span>
               <input
                 type="file"
@@ -144,10 +151,10 @@
         @if (refereeReportUploaded) {
           <div class="flex items-center gap-2 text-sm text-green-700">
             <span>&#10003;</span>
-            <span
-              >{{ refereeReportFilename }} wurde hochgeladen und an die VSK
-              weitergeleitet.</span
-            >
+            <span>{{
+              "match.refereeReport.uploaded." + refereeReportRecipient
+                | transloco: { filename: refereeReportFilename }
+            }}</span>
           </div>
         }
       </div>

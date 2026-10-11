@@ -1,0 +1,20 @@
+{
+  "refereeReport": {
+    "title": "Berichtsformular hochladen",
+    "hint": "Für dieses Spiel ist ein Berichtsformular der Schiedsrichter verlangt. Schiedsrichter können hier das ausgefüllte Berichtsformular hochladen (PDF, PNG oder JPEG, max. 5 MB).",
+    "forwardedTo": {
+      "vsk": "Es wird automatisch an die zuständige VSK weitergeleitet.",
+      "sbk": "Es wird automatisch an die zuständige SBK weitergeleitet.",
+      "vsk_and_sbk": "Es wird automatisch an die zuständige VSK und die zuständige SBK weitergeleitet."
+    },
+    "uploaded": {
+      "vsk": "{{ filename }} wurde hochgeladen und an die VSK weitergeleitet.",
+      "sbk": "{{ filename }} wurde hochgeladen und an die SBK weitergeleitet.",
+      "vsk_and_sbk": "{{ filename }} wurde hochgeladen und an die VSK und die SBK weitergeleitet."
+    },
+    "choose": "Datei wählen und hochladen",
+    "uploading": "Hochladen…",
+    "tooLarge": "Die Datei darf maximal 5 MB groß sein.",
+    "uploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen."
+  }
+}
