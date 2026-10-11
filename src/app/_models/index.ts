@@ -52,6 +52,10 @@ export * from './game.interface';
 export { GamePlayers } from './game.interface';
 export { GamePlayerEntry } from './game.interface';
 export { GameAdditionalFields } from './game-additional-fields.interface';
+export {
+  RefereeReportRecipient,
+  RefereeReportStatus,
+} from './referee-report.interface';
 export * from './game-day-report.interface';
 export { GameFlags } from './game-flags.interface';
 export { RefereeEntry } from './referee-entry.interface';
