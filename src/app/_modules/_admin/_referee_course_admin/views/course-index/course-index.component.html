@@ -1,0 +1,134 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h1 class="text-3xl font-bold">
+      {{ "refereeCourseAdmin.courses.title" | transloco }}
+    </h1>
+    <div class="flex gap-2">
+      <a
+        [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung', 'vorlagen']"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+        >{{ "refereeCourseAdmin.courses.templates" | transloco }}</a
+      >
+      <a
+        [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung', 'neu']"
+        data-test="new-course"
+        class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] hover:bg-fb-gray-500"
+        >{{ "refereeCourseAdmin.courses.new" | transloco }}</a
+      >
+    </div>
+  </div>
+
+  <label class="inline-flex items-center gap-2 mb-4 text-sm cursor-pointer">
+    <input
+      type="checkbox"
+      [checked]="showPast"
+      (change)="togglePast($any($event.target).checked)"
+    />
+    {{ "refereeCourseAdmin.courses.showPast" | transloco }}
+  </label>
+
+  @if (loading) {
+    <div class="text-fb-gray-500">
+      {{ "refereeCourseAdmin.import.loading" | transloco }}
+    </div>
+  } @else if (courses.length === 0) {
+    <div class="text-fb-gray-500" data-test="empty">
+      {{ "refereeCourseAdmin.courses.empty" | transloco }}
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-fb-gray-700 text-sm">
+            <th class="py-2 px-3">
+              {{ "refereeCourseAdmin.courses.colDate" | transloco }}
+            </th>
+            <th class="py-2 px-3">
+              {{ "refereeCourseAdmin.courses.colTitle" | transloco }}
+            </th>
+            <th class="py-2 px-3">
+              {{ "refereeCourseAdmin.courses.colType" | transloco }}
+            </th>
+            <th class="py-2 px-3">
+              {{ "refereeCourseAdmin.courses.colStateAssociation" | transloco }}
+            </th>
+            <th class="py-2 px-3">
+              {{ "refereeCourseAdmin.courses.colSeats" | transloco }}
+            </th>
+            <th class="py-2 px-3">
+              {{ "refereeCourseAdmin.courses.colStatus" | transloco }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (course of courses; track course.id) {
+            <tr class="border-b border-fb-gray-800 text-sm">
+              <td class="py-2 px-3 whitespace-nowrap">
+                {{ course.starts_on | date: "dd.MM.yyyy" }}
+                @if (course.ends_on && course.ends_on !== course.starts_on) {
+                  – {{ course.ends_on | date: "dd.MM.yyyy" }}
+                }
+              </td>
+              <td class="py-2 px-3">
+                <a
+                  class="font-bold hover:underline"
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'schiri-kurse-planung',
+                    course.id,
+                  ]"
+                  >{{ course.title }}</a
+                >
+                <span class="block text-fb-gray-500 text-xs">{{
+                  "refereeCourseAdmin.courses.format." + course.format
+                    | transloco
+                }}</span>
+              </td>
+              <td class="py-2 px-3">
+                {{
+                  "refereeCourseAdmin.courses.type." + course.course_type
+                    | transloco
+                }}
+              </td>
+              <td class="py-2 px-3">
+                {{
+                  course.state_association?.name ??
+                    ("refereeCourseAdmin.courses.national" | transloco)
+                }}
+              </td>
+              <td class="py-2 px-3 whitespace-nowrap">
+                {{ course.taken_seats ?? 0 }}
+                @if (course.max_participants) {
+                  / {{ course.max_participants }}
+                }
+                @if (waitlisted(course) > 0) {
+                  <span class="block text-xs text-fb-gray-500">{{
+                    "refereeCourseAdmin.courses.waitlist"
+                      | transloco: { count: waitlisted(course) }
+                  }}</span>
+                }
+                @if (belowMinimum(course)) {
+                  <span
+                    class="block text-xs text-red-700"
+                    data-test="below-minimum"
+                    >{{
+                      "refereeCourseAdmin.courses.belowMinimum"
+                        | transloco: { min: course.min_participants }
+                    }}</span
+                  >
+                }
+              </td>
+              <td class="py-2 px-3">
+                {{
+                  "refereeCourseAdmin.courses.status." + course.status
+                    | transloco
+                }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

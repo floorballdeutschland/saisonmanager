@@ -88,6 +88,7 @@ export * from './game-flags.interface';
 export * from './referee-entry.interface';
 export * from './referee.interface';
 export * from './referee-course-import.interface';
+export * from './referee-course.interface';
 export * from './gameday.interface';
 export * from './arena.interface';
 export * from './state-association.interface';
