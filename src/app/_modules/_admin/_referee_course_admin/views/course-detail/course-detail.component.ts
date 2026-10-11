@@ -77,6 +77,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   private _search$ = new Subject<string>();
   private _destroy$ = new Subject<void>();
+  private _rowRevision = new WeakMap<RefereeCourseRegistration, number>();
 
   constructor(
     private _service: RefereeCourseService,
@@ -328,9 +329,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
         changes
       ),
       (updated) => this.replace(updated),
-      // Abgelehnt: die Zeile neu setzen, damit Auswahl und Felder wieder den
-      // gespeicherten Wert zeigen (ngModel schreibt sonst nicht zurück).
-      () => this.replace({ ...registration })
+      () => this.resetRow(registration)
     );
   }
 
@@ -338,7 +337,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     const text = value.trim().replace(',', '.');
     const points = text === '' ? null : Number(text);
     if (points !== null && Number.isNaN(points)) {
-      this.replace({ ...registration });
+      this.resetRow(registration);
       return;
     }
     if (points === registration.points) return;
@@ -383,6 +382,25 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
         }
       }
     );
+  }
+
+  /**
+   * Schlüssel für `@for`. Nach einer abgelehnten Änderung muss die Zeile neu
+   * gerendert werden: Mit `track r.id` bliebe sie stehen, und weil sich
+   * `r.status` & Co. nicht geändert haben, schriebe Angular den gespeicherten
+   * Wert nicht in Auswahl und Feld zurück. Die Zählung hängt am Objekt, nicht
+   * an der ID, denn `@for` berechnet auch den Schlüssel der alten Zeile neu.
+   */
+  rowKey(r: RefereeCourseRegistration): string {
+    return `${r.id}:${this._rowRevision.get(r) ?? 0}`;
+  }
+
+  private resetRow(registration: RefereeCourseRegistration): void {
+    const current =
+      this.registrations.find((r) => r.id === registration.id) ?? registration;
+    const copy = { ...registration };
+    this._rowRevision.set(copy, (this._rowRevision.get(current) ?? 0) + 1);
+    this.replace(copy);
   }
 
   private replace(updated: RefereeCourseRegistration): void {
