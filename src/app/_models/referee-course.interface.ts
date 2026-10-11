@@ -148,6 +148,8 @@ export interface RefereeCourse extends RefereeCourseSummary {
   fields: RefereeCourseField[];
   leads: RefereeCourseLeadEntry[];
   free_seats: number | null;
+  /** Nur bei Status `held`: was dem Einreichen noch im Weg steht. */
+  submission_problems?: string[];
 }
 
 /** Schreibbare Felder eines Kurses. */
@@ -227,6 +229,7 @@ export interface RefereeCourseRegistration {
   custom_answers: Record<string, unknown>;
   fee_cents: number | null;
   source: 'admin' | 'portal' | 'club' | 'public';
+  license: RegistrationLicenseState | null;
   created_at: string;
 }
 
@@ -416,4 +419,57 @@ export interface PublicRegistrationLinkInfo {
     | 'starts_on'
     | 'contact_email'
   >;
+}
+
+/** Stand der Lizenzvergabe durch FD je Anmeldung (nach dem Einreichen). */
+export interface RegistrationLicenseState {
+  status: 'pending_review' | 'applied' | 'rejected';
+  lizenzstufe: string | null;
+  gueltigkeit: string | null;
+  rejection_reason: string | null;
+}
+
+/** Eine Zeile der Lizenzvergabe durch FD. */
+export interface CourseLicensingRow {
+  id: number;
+  status: 'pending_review' | 'applied' | 'rejected';
+  lizenzstufe: string | null;
+  gueltigkeit: string | null;
+  rejection_reason: string | null;
+  reviewed_at: string | null;
+  new_referee_created: boolean;
+  course: {
+    id: number;
+    title: string;
+    course_type: RefereeCourseType;
+    ends_on: string | null;
+    state_association: string | null;
+    license_levels: string[];
+  };
+  person: {
+    vorname: string;
+    nachname: string;
+    geburtsdatum: string | null;
+    email: string | null;
+    club: string | null;
+  };
+  referee: {
+    id: number;
+    lizenznummer: number | null;
+    lizenzstufe: string | null;
+    gueltigkeit: string | null;
+    career_ended: boolean;
+  } | null;
+  registration: {
+    id: number;
+    identity_match: string;
+    match_candidates: RefereeMatchCandidate[];
+    desired_level: string | null;
+    test_version: string | null;
+    points: number | null;
+    stated_lizenznummer: string | null;
+    source: string;
+  } | null;
+  license_mail?: string;
+  account?: string;
 }

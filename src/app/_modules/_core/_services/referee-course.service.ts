@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
+  CourseLicensingRow,
   CourseLeadCourse,
   CourseLeadRegistration,
   RefereeCourse,
@@ -18,6 +19,7 @@ import { environment } from 'src/environments/environment';
 const BASE = environment.apiURL + 'admin/referee_courses';
 const TEMPLATES = environment.apiURL + 'admin/referee_course_field_templates';
 const LEAD = environment.apiURL + 'course_lead/courses';
+const LICENSING = environment.apiURL + 'admin/referee_course_licensing';
 
 /** Schiedsrichterkurse im System, Verwaltung durch RSK und Admin. */
 @Injectable({
@@ -179,5 +181,45 @@ export class RefereeCourseService {
       `${LEAD}/${courseId}/registrations/${id}`,
       { registration }
     );
+  }
+
+  // --- Einreichen und Lizenzvergabe (FD) -----------------------------------
+
+  submitResults(courseId: number) {
+    return this.http.post<RefereeCourse & { submitted_results: number }>(
+      `${BASE}/${courseId}/submit_results`,
+      {}
+    );
+  }
+
+  licensing(status: 'pending' | 'done' = 'pending') {
+    return this.http.get<CourseLicensingRow[]>(LICENSING, {
+      params: { status },
+    });
+  }
+
+  licensingUpdate(
+    id: number,
+    licensing: { lizenzstufe?: string | null; referee_id?: number | null }
+  ) {
+    return this.http.patch<CourseLicensingRow>(`${LICENSING}/${id}`, {
+      licensing,
+    });
+  }
+
+  licensingApprove(id: number) {
+    return this.http.post<CourseLicensingRow>(`${LICENSING}/${id}/approve`, {});
+  }
+
+  licensingApproveMany(ids: number[]) {
+    return this.http.post<{
+      results: { id: number; ok?: boolean; error?: string }[];
+    }>(`${LICENSING}/approve_many`, { ids });
+  }
+
+  licensingReject(id: number, rejectionReason: string) {
+    return this.http.post<CourseLicensingRow>(`${LICENSING}/${id}/reject`, {
+      rejection_reason: rejectionReason,
+    });
   }
 }
