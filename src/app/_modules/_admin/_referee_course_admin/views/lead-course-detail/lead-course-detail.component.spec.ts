@@ -106,4 +106,30 @@ describe('LeadCourseDetailComponent', () => {
     expect(c.seated[0]).not.toBe(before);
     expect(c.seated[0].status).toBe('registered');
   });
+
+  it('zeigt nach einer Ablehnung wieder den gespeicherten Wert an', async () => {
+    const { fixture, service } = render();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    service.leadUpdateRegistration.and.returnValue(
+      throwError(() => ({ status: 422 }))
+    );
+    const root: HTMLElement = fixture.nativeElement;
+    const q = <T extends Element>(sel: string) =>
+      root.querySelector(`[data-test="${sel}"]`) as unknown as T;
+    const select = q<HTMLSelectElement>('attendance-1');
+    const before = select.selectedIndex;
+    select.selectedIndex = before === 0 ? 1 : 0;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const points = q<HTMLInputElement>('points-1');
+    points.value = 'abc';
+    points.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(q<HTMLSelectElement>('attendance-1').selectedIndex).toBe(before);
+    expect(q<HTMLInputElement>('points-1').value).toBe('');
+  });
 });
