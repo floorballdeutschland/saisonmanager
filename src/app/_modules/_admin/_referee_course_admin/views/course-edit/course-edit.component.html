@@ -58,7 +58,7 @@
               name="stateAssociation"
               data-test="state-association"
               class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal focus:outline-none focus:border-black"
-              [disabled]="stateAssociationLocked"
+              [disabled]="ownerLocked"
               [(ngModel)]="stateAssociationId"
             >
               @if (
@@ -121,6 +121,7 @@
               <label class="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
+                  [disabled]="ownerLocked"
                   [checked]="partnerIds.includes(sa.id)"
                   (change)="
                     toggle('partnerIds', sa.id, $any($event.target).checked)

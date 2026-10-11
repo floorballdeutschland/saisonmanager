@@ -12,6 +12,11 @@
     @case ("invalid") {
       <p data-test="invalid">{{ "courseSignup.link.invalid" | transloco }}</p>
     }
+    @case ("maybeDone") {
+      <p data-test="maybe-done">
+        {{ "courseSignup.link." + kind + ".maybeDone" | transloco }}
+      </p>
+    }
     @case ("done") {
       <p data-test="done">
         @if (kind === "cancel") {
