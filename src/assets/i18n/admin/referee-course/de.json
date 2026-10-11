@@ -338,5 +338,31 @@
       "attended": "teilgenommen",
       "no_show": "nicht erschienen"
     }
+  },
+  "leads": {
+    "title": "Kursleitung",
+    "empty": "Noch keine Kursleitung zugeordnet.",
+    "main": "Hauptverantwortung",
+    "setMain": "Als Hauptverantwortung",
+    "unsetMain": "Hauptverantwortung entfernen",
+    "fromReferee": "+ Schiri aus dem Bestand",
+    "fromAccount": "+ Vorhandenes Konto",
+    "invite": "+ Neue Person einladen",
+    "refereeHint": "Ohne Benutzerkonto wird eines angelegt und die übliche Begrüßungsmail verschickt.",
+    "userName": "Benutzername",
+    "inviteHint": "Legt ein Konto „kl-nachname“ an und schickt eine Einladung mit Link zum Passwort.",
+    "inviteButton": "Einladen",
+    "invited": "Konto {{user}} angelegt, die Einladung ist unterwegs.",
+    "confirmRemove": "{{name}} als Kursleitung entfernen?"
+  },
+  "leadView": {
+    "title": "Meine Kurse",
+    "empty": "Dir ist noch kein Kurs zugeordnet.",
+    "back": "← Meine Kurse",
+    "participants": "{{count}} Teilnehmende",
+    "attendance": "Anwesenheit",
+    "testVersion": "Testversion",
+    "years": "Jahre",
+    "submitHint": "Die Ergebnisse reicht die RSK ein, danach werden die Lizenzen vergeben."
   }
 }

@@ -71,7 +71,41 @@ export interface RefereeCourseLeadEntry {
   id: number;
   user_id: number;
   name: string;
+  user_name: string;
   lead: boolean;
+  /** Nur in der Antwort auf das Zuordnen: neues Konto mit Einladung. */
+  invited?: boolean;
+}
+
+/** Zuordnen einer Kursleitung: genau einer der drei Wege. */
+export type RefereeCourseLeadInput =
+  | { referee_id: number }
+  | { user_name: string }
+  | { first_name: string; last_name: string; email: string };
+
+/** Teilnehmende aus Sicht der Kursleitung, ohne Kontakt- und Rechnungsdaten. */
+export interface CourseLeadRegistration {
+  id: number;
+  vorname: string;
+  nachname: string;
+  age_at_course: number | null;
+  club: { id: number; name: string } | null;
+  lizenznummer: number | null;
+  desired_license_level_id: number | null;
+  status: RefereeCourseRegistrationStatus;
+  result: 'passed' | 'failed' | null;
+  test_version: string | null;
+  points: number | null;
+  custom_answers: Record<string, unknown>;
+}
+
+export interface CourseLeadCourse extends RefereeCourseSummary {
+  sessions: RefereeCourseSession[];
+  online_platform: string | null;
+  description: string | null;
+  editable: boolean;
+  fields: RefereeCourseField[];
+  registrations: CourseLeadRegistration[];
 }
 
 export interface RefereeCourseSummary {
