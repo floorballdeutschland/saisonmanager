@@ -14,6 +14,7 @@
     },
     "choose": "Datei wählen und hochladen",
     "uploading": "Hochladen…",
-    "tooLarge": "Die Datei darf maximal 5 MB groß sein."
+    "tooLarge": "Die Datei darf maximal 5 MB groß sein.",
+    "uploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen."
   }
 }

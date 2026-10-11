@@ -106,6 +106,9 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._route.params.subscribe({
       next: (params) => {
         if (params['matchId']) {
+          if (params['matchId'] !== this._matchId) {
+            this.resetRefereeReport();
+          }
           this._matchId = params['matchId'];
           this.getMatch(params['matchId']);
 
@@ -122,6 +125,18 @@ export class MatchComponent implements OnInit, OnDestroy {
         }
       },
     });
+  }
+
+  // Die Seite bleibt beim Wechsel in ein anderes Spiel dieselbe Komponente.
+  // Der Upload-Zustand gehört zum alten Spiel und fällt sofort weg, nicht erst
+  // mit der Antwort für das neue: Scheitert dort ein Abruf, stünde sonst der
+  // Upload-Bereich des alten Spiels über dem neuen.
+  private resetRefereeReport(): void {
+    this.refereeReportRequired = false;
+    this.refereeReportRecipient = null;
+    this.refereeReportUploaded = false;
+    this.refereeReportFilename = '';
+    this.refereeReportUploading = false;
   }
 
   get hasSecretaryToken(): boolean {
@@ -245,17 +260,27 @@ export class MatchComponent implements OnInit, OnDestroy {
     this.refereeReportUploading = true;
     this._cdr.markForCheck();
 
-    this._gameService.uploadRefereeReport(this.game.id, file).subscribe({
+    // Wechselt die Seite während des Uploads in ein anderes Spiel, gehört die
+    // Antwort zum alten und darf den Zustand des neuen nicht setzen.
+    const gameId = this.game.id;
+    const stillCurrent = () =>
+      this._matchId === String(gameId) && this.game?.id === gameId;
+
+    this._gameService.uploadRefereeReport(gameId, file).subscribe({
       next: (res) => {
+        if (!stillCurrent()) return;
+
         this.refereeReportUploaded = true;
         this.refereeReportFilename = res.filename;
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
       },
       error: () => {
+        if (!stillCurrent()) return;
+
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
-        alert('Upload fehlgeschlagen. Bitte erneut versuchen.');
+        alert(this._transloco.translate('match.refereeReport.uploadFailed'));
       },
     });
   }

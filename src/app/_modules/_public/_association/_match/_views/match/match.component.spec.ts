@@ -12,6 +12,7 @@ import { ActivatedRoute, convertToParamMap, Params } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { SessionService } from '@floorball/core';
 import { User } from '@floorball/types';
+import matchDe from '../../../../../../../assets/i18n/match/de.json';
 
 describe('MatchComponent', () => {
   let params$: BehaviorSubject<Params>;
@@ -22,7 +23,8 @@ describe('MatchComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        getTranslocoTestingModule(),
+        // Echte Texte, damit Empfänger und Dateiname im DOM prüfbar sind.
+        getTranslocoTestingModule({ de: { match: matchDe } }),
       ],
       declarations: [MatchComponent],
       // Der Upload-Bereich wird gerendert, die Kindkomponenten des Spiels
@@ -134,8 +136,91 @@ describe('MatchComponent', () => {
       fixture.detectChanges();
 
       const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-      expect(text).toContain('match.refereeReport.forwardedTo.sbk');
-      expect(text).not.toContain('forwardedTo.vsk');
+      expect(text).toContain(matchDe.refereeReport.forwardedTo.sbk);
+      expect(text).not.toContain('zuständige VSK');
+      component.ngOnDestroy();
+    });
+
+    it('rendert keinen Upload-Bereich, wenn die API keinen Bericht verlangt', () => {
+      const { fixture, component } = loadAs({
+        uploaded: false,
+        required: false,
+        recipient: null,
+      });
+      component.isLoggedIn$ = new BehaviorSubject(true);
+      fixture.detectChanges();
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).not.toContain(matchDe.refereeReport.title);
+      component.ngOnDestroy();
+    });
+
+    it('nennt im Erfolgstext Dateiname und Empfänger', () => {
+      const { fixture, component } = loadAs({
+        uploaded: true,
+        filename: 'bericht.pdf',
+        required: true,
+        recipient: 'vsk',
+      });
+      component.isLoggedIn$ = new BehaviorSubject(true);
+      fixture.detectChanges();
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain(
+        'bericht.pdf wurde hochgeladen und an die VSK weitergeleitet.'
+      );
+      component.ngOnDestroy();
+    });
+
+    it('setzt den Upload-Zustand beim Spielwechsel sofort zurück, auch wenn das neue Spiel scheitert', () => {
+      const { component, http } = loadAs({
+        uploaded: true,
+        filename: 'alt.pdf',
+        required: true,
+        recipient: 'vsk',
+      });
+
+      params$.next({ matchId: '2' });
+      expect(component.hasIncidentReport).toBeFalse();
+      expect(component.refereeReportUploaded).toBeFalse();
+      expect(component.refereeReportFilename).toBe('');
+      expect(component.refereeReportRecipient).toBeNull();
+
+      http
+        .expectOne((r) => r.url.endsWith('games/2.json'))
+        .flush({
+          id: 2,
+          game_status: 'match_record_closed',
+        });
+      http
+        .expectOne((r) => r.url.endsWith('additional_fields.json'))
+        .flush('kaputt', { status: 500, statusText: 'Server Error' });
+
+      expect(component.game?.id).toBe(2);
+      expect(component.hasIncidentReport).toBeFalse();
+      expect(component.refereeReportFilename).toBe('');
+      component.ngOnDestroy();
+    });
+
+    it('verwirft die Antwort eines Uploads, der vor dem Spielwechsel begann', () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const file = new File(['x'], 'alt.pdf', { type: 'application/pdf' });
+      component.onRefereeReportFile({
+        target: { files: [file] },
+      } as unknown as Event);
+      const upload = http.expectOne(
+        (r) => r.method === 'POST' && r.url.endsWith('games/1/referee_report')
+      );
+
+      params$.next({ matchId: '2' });
+      upload.flush({ success: true, filename: 'alt.pdf' });
+
+      expect(component.refereeReportUploaded).toBeFalse();
+      expect(component.refereeReportFilename).toBe('');
       component.ngOnDestroy();
     });
   });
