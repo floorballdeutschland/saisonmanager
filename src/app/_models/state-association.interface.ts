@@ -51,6 +51,8 @@ export interface StateAssociation {
   effective_person_level_assignment_default?: boolean;
   effective_coach_assignment_enabled?: boolean;
   effective_course_club_confirmation_required?: boolean;
+  /** Kurse im System sind fuer diesen Verband freigeschaltet (nur lesend). */
+  referee_courses_enabled?: boolean;
   effective_report_form_email_enabled?: boolean;
   effective_manual_proceeding_creation?: boolean;
   effective_requested_license_playable?: boolean;
