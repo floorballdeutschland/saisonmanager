@@ -54,4 +54,41 @@ describe('TeamSquadPlayerComponent', () => {
     expect(req.request.body.player_id).toBe(21082);
     http.verify();
   });
+
+  describe('bei vollem Kader (api#784)', () => {
+    function setup(entry: { trikot_number: number } | null) {
+      const fixture = TestBed.createComponent(TeamSquadPlayerComponent);
+      const component = fixture.componentInstance;
+      component.gameId = 61889;
+      component.side = 'home';
+      component.lineup = entry ? [entry as never] : [];
+      component.gamePlayerEntry = entry as never;
+      component.player = { id: 21082 } as PlayerWithLicense;
+      component.lineupFull = true;
+      fixture.detectChanges();
+      return component;
+    }
+
+    it('trägt keine neue Person ein', () => {
+      const component = setup(null);
+      component.trikotNumber = '19';
+      component.addLinupPlayer();
+
+      TestBed.inject(HttpTestingController).verify();
+      expect(component.addBlocked()).toBeTrue();
+    });
+
+    it('lässt die Nummer einer aufgestellten Person ändern', () => {
+      const component = setup({ trikot_number: 7 });
+      component.trikotNumber = '19';
+      component.handleTrikotNumberChange();
+
+      const http = TestBed.inject(HttpTestingController);
+      http
+        .expectOne((r) => r.url.includes('/lineup/home/remove_player'))
+        .flush([]);
+      http.expectOne((r) => r.url.includes('/lineup/home/add_player'));
+      http.verify();
+    });
+  });
 });

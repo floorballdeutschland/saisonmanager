@@ -171,4 +171,50 @@ describe('TeamSquadComponent', () => {
       expect(component.formatSourceDate(null)).toBe('');
     });
   });
+
+  describe('Obergrenze (api#784)', () => {
+    function open(maxPlayers: number | null, count: number) {
+      const fixture = TestBed.createComponent(TeamSquadComponent);
+      fixture.componentRef.setInput('teamId', 7);
+      fixture.componentRef.setInput('side', 'home');
+      fixture.componentRef.setInput('maxPlayers', maxPlayers);
+      fixture.componentRef.setInput(
+        'players',
+        Array.from({ length: count }, (_, i) => ({
+          player_id: i + 1,
+          trikot_number: i + 1,
+        }))
+      );
+      fixture.detectChanges();
+      http
+        .expectOne(`${environment.apiURL}user/team/7/licenses.json`)
+        .flush({ team: { id: 7 }, current_requests: [] });
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    function count(el: HTMLElement) {
+      return el
+        .querySelector('[data-testid="squad-count"]')!
+        .textContent!.replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    it('zeigt den Zähler mit Grenze, solange Platz ist', () => {
+      const el = open(14, 13);
+      expect(count(el)).toBe('Spieler/innen im Kader: 13 / 14');
+      expect(el.querySelector('[data-testid="squad-full"]')).toBeNull();
+    });
+
+    it('meldet den vollen Kader', () => {
+      const el = open(14, 14);
+      expect(el.querySelector('[data-testid="squad-full"]')).toBeTruthy();
+    });
+
+    it('ohne Grenzwert weder Grenze im Zähler noch Sperre', () => {
+      const el = open(null, 30);
+      expect(count(el)).toBe('Spieler/innen im Kader: 30');
+      expect(el.querySelector('[data-testid="squad-full"]')).toBeNull();
+    });
+  });
 });

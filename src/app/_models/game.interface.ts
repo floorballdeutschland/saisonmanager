@@ -210,6 +210,10 @@ export interface Game {
   // Frontend-Deploy und dem passenden API-Deploy fehlt das Feld, und der
   // Kader-Dialog filtert dann wie bisher allein auf „erteilt".
   requested_license_playable?: boolean;
+  // Hoechstzahl Spieler je Mannschaft (Grossfeld 20, Kleinfeld 14), api#784.
+  // Fehlt oder ist null bei Ligen ohne Feldgroesse und vor dem API-Deploy:
+  // dann zeigt die Kadermaske keinen Zaehler und sperrt nichts.
+  max_lineup_players?: number | null;
   arena: number;
   arena_name: string;
   arena_address: string;
