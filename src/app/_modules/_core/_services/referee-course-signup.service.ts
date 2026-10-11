@@ -7,6 +7,11 @@ import {
   GuardianConsentInfo,
   OwnCourseRegistration,
   PortalCoursesResponse,
+  PublicClub,
+  PublicCourseRegistrationInput,
+  PublicCoursesResponse,
+  PublicRegistrationLinkInfo,
+  RefereeCourseOffer,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -96,6 +101,57 @@ export class RefereeCourseSignupService {
   confirmGuardianConsent(token: string) {
     return this.http.post<{ status: string }>(
       `${API}public/course_guardian_consents/${encodeURIComponent(token)}`,
+      {}
+    );
+  }
+
+  // --- Öffentliche Kursseite -------------------------------------------------
+
+  publicCourses(filter: {
+    state_association_id?: number | null;
+    course_format?: string | null;
+    course_type?: string | null;
+  }) {
+    const params: Record<string, string> = {};
+    if (filter.state_association_id)
+      params['state_association_id'] = String(filter.state_association_id);
+    if (filter.course_format) params['course_format'] = filter.course_format;
+    if (filter.course_type) params['course_type'] = filter.course_type;
+    return this.http.get<PublicCoursesResponse>(
+      API + 'public/referee_courses',
+      { params }
+    );
+  }
+
+  publicCourse(id: number) {
+    return this.http.get<RefereeCourseOffer & { consent_version: string }>(
+      `${API}public/referee_courses/${id}`
+    );
+  }
+
+  publicClubs() {
+    return this.http.get<PublicClub[]>(API + 'public/referee_courses/clubs');
+  }
+
+  publicRegister(
+    courseId: number,
+    registration: PublicCourseRegistrationInput
+  ) {
+    return this.http.post<{ status: string }>(
+      `${API}public/referee_courses/${courseId}/registrations`,
+      { registration }
+    );
+  }
+
+  registrationLink(kind: 'confirm' | 'cancel', token: string) {
+    return this.http.get<PublicRegistrationLinkInfo>(
+      `${API}public/course_registrations/${kind}/${encodeURIComponent(token)}`
+    );
+  }
+
+  submitRegistrationLink(kind: 'confirm' | 'cancel', token: string) {
+    return this.http.post<{ status: string; late_cancellation?: boolean }>(
+      `${API}public/course_registrations/${kind}/${encodeURIComponent(token)}`,
       {}
     );
   }

@@ -201,7 +201,9 @@
       "held": "Durchgeführt",
       "results_submitted": "Ergebnisse eingereicht",
       "cancelled": "Abgesagt"
-    }
+    },
+    "embedTitle": "Kurse auf der Verbandsseite zeigen",
+    "embedIntro": "Die öffentliche Kursseite lässt sich verlinken oder per iframe auf der Verbandsseite einbinden. Angemeldet wird im Saisonmanager. Online-Links erscheinen dort nie."
   },
   "edit": {
     "titleNew": "Neuer Kurs",
@@ -337,6 +339,15 @@
       "cancelled_by_organizer": "abgemeldet",
       "attended": "teilgenommen",
       "no_show": "nicht erschienen"
+    },
+    "candidates": "Mögliche Bestandsschiris:",
+    "assign": "Zuordnen",
+    "confirmNew": "Keiner davon, als neue Person bestätigen",
+    "source": {
+      "admin": "von der RSK eingetragen",
+      "portal": "über das Portal",
+      "club": "vom Verein",
+      "public": "über die öffentliche Seite"
     }
   },
   "leads": {

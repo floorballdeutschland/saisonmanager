@@ -153,6 +153,16 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Öffentliche Kursseite und die Links aus den Anmeldemails
+        // (bestätigen, abmelden): ohne Konto, jede Ansicht zeigt ihre Fehler
+        // selbst (ungültiger Link, Kurs nicht gefunden, Anmeldung abgelehnt).
+        if (
+          request.url.includes('public/course_registrations') ||
+          request.url.includes('public/referee_courses')
+        ) {
+          return throwError(() => err);
+        }
+
         // Der ausdrücklich angestoßene Reset-Mail-Versand meldet einen
         // gescheiterten Versand als 502 samt Klartext-Nachricht. Der generische
         // 5xx-Zweig weiter unten würde die verschlucken und stattdessen

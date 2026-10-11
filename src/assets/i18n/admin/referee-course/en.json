@@ -201,7 +201,9 @@
       "held": "Held",
       "results_submitted": "Results submitted",
       "cancelled": "Cancelled"
-    }
+    },
+    "embedTitle": "Show courses on the association website",
+    "embedIntro": "Link the public course page or embed it via iframe on the association website. Registration happens in Saisonmanager. Online links never appear there."
   },
   "edit": {
     "titleNew": "New course",
@@ -337,6 +339,15 @@
       "cancelled_by_organizer": "deregistered",
       "attended": "attended",
       "no_show": "no-show"
+    },
+    "candidates": "Possible existing referees:",
+    "assign": "Assign",
+    "confirmNew": "None of these, confirm as new person",
+    "source": {
+      "admin": "entered by the RSK",
+      "portal": "via the portal",
+      "club": "by the club",
+      "public": "via the public page"
     }
   },
   "leads": {
