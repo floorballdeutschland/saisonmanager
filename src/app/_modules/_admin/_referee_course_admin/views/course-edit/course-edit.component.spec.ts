@@ -142,4 +142,36 @@ describe('CourseEditComponent', () => {
     expect('state_association_id' in payload).toBeFalse();
     expect('partner_state_association_ids' in payload).toBeFalse();
   });
+
+  it('bundesweiter Kurs, LV-Konto: Verband und Partner sind gesperrt', async () => {
+    const { fixture } = render('9', {
+      id: 9,
+      title: 'N-Kurs',
+      course_type: 'g',
+      state_association: null,
+      partner_state_association_ids: [],
+      license_level_ids: [],
+      format: 'in_person',
+      sessions: [{ starts_at: '2026-11-21T09:00:00+01:00' }],
+      registration_mode: 'open',
+      public: true,
+      fee_only_on_license: false,
+      no_show_billable: false,
+      bill_state_association: false,
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const c = fixture.componentInstance;
+    expect(c.ownerLocked).toBeTrue();
+    const root: HTMLElement = fixture.nativeElement;
+    const select = root.querySelector(
+      '[data-test="state-association"]'
+    ) as HTMLSelectElement;
+    expect(select.disabled).toBeTrue();
+    const boxes = Array.from(
+      root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+    ).filter((b) => b.closest('details'));
+    expect(boxes.length).toBeGreaterThan(0);
+    expect(boxes.every((b) => b.disabled)).toBeTrue();
+  });
 });

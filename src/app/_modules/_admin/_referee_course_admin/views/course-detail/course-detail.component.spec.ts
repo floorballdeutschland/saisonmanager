@@ -244,6 +244,30 @@ describe('CourseDetailComponent', () => {
     expect(c.registrations[0].status).toBe('registered');
   });
 
+  it('zeigt nach einer Ablehnung wieder den gespeicherten Wert an', async () => {
+    const { fixture, service } = render([
+      reg(1, 'registered', { points: 10 }),
+    ]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    service.updateRegistration.and.returnValue(
+      throwError(() => ({ status: 422 }))
+    );
+    const root: HTMLElement = fixture.nativeElement;
+    const select = el(root, 'status-1') as HTMLSelectElement;
+    select.selectedIndex = 2;
+    select.dispatchEvent(new Event('change'));
+    const points = el(root, 'points-1') as HTMLInputElement;
+    points.value = 'abc';
+    points.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((el(root, 'status-1') as HTMLSelectElement).selectedIndex).toBe(0);
+    expect((el(root, 'points-1') as HTMLInputElement).value).toBe('10');
+  });
+
   it('stellt wartende Anmeldungen nicht als Auswahl dar', () => {
     const { fixture } = render([reg(1, 'pending_guardian')]);
     expect(

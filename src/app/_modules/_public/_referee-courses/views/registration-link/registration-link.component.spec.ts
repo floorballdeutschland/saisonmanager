@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   getTranslocoTestingModule,
   RefereeCourseSignupService,
@@ -64,5 +64,24 @@ describe('RegistrationLinkComponent', () => {
   it('warnt bei der Abmeldung nach der Frist', () => {
     const { fixture } = render('cancel', true);
     expect(el(fixture.nativeElement, 'late')).not.toBeNull();
+  });
+
+  it('behauptet nach einem Netzwerkfehler beim zweiten Versuch nicht „ungueltig“', () => {
+    const { fixture, service } = render('confirm');
+    const root: HTMLElement = fixture.nativeElement;
+    service.submitRegistrationLink.and.returnValue(
+      throwError(() => ({ status: 0 }))
+    );
+    (el(root, 'submit') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el(root, 'retry')).not.toBeNull();
+
+    service.submitRegistrationLink.and.returnValue(
+      throwError(() => ({ status: 404 }))
+    );
+    (el(root, 'submit') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el(root, 'maybe-done')).not.toBeNull();
+    expect(el(root, 'invalid')).toBeNull();
   });
 });
