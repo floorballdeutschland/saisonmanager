@@ -24,7 +24,8 @@ import { PublicRegistrationLinkInfo } from '@floorball/types';
 export class RegistrationLinkComponent implements OnInit, OnDestroy {
   kind: 'confirm' | 'cancel' = 'confirm';
   info: PublicRegistrationLinkInfo | null = null;
-  state: 'loading' | 'open' | 'done' | 'invalid' | 'failed' = 'loading';
+  state: 'loading' | 'open' | 'done' | 'invalid' | 'maybeDone' | 'failed' =
+    'loading';
   failedSubmit = false;
   resultStatus: string | null = null;
   lateCancellation = false;
@@ -79,10 +80,12 @@ export class RegistrationLinkComponent implements OnInit, OnDestroy {
           this._cdr.markForCheck();
         },
         // Nur 404/422 heißt „Link ungültig“; sonst bleibt der Knopf zum
-        // erneuten Versuch stehen.
+        // erneuten Versuch stehen. Kommt „ungültig“ erst beim erneuten
+        // Versuch, ging der erste womöglich durch und nur die Antwort verloren.
         error: (err: { status?: number }) => {
           this.busy = false;
-          if (isInvalidLink(err)) this.state = 'invalid';
+          if (isInvalidLink(err))
+            this.state = this.failedSubmit ? 'maybeDone' : 'invalid';
           else this.failedSubmit = true;
           this._cdr.markForCheck();
         },

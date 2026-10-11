@@ -101,6 +101,7 @@
     "done": "Thank you. The registration is now valid, a confirmation is sent by e-mail.",
     "doneWaitlist": "Thank you. The course has filled up in the meantime; the registration is on the waiting list and moves up automatically when a seat becomes free.",
     "invalid": "This link is invalid or has expired. Please contact the club or the course organisers.",
+    "maybeDone": "The consent may already have been saved on the first attempt, so the link has been used up. Please check your inbox for the confirmation; if none arrives, contact the course organisers.",
     "questions": "Questions about the course:"
   },
   "public": {
@@ -142,7 +143,8 @@
       "button": "Confirm registration",
       "done": "Thank you, the registration is valid. A confirmation with all details is sent by e-mail.",
       "doneWaitlist": "Thank you. The course is full, the registration is on the waiting list and moves up automatically.",
-      "doneGuardian": "Thank you. Your parents or guardians still need to consent; they have received an e-mail."
+      "doneGuardian": "Thank you. Your parents or guardians still need to consent; they have received an e-mail.",
+      "maybeDone": "The confirmation probably went through on the first attempt, so the link has been used up. Please check your inbox; if no confirmation arrives, contact the course organisers."
     },
     "cancel": {
       "title": "Deregister from course",
@@ -150,7 +152,8 @@
       "button": "Deregister",
       "late": "The cancellation deadline has passed, the course fee remains due.",
       "done": "You have been deregistered.",
-      "doneLate": "You have been deregistered. As the cancellation deadline had passed, the course fee remains due."
+      "doneLate": "You have been deregistered. As the cancellation deadline had passed, the course fee remains due.",
+      "maybeDone": "The cancellation probably went through on the first attempt, so the link has been used up. Please check your inbox; if no confirmation arrives, contact the course organisers."
     },
     "failed": "That did not work just now, but the link is still valid. Please try again shortly."
   },

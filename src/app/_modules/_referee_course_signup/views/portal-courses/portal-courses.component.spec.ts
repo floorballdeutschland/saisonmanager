@@ -90,6 +90,12 @@ describe('PortalCoursesComponent', () => {
     expect(
       fixture.componentInstance.lateCancellation(res.registrations[0])
     ).toBeTrue();
+    expect(
+      fixture.componentInstance.lateCancellation({
+        ...res.registrations[0],
+        status: 'waitlisted',
+      })
+    ).toBeFalse();
   });
 
   it('zeigt einen Kurs mit eigener Anmeldung als angemeldet', () => {

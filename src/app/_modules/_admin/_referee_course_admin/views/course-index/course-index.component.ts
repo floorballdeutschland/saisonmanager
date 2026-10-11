@@ -52,16 +52,19 @@ export class CourseIndexComponent implements OnInit, OnDestroy {
   /**
    * iframe-Code für die Verbandsseite (statische Seite ohne Seitenleiste). Das
    * kleine Skript lässt das iframe mitwachsen: Die Seite meldet ihre Höhe per
-   * postMessage, angenommen wird nur unsere Herkunft.
+   * postMessage. Angenommen wird nur unsere Herkunft und nur die Meldung des
+   * eigenen iframes, damit sich zwei Einbettungen auf einer Seite nicht
+   * gegenseitig die Höhe setzen. Das iframe findet das Skript über seinen
+   * Platz direkt davor, nicht über eine ID, die doppelt vorkommen könnte.
    */
   embedCode(stateAssociationId: number): string {
-    const id = `sm-kurse-${stateAssociationId}`;
     return (
-      `<iframe id="${id}" src="${this.origin}/kurse-einbettung/?verband=${stateAssociationId}" ` +
+      `<iframe src="${this.origin}/kurse-einbettung/?verband=${stateAssociationId}" ` +
       `style="width:100%;min-height:400px;border:0" title="Schiedsrichterkurse"></iframe>\n` +
-      `<script>window.addEventListener("message",function(e){` +
-      `if(e.origin!=="${this.origin}"||!e.data||e.data.type!=="saisonmanager-kurse-hoehe")return;` +
-      `var f=document.getElementById("${id}");if(f)f.style.height=e.data.height+"px";});</script>`
+      `<script>(function(f){if(!f||f.tagName!=="IFRAME")return;` +
+      `window.addEventListener("message",function(e){` +
+      `if(e.origin!=="${this.origin}"||e.source!==f.contentWindow||!e.data||e.data.type!=="saisonmanager-kurse-hoehe")return;` +
+      `f.style.height=e.data.height+"px";});})(document.currentScript&&document.currentScript.previousElementSibling);</script>`
     );
   }
 

@@ -142,10 +142,16 @@ export class PortalCoursesComponent implements OnInit, OnDestroy {
     return this.courses.find((c) => c.id === registration.referee_course_id);
   }
 
-  /** Abmeldung nach der Frist: Gebühr bleibt fällig, vorher warnen. */
+  /**
+   * Abmeldung nach der Frist mit Platz: Gebühr bleibt fällig, vorher warnen.
+   * Wer nur auf der Warteliste steht oder noch wartet, zahlt nichts.
+   */
   lateCancellation(registration: OwnCourseRegistration): boolean {
     const deadline = this.courseFor(registration)?.cancellation_deadline;
-    return !!deadline && new Date(deadline) < new Date();
+    const seated = ['registered', 'attended', 'no_show'].includes(
+      registration.status
+    );
+    return seated && !!deadline && new Date(deadline) < new Date();
   }
 
   cancel(registration: OwnCourseRegistration): void {

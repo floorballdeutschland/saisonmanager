@@ -65,4 +65,24 @@ describe('CourseGuardianConsentComponent', () => {
     expect(el(fixture.nativeElement, 'failed')).not.toBeNull();
     expect(el(fixture.nativeElement, 'invalid')).toBeNull();
   });
+
+  it('behauptet nach einem Netzwerkfehler beim zweiten Versuch nicht „ungueltig“', () => {
+    const { fixture, service } = render(
+      of({ name: 'Kim', club: null, course: { title: 'J', sessions: [] } })
+    );
+    service.confirmGuardianConsent.and.returnValue(
+      throwError(() => ({ status: 0 }))
+    );
+    (el(fixture.nativeElement, 'confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el(fixture.nativeElement, 'retry')).not.toBeNull();
+
+    service.confirmGuardianConsent.and.returnValue(
+      throwError(() => ({ status: 404 }))
+    );
+    (el(fixture.nativeElement, 'confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el(fixture.nativeElement, 'maybe-done')).not.toBeNull();
+    expect(el(fixture.nativeElement, 'invalid')).toBeNull();
+  });
 });
