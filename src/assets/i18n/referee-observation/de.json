@@ -61,8 +61,8 @@
     "start": "Bogen ausfüllen",
     "assigned": "Angesetzt",
     "reminderHint": "Für dieses Spiel bist du als Schiedsrichtercoach angesetzt. Zum Anpfiff bekommst du eine Erinnerung per Mail mit dem Link auf diesen Bogen.",
-    "unrated": "nicht bewertbar: {{names}}",
-    "onlyUnrated": "Im Gespann steht niemand mit regulärem Schiedsrichterprofil ({{names}}). Gastschiedsrichter werden nicht bewertet, eine Beobachtung ist hier nicht möglich."
+    "unrated": "nicht einzeln bewertet: {{names}}",
+    "onlyUnrated": "Im Gespann ist niemand einem regulären Schiedsrichterprofil zugeordnet ({{names}}). Gastschiedsrichter werden nicht einzeln bewertet, eine Beobachtung ist hier nicht möglich."
   },
   "received": {
     "title": "Mein Feedback",
@@ -88,7 +88,7 @@
     "saved": "Die Beobachtung wurde gespeichert und den Schiedsrichter*innen zugestellt.",
     "incomplete": "Bitte alle Bewertungen vergeben und alle Textfelder ausfüllen.",
     "visibilityHint": "Nach dem Absenden ist der Bogen für die beobachteten Schiedsrichter*innen sichtbar und lässt sich nicht mehr ändern. Jede Person sieht die gemeinsamen Anmerkungen, die Bewertung des Gespanns und ihre eigenen Einzelbewertungen – nicht die des Gespannpartners.",
-    "unratedHint": "{{names}} pfeift ohne reguläres Schiedsrichterprofil (zum Beispiel als Gastschiedsrichter) und wird in diesem Bogen nicht einzeln bewertet. Die Gespann-Bewertung bezieht sich weiterhin auf das ganze Gespann."
+    "unratedHint": "Nicht einzeln bewertet, weil kein reguläres Schiedsrichterprofil zugeordnet ist (zum Beispiel bei Gastschiedsrichtern): {{names}}. Die Gespann-Bewertung bezieht sich weiterhin auf das ganze Gespann."
   },
   "admin": {
     "title": "Beobachtungen der Schiedsrichtercoaches",

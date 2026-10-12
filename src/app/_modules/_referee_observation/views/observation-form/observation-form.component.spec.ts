@@ -217,7 +217,7 @@ describe('ObservationFormComponent (Hinweis auf nicht bewertbare Schiris)', () =
         getTranslocoTestingModule({
           de: {
             refereeObservation: {
-              form: { unratedHint: '{{names}} wird nicht einzeln bewertet.' },
+              form: { unratedHint: 'Nicht einzeln bewertet: {{names}}.' },
             },
           },
         }),
@@ -249,9 +249,7 @@ describe('ObservationFormComponent (Hinweis auf nicht bewertbare Schiris)', () =
     const hint = fixture.nativeElement.querySelector(
       '[data-testid="unrated-hint"]'
     );
-    expect(hint?.textContent).toContain(
-      'Gustav Gast wird nicht einzeln bewertet.'
-    );
+    expect(hint?.textContent).toContain('Nicht einzeln bewertet: Gustav Gast.');
   });
 
   it('zeigt keinen Hinweis bei vollstaendigem Gespann', () => {
