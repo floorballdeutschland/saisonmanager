@@ -60,7 +60,9 @@
     "notAssigned": "chosen without appointment",
     "start": "Fill in form",
     "assigned": "Appointed",
-    "reminderHint": "You are appointed as referee coach for this game. At kick-off you receive a reminder by email with a link to this form."
+    "reminderHint": "You are appointed as referee coach for this game. At kick-off you receive a reminder by email with a link to this form.",
+    "unrated": "not rateable: {{names}}",
+    "onlyUnrated": "Nobody in this pair has a regular referee profile ({{names}}). Guest referees are not rated, so no observation is possible here."
   },
   "received": {
     "title": "My feedback",
@@ -85,7 +87,8 @@
     "cancel": "Cancel",
     "saved": "The observation has been saved and delivered to the referees.",
     "incomplete": "Please give every rating and fill in every text field.",
-    "visibilityHint": "Once submitted, the form is visible to the referees it covers and can no longer be changed. Each person sees the shared comments, the rating of the pair, and their own individual ratings, not those of their partner."
+    "visibilityHint": "Once submitted, the form is visible to the referees it covers and can no longer be changed. Each person sees the shared comments, the rating of the pair, and their own individual ratings, not those of their partner.",
+    "unratedHint": "{{names}} officiated without a regular referee profile (for example as a guest referee) and is not rated individually in this form. The pair rating still covers the whole pair."
   },
   "admin": {
     "title": "Referee coach observations",

@@ -1,4 +1,6 @@
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { of, throwError } from 'rxjs';
@@ -10,6 +12,7 @@ import {
   RefereeObservation,
   RefereeObservationCandidate,
 } from '@floorball/types';
+import { getTranslocoTestingModule } from '../../../_core/_i18n/transloco-testing';
 import { ObservationFormComponent } from './observation-form.component';
 
 /**
@@ -176,5 +179,85 @@ describe('ObservationFormComponent', () => {
     component.submit();
 
     expect(service.submit).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Pfeift ein Gast mit einem regulären Partner, bietet der Bogen nur den
+ * Partner zur Einzelbewertung an. Der Hinweis erklärt, warum die zweite
+ * Person fehlt; ohne ihn sähe das wie ein Datenfehler aus.
+ */
+describe('ObservationFormComponent (Hinweis auf nicht bewertbare Schiris)', () => {
+  const base: RefereeObservationCandidate = {
+    game_id: 42,
+    game_number: '101',
+    date: '2026-08-01',
+    start_time: null,
+    home_team: 'Heim',
+    guest_team: 'Gast',
+    league: null,
+    league_id: null,
+    league_level: null,
+    game_operation_slug: null,
+    assigned_as_coach: true,
+    referees: [{ referee_id: 11, name: 'Anna Schiri', position: 1 }],
+    done: false,
+    observation_id: null,
+  };
+
+  function render(
+    candidate: RefereeObservationCandidate
+  ): ComponentFixture<ObservationFormComponent> {
+    TestBed.configureTestingModule({
+      declarations: [ObservationFormComponent],
+      imports: [
+        FormsModule,
+        // Global unter dem Alias, weil die Komponente ohne ihr Modul im
+        // TestBed steht und der Scope dann nicht geladen wird.
+        getTranslocoTestingModule({
+          de: {
+            refereeObservation: {
+              form: { unratedHint: '{{names}} wird nicht einzeln bewertet.' },
+            },
+          },
+        }),
+      ],
+      providers: [
+        {
+          provide: RefereeObservationService,
+          useValue: { getObservableGames: () => of([candidate]) },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: { get: () => '42' } } },
+        },
+        { provide: Router, useValue: { navigate: () => undefined } },
+        { provide: NotificationService, useValue: {} },
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    });
+    const fixture = TestBed.createComponent(ObservationFormComponent);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('zeigt den Hinweis mit dem Namen des Gastes', () => {
+    const fixture = render({
+      ...base,
+      unrated_referee_names: ['Gustav Gast'],
+    });
+    const hint = fixture.nativeElement.querySelector(
+      '[data-testid="unrated-hint"]'
+    );
+    expect(hint?.textContent).toContain(
+      'Gustav Gast wird nicht einzeln bewertet.'
+    );
+  });
+
+  it('zeigt keinen Hinweis bei vollstaendigem Gespann', () => {
+    const fixture = render(base);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="unrated-hint"]')
+    ).toBeNull();
   });
 });

@@ -90,6 +90,12 @@ export interface RefereeObservationCandidate {
   game_operation_slug: string | null;
   assigned_as_coach: boolean;
   referees: RefereeObservationCandidateReferee[];
+  /**
+   * Im Gespann, aber nicht einzeln bewertbar: Gastschiedsrichter und Einträge
+   * des Spielberichts ohne Schiedsrichterprofil. Nur für den Hinweis; fehlt bei
+   * einer API vor dieser Änderung.
+   */
+  unrated_referee_names?: string[];
   done: boolean;
   observation_id: number | null;
 }

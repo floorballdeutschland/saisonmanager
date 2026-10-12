@@ -43,6 +43,18 @@
       </div>
     </div>
 
+    @if (candidate.unrated_referee_names?.length) {
+      <p
+        class="text-xs border border-fb-gray-600 rounded-[5px] p-3 mb-4"
+        data-testid="unrated-hint"
+      >
+        {{
+          "refereeObservation.form.unratedHint"
+            | transloco: { names: candidate.unrated_referee_names!.join(", ") }
+        }}
+      </p>
+    }
+
     <!-- Skalenlegende. Sie ist die Kalibrierung des Bogens und gehoert deshalb
          an den Anfang, nicht in eine Fussnote. -->
     <div class="border border-fb-gray-600 rounded-[5px] mb-6">
@@ -64,7 +76,9 @@
                 }})
               </dt>
               <dd>
-                {{ "refereeObservation.scale.description." + value | transloco }}
+                {{
+                  "refereeObservation.scale.description." + value | transloco
+                }}
               </dd>
             </div>
           }
