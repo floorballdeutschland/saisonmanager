@@ -25,6 +25,8 @@ export interface DetailedStatsShot {
   y: number;
   result: ShotResult;
   shooter: PersonRef | null;
+  /** Verknüpftes offizielles Tor (id in games.events), `null` ohne Verknüpfung. */
+  event_id: number | null;
 }
 
 /** `on_goal` = Tore + gehaltene Schüsse. */

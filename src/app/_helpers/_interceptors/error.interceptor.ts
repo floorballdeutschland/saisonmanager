@@ -648,13 +648,13 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         }
 
-        // Die Tablet-Auswertung eines Spiels (fe#344) antwortet mit 404, wenn
-        // es keine Tablet-Daten gibt. Die Spielseite fragt nur bei
-        // `tablet_capture` an und zeigt einen Fehlschlag selbst im Reiter an;
-        // eine Meldung über die ganze Seite wäre dort zu laut.
-        const tabletEvaluation = /\/games\/\d+\/detailed_stats\.json$/.test(
-          request.url
-        );
+        // Die Tablet-Auswertung eines Spiels (fe#344) und ihre Torszenen
+        // (fe#555) antworten mit 404, wenn es keine Tablet-Daten gibt. Die
+        // Spielseite fragt nur bei `tablet_capture` an, zeigt einen
+        // Fehlschlag der Statistik selbst im Reiter an und blendet fehlende
+        // Szenen still aus; eine Meldung über die ganze Seite wäre zu laut.
+        const tabletEvaluation =
+          /\/games\/\d+\/(detailed_stats|highlights)\.json$/.test(request.url);
         if (
           err.status === 404 &&
           !request.url.includes('/user/referees/') &&

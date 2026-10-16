@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
+  Output,
 } from '@angular/core';
 import {
   DetailedStatsShot,
@@ -11,9 +13,12 @@ import {
   ShotTeam,
 } from '@floorball/types';
 import { FieldPoint, RINK, toFieldPoint } from '../../_utils/detailed-stats';
+import { personLabel } from '../../_utils/highlights';
 
 interface PlottedShot extends FieldPoint {
   shot: DetailedStatsShot;
+  /** Tor mit Szene: Klick springt dorthin (fe#555). */
+  linked: boolean;
 }
 
 /** Farben je Ergebnis, dieselben in Grafik und Legende. */
@@ -40,6 +45,10 @@ export class ShotChartComponent implements OnChanges {
   @Input() teamName = '';
   /** Abschnittstitel des Spiels, wie in Filter und Tabelle. */
   @Input() periodTitles: PeriodTitles[] | null | undefined = [];
+  /** Tore, zu denen es eine Szene gibt. Ohne Szenen ist nichts anklickbar. */
+  @Input() linkedShots: ReadonlySet<DetailedStatsShot> = new Set();
+
+  @Output() goalSelected = new EventEmitter<DetailedStatsShot>();
 
   readonly rink = RINK;
   readonly colors = SHOT_COLORS;
@@ -49,7 +58,19 @@ export class ShotChartComponent implements OnChanges {
     // Tore zuletzt, damit sie über den übrigen Punkten liegen.
     this.plotted = [...this.shots]
       .sort((a, b) => Number(a.result === 'goal') - Number(b.result === 'goal'))
-      .map((shot) => ({ shot, ...toFieldPoint(shot) }));
+      .map((shot) => ({
+        shot,
+        linked: this.linkedShots.has(shot),
+        ...toFieldPoint(shot),
+      }));
+  }
+
+  /**
+   * Mit anklickbaren Toren ist die Grafik eine Gruppe statt eines Bildes:
+   * Unter role="img" sähen Screenreader die Tor-Schaltflächen nicht.
+   */
+  get hasLinked(): boolean {
+    return this.plotted.some((point) => point.linked);
   }
 
   /** Zielt das Team nach rechts? Steuert den Pfeil unter dem Feld. */
@@ -63,11 +84,10 @@ export class ShotChartComponent implements OnChanges {
   }
 
   shooterLabel(shot: DetailedStatsShot): string {
-    if (!shot.shooter) return '';
-    const number =
-      shot.shooter.trikot_number !== null
-        ? `#${shot.shooter.trikot_number} `
-        : '';
-    return number + shot.shooter.name;
+    return personLabel(shot.shooter);
+  }
+
+  select(point: PlottedShot): void {
+    if (point.linked) this.goalSelected.emit(point.shot);
   }
 }

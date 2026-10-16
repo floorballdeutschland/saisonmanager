@@ -25,6 +25,16 @@
       </div>
     }
 
+    <!-- Torszenen aus der Stream-Aufzeichnung (fe#555), nur mit Video und Szenen -->
+    @if (showHighlights && highlights) {
+      <fb-match-highlights
+        [highlights]="highlights"
+        [homeName]="teamShortName('home')"
+        [guestName]="teamShortName('guest')"
+        (unavailable)="onHighlightsUnavailable()"
+      ></fb-match-highlights>
+    }
+
     <!-- Schussgrafik -->
     <section class="mb-10">
       <h3 class="font-bold text-lg lg:text-xl mb-3">
@@ -81,6 +91,11 @@
           </li>
         }
       </ul>
+      @if (linkedShots.size) {
+        <p class="text-xs text-fb-gray-500 -mt-2 mb-4" data-test="jump-hint">
+          {{ "match.highlights.jumpHint" | transloco }}
+        </p>
+      }
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         @for (team of teams; track team) {
@@ -95,6 +110,8 @@
               [team]="team"
               [teamName]="teamName(team)"
               [periodTitles]="game.period_titles"
+              [linkedShots]="linkedShots"
+              (goalSelected)="onGoalSelected($event)"
             ></fb-shot-chart>
             <p class="text-xs text-fb-gray-500 mt-2">
               @for (result of results; track result; let last = $last) {

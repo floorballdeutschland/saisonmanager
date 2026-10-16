@@ -115,3 +115,4 @@ export * from './player-statistics.interface';
 export * from './streaming.interface';
 export * from './game-shot.interface';
 export * from './detailed-stats.interface';
+export * from './highlights.interface';

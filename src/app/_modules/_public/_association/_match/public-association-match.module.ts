@@ -17,6 +17,7 @@ import { PublicAssociationMatchRoutingModule } from './public-association-match-
     Views.MatchComponent,
     Views.MatchPublicComponent,
     Components.MatchDetailedStatsComponent,
+    Components.MatchHighlightsComponent,
     Components.ShotChartComponent,
   ],
   imports: [

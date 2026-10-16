@@ -23,6 +23,7 @@ function shot(overrides: Partial<DetailedStatsShot> = {}): DetailedStatsShot {
     y: 0.5,
     result: 'saved',
     shooter: null,
+    event_id: null,
     ...overrides,
   };
 }
