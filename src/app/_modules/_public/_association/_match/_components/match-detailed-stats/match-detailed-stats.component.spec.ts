@@ -332,6 +332,10 @@ describe('MatchDetailedStatsComponent', () => {
 
       expect(el().querySelector('fb-match-highlights')).toBeTruthy();
       expect(goalPoint()?.getAttribute('role')).toBe('button');
+      // Unter role="img" wären die Tor-Schaltflächen für Screenreader weg.
+      expect(
+        el().querySelector('[data-test="chart-home"] svg')?.getAttribute('role')
+      ).toBe('group');
       expect(el().querySelector('[data-test="jump-hint"]')).toBeTruthy();
     });
 
@@ -341,6 +345,9 @@ describe('MatchDetailedStatsComponent', () => {
       expect(el().querySelector('fb-match-highlights')).toBeNull();
       expect(goalPoint()?.getAttribute('role')).toBeNull();
       expect(el().querySelector('[data-test="jump-hint"]')).toBeNull();
+      expect(
+        el().querySelector('[data-test="chart-home"] svg')?.getAttribute('role')
+      ).toBe('img');
     });
 
     it('bleibt ohne Szene unsichtbar', () => {

@@ -291,6 +291,16 @@ describe('ErrorInterceptor', () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
+  it('stays quiet on a 404 for the goal scenes of a game', () => {
+    const url = 'http://localhost:3001/api/v2/games/1/highlights.json';
+    http.get(url).subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(url)
+      .flush({ message: 'Weg' }, { status: 404, statusText: 'Error' });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   it('still reports a 404 on other paths that merely contain detailed_stats.json', () => {
     const url = 'http://localhost:3001/api/v2/admin/detailed_stats.json';
     http.get(url).subscribe({ next: () => undefined, error: () => undefined });

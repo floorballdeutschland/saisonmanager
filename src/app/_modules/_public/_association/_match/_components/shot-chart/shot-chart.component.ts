@@ -65,6 +65,14 @@ export class ShotChartComponent implements OnChanges {
       }));
   }
 
+  /**
+   * Mit anklickbaren Toren ist die Grafik eine Gruppe statt eines Bildes:
+   * Unter role="img" sähen Screenreader die Tor-Schaltflächen nicht.
+   */
+  get hasLinked(): boolean {
+    return this.plotted.some((point) => point.linked);
+  }
+
   /** Zielt das Team nach rechts? Steuert den Pfeil unter dem Feld. */
   get attacksRight(): boolean {
     return this.team === 'home';

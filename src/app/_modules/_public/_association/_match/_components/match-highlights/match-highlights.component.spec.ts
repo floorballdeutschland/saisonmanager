@@ -8,7 +8,10 @@ import {
 } from '@floorball/core';
 import { HighlightScene, Highlights } from '@floorball/types';
 import matchDe from '../../../../../../../assets/i18n/match/de.json';
-import { MatchHighlightsComponent } from './match-highlights.component';
+import {
+  MatchHighlightsComponent,
+  PLAYER_READY_TIMEOUT_MS,
+} from './match-highlights.component';
 
 function scene(eventId: number, start: number): HighlightScene {
   return {
@@ -182,5 +185,80 @@ describe('MatchHighlightsComponent', () => {
     expect(component.consented).toBeFalse();
     expect(component.loadFailed).toBeTrue();
     expect(el().querySelector('[role="alert"]')).toBeTruthy();
+  });
+
+  it('gibt nach der Zeitüberschreitung auf und bietet den Knopf wieder an', async () => {
+    jasmine.clock().install();
+    try {
+      await component.consent();
+      expect(component.loading).toBeTrue();
+
+      jasmine.clock().tick(PLAYER_READY_TIMEOUT_MS);
+      fixture.detectChanges();
+
+      expect(component.loadFailed).toBeTrue();
+      expect(component.consented).toBeFalse();
+      expect(player.destroy).toHaveBeenCalled();
+      expect(
+        el().querySelector('[data-test="highlights-consent-button"]')
+      ).toBeTruthy();
+
+      // Ein spätes onReady des aufgegebenen Players spielt nichts mehr ab.
+      options?.events?.onReady?.({ data: 0, target: player });
+      expect(player.loadVideoById).not.toHaveBeenCalled();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  describe('Spielwechsel oder Abbau während des Ladens', () => {
+    let resolvePlayer: (p: YtPlayer) => void;
+
+    beforeEach(() => {
+      youtube.createPlayer.and.callFake((_el, opts) => {
+        options = opts;
+        return new Promise<YtPlayer>((resolve) => (resolvePlayer = resolve));
+      });
+    });
+
+    it('baut den verspätet fertigen Player des alten Videos ab', async () => {
+      const loading = component.consent();
+      fixture.componentRef.setInput('highlights', highlights('xyz789'));
+      fixture.detectChanges();
+
+      resolvePlayer(player);
+      await loading;
+      options?.events?.onReady?.({ data: 0, target: player });
+
+      expect(player.destroy).toHaveBeenCalled();
+      expect(player.loadVideoById).not.toHaveBeenCalled();
+      expect(component.consented).toBeFalse();
+      expect(component.loadFailed).toBeFalse();
+    });
+
+    it('baut den Player ab, wenn die Seite während des Ladens verlassen wird', async () => {
+      const loading = component.consent();
+      fixture.destroy();
+
+      resolvePlayer(player);
+      await loading;
+
+      expect(player.destroy).toHaveBeenCalled();
+    });
+
+    it('meldet keinen Fehler, wenn ein veralteter Ladeversuch scheitert', async () => {
+      let rejectPlayer: (e: Error) => void = () => undefined;
+      youtube.createPlayer.and.callFake(
+        () => new Promise<YtPlayer>((_r, reject) => (rejectPlayer = reject))
+      );
+      const loading = component.consent();
+      fixture.componentRef.setInput('highlights', highlights('xyz789'));
+      fixture.detectChanges();
+
+      rejectPlayer(new Error('offline'));
+      await loading;
+
+      expect(component.loadFailed).toBeFalse();
+    });
   });
 });

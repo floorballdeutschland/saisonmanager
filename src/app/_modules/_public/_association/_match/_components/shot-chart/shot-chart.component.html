@@ -2,7 +2,7 @@
   <svg
     class="block w-full h-auto"
     viewBox="-0.5 -0.5 41 21"
-    role="img"
+    [attr.role]="hasLinked ? 'group' : 'img'"
     [attr.aria-label]="
       'match.detailedStats.chart.ariaLabel'
         | transloco: { team: teamName, count: shots.length }

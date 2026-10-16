@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import {
   YoutubeIframeApiService,
+  YT_API_TIMEOUT_MS,
   YtPlayerOptions,
 } from './youtube-iframe-api.service';
 
@@ -64,5 +65,38 @@ describe('YoutubeIframeApiService', () => {
 
     expect(received?.host).toBe('https://www.youtube-nocookie.com');
     expect(received?.playerVars).toEqual({ rel: 0 });
+  });
+
+  describe('wenn die API sich nicht meldet', () => {
+    let appended: HTMLScriptElement[];
+
+    beforeEach(() => {
+      appended = [];
+      spyOn(document.head, 'appendChild').and.callFake(
+        <T extends Node>(n: T) => {
+          appended.push(n as unknown as HTMLScriptElement);
+          return n;
+        }
+      );
+      jasmine.clock().install();
+    });
+
+    afterEach(() => jasmine.clock().uninstall());
+
+    it('lehnt nach der Zeitüberschreitung ab und erlaubt einen neuen Versuch', async () => {
+      const first = service.load();
+      jasmine.clock().tick(YT_API_TIMEOUT_MS);
+
+      await expectAsync(first).toBeRejected();
+      service.load().catch(() => undefined);
+      expect(appended.length).toBe(2);
+    });
+
+    it('lehnt ab, wenn der Rückruf kommt, aber kein Player da ist', async () => {
+      const first = service.load();
+      window.onYouTubeIframeAPIReady?.();
+
+      await expectAsync(first).toBeRejected();
+    });
   });
 });

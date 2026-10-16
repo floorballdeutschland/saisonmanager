@@ -35,6 +35,9 @@ import { nextSceneIndex, personLabel } from '../../_utils/highlights';
  * verboten), gibt der Player `unavailable` aus und die Szenen verschwinden
  * still.
  */
+/** So lange darf es vom Klick bis zum spielbereiten Player dauern. */
+export const PLAYER_READY_TIMEOUT_MS = 15000;
+
 @Component({
   selector: 'fb-match-highlights',
   templateUrl: './match-highlights.component.html',
@@ -61,6 +64,8 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
 
   private _player?: YtPlayer;
   private _playerReady = false;
+  private _generation = 0;
+  private _readyTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private _youtube: YoutubeIframeApiService,
@@ -103,39 +108,59 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   /** Zustimmung: erst jetzt werden Skript und Video von YouTube geladen. */
   async consent(): Promise<void> {
     if (this.consented || !this.highlights?.video_id) return;
+    const host = this.playerHost?.nativeElement;
+    if (!host) return;
+
     this.consented = true;
     this.loading = true;
     this.loadFailed = false;
     this._cdr.markForCheck();
 
-    const host = this.playerHost?.nativeElement;
-    if (!host) return;
+    // Jeder Ladeversuch bekommt eine Nummer. Spielwechsel, Abbau oder ein
+    // Fehlschlag erhöhen sie; was danach von einem älteren Versuch ankommt,
+    // ist verwaist und wird verworfen.
+    const generation = ++this._generation;
+    const stale = () => generation !== this._generation;
+
+    // Meldet sich der Player nicht (Skript halb geblockt, Netz weg), bleibt
+    // sonst „Video wird geladen“ für immer stehen.
+    this._readyTimer = setTimeout(
+      () =>
+        this._zone.run(() => {
+          if (!stale() && !this._playerReady) this.failLoading();
+        }),
+      PLAYER_READY_TIMEOUT_MS
+    );
+
     // Die API ersetzt das übergebene Element durch ihr iframe. Ein eigenes
     // Kind statt des Angular-Elements, damit der Host im DOM bleibt.
     const target = document.createElement('div');
     host.appendChild(target);
-    const videoId = this.highlights.video_id;
 
+    let player: YtPlayer;
     try {
-      this._player = await this._youtube.createPlayer(target, {
+      player = await this._youtube.createPlayer(target, {
         width: '100%',
         height: '100%',
         playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
         events: {
-          onReady: () =>
+          onReady: (event) =>
             this._zone.run(() => {
-              // Inzwischen ein anderes Video: dieser Player ist verwaist.
-              if (this.highlights?.video_id !== videoId) return;
+              if (stale()) return;
+              clearTimeout(this._readyTimer);
+              this._player ??= event.target;
               this._playerReady = true;
               this.loading = false;
               this.playScene(this.pendingIndex);
             }),
           onStateChange: (event) =>
             this._zone.run(() => {
+              if (stale()) return;
               if (event.data === YT_STATE_ENDED) this.onSceneEnded();
             }),
           onError: () =>
             this._zone.run(() => {
+              if (stale()) return;
               this.destroyPlayer();
               this.unavailable.emit();
             }),
@@ -143,13 +168,27 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
       });
     } catch {
       this._zone.run(() => {
-        this.consented = false;
-        this.loading = false;
-        this.loadFailed = true;
-        target.remove();
-        this._cdr.markForCheck();
+        if (!stale()) this.failLoading();
       });
+      return;
     }
+
+    if (stale()) {
+      // Während des Ladens kam ein anderes Spiel oder die Seite wurde
+      // verlassen: Der Player hängt an einem abgehängten Element.
+      player.destroy();
+      return;
+    }
+    this._player = player;
+  }
+
+  /** Laden gescheitert: Hinweis und Knopf wieder zeigen, neuer Versuch möglich. */
+  private failLoading(): void {
+    this.destroyPlayer();
+    this.consented = false;
+    this.loading = false;
+    this.loadFailed = true;
+    this._cdr.markForCheck();
   }
 
   /** Klick auf eine Szene in der Liste oder ein Tor in der Schussgrafik. */
@@ -219,6 +258,8 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   }
 
   private destroyPlayer(): void {
+    this._generation++;
+    clearTimeout(this._readyTimer);
     this._player?.destroy();
     this._player = undefined;
     this._playerReady = false;
