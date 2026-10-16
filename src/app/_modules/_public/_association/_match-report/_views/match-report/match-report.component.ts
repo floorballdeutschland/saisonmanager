@@ -21,11 +21,13 @@ import {
 } from '@floorball/types';
 import {
   GameService,
+  GameShotService,
   LeagueService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
+import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 
 @Component({
   selector: 'fb-match-report',
@@ -117,6 +119,18 @@ export class MatchReportComponent implements OnInit, OnChanges {
   // nicht, sonst verdeckte die Zusammenfassung eine gerade getroffene Auswahl.
   public checklistConfirmOnly = false;
 
+  // Tabletmodus (fe#344): Frage „Schüsse vollständig erfasst?" vor dem
+  // Abschließen, nur bei Spielen mit Tablet-Daten. `tabletCompleteAnswered`
+  // gilt für genau einen Abschlussversuch und wird danach zurückgesetzt.
+  public tabletCompleteVisible = false;
+  public tabletCompleteSaving = false;
+  // Vor der Frage wird übertragen, was dieses Gerät noch puffert. Bleibt dabei
+  // etwas liegen, warnt das Fenster: Nach dem Abschluss nimmt der Server es
+  // nicht mehr an.
+  public tabletChecking = false;
+  public tabletUnsent = 0;
+  private _tabletCompleteAnswered = false;
+
   // scan upload
   public existingScan: GameScan | null = null;
   public selectedScanFile: File | null = null;
@@ -128,7 +142,9 @@ export class MatchReportComponent implements OnInit, OnChanges {
     private _sessionService: SessionService,
     private _gameService: GameService,
     private _notificationService: NotificationService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _gameShotService: GameShotService,
+    private _shotSync: TabletShotSyncService
   ) {}
 
   ngOnInit() {
@@ -147,6 +163,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
   handleGameChange(game: SimpleChange) {
     if (game.currentValue.id !== game.previousValue?.id) {
       this.appGameStatus = this.game.game_status;
+      // Die Abschlussfrage gehört zum vorigen Spiel.
+      this.tabletCompleteVisible = false;
+      this.tabletCompleteSaving = false;
+      this.tabletChecking = false;
+      this.tabletUnsent = 0;
+      this._tabletCompleteAnswered = false;
     }
 
     // Vor dem ersten Abschnitt gibt es noch keinen current_period_title. Die
@@ -172,6 +194,24 @@ export class MatchReportComponent implements OnInit, OnChanges {
     const maxStatusIndex = this.gameStatusOptions.findIndex(
       (item) => item.key === this.game?.game_status
     );
+
+    if (
+      statusIndex > maxStatusIndex &&
+      newStatus === this.MATCH_RECORD_CLOSED &&
+      !this._tabletCompleteAnswered &&
+      (this.game.tablet_capture ||
+        this._shotSync.pendingCount(this.game.id) > 0)
+    ) {
+      this.tabletCompleteSaving = false;
+      this.tabletCompleteVisible = true;
+      this.tabletUnsent = 0;
+      if (this._shotSync.pendingCount(this.game.id) > 0) {
+        this.sendPendingShots();
+      }
+      this._cdr.markForCheck();
+      return;
+    }
+    this._tabletCompleteAnswered = false;
 
     if (statusIndex > maxStatusIndex) {
       this._gameService.setGameStatus(this.game.id, newStatus).subscribe({
@@ -369,6 +409,55 @@ export class MatchReportComponent implements OnInit, OnChanges {
       const saved = existing.find((a) => a.item_id === item.id);
       this.checklistAnswers[item.id] = saved ? saved.answer : null;
     }
+  }
+
+  /**
+   * Antwort auf „Schüsse vollständig erfasst?". Der Abschluss läuft auch dann
+   * weiter, wenn das Speichern der Antwort scheitert: Die Schussdaten sind
+   * eine Beta-Zugabe und dürfen den Spielbericht nicht aufhalten. Den Fehler
+   * meldet der ErrorInterceptor, ein 5xx geht zusätzlich an Sentry.
+   */
+  public answerTabletComplete(complete: boolean): void {
+    if (this.tabletCompleteSaving || this.tabletChecking) return;
+    this.tabletCompleteSaving = true;
+    const gameId = this.game.id;
+    const proceed = () => {
+      if (this.game?.id !== gameId) return;
+      this.tabletCompleteVisible = false;
+      this.tabletCompleteSaving = false;
+      this._tabletCompleteAnswered = true;
+      this._cdr.markForCheck();
+      this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
+    };
+    this._gameShotService.setTabletShotsComplete(gameId, complete).subscribe({
+      next: (response) => {
+        this.game.tablet_shots_complete = response.tablet_shots_complete;
+        proceed();
+      },
+      error: (err) => {
+        if (err?.status >= 500) Sentry.captureException(err);
+        proceed();
+      },
+    });
+  }
+
+  /** Ausdrücklich angestoßen, also auch nach einer früheren Absage. */
+  public sendPendingShots(): void {
+    const gameId = this.game.id;
+    this.tabletChecking = true;
+    this._shotSync.retry(gameId).then(() => {
+      if (this.game?.id !== gameId) return;
+      this.tabletChecking = false;
+      this.tabletUnsent = this._shotSync.pendingCount(gameId);
+      this._cdr.markForCheck();
+    });
+  }
+
+  public cancelTabletComplete(): void {
+    this.tabletCompleteVisible = false;
+    this.tabletCompleteSaving = false;
+    this.appGameStatus = this.game.game_status;
+    this._cdr.markForCheck();
   }
 
   public finalizeGame() {

@@ -1,0 +1,67 @@
+{
+  "toggle": {
+    "label": "Tablet mode (beta)",
+    "hint": "Record shots with position and time on a tablet. Applies to this device only."
+  },
+  "capture": {
+    "title": "Shot tracking"
+  },
+  "notStarted": "Shot tracking starts with the opening whistle.",
+  "period": "Period",
+  "swapSides": "Swap sides",
+  "field": "Rink: tap where the shot was taken",
+  "hint": "Tap where the shot was taken. The time is recorded immediately.",
+  "result": {
+    "goal": "Goal",
+    "saved": "Saved",
+    "missed": "Missed",
+    "blocked": "Blocked"
+  },
+  "draft": {
+    "tappedAt": "Tapped at {{ time }}",
+    "shooter": "Shooter (optional)",
+    "goalkeeper": "Goalkeeper",
+    "emptyNet": "Empty net",
+    "gameTime": "Game time",
+    "periodLabel": "in period {{ period }}",
+    "gameTimeInvalid": "Please enter the game time as m:ss, e.g. 12:34.",
+    "save": "Save",
+    "cancel": "Discard",
+    "delete": "Delete shot"
+  },
+  "recent": {
+    "title": "Recent shots",
+    "empty": "No shots recorded yet.",
+    "pending": "pending",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "sync": {
+    "done": "All shots uploaded",
+    "pending": "{{ count }} change(s) waiting for upload",
+    "retry": "Send now",
+    "forbidden": "{{ count }} shots not uploaded, the report is closed or permission is missing."
+  },
+  "clock": {
+    "stale": "Server time unreachable, using this device's last sync.",
+    "unknown": "Server time unreachable, times follow this device's clock.",
+    "remeasure": "Sync again"
+  },
+  "link": {
+    "title": "Assign goals",
+    "hint": "These goals could not be matched to a recorded shot automatically. Please tap the matching shot.",
+    "goal": "Goal {{ team }} to {{ score }} (period {{ period }}, {{ time }})",
+    "shot": "Period {{ period }} {{ time }} {{ shooter }} · tapped {{ tapped }}",
+    "error": "The assignment was rejected. Is the report already closed?"
+  },
+  "complete": {
+    "title": "All shots recorded?",
+    "content": "Shots for this game were recorded in tablet mode. Were all shots of the game recorded? Incompletely recorded games are left out of season statistics.",
+    "yes": "Yes, complete",
+    "no": "No, incomplete",
+    "cancel": "Cancel",
+    "unsent": "{{ count }} shot change(s) from this device have not been uploaded yet. Once the report is closed, the server will no longer accept them. Please check the connection and try again.",
+    "checking": "Uploading shots…",
+    "retry": "Send again"
+  }
+}

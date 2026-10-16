@@ -18,7 +18,12 @@ import {
   GameService,
   LeagueService,
   NotificationService,
+  StorageService,
 } from '@floorball/core';
+
+// Schalter je Gerät, nicht je Spiel oder Konto: Das Sekretariat bleibt in der
+// gewohnten Eingabe, ein zweites Tablet erfasst die Schüsse (fe#344).
+export const TABLET_MODE_STORAGE_KEY = 'match_report_tablet_mode';
 
 @Component({
   selector: 'fb-match-report-step-two',
@@ -51,6 +56,10 @@ export class MatchReportStepTwoComponent implements OnInit {
   public penalties: Penalty[] = [];
   public penaltyCodes: PenaltyCode[] = [];
 
+  // Tabletmodus (Beta). Der Schalter allein ändert nichts am Spiel; erst ein
+  // erfasster Schuss markiert es in der API als Tablet-Spiel.
+  public tabletMode = false;
+
   public regularTimeSummary: PeriodTitles = {
     period: 100,
     short_title: 'REG',
@@ -75,10 +84,13 @@ export class MatchReportStepTwoComponent implements OnInit {
     private _leagueService: LeagueService,
     private _gameService: GameService,
     private _notificationService: NotificationService,
+    private _storage: StorageService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.tabletMode = this._storage.getItem(TABLET_MODE_STORAGE_KEY) === '1';
+
     this._leagueService.getPenalties().subscribe({
       next: (penalties) => {
         this.penalties = penalties;
@@ -90,6 +102,16 @@ export class MatchReportStepTwoComponent implements OnInit {
         this.penaltyCodes = penalties;
       },
     });
+  }
+
+  public setTabletMode(enabled: boolean): void {
+    this.tabletMode = enabled;
+    if (enabled) {
+      this._storage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+    } else {
+      this._storage.removeItem(TABLET_MODE_STORAGE_KEY);
+    }
+    this._cdr.markForCheck();
   }
 
   public setCurrentPeriod(period: string) {

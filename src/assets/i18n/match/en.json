@@ -16,5 +16,67 @@
     "uploading": "Uploading…",
     "tooLarge": "The file must not exceed 5 MB.",
     "uploadFailed": "Upload failed. Please try again."
+  },
+  "tabs": {
+    "overview": "Overview",
+    "detailedStats": "Detailed statistics"
+  },
+  "detailedStats": {
+    "title": "Detailed statistics",
+    "loading": "Loading statistics …",
+    "failed": "The statistics could not be loaded.",
+    "incomplete": "Shots were not recorded completely. The figures only show the recorded shots.",
+    "periodN": "Period {{ n }}",
+    "name": "Name",
+    "result": {
+      "goal": "Goal",
+      "saved": "Saved",
+      "blocked": "Blocked",
+      "missed": "Missed"
+    },
+    "filter": {
+      "label": "Select period",
+      "all": "All"
+    },
+    "chart": {
+      "title": "Shot map",
+      "direction": "Direction of attack",
+      "ariaLabel": "Shot map {{ team }}: {{ count }} shots"
+    },
+    "shots": {
+      "title": "Shots per period",
+      "period": "Period",
+      "total": "Total",
+      "shots": "Shots",
+      "onGoal": "On goal",
+      "goals": "Goals",
+      "blocked": "Blocked",
+      "missed": "Missed"
+    },
+    "goalkeepers": {
+      "title": "Goalkeepers",
+      "saves": "Saves",
+      "shotsAgainst": "Shots on goal",
+      "savePct": "Save %"
+    },
+    "players": {
+      "title": "Shots per player"
+    }
+  },
+  "highlights": {
+    "title": "Goal scenes",
+    "consent": {
+      "notice": "The scenes come from the live stream recording on YouTube. Content from YouTube (Google) is only loaded after you click; data such as your IP address is then transmitted to YouTube.",
+      "button": "Load scenes from YouTube",
+      "buttonScene": "Load scene {{ n }} from YouTube",
+      "failed": "YouTube could not be loaded. Please try again later."
+    },
+    "loading": "Loading video …",
+    "nowPlaying": "Scene {{ n }} of {{ total }}",
+    "finished": "all scenes shown",
+    "playAll": "Play all scenes",
+    "assist": "Assist",
+    "jumpHint": "Tap a goal in the shot map to jump to its scene.",
+    "goalAria": "Goal {{ time }}, jump to scene"
   }
 }
