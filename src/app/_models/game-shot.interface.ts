@@ -1,9 +1,11 @@
 // Schüsse aus dem Tabletmodus der Spielberichtseingabe (fe#344, api#816).
 //
-// Positionen sind auf die Angriffsrichtung des schießenden Teams normiert:
-// x = 0 eigene Torlinie, x = 1 gegnerische Torlinie; y = 0 links, y = 1
-// rechts aus Sicht des Angreifers. Damit liegen die Schüsse aller Abschnitte
-// trotz Seitenwechsel auf derselben Grafik.
+// Positionen sind auf die Angriffsrichtung des schießenden Teams normiert.
+// Beide Achsen laufen von Bande zu Bande über das ganze Feld (40 x 20 m):
+// x = 0 Bande hinter dem eigenen Tor, x = 1 Bande hinter dem gegnerischen
+// Tor; y = 0 linke, y = 1 rechte Seitenbande aus Sicht des Angreifers.
+// Damit liegen die Schüsse aller Abschnitte trotz Seitenwechsel auf
+// derselben Grafik.
 
 export type ShotTeam = 'home' | 'guest';
 
