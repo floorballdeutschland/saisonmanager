@@ -60,22 +60,20 @@ const stats = (overrides: Partial<DetailedStats> = {}): DetailedStats => ({
 
 describe('detailed-stats utils', () => {
   describe('toFieldPoint', () => {
-    const span = RINK.length - 2 * RINK.goalLine;
-
     it('zeichnet Heim nach rechts angreifend: x wächst nach rechts, links liegt oben', () => {
       expect(toFieldPoint(shot({ team: 'home', x: 0, y: 0 }))).toEqual({
-        cx: RINK.goalLine,
+        cx: 0,
         cy: 0,
       });
       expect(toFieldPoint(shot({ team: 'home', x: 1, y: 1 }))).toEqual({
-        cx: RINK.length - RINK.goalLine,
+        cx: RINK.length,
         cy: RINK.width,
       });
     });
 
     it('spiegelt den Gast: Schuss vor dem gegnerischen Tor landet links', () => {
       const point = toFieldPoint(shot({ team: 'guest', x: 0.9, y: 0.5 }));
-      expect(point.cx).toBeCloseTo(RINK.goalLine + 0.1 * span, 5);
+      expect(point.cx).toBeCloseTo(0.1 * RINK.length, 5);
       expect(point.cy).toBeCloseTo(RINK.width / 2, 5);
     });
 
@@ -86,10 +84,15 @@ describe('detailed-stats utils', () => {
       expect(guest.cy).toBeCloseTo(RINK.width - home.cy, 5);
     });
 
-    it('lässt Schüsse hinter dem Tor stehen, schneidet aber an der Bande ab', () => {
-      expect(toFieldPoint(shot({ x: 1.05 })).cx).toBeGreaterThan(
-        RINK.length - RINK.goalLine
-      );
+    it('normiert über das ganze Feld von Bande zu Bande', () => {
+      // Torlinie 3,5 m vor der gegnerischen Bande
+      expect(toFieldPoint(shot({ x: 36.5 / 40, y: 0.5 }))).toEqual({
+        cx: 36.5,
+        cy: 10,
+      });
+    });
+
+    it('schneidet Werte außerhalb des Feldes an der Bande ab', () => {
       expect(toFieldPoint(shot({ x: 5, y: -1 }))).toEqual({
         cx: RINK.length,
         cy: 0,

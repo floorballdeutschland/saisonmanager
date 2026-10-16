@@ -15,8 +15,6 @@ import {
 export const RINK = {
   length: 40,
   width: 20,
-  /** Abstand der Torlinie von der Bande. */
-  goalLine: 3.5,
 } as const;
 
 export const SHOT_RESULTS: readonly ShotResult[] = [
@@ -40,25 +38,24 @@ const clamp = (value: number, min: number, max: number) =>
  * Rechnet einen Schuss aus der normierten Angriffsrichtung in die Darstellung
  * um: Heim greift nach rechts an, Gast nach links.
  *
- * Normierung laut API: x = 0 eigene Torlinie, x = 1 gegnerische Torlinie,
+ * Normierung laut API über das ganze Feld von Bande zu Bande (so erfasst
+ * auch der Tabletmodus): x = 0 eigene Bande, x = 1 gegnerische Bande,
  * y = 0 links und y = 1 rechts aus Sicht des Angreifers. Für Heim (Blick nach
  * rechts) liegt „links“ oben. Der Gast blickt nach links, für ihn liegt „links“
  * unten. Sein Schuss wird deshalb um den Mittelpunkt gedreht, also x UND y
  * gespiegelt. Spiegelte man nur x, landete ein Schuss von der linken Seite des
  * Gastes auf seiner rechten.
  *
- * Werte knapp außerhalb von 0..1 (hinter dem Tor) bleiben erhalten, nur über
- * die Bande hinaus wird abgeschnitten.
+ * Werte außerhalb von 0..1 werden an der Bande abgeschnitten.
  */
 export function toFieldPoint(
   shot: Pick<DetailedStatsShot, 'team' | 'x' | 'y'>
 ): FieldPoint {
-  const span = RINK.length - 2 * RINK.goalLine;
   const x = shot.team === 'home' ? shot.x : 1 - shot.x;
   const y = shot.team === 'home' ? shot.y : 1 - shot.y;
 
   return {
-    cx: clamp(RINK.goalLine + x * span, 0, RINK.length),
+    cx: clamp(x * RINK.length, 0, RINK.length),
     cy: clamp(y * RINK.width, 0, RINK.width),
   };
 }
