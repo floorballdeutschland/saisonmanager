@@ -25,6 +25,12 @@ export interface DetailedStatsShot {
   y: number;
   result: ShotResult;
   shooter: PersonRef | null;
+  /**
+   * Verknüpftes Tor (id in games.events). Nicht im Schnittstellenvertrag:
+   * Liefert die API das Feld, springt die Schussgrafik direkt zur Szene,
+   * sonst über Team, Abschnitt und Spielzeit (siehe `sceneIndexForShot`).
+   */
+  event_id?: number | null;
 }
 
 /** `on_goal` = Tore + gehaltene Schüsse. */

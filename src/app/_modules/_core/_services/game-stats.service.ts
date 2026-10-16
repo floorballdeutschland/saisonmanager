@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DetailedStats } from '@floorball/types';
+import { DetailedStats, Highlights } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { refreshContext } from '../_http/silent-refresh';
 
@@ -20,6 +20,14 @@ export class GameStatsService {
     const path =
       environment.apiURL + 'games/' + gameId + '/detailed_stats.json';
     return this.http.get<DetailedStats>(path, {
+      context: refreshContext(silent),
+    });
+  }
+
+  /** Torszenen in der Stream-Aufzeichnung (fe#555). */
+  public getHighlights(gameId: number, silent = false) {
+    const path = environment.apiURL + 'games/' + gameId + '/highlights.json';
+    return this.http.get<Highlights>(path, {
       context: refreshContext(silent),
     });
   }

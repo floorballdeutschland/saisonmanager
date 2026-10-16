@@ -63,5 +63,21 @@
     "players": {
       "title": "Shots per player"
     }
+  },
+  "highlights": {
+    "title": "Goal scenes",
+    "consent": {
+      "notice": "The scenes come from the live stream recording on YouTube. Content from YouTube (Google) is only loaded after you click; data such as your IP address is then transmitted to YouTube.",
+      "button": "Load scenes from YouTube",
+      "buttonScene": "Load scene {{ n }} from YouTube",
+      "failed": "YouTube could not be loaded. Please try again later."
+    },
+    "loading": "Loading video …",
+    "nowPlaying": "Scene {{ n }} of {{ total }}",
+    "finished": "all scenes shown",
+    "playAll": "Play all scenes",
+    "assist": "Assist",
+    "jumpHint": "Tap a goal in the shot map to jump to its scene.",
+    "goalAria": "Goal {{ time }}, jump to scene"
   }
 }

@@ -63,5 +63,21 @@
     "players": {
       "title": "Schüsse je Spieler"
     }
+  },
+  "highlights": {
+    "title": "Torszenen",
+    "consent": {
+      "notice": "Die Szenen stammen aus der Aufzeichnung des Livestreams bei YouTube. Erst mit dem Klick werden Inhalte von YouTube (Google) geladen; dabei werden Daten wie deine IP-Adresse an YouTube übertragen.",
+      "button": "Szenen von YouTube laden",
+      "buttonScene": "Szene {{ n }} von YouTube laden",
+      "failed": "YouTube konnte nicht geladen werden. Bitte später erneut versuchen."
+    },
+    "loading": "Video wird geladen …",
+    "nowPlaying": "Szene {{ n }} von {{ total }}",
+    "finished": "alle Szenen gezeigt",
+    "playAll": "Alle Szenen abspielen",
+    "assist": "Vorlage",
+    "jumpHint": "Tipp auf ein Tor in der Schussgrafik springt zur Szene.",
+    "goalAria": "Tor {{ time }}, zur Szene springen"
   }
 }
