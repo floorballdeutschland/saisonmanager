@@ -1,4 +1,5 @@
-import { PersonRef, ShotTeam } from './detailed-stats.interface';
+import { PersonRef } from './detailed-stats.interface';
+import { ShotTeam } from './game-shot.interface';
 
 /**
  * Eine Torszene in der Stream-Aufzeichnung (fe#555). `start` und `end` sind
