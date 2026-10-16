@@ -43,3 +43,4 @@ export * from './proceeding-proposal.service';
 export * from './live-stream.service';
 export * from './streaming.service';
 export * from './youtube.service';
+export * from './game-stats.service';

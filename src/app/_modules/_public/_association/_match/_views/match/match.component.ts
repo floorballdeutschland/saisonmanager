@@ -159,8 +159,11 @@ export class MatchComponent implements OnInit, OnDestroy {
       next: (game) => {
         if (!stillCurrent()) return;
 
+        // Nur die Eingabe braucht die Zusatzfelder ohne Anmeldung, nicht der
+        // Statistik-Reiter: Den sehen auch Besucher, und der Abruf liegt unter
+        // user/.
         if (
-          this.tab !== 'public' ||
+          this.tab === 'secretary' ||
           this._sessionService.currentUser ||
           this.hasSecretaryToken
         ) {
@@ -216,6 +219,12 @@ export class MatchComponent implements OnInit, OnDestroy {
   public updateGame(game: Game) {
     if (JSON.stringify(game) !== JSON.stringify(this.game)) {
       this.game = game;
+
+      // Der Statistik-Reiter gehört nur zu Tablet-Spielen. Wechselt die Seite
+      // von dort in ein Spiel ohne Tablet-Daten, gibt es ihn nicht mehr.
+      if (this.tab === 'stats' && !game.tablet_capture) {
+        this.tab = 'public';
+      }
 
       this._metaTitle.setTitle(
         `Spiel ${game.home_team_name} gegen ${game.guest_team_name} - ${game.league_name} | Floorball Saisonmanager`

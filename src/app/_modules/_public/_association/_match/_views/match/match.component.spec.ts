@@ -1,4 +1,4 @@
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, Pipe, PipeTransform } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { MatchComponent } from './match.component';
@@ -9,10 +9,18 @@ import {
 import { getTranslocoTestingModule } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, convertToParamMap, Params } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { SessionService } from '@floorball/core';
-import { User } from '@floorball/types';
+import { GameOperation, User } from '@floorball/types';
 import matchDe from '../../../../../../../assets/i18n/match/de.json';
+
+// Die Reiterleiste färbt den aktiven Reiter mit dem Verlauf des Verbands.
+@Pipe({ name: 'gradient', standalone: false })
+class GradientStubPipe implements PipeTransform {
+  transform(): string {
+    return '';
+  }
+}
 
 describe('MatchComponent', () => {
   let params$: BehaviorSubject<Params>;
@@ -26,7 +34,7 @@ describe('MatchComponent', () => {
         // Echte Texte, damit Empfänger und Dateiname im DOM prüfbar sind.
         getTranslocoTestingModule({ de: { match: matchDe } }),
       ],
-      declarations: [MatchComponent],
+      declarations: [MatchComponent, GradientStubPipe],
       // Der Upload-Bereich wird gerendert, die Kindkomponenten des Spiels
       // (fb-match-public) gehören nicht zu diesem Test.
       schemas: [NO_ERRORS_SCHEMA],
@@ -221,6 +229,84 @@ describe('MatchComponent', () => {
 
       expect(component.refereeReportUploaded).toBeFalse();
       expect(component.refereeReportFilename).toBe('');
+      component.ngOnDestroy();
+    });
+  });
+
+  // fe#344: Der Reiter „Ausführliche Statistik“ gibt es nur bei Spielen, die im
+  // Tabletmodus erfasst wurden. Alle anderen Spielseiten bleiben unverändert.
+  describe('Reiter Ausführliche Statistik', () => {
+    function loadPublic(game: Record<string, unknown>) {
+      sessionStorage.removeItem('secretary_token');
+      const fixture = TestBed.createComponent(MatchComponent);
+      const component = fixture.componentInstance;
+      const http = TestBed.inject(HttpTestingController);
+
+      // Der erste Durchlauf ruft ngOnInit; danach erst den Verband setzen,
+      // ngOnInit überschriebe ihn sonst.
+      fixture.detectChanges();
+      component.selectedAssociation$ = of({ id: 1 } as GameOperation);
+      http.expectOne((r) => r.url.endsWith('games/1.json')).flush(game);
+      fixture.detectChanges();
+      return { fixture, component, http };
+    }
+    const el = (fixture: { nativeElement: unknown }) =>
+      fixture.nativeElement as HTMLElement;
+
+    it('fehlt bei Spielen ohne Tablet-Daten, ebenso die ganze Reiterleiste', () => {
+      const { fixture, component } = loadPublic({ id: 1 });
+
+      expect(el(fixture).querySelector('[data-test="tab-stats"]')).toBeNull();
+      expect(el(fixture).querySelector('fb-tab-item')).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    it('erscheint bei tablet_capture auch für Besucher ohne Bearbeitungsrecht', () => {
+      const { fixture, component } = loadPublic({
+        id: 1,
+        tablet_capture: true,
+      });
+
+      expect(
+        el(fixture).querySelector('[data-test="tab-stats"]')?.textContent
+      ).toContain('Ausführliche Statistik');
+      expect(el(fixture).textContent).not.toContain('Eingabe Spielbericht');
+      component.ngOnDestroy();
+    });
+
+    it('zeigt die Statistik erst nach Klick auf den Reiter', () => {
+      const { fixture, component, http } = loadPublic({
+        id: 1,
+        tablet_capture: true,
+      });
+      expect(el(fixture).querySelector('fb-match-detailed-stats')).toBeNull();
+
+      component.setTab('stats');
+      // setTab lädt das Spiel neu, ohne Zusatzfelder für Besucher.
+      http
+        .expectOne((r) => r.url.endsWith('games/1.json'))
+        .flush({ id: 1, tablet_capture: true });
+      http.expectNone((r) => r.url.endsWith('additional_fields.json'));
+      fixture.detectChanges();
+
+      expect(el(fixture).querySelector('fb-match-detailed-stats')).toBeTruthy();
+      expect(el(fixture).querySelector('fb-match-public')).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    it('fällt beim Wechsel in ein Spiel ohne Tablet-Daten auf die Übersicht zurück', () => {
+      const { fixture, component, http } = loadPublic({
+        id: 1,
+        tablet_capture: true,
+      });
+      component.tab = 'stats';
+
+      params$.next({ matchId: '2' });
+      http.expectOne((r) => r.url.endsWith('games/2.json')).flush({ id: 2 });
+      fixture.detectChanges();
+
+      expect(component.isTabActive('public')).toBeTrue();
+      expect(el(fixture).querySelector('fb-match-detailed-stats')).toBeNull();
       component.ngOnDestroy();
     });
   });

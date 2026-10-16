@@ -16,5 +16,51 @@
     "uploading": "Hochladen…",
     "tooLarge": "Die Datei darf maximal 5 MB groß sein.",
     "uploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen."
+  },
+  "tabs": {
+    "overview": "Übersicht",
+    "detailedStats": "Ausführliche Statistik"
+  },
+  "detailedStats": {
+    "title": "Ausführliche Statistik",
+    "loading": "Statistik wird geladen …",
+    "failed": "Die Statistik konnte nicht geladen werden.",
+    "incomplete": "Schüsse nicht vollständig erfasst. Die Zahlen zeigen nur die erfassten Schüsse.",
+    "periodN": "{{ n }}. Abschnitt",
+    "name": "Name",
+    "result": {
+      "goal": "Tor",
+      "saved": "Gehalten",
+      "blocked": "Geblockt",
+      "missed": "Vorbei"
+    },
+    "filter": {
+      "label": "Abschnitt auswählen",
+      "all": "Alle"
+    },
+    "chart": {
+      "title": "Schussgrafik",
+      "direction": "Angriffsrichtung",
+      "ariaLabel": "Schussgrafik {{ team }}: {{ count }} Schüsse"
+    },
+    "shots": {
+      "title": "Schüsse je Abschnitt",
+      "period": "Abschnitt",
+      "total": "Gesamt",
+      "shots": "Schüsse",
+      "onGoal": "Aufs Tor",
+      "goals": "Tore",
+      "blocked": "Geblockt",
+      "missed": "Vorbei"
+    },
+    "goalkeepers": {
+      "title": "Torhüter",
+      "saves": "Paraden",
+      "shotsAgainst": "Schüsse aufs Tor",
+      "savePct": "Fangquote"
+    },
+    "players": {
+      "title": "Schüsse je Spieler"
+    }
   }
 }
