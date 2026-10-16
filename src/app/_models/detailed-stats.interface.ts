@@ -3,9 +3,10 @@
  * (`GET games/:id/detailed_stats.json`, fe#344 / api#816).
  *
  * Die Koordinaten der Schüsse sind auf die Angriffsrichtung des schießenden
- * Teams normiert: x = 0 eigene Torlinie, x = 1 gegnerische Torlinie, y = 0
- * links und y = 1 rechts aus Sicht des Angreifers. Die Seitenwechsel je
- * Abschnitt sind damit bereits herausgerechnet.
+ * Teams normiert, über das ganze Feld von Bande zu Bande (40 × 20 m): x = 0
+ * eigene Bande hinter dem eigenen Tor, x = 1 gegnerische Bande, y = 0 links
+ * und y = 1 rechts aus Sicht des Angreifers. Die Seitenwechsel je Abschnitt
+ * sind damit bereits herausgerechnet.
  */
 export type ShotTeam = 'home' | 'guest';
 
