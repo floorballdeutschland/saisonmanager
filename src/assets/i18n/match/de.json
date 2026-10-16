@@ -26,7 +26,6 @@
     "loading": "Statistik wird geladen …",
     "failed": "Die Statistik konnte nicht geladen werden.",
     "incomplete": "Schüsse nicht vollständig erfasst. Die Zahlen zeigen nur die erfassten Schüsse.",
-    "period": "Abschnitt",
     "periodN": "{{ n }}. Abschnitt",
     "name": "Name",
     "result": {

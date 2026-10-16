@@ -639,8 +639,7 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Fehlschlag der Statistik selbst im Reiter an und blendet fehlende
         // Szenen still aus; eine Meldung über die ganze Seite wäre zu laut.
         const tabletEvaluation =
-          request.url.includes('/detailed_stats.json') ||
-          request.url.includes('/highlights.json');
+          /\/games\/\d+\/(detailed_stats|highlights)\.json$/.test(request.url);
         if (
           err.status === 404 &&
           !request.url.includes('/user/referees/') &&
