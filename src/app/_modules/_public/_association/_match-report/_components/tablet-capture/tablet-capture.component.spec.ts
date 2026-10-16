@@ -43,10 +43,10 @@ function asShot(input: ShotInput, id = 1): Shot {
   return { ...input, id, event_id: null };
 }
 
-// Die Übertragung läuft über async/await; zwischen zwei Anfragen liegt jeweils
-// ein Mikrotask.
+// Die Übertragung läuft über Promise-Ketten; ein Makrotask lässt alle
+// anstehenden Mikrotasks durchlaufen.
 async function settle(): Promise<void> {
-  for (let i = 0; i < 5; i++) await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve));
 }
 
 describe('TabletCaptureComponent', () => {
@@ -98,15 +98,22 @@ describe('TabletCaptureComponent', () => {
       '[data-testid="tablet-field"]'
     ) as SVGElement;
     const rect = field.getBoundingClientRect();
+    const at = {
+      clientX: rect.left + rect.width * 0.75,
+      clientY: rect.top + rect.height * 0.25,
+      pointerId: 1,
+      isPrimary: true,
+      button: 0,
+      bubbles: true,
+    };
     const before = Date.now();
-    field.dispatchEvent(
-      new PointerEvent('pointerdown', {
-        clientX: rect.left + rect.width * 0.75,
-        clientY: rect.top + rect.height * 0.25,
-        bubbles: true,
-      })
-    );
+    field.dispatchEvent(new PointerEvent('pointerdown', at));
     const after = Date.now();
+    // Angelegt wird erst beim Loslassen.
+    expect(component.draft).toBeNull();
+    field.dispatchEvent(
+      new PointerEvent('pointerup', { ...at, clientX: at.clientX + 3 })
+    );
 
     const draft = component.draft!;
     expect(draft.screenX).toBeCloseTo(0.75, 2);
@@ -121,6 +128,187 @@ describe('TabletCaptureComponent', () => {
     // Abweichung liegt deshalb bis auf die Laufzeit bei 60 s.
     expect(tapped).toBeGreaterThanOrEqual(before + 60000 - 1000);
     expect(tapped).toBeLessThanOrEqual(after + 60000 + 1000);
+  });
+
+  describe('Tippen statt Wischen', () => {
+    function field(): SVGElement {
+      return fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGElement;
+    }
+
+    function pointer(type: string, init: PointerEventInit) {
+      const rect = field().getBoundingClientRect();
+      field().dispatchEvent(
+        new PointerEvent(type, {
+          clientX: rect.left + rect.width / 2 + 20,
+          clientY: rect.top + rect.height / 2,
+          pointerId: 1,
+          isPrimary: true,
+          button: 0,
+          bubbles: true,
+          ...init,
+        })
+      );
+    }
+
+    it('legt beim Wischen keinen Schuss an', async () => {
+      await start();
+      pointer('pointerdown', {});
+      const rect = field().getBoundingClientRect();
+      pointer('pointerup', { clientX: rect.left + rect.width / 2 + 80 });
+      expect(component.draft).toBeNull();
+    });
+
+    it('ignoriert zweiten Finger, Rechtsklick und Abbruch', async () => {
+      await start();
+      pointer('pointerdown', { isPrimary: false, pointerId: 2 });
+      pointer('pointerup', { isPrimary: false, pointerId: 2 });
+      pointer('pointerdown', { button: 2 });
+      pointer('pointerup', { button: 2 });
+      pointer('pointerdown', {});
+      pointer('pointercancel', {});
+      pointer('pointerup', {});
+      expect(component.draft).toBeNull();
+    });
+  });
+
+  it('legt nach dem Zeitfenster einen neuen Entwurf mit neuem Zeitpunkt an', async () => {
+    await start();
+    component.startDraft(0.7, 0.5, Date.UTC(2026, 9, 16, 12, 0, 0));
+    const first = component.draft!;
+
+    component.startDraft(0.6, 0.4, Date.UTC(2026, 9, 16, 12, 0, 30));
+
+    expect(component.draft!.client_uuid).not.toBe(first.client_uuid);
+    expect(component.draft!.tapped_at).toBe('2026-10-16T12:00:30.000Z');
+  });
+
+  it('korrigiert einen Tipp vor dem Ende der Uhrmessung mit dem gespeicherten Versatz', async () => {
+    localStorage.setItem('tablet_clock_offset', '60000');
+    fixture.componentRef.setInput('game', game(4711));
+    fixture.detectChanges();
+    http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
+
+    // Messung läuft noch.
+    expect(component.clockStatus).toBe('measuring');
+    component.startDraft(0.8, 0.5, Date.UTC(2026, 9, 16, 12, 0, 0));
+    expect(component.draft!.tapped_at).toBe('2026-10-16T12:01:00.000Z');
+
+    // Die Messung ergibt 30 s; gespeichert wird mit dem gemessenen Wert.
+    for (let i = 0; i < 3; i++) {
+      http
+        .expectOne(API + 'server_time.json')
+        .flush({ now: new Date(Date.now() + 30000).toISOString() });
+      await settle();
+    }
+    expect(component.clockStatus).toBe('ok');
+    component.setDraftResult('saved');
+    component.saveDraft();
+
+    const post = http.expectOne(API + 'games/4711/shots.json');
+    const tapped = Date.parse(post.request.body.shots[0].tapped_at);
+    expect(Math.abs(tapped - Date.UTC(2026, 9, 16, 12, 0, 30))).toBeLessThan(
+      1000
+    );
+    post.flush({ shots: [] });
+    await settle();
+  });
+
+  it('räumt beim Zerstören Takt und online-Lauscher ab', async () => {
+    await start();
+    component.startDraft(0.8, 0.5);
+    component.setDraftResult('saved');
+    component.saveDraft();
+    http
+      .expectOne(API + 'games/4711/shots.json')
+      .error(new ProgressEvent('error'), { status: 0 });
+    await settle();
+    expect(component.pendingCount).toBe(1);
+
+    const clear = spyOn(window, 'clearInterval').and.callThrough();
+    fixture.destroy();
+    expect(clear).toHaveBeenCalled();
+
+    window.dispatchEvent(new Event('online'));
+    await settle();
+    http.expectNone(API + 'games/4711/shots.json');
+  });
+
+  it('löscht auch einen Schuss, dessen POST noch läuft', async () => {
+    await start();
+    component.startDraft(0.8, 0.5);
+    component.setDraftResult('saved');
+    component.saveDraft();
+    const post = http.expectOne(API + 'games/4711/shots.json');
+    const sent = post.request.body.shots[0] as ShotInput;
+
+    // Gelöscht, bevor die Antwort da ist: Der Server kennt ihn danach.
+    component.deleteShot(sent.client_uuid);
+    expect(component.recentShots).toEqual([]);
+    post.flush({ shots: [asShot(sent)] });
+    await settle();
+
+    const del = http.expectOne(
+      API + 'games/4711/shots/' + sent.client_uuid + '.json'
+    );
+    expect(del.request.method).toBe('DELETE');
+    del.flush({ shots: [] });
+    await settle();
+    expect(component.pendingCount).toBe(0);
+    expect(component.recentShots).toEqual([]);
+  });
+
+  it('puffert nach einer Absage nur noch und sendet erst auf Wunsch', async () => {
+    await start();
+    component.startDraft(0.8, 0.5);
+    component.setDraftResult('saved');
+    component.saveDraft();
+    http
+      .expectOne(API + 'games/4711/shots.json')
+      .flush({}, { status: 403, statusText: 'Forbidden' });
+    await settle();
+    fixture.detectChanges();
+
+    expect(component.syncForbidden).toBeTrue();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="tablet-sync-forbidden"]'
+      )
+    ).not.toBeNull();
+
+    component.startDraft(0.8, 0.5, Date.now() + 60000);
+    component.setDraftResult('missed');
+    component.saveDraft();
+    window.dispatchEvent(new Event('online'));
+    await settle();
+    http.expectNone(API + 'games/4711/shots.json');
+    expect(component.pendingCount).toBe(2);
+
+    component.retryNow();
+    const retry = http.expectOne(API + 'games/4711/shots.json');
+    expect(retry.request.body.shots.length).toBe(2);
+    retry.flush({ shots: [] });
+    await settle();
+    expect(component.syncForbidden).toBeFalse();
+  });
+
+  it('bietet als Schütze und Torhüter nur Spieler der passenden Aufstellung an', async () => {
+    await start();
+    component.startDraft(0.8, 0.5);
+    // Heim schießt: Schützen aus Heim, Torhüter aus Gast.
+    expect(component.fieldPlayers('home').map((p) => p.player_id)).toEqual([
+      101,
+    ]);
+    // Eine fremde ID (etwa nach Teamwechsel) wird nicht gesendet.
+    component.draft!.shooter_player_id = 201;
+    component.setDraftResult('saved');
+    component.saveDraft();
+    const post = http.expectOne(API + 'games/4711/shots.json');
+    expect(post.request.body.shots[0].shooter_player_id).toBeNull();
+    expect(post.request.body.shots[0].goalkeeper_player_id).toBe(299);
+    post.flush({ shots: [] });
+    await settle();
   });
 
   it('behält den Zeitpunkt, wenn die Stelle nachgebessert wird', async () => {

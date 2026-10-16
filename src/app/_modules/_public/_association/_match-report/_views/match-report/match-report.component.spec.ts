@@ -16,6 +16,7 @@ import { GameService, NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { Game } from '@floorball/types';
 
+import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import { MatchReportComponent } from './match-report.component';
 
 /**
@@ -448,6 +449,49 @@ describe('MatchReportComponent', () => {
         .flush({}, { status: 422, statusText: 'Unprocessable' });
 
       expect(setStatus).toHaveBeenCalledWith(4711, 'match_record_closed');
+    });
+
+    it('überträgt vorher ungesendete Schüsse und warnt, wenn etwas liegen bleibt', async () => {
+      create({ checklist_active: false });
+      const sync = TestBed.inject(TabletShotSyncService);
+      sync.buffer(4711).upsert({
+        client_uuid: 'u1',
+        team: 'home',
+        period: 1,
+        game_time: '',
+        tapped_at: '2026-10-16T12:00:00.000Z',
+        x: 0.5,
+        y: 0.5,
+        result: 'saved',
+      });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      try {
+        // Auch ohne tablet_capture am Spiel: Dieses Gerät hat Schüsse.
+        component.closeMatchRecord();
+        fixture.detectChanges();
+        expect(tabletDialog()).not.toBeNull();
+        expect(component.tabletChecking).toBeTrue();
+
+        http
+          .expectOne((req) => req.url.endsWith('games/4711/shots.json'))
+          .error(new ProgressEvent('error'), { status: 0 });
+        await new Promise((resolve) => setTimeout(resolve));
+        fixture.detectChanges();
+
+        expect(component.tabletChecking).toBeFalse();
+        expect(component.tabletUnsent).toBe(1);
+        expect(
+          fixture.nativeElement.querySelector(
+            '[data-testid="tablet-complete-unsent"]'
+          )
+        ).not.toBeNull();
+        expect(setStatus).not.toHaveBeenCalled();
+      } finally {
+        localStorage.removeItem('tablet_shot_buffer_4711');
+      }
     });
 
     it('bricht ohne Statuswechsel ab', () => {

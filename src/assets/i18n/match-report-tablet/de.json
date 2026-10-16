@@ -39,7 +39,8 @@
   "sync": {
     "done": "Alle Schüsse übertragen",
     "pending": "{{ count }} Änderung(en) warten auf Übertragung",
-    "retry": "Jetzt senden"
+    "retry": "Jetzt senden",
+    "forbidden": "{{ count }} Schüsse nicht übertragen, der Bericht ist geschlossen oder die Berechtigung fehlt."
   },
   "clock": {
     "stale": "Serverzeit nicht erreichbar, es gilt der letzte Abgleich dieses Geräts.",
@@ -50,13 +51,17 @@
     "title": "Tore zuordnen",
     "hint": "Diese Tore konnten keinem erfassten Schuss automatisch zugeordnet werden. Bitte den passenden Schuss antippen.",
     "goal": "Tor {{ team }} zum {{ score }} ({{ period }}. Abschnitt, {{ time }})",
-    "shot": "{{ period }}. Abschnitt {{ time }} {{ shooter }} · angetippt {{ tapped }}"
+    "shot": "{{ period }}. Abschnitt {{ time }} {{ shooter }} · angetippt {{ tapped }}",
+    "error": "Die Zuordnung wurde abgewiesen. Ist der Bericht schon geschlossen?"
   },
   "complete": {
     "title": "Schüsse vollständig erfasst?",
     "content": "Für dieses Spiel wurden Schüsse im Tabletmodus erfasst. Wurden alle Schüsse des Spiels erfasst? Unvollständig erfasste Spiele bleiben aus Saisonstatistiken heraus.",
     "yes": "Ja, vollständig",
     "no": "Nein, unvollständig",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "unsent": "{{ count }} Änderung(en) an Schüssen von diesem Gerät sind noch nicht übertragen. Nach dem Abschließen nimmt der Server sie nicht mehr an. Bitte die Verbindung prüfen und erneut versuchen.",
+    "checking": "Schüsse werden übertragen…",
+    "retry": "Erneut senden"
   }
 }

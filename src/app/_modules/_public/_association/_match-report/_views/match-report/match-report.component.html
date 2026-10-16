@@ -528,11 +528,35 @@
         <p class="text-sm text-fb-gray-400 mb-5">
           {{ "tablet.complete.content" | transloco }}
         </p>
+        @if (tabletChecking) {
+          <p class="text-sm mb-5" data-testid="tablet-complete-checking">
+            {{ "tablet.complete.checking" | transloco }}
+          </p>
+        } @else if (tabletUnsent > 0) {
+          <div
+            class="rounded-md border border-red-300 bg-red-50 p-4 text-red-800 mb-5"
+            role="alert"
+            data-testid="tablet-complete-unsent"
+          >
+            <p class="text-sm font-bold">
+              {{
+                "tablet.complete.unsent" | transloco: { count: tabletUnsent }
+              }}
+            </p>
+            <button
+              type="button"
+              class="mt-2 px-4 py-2 text-sm font-bold border border-red-700 rounded-[5px]"
+              (click)="sendPendingShots()"
+            >
+              {{ "tablet.complete.retry" | transloco }}
+            </button>
+          </div>
+        }
         <div class="flex flex-wrap gap-3">
           <button
             type="button"
             data-testid="tablet-complete-yes"
-            [disabled]="tabletCompleteSaving"
+            [disabled]="tabletCompleteSaving || tabletChecking"
             (click)="answerTabletComplete(true)"
             class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
           >
@@ -541,7 +565,7 @@
           <button
             type="button"
             data-testid="tablet-complete-no"
-            [disabled]="tabletCompleteSaving"
+            [disabled]="tabletCompleteSaving || tabletChecking"
             (click)="answerTabletComplete(false)"
             class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
           >

@@ -39,7 +39,8 @@
   "sync": {
     "done": "All shots uploaded",
     "pending": "{{ count }} change(s) waiting for upload",
-    "retry": "Send now"
+    "retry": "Send now",
+    "forbidden": "{{ count }} shots not uploaded, the report is closed or permission is missing."
   },
   "clock": {
     "stale": "Server time unreachable, using this device's last sync.",
@@ -50,13 +51,17 @@
     "title": "Assign goals",
     "hint": "These goals could not be matched to a recorded shot automatically. Please tap the matching shot.",
     "goal": "Goal {{ team }} to {{ score }} (period {{ period }}, {{ time }})",
-    "shot": "Period {{ period }} {{ time }} {{ shooter }} · tapped {{ tapped }}"
+    "shot": "Period {{ period }} {{ time }} {{ shooter }} · tapped {{ tapped }}",
+    "error": "The assignment was rejected. Is the report already closed?"
   },
   "complete": {
     "title": "All shots recorded?",
     "content": "Shots for this game were recorded in tablet mode. Were all shots of the game recorded? Incompletely recorded games are left out of season statistics.",
     "yes": "Yes, complete",
     "no": "No, incomplete",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "unsent": "{{ count }} shot change(s) from this device have not been uploaded yet. Once the report is closed, the server will no longer accept them. Please check the connection and try again.",
+    "checking": "Uploading shots…",
+    "retry": "Send again"
   }
 }

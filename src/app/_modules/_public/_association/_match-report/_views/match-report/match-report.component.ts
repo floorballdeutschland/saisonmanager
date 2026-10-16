@@ -27,6 +27,7 @@ import {
   SessionService,
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
+import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 
 @Component({
   selector: 'fb-match-report',
@@ -123,6 +124,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
   // gilt für genau einen Abschlussversuch und wird danach zurückgesetzt.
   public tabletCompleteVisible = false;
   public tabletCompleteSaving = false;
+  // Vor der Frage wird übertragen, was dieses Gerät noch puffert. Bleibt dabei
+  // etwas liegen, warnt das Fenster: Nach dem Abschluss nimmt der Server es
+  // nicht mehr an.
+  public tabletChecking = false;
+  public tabletUnsent = 0;
   private _tabletCompleteAnswered = false;
 
   // scan upload
@@ -137,7 +143,8 @@ export class MatchReportComponent implements OnInit, OnChanges {
     private _gameService: GameService,
     private _notificationService: NotificationService,
     private _cdr: ChangeDetectorRef,
-    private _gameShotService: GameShotService
+    private _gameShotService: GameShotService,
+    private _shotSync: TabletShotSyncService
   ) {}
 
   ngOnInit() {
@@ -159,6 +166,8 @@ export class MatchReportComponent implements OnInit, OnChanges {
       // Die Abschlussfrage gehört zum vorigen Spiel.
       this.tabletCompleteVisible = false;
       this.tabletCompleteSaving = false;
+      this.tabletChecking = false;
+      this.tabletUnsent = 0;
       this._tabletCompleteAnswered = false;
     }
 
@@ -189,11 +198,16 @@ export class MatchReportComponent implements OnInit, OnChanges {
     if (
       statusIndex > maxStatusIndex &&
       newStatus === this.MATCH_RECORD_CLOSED &&
-      this.game.tablet_capture &&
-      !this._tabletCompleteAnswered
+      !this._tabletCompleteAnswered &&
+      (this.game.tablet_capture ||
+        this._shotSync.pendingCount(this.game.id) > 0)
     ) {
       this.tabletCompleteSaving = false;
       this.tabletCompleteVisible = true;
+      this.tabletUnsent = 0;
+      if (this._shotSync.pendingCount(this.game.id) > 0) {
+        this.sendPendingShots();
+      }
       this._cdr.markForCheck();
       return;
     }
@@ -404,7 +418,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
    * meldet der ErrorInterceptor, ein 5xx geht zusätzlich an Sentry.
    */
   public answerTabletComplete(complete: boolean): void {
-    if (this.tabletCompleteSaving) return;
+    if (this.tabletCompleteSaving || this.tabletChecking) return;
     this.tabletCompleteSaving = true;
     const gameId = this.game.id;
     const proceed = () => {
@@ -424,6 +438,18 @@ export class MatchReportComponent implements OnInit, OnChanges {
         if (err?.status >= 500) Sentry.captureException(err);
         proceed();
       },
+    });
+  }
+
+  /** Ausdrücklich angestoßen, also auch nach einer früheren Absage. */
+  public sendPendingShots(): void {
+    const gameId = this.game.id;
+    this.tabletChecking = true;
+    this._shotSync.retry(gameId).then(() => {
+      if (this.game?.id !== gameId) return;
+      this.tabletChecking = false;
+      this.tabletUnsent = this._shotSync.pendingCount(gameId);
+      this._cdr.markForCheck();
     });
   }
 

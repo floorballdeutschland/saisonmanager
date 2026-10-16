@@ -8,7 +8,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { lastValueFrom } from 'rxjs';
+import { Subscription, lastValueFrom, timeout } from 'rxjs';
 
 import { GameShotService, StorageService } from '@floorball/core';
 import {
@@ -22,6 +22,7 @@ import {
 } from '@floorball/types';
 
 import { ShotBuffer } from './shot-buffer';
+import { TabletShotSyncService } from './tablet-shot-sync.service';
 import {
   ClockSample,
   GoalLinkCandidate,
@@ -44,6 +45,11 @@ import {
 
 export interface ShotDraft {
   client_uuid: string;
+  // Gerätezeit des Antippens (ms). Umgerechnet in Serverzeit wird erst beim
+  // Speichern: Ein Tipp, der vor dem Ende der Uhrmessung fiel, bekommt so
+  // noch den gemessenen Versatz. Null bei einem geladenen Schuss, dessen
+  // `tapped_at` schon feststeht.
+  tapped_device_ms: number | null;
   tapped_at: string;
   // Angetippte Stelle auf dem Bildschirm (0..1). Normiert wird erst beim
   // Speichern, weil sich Team und Abschnitt bis dahin noch ändern dürfen.
@@ -64,6 +70,13 @@ const CLOCK_OFFSET_KEY = 'tablet_clock_offset';
 const SIDES_KEY_PREFIX = 'tablet_sides_';
 const RETRY_INTERVAL_MS = 15000;
 const CLOCK_SAMPLES = 3;
+const CLOCK_TIMEOUT_MS = 5000;
+// Ein Tipp gilt als Tipp, solange der Finger sich kaum bewegt; darüber ist es
+// ein Wischen (Scrollen am Tablet) und erzeugt keinen Schuss.
+const TAP_MAX_MOVE_PX = 12;
+// Ein offener Entwurf, der älter ist, wird von einem neuen Tipp nicht mehr
+// verschoben, sondern ersetzt: Dann ist es ein neuer Schuss.
+const DRAFT_MOVE_WINDOW_MS = 10000;
 const RECENT_SHOTS = 8;
 
 /**
@@ -107,10 +120,16 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public clockOffset: number | null = null;
   public clockStatus: 'measuring' | 'ok' | 'stale' | 'unknown' = 'measuring';
 
-  public syncing = false;
-  // Fachliche Absage des Servers (4xx): Automatisch wird dann nicht weiter
-  // gesendet, sonst stapelte der ErrorInterceptor alle 15 s dieselbe Meldung.
-  public syncBlocked = false;
+  // Meldung, wenn eine Zuordnung abgewiesen wurde (403/404 meldet der
+  // Interceptor für diese Endpunkte nicht selbst).
+  public linkError = false;
+
+  private _pointerDown: {
+    pointerId: number;
+    clientX: number;
+    clientY: number;
+    deviceNow: number;
+  } | null = null;
 
   // Zuletzt bewusst gewählter Torhüter je Team. Gilt für die folgenden Schüsse
   // weiter, bis wieder umgestellt wird (Torhüterwechsel im Spiel).
@@ -119,22 +138,33 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   private _gameId: number | null = null;
   private _goalSignature = '';
   private _retryTimer: ReturnType<typeof setInterval> | null = null;
-  private readonly _onOnline = () => void this.flush();
+  private _shotsSubscription: Subscription | null = null;
+  private readonly _onOnline = () => this._autoFlush();
 
   constructor(
     private _shotService: GameShotService,
+    private _sync: TabletShotSyncService,
     private _storage: StorageService,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    // Vorläufig der zuletzt gemessene Versatz dieses Geräts, damit auch ein
+    // Tipp vor dem Ende der Messung korrigiert ist.
+    const stored = parseInt(this._storage.getItem(CLOCK_OFFSET_KEY), 10);
+    if (!isNaN(stored)) this.clockOffset = stored;
     void this.measureClock();
+
+    this._shotsSubscription = this._sync.shots$.subscribe(
+      ({ gameId, shots }) => {
+        this._applyServerShots(gameId, shots);
+        this._cdr.markForCheck();
+      }
+    );
     if (typeof window !== 'undefined') {
       window.addEventListener('online', this._onOnline);
       this._retryTimer = setInterval(() => {
-        if (!this.syncBlocked && (this.buffer?.size ?? 0) > 0) {
-          void this.flush();
-        }
+        if ((this.buffer?.size ?? 0) > 0) this._autoFlush();
       }, RETRY_INTERVAL_MS);
     }
   }
@@ -157,6 +187,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     if (this._retryTimer) clearInterval(this._retryTimer);
+    this._retryTimer = null;
+    this._shotsSubscription?.unsubscribe();
     if (typeof window !== 'undefined') {
       window.removeEventListener('online', this._onOnline);
     }
@@ -166,17 +198,18 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   private _resetForGame(gameId: number): void {
     this._gameId = gameId;
-    this.buffer = new ShotBuffer(this._storage, gameId);
+    this.buffer = this._sync.buffer(gameId);
     this.serverShots = [];
     this.draft = null;
+    this._pointerDown = null;
     this.gameTimeInvalid = false;
-    this.syncBlocked = false;
+    this.linkError = false;
     this._goalkeeperChoice = {};
     this.sides = this._loadSides(gameId);
     this.viewPeriod = this._periodFromInput();
     this._goalSignature = this._currentGoalSignature();
     this.loadShots();
-    void this.flush();
+    this._autoFlush();
   }
 
   private _periodFromInput(): number {
@@ -208,7 +241,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     for (let i = 0; i < CLOCK_SAMPLES; i++) {
       const sentAt = Date.now();
       try {
-        const response = await lastValueFrom(this._shotService.getServerTime());
+        const response = await lastValueFrom(
+          this._shotService
+            .getServerTime()
+            .pipe(timeout({ first: CLOCK_TIMEOUT_MS }))
+        );
         samples.push({
           sentAt,
           receivedAt: Date.now(),
@@ -282,15 +319,43 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
    * Sprungmarken und Highlights: Das offizielle Tor wird erst beim Bully
    * eingetragen.
    */
-  public onFieldTap(event: PointerEvent): void {
-    const deviceNow = Date.now();
+  //
+  // Festgehalten wird der Zeitpunkt bei `pointerdown`, angelegt wird der
+  // Entwurf aber erst beim Loslassen und nur, wenn der Finger kaum gewandert
+  // ist: Ein Wischen zum Scrollen, ein zweiter Finger oder ein Rechtsklick
+  // sind kein Schuss.
+  public onFieldPointerDown(event: PointerEvent): void {
+    if (!event.isPrimary || event.button !== 0) return;
+    this._pointerDown = {
+      pointerId: event.pointerId,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      deviceNow: Date.now(),
+    };
+  }
+
+  public onFieldPointerUp(event: PointerEvent): void {
+    const down = this._pointerDown;
+    this._pointerDown = null;
+    if (!down || down.pointerId !== event.pointerId) return;
+
+    const moved = Math.hypot(
+      event.clientX - down.clientX,
+      event.clientY - down.clientY
+    );
+    if (moved > TAP_MAX_MOVE_PX) return;
+
     const target = event.currentTarget as Element | null;
     const rect = target?.getBoundingClientRect();
     if (!rect || rect.width <= 0 || rect.height <= 0) return;
 
-    const screenX = (event.clientX - rect.left) / rect.width;
-    const screenY = (event.clientY - rect.top) / rect.height;
-    this.startDraft(screenX, screenY, deviceNow);
+    const screenX = (down.clientX - rect.left) / rect.width;
+    const screenY = (down.clientY - rect.top) / rect.height;
+    this.startDraft(screenX, screenY, down.deviceNow);
+  }
+
+  public onFieldPointerCancel(): void {
+    this._pointerDown = null;
   }
 
   public startDraft(
@@ -298,11 +363,20 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     screenY: number,
     deviceNow = Date.now()
   ): void {
-    // Ein offener Entwurf wird nur verschoben: Wer die Stelle nachbessert,
-    // meint denselben Schuss, und dessen Zeitpunkt bleibt.
-    if (this.draft) {
-      this.draft.screenX = screenX;
-      this.draft.screenY = screenY;
+    // Ein frischer Entwurf wird nur verschoben: Wer die Stelle gleich
+    // nachbessert, meint denselben Schuss, und dessen Zeitpunkt bleibt. Ein
+    // geladener Schuss (Korrektur) wird immer verschoben. Ist ein neuer
+    // Entwurf älter als das Zeitfenster, war es ein neuer Schuss: Der alte,
+    // nie gespeicherte Entwurf wird verworfen.
+    const draft = this.draft;
+    if (
+      draft &&
+      (draft.isEdit ||
+        draft.tapped_device_ms === null ||
+        deviceNow - draft.tapped_device_ms <= DRAFT_MOVE_WINDOW_MS)
+    ) {
+      draft.screenX = screenX;
+      draft.screenY = screenY;
       return;
     }
 
@@ -310,6 +384,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.gameTimeInvalid = false;
     this.draft = {
       client_uuid: newClientUuid(),
+      tapped_device_ms: deviceNow,
       tapped_at: toServerTime(deviceNow, this.clockOffset ?? 0),
       screenX,
       screenY,
@@ -370,18 +445,26 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       team: draft.team,
       period: draft.period,
       game_time: gameTime,
-      tapped_at: draft.tapped_at,
+      tapped_at:
+        draft.tapped_device_ms === null
+          ? draft.tapped_at
+          : toServerTime(draft.tapped_device_ms, this.clockOffset ?? 0),
       x: position.x,
       y: position.y,
       result: draft.result,
-      shooter_player_id: draft.shooter_player_id,
-      goalkeeper_player_id: draft.goalkeeper_player_id,
+      // Die API weist IDs ab, die nicht in der Aufstellung des jeweiligen
+      // Teams stehen (Schütze: schießendes, Torhüter: verteidigendes Team).
+      shooter_player_id: this._inLineup(draft.team, draft.shooter_player_id),
+      goalkeeper_player_id: this._inLineup(
+        otherTeam(draft.team),
+        draft.goalkeeper_player_id
+      ),
     };
 
     this.buffer.upsert(shot);
     this.draft = null;
     this.gameTimeInvalid = false;
-    void this.flush();
+    this._autoFlush();
   }
 
   public editShot(shot: DisplayedShot): void {
@@ -393,6 +476,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.viewPeriod = shot.period;
     this.draft = {
       client_uuid: shot.client_uuid,
+      tapped_device_ms: null,
       tapped_at: shot.tapped_at,
       screenX: screen.x,
       screenY: screen.y,
@@ -413,72 +497,64 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     );
     this.buffer.remove(clientUuid, knownToServer);
     if (this.draft?.client_uuid === clientUuid) this.draft = null;
-    void this.flush();
+    this._autoFlush();
   }
 
   private _goalkeeperFor(team: ShotTeam): number | null {
     if (team in this._goalkeeperChoice) {
-      return this._goalkeeperChoice[team] ?? null;
+      return this._inLineup(team, this._goalkeeperChoice[team]);
     }
-    return this.game ? defaultGoalkeeperId(this.game, team) : null;
+    return this.game
+      ? this._inLineup(team, defaultGoalkeeperId(this.game, team))
+      : null;
+  }
+
+  private _inLineup(
+    team: ShotTeam,
+    playerId: number | null | undefined
+  ): number | null {
+    if (!playerId) return null;
+    return (this.game?.players?.[team] ?? []).some(
+      (player) => player.player_id === playerId
+    )
+      ? playerId
+      : null;
   }
 
   // --- Übertragung ------------------------------------------------------------
 
+  get syncing(): boolean {
+    return this._gameId !== null && this._sync.state(this._gameId).syncing;
+  }
+
+  get syncBlocked(): boolean {
+    return this._gameId !== null && this._sync.state(this._gameId).blocked;
+  }
+
+  get syncForbidden(): boolean {
+    return this._gameId !== null && this._sync.state(this._gameId).forbidden;
+  }
+
   /**
-   * Sendet den Puffer: erst vorgemerkte Löschungen, dann alle neuen und
-   * geänderten Schüsse in einem POST. Bei Verbindungs- oder Serverfehlern
-   * bleibt alles im Puffer und der Takt versucht es erneut.
+   * Senden ohne ausdrücklichen Auftrag (Speichern, Löschen, Takt, wieder
+   * online). Nach einer Absage nicht: Dann wird nur gepuffert, gesendet wird
+   * erst über „Jetzt senden“.
    */
-  public async flush(): Promise<void> {
-    const buffer = this.buffer;
-    const gameId = this._gameId;
-    if (!buffer || gameId === null || this.syncing) return;
-    if (buffer.size === 0) return;
+  private _autoFlush(): void {
+    if (this._gameId === null) return;
+    void this._sync
+      .flushIfAllowed(this._gameId)
+      .then(() => this._cdr.markForCheck());
+  }
 
-    this.syncing = true;
-    let failed = false;
-    try {
-      for (const uuid of buffer.deletes) {
-        try {
-          const shots = await lastValueFrom(
-            this._shotService.deleteShot(gameId, uuid)
-          );
-          this._applyServerShots(gameId, shots);
-        } catch (err) {
-          // Schon weg (etwa weil die erste Antwort verloren ging): erledigt.
-          if ((err as { status?: number })?.status !== 404) throw err;
-        }
-        buffer.acknowledgeDelete(uuid);
-      }
-
-      const upserts = buffer.upserts;
-      if (upserts.length) {
-        const shots = await lastValueFrom(
-          this._shotService.saveShots(gameId, upserts)
-        );
-        buffer.acknowledgeUpserts(upserts);
-        this._applyServerShots(gameId, shots);
-      }
-      this.syncBlocked = false;
-    } catch (err) {
-      failed = true;
-      const status = (err as { status?: number })?.status ?? 0;
-      if (status >= 400 && status < 500) this.syncBlocked = true;
-    } finally {
-      this.syncing = false;
-      this._cdr.markForCheck();
-    }
-
-    // Was während der Übertragung dazukam, gleich hinterher.
-    if (!failed && buffer === this.buffer && buffer.size > 0) {
-      await this.flush();
-    }
+  public flush(): Promise<void> {
+    if (this._gameId === null) return Promise.resolve();
+    return this._sync.flush(this._gameId).then(() => this._cdr.markForCheck());
   }
 
   public retryNow(): void {
-    this.syncBlocked = false;
-    void this.flush();
+    if (this._gameId === null) return;
+    void this._sync.retry(this._gameId).then(() => this._cdr.markForCheck());
   }
 
   public loadShots(): void {
@@ -566,11 +642,18 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public linkShot(shot: Shot, goal: GameEvent): void {
     const gameId = this._gameId;
     if (gameId === null) return;
+    this.linkError = false;
     this._shotService
       .linkShot(gameId, shot.client_uuid, goal.event_id)
       .subscribe({
         next: (shots) => {
           this._applyServerShots(gameId, shots);
+          this._cdr.markForCheck();
+        },
+        // 403/404 meldet der Interceptor hier nicht; übrige 4xx zeigt er an.
+        error: (err) => {
+          if (gameId !== this._gameId) return;
+          if ([403, 404].includes(err?.status)) this.linkError = true;
           this._cdr.markForCheck();
         },
       });

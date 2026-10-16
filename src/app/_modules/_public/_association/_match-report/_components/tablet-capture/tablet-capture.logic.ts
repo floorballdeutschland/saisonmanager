@@ -272,9 +272,16 @@ export function goalLinkCandidates(
     )
     .map((goal) => ({
       goal,
+      // Nur Schüsse desselben Teams (die API weist andere ab), solche aus
+      // demselben Abschnitt zuerst.
       shots: freeGoalShots
         .filter((shot) => shot.team === goal.event_team)
-        .sort((a, b) => b.tapped_at.localeCompare(a.tapped_at)),
+        .sort(
+          (a, b) =>
+            Number(b.period === goal.period) -
+              Number(a.period === goal.period) ||
+            b.tapped_at.localeCompare(a.tapped_at)
+        ),
     }))
     .filter((candidate) => candidate.shots.length > 0);
 }

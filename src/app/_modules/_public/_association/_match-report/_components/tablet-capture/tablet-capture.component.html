@@ -32,6 +32,15 @@
       }
     </div>
   </div>
+  @if (syncForbidden && pendingCount > 0) {
+    <p
+      class="mt-2 rounded-[5px] border border-red-300 bg-red-50 p-3 font-bold text-red-800"
+      role="alert"
+      data-testid="tablet-sync-forbidden"
+    >
+      {{ "tablet.sync.forbidden" | transloco: { count: pendingCount } }}
+    </p>
+  }
   @if (clockStatus === "stale" || clockStatus === "unknown") {
     <p class="mt-1 text-sm text-yellow-800" data-testid="tablet-clock-warning">
       {{ "tablet.clock." + clockStatus | transloco }}
@@ -83,13 +92,15 @@
         voraus, dass das Bild die Fläche linear füllt.
       -->
       <svg
-        class="mt-1 block aspect-[2/1] w-full cursor-crosshair touch-manipulation select-none"
+        class="mt-1 block aspect-[2/1] w-full cursor-crosshair touch-none select-none"
         viewBox="0 0 400 200"
         preserveAspectRatio="none"
         role="img"
         [attr.aria-label]="'tablet.field' | transloco"
         data-testid="tablet-field"
-        (pointerdown)="onFieldTap($event)"
+        (pointerdown)="onFieldPointerDown($event)"
+        (pointerup)="onFieldPointerUp($event)"
+        (pointercancel)="onFieldPointerCancel()"
       >
         <rect
           x="1"
@@ -427,6 +438,11 @@
     >
       <h4 class="font-bold">{{ "tablet.link.title" | transloco }}</h4>
       <p class="mb-2 text-sm">{{ "tablet.link.hint" | transloco }}</p>
+      @if (linkError) {
+        <p class="mb-2 text-sm font-bold text-red-700" role="alert">
+          {{ "tablet.link.error" | transloco }}
+        </p>
+      }
       @for (candidate of linkCandidates; track candidate.goal.event_id) {
         <div class="mb-2">
           <div class="text-sm font-bold">

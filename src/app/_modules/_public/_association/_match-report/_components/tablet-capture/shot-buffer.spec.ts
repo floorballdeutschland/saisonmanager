@@ -95,4 +95,24 @@ describe('ShotBuffer', () => {
       0
     );
   });
+
+  it('löscht beim Server auch, was abgeschickt, aber nie bestätigt wurde', () => {
+    buffer.upsert(input('a'));
+    buffer.markSent(buffer.upserts);
+
+    // Antwort verloren oder noch unterwegs: Der Server kennt den Schuss evtl.
+    buffer.remove('a', false);
+
+    expect(buffer.deletes).toEqual(['a']);
+  });
+
+  it('vergisst die Sendemarke nach der Bestätigung', () => {
+    buffer.upsert(input('a'));
+    const sent = buffer.upserts;
+    buffer.markSent(sent);
+    buffer.acknowledgeUpserts(sent);
+
+    expect(buffer.size).toBe(0);
+    expect(storage.data.size).toBe(0);
+  });
 });

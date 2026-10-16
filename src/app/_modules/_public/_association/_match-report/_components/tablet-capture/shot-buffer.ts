@@ -4,6 +4,10 @@ import { ShotInput } from '@floorball/types';
 interface BufferState {
   upserts: ShotInput[];
   deletes: string[];
+  // Schüsse, die schon einmal abgeschickt, aber noch nicht bestätigt wurden.
+  // Ging die Antwort verloren oder läuft der POST noch, kennt der Server den
+  // Schuss womöglich schon; eine Löschung muss ihn dort dann auch erreichen.
+  sent: string[];
 }
 
 const KEY_PREFIX = 'tablet_shot_buffer_';
@@ -45,6 +49,7 @@ export class ShotBuffer {
     return {
       upserts: [...this._state.upserts],
       deletes: [...this._state.deletes],
+      sent: [...this._state.sent],
     };
   }
 
@@ -54,16 +59,17 @@ export class ShotBuffer {
       return {
         upserts: Array.isArray(parsed.upserts) ? parsed.upserts : [],
         deletes: Array.isArray(parsed.deletes) ? parsed.deletes : [],
+        sent: Array.isArray(parsed.sent) ? parsed.sent : [],
       };
     } catch {
-      return { upserts: [], deletes: [] };
+      return { upserts: [], deletes: [], sent: [] };
     }
   }
 
   private _write(state: BufferState): void {
     this._state = state;
     this.version++;
-    if (!state.upserts.length && !state.deletes.length) {
+    if (!state.upserts.length && !state.deletes.length && !state.sent.length) {
       this._storage.removeItem(this._key);
       return;
     }
@@ -95,16 +101,31 @@ export class ShotBuffer {
   }
 
   /**
-   * Schuss verwerfen. `knownToServer`: Nur was der Server schon kennt, braucht
-   * eine Löschung dort. Ein nie bestätigter Schuss verschwindet lokal.
+   * Schuss verwerfen. Eine Löschung beim Server wird eingereiht, sobald er den
+   * Schuss kennen könnte: weil er im Serverstand steht (`knownToServer`) oder
+   * weil er schon einmal abgeschickt wurde. Nur ein nie gesendeter Schuss
+   * verschwindet rein lokal. Ein 404 auf die Löschung ist harmlos.
    */
   remove(clientUuid: string, knownToServer: boolean): void {
     const state = this._read();
     state.upserts = state.upserts.filter(
       (entry) => entry.client_uuid !== clientUuid
     );
-    if (knownToServer && !state.deletes.includes(clientUuid)) {
+    const mayExist = knownToServer || state.sent.includes(clientUuid);
+    if (mayExist && !state.deletes.includes(clientUuid)) {
       state.deletes.push(clientUuid);
+    }
+    state.sent = state.sent.filter((uuid) => uuid !== clientUuid);
+    this._write(state);
+  }
+
+  /** Vor dem Absenden aufrufen: ab hier kann der Server den Schuss kennen. */
+  markSent(shots: ShotInput[]): void {
+    const state = this._read();
+    for (const shot of shots) {
+      if (!state.sent.includes(shot.client_uuid)) {
+        state.sent.push(shot.client_uuid);
+      }
     }
     this._write(state);
   }
@@ -118,6 +139,8 @@ export class ShotBuffer {
     state.upserts = state.upserts.filter(
       (entry) => sentJson.get(entry.client_uuid) !== JSON.stringify(entry)
     );
+    // Bestätigte Schüsse stehen ab jetzt im Serverstand.
+    state.sent = state.sent.filter((uuid) => !sentJson.has(uuid));
     this._write(state);
   }
 

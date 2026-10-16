@@ -12,8 +12,9 @@ import { refreshContext } from '../_http/silent-refresh';
  * Die Schreibwege laufen still (SILENT_REFRESH): Am Spielfeldrand bricht die
  * Verbindung ständig weg, und die Erfassung puffert jeden Schuss lokal und
  * sendet ihn später erneut. Ein Toast pro Fehlversuch wäre dort reines
- * Rauschen; den Stand zeigt die Erfassung selbst an. Fachliche Absagen (4xx)
- * meldet der ErrorInterceptor weiterhin.
+ * Rauschen; den Stand zeigt die Erfassung selbst an. 403 und 404 auf diese
+ * Pfade übergeht der ErrorInterceptor ebenfalls (Bericht geschlossen, Schuss
+ * schon gelöscht), übrige fachliche Absagen (4xx) meldet er weiterhin.
  */
 @Injectable({
   providedIn: 'root',
