@@ -279,6 +279,18 @@ describe('ErrorInterceptor', () => {
     expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 
+  // fe#344: Ohne Tablet-Daten antwortet die Auswertung mit 404; der Reiter
+  // meldet das selbst.
+  it('stays quiet on a 404 for the detailed game statistics', () => {
+    const url = 'http://localhost:3001/api/v2/games/1/detailed_stats.json';
+    http.get(url).subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(url)
+      .flush({ message: 'Weg' }, { status: 404, statusText: 'Error' });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   it('prefixes a 403 and keeps it across the forced navigation', () => {
     failWith({ message: 'Keine Berechtigung' }, 403);
 

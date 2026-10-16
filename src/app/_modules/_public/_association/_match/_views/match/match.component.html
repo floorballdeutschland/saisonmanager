@@ -42,19 +42,42 @@
     sonst rendert unten der Spielbericht, es gäbe aber keine Möglichkeit, zur
     öffentlichen Ansicht zu wechseln.
   -->
-  @if (((isLoggedIn$ | async) || hasSecretaryToken) && canEdit(game)) {
+  <!--
+    Der Reiter „Ausführliche Statistik“ (fe#344) erscheint nur bei Spielen, die
+    im Tabletmodus erfasst wurden. Bei allen anderen sehen Besucher ohne
+    Bearbeitungsrecht weiterhin gar keine Reiterleiste.
+  -->
+  @let editable = ((isLoggedIn$ | async) || hasSecretaryToken) && canEdit(game);
+  @if (editable || game.tablet_capture) {
     @if (selectedAssociation$ | async; as selectedAssociation) {
       <div class="container mx-auto px-4 lg:px-8">
-        <div class="h-[80px] flex items-center gap-[25px]">
+        <div
+          class="min-h-[80px] py-3 flex flex-wrap items-center gap-x-[25px] gap-y-2"
+        >
           <fb-tab-item
             [isActive]="isTabActive('public')"
             [markedAsActive]="isTabActive('public')"
             [link]="['./']"
             (click)="$event.preventDefault(); setTab('public')"
             [activeColor]="selectedAssociation | gradient"
-            >Öffentliche Ansicht</fb-tab-item
+            >{{
+              editable
+                ? "Öffentliche Ansicht"
+                : ("match.tabs.overview" | transloco)
+            }}</fb-tab-item
           >
-          @if (canEdit(game)) {
+          @if (game.tablet_capture) {
+            <fb-tab-item
+              [isActive]="isTabActive('stats')"
+              [markedAsActive]="isTabActive('stats')"
+              [link]="['./']"
+              (click)="$event.preventDefault(); setTab('stats')"
+              [activeColor]="selectedAssociation | gradient"
+              data-test="tab-stats"
+              >{{ "match.tabs.detailedStats" | transloco }}</fb-tab-item
+            >
+          }
+          @if (editable) {
             <fb-tab-item
               [isActive]="isTabActive('secretary')"
               [markedAsActive]="isTabActive('secretary')"
@@ -74,6 +97,9 @@
       [game]="game"
       [additionalFields]="additionalFields"
     ></fb-match-public>
+  }
+  @if (isTabActive("stats") && game.tablet_capture) {
+    <fb-match-detailed-stats [game]="game"></fb-match-detailed-stats>
   }
   @if (isTabActive("secretary") && canEdit(game)) {
     <fb-match-report
