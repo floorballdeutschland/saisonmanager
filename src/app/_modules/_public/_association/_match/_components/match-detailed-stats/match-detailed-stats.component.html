@@ -94,6 +94,7 @@
               [shots]="shotsFor(team)"
               [team]="team"
               [teamName]="teamName(team)"
+              [periodTitles]="game.period_titles"
             ></fb-shot-chart>
             <p class="text-xs text-fb-gray-500 mt-2">
               @for (result of results; track result; let last = $last) {

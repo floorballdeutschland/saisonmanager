@@ -70,8 +70,11 @@
         [attr.data-result]="point.shot.result"
       >
         <title>
-          {{ point.shot.period }}.
-          {{ "match.detailedStats.period" | transloco }}
+          {{
+            periodTitle(point.shot.period) ??
+              ("match.detailedStats.periodN"
+                | transloco: { n: point.shot.period })
+          }}
           {{ point.shot.game_time }}:
           {{ "match.detailedStats.result." + point.shot.result | transloco }}
           {{ shooterLabel(point.shot) }}

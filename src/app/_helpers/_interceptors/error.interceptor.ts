@@ -637,7 +637,9 @@ export class ErrorInterceptor implements HttpInterceptor {
         // es keine Tablet-Daten gibt. Die Spielseite fragt nur bei
         // `tablet_capture` an und zeigt einen Fehlschlag selbst im Reiter an;
         // eine Meldung über die ganze Seite wäre dort zu laut.
-        const tabletEvaluation = request.url.includes('/detailed_stats.json');
+        const tabletEvaluation = /\/games\/\d+\/detailed_stats\.json$/.test(
+          request.url
+        );
         if (
           err.status === 404 &&
           !request.url.includes('/user/referees/') &&

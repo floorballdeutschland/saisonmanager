@@ -26,7 +26,6 @@
     "loading": "Loading statistics …",
     "failed": "The statistics could not be loaded.",
     "incomplete": "Shots were not recorded completely. The figures only show the recorded shots.",
-    "period": "Period",
     "periodN": "Period {{ n }}",
     "name": "Name",
     "result": {

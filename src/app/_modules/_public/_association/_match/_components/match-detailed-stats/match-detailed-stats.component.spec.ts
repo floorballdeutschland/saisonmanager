@@ -259,4 +259,47 @@ describe('MatchDetailedStatsComponent', () => {
       expect(component.selectedPeriod).toBe(1);
     });
   });
+
+  it('nennt im Tooltip der Schussgrafik den Abschnittstitel des Spiels', () => {
+    fixture.componentRef.setInput(
+      'game',
+      game(1, {
+        period_titles: [{ period: 1, title: '1. Drittel' }],
+      } as Partial<Game>)
+    );
+    fixture.detectChanges();
+    http.expectOne(statsUrl(1)).flush(stats());
+    fixture.detectChanges();
+
+    const titles = Array.from(
+      el().querySelectorAll('[data-test="chart-home"] circle title')
+    ).map((t) => t.textContent ?? '');
+    expect(titles.some((t) => t.includes('1. Drittel'))).toBeTrue();
+    // Ohne Titel im Spiel: „2. Abschnitt“ aus der Übersetzung
+    expect(titles.some((t) => t.includes('2. Abschnitt'))).toBeTrue();
+  });
+
+  // Schüsse ändern das Spiel nicht; der Takt ist die einzige Nachladequelle
+  // während des Spiels, ein geändertes Spiel lädt dann nicht zusätzlich.
+  it('lädt ein laufendes Spiel im Takt nach, nicht bei jeder Spieländerung', () => {
+    fixture.componentRef.setInput('game', game(1, { ended: false }));
+    fixture.detectChanges();
+    http.expectOne(statsUrl(1)).flush(stats());
+
+    fixture.componentRef.setInput(
+      'game',
+      game(1, { ended: false, result_string: '1:0' })
+    );
+    fixture.detectChanges();
+    http.expectNone(statsUrl(1));
+
+    component.onRefreshTick();
+    http.expectOne(statsUrl(1)).flush(stats());
+  });
+
+  it('lädt ein beendetes Spiel im Takt nicht mehr nach', () => {
+    load(stats());
+    component.onRefreshTick();
+    http.expectNone(statsUrl(1));
+  });
 });

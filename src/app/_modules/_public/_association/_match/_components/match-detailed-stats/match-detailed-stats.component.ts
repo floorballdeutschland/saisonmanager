@@ -107,13 +107,13 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
       )
       .subscribe((result) => this.applyResult(result));
 
+    // Einzige Nachladequelle während des Spiels: Schüsse ändern das Spiel
+    // selbst nicht (nur Tore tun das), müssen aber trotzdem binnen 30 s
+    // erscheinen. Ein zusätzliches Nachladen bei jeder Spieländerung wäre
+    // doppelt.
     interval(DETAILED_STATS_REFRESH_MS)
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => {
-        if (this.game?.id && !this.game.ended) {
-          this._load$.next({ gameId: this.game.id, silent: true });
-        }
-      });
+      .subscribe(() => this.onRefreshTick());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -128,9 +128,16 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
       this.failed = false;
       this.loading = true;
       this._load$.next({ gameId: this.game.id, silent: false });
-    } else {
-      // Dasselbe Spiel mit neuem Stand (Tor, Abschluss, Vollständigkeit):
-      // still nachladen, die Ansicht behält bis dahin ihren Stand.
+    } else if (this.game.ended) {
+      // Nach Spielende läuft kein Takt mehr. Ändert sich das Spiel dann noch
+      // (Abschluss, „Schüsse vollständig erfasst?“), still nachladen.
+      this._load$.next({ gameId: this.game.id, silent: true });
+    }
+  }
+
+  /** Ein Schlag des Takts: nur laufende Spiele laden nach. */
+  onRefreshTick(): void {
+    if (this.game?.id && !this.game.ended) {
       this._load$.next({ gameId: this.game.id, silent: true });
     }
   }
@@ -174,12 +181,6 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     return team === 'home'
       ? this.game.home_team_name
       : this.game.guest_team_name;
-  }
-
-  teamShortName(team: ShotTeam): string {
-    return team === 'home'
-      ? this.game.home_team_short_name || this.game.home_team_name
-      : this.game.guest_team_short_name || this.game.guest_team_name;
   }
 
   /** Titel eines Abschnitts aus dem Spiel, sonst „n. Abschnitt“. */

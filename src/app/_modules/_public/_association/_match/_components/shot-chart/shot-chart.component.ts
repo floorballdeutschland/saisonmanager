@@ -4,7 +4,12 @@ import {
   Input,
   OnChanges,
 } from '@angular/core';
-import { DetailedStatsShot, ShotResult, ShotTeam } from '@floorball/types';
+import {
+  DetailedStatsShot,
+  PeriodTitles,
+  ShotResult,
+  ShotTeam,
+} from '@floorball/types';
 import { FieldPoint, RINK, toFieldPoint } from '../../_utils/detailed-stats';
 
 interface PlottedShot extends FieldPoint {
@@ -33,6 +38,8 @@ export class ShotChartComponent implements OnChanges {
   @Input() shots: DetailedStatsShot[] = [];
   @Input() team: ShotTeam = 'home';
   @Input() teamName = '';
+  /** Abschnittstitel des Spiels, wie in Filter und Tabelle. */
+  @Input() periodTitles: PeriodTitles[] | null | undefined = [];
 
   readonly rink = RINK;
   readonly colors = SHOT_COLORS;
@@ -48,6 +55,11 @@ export class ShotChartComponent implements OnChanges {
   /** Zielt das Team nach rechts? Steuert den Pfeil unter dem Feld. */
   get attacksRight(): boolean {
     return this.team === 'home';
+  }
+
+  /** Titel eines Abschnitts aus dem Spiel, sonst `null` („n. Abschnitt“). */
+  periodTitle(period: number): string | null {
+    return this.periodTitles?.find((p) => p.period === period)?.title ?? null;
   }
 
   shooterLabel(shot: DetailedStatsShot): string {
