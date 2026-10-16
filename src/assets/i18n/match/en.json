@@ -16,5 +16,51 @@
     "uploading": "Uploading…",
     "tooLarge": "The file must not exceed 5 MB.",
     "uploadFailed": "Upload failed. Please try again."
+  },
+  "tabs": {
+    "overview": "Overview",
+    "detailedStats": "Detailed statistics"
+  },
+  "detailedStats": {
+    "title": "Detailed statistics",
+    "loading": "Loading statistics …",
+    "failed": "The statistics could not be loaded.",
+    "incomplete": "Shots were not recorded completely. The figures only show the recorded shots.",
+    "periodN": "Period {{ n }}",
+    "name": "Name",
+    "result": {
+      "goal": "Goal",
+      "saved": "Saved",
+      "blocked": "Blocked",
+      "missed": "Missed"
+    },
+    "filter": {
+      "label": "Select period",
+      "all": "All"
+    },
+    "chart": {
+      "title": "Shot map",
+      "direction": "Direction of attack",
+      "ariaLabel": "Shot map {{ team }}: {{ count }} shots"
+    },
+    "shots": {
+      "title": "Shots per period",
+      "period": "Period",
+      "total": "Total",
+      "shots": "Shots",
+      "onGoal": "On goal",
+      "goals": "Goals",
+      "blocked": "Blocked",
+      "missed": "Missed"
+    },
+    "goalkeepers": {
+      "title": "Goalkeepers",
+      "saves": "Saves",
+      "shotsAgainst": "Shots on goal",
+      "savePct": "Save %"
+    },
+    "players": {
+      "title": "Shots per player"
+    }
   }
 }

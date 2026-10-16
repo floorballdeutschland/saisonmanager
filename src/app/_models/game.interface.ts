@@ -242,6 +242,14 @@ export interface Game {
   current_period_title: PeriodTitles;
   live_stream_link?: string | null;
   vod_link?: string | null;
+  // Tabletmodus (fe#344, api#816): `tablet_capture` ist wahr, sobald für das
+  // Spiel ein Schuss am Tablet erfasst wurde. Nur dann zeigt die Spielseite den
+  // Reiter „Ausführliche Statistik“. `tablet_shots_complete` bestätigt das
+  // Sekretariat beim Abschluss, `null` heißt: nicht beantwortet.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden.
+  tablet_capture?: boolean;
+  tablet_shots_complete?: boolean | null;
   permission?: string[];
   forfait?: number;
   // Von der SBK festgesetztes Ergebnis einer kampflosen Wertung, und daneben
@@ -271,16 +279,6 @@ export interface Game {
   checklist_active?: boolean;
   checklist_items?: ChecklistItem[];
   checklist_answers?: ChecklistAnswer[];
-
-  // Tabletmodus (Beta, fe#344): Wurden für dieses Spiel Schüsse am Tablet
-  // erfasst, und hat das Sekretariat beim Abschluss bestätigt, dass sie
-  // vollständig sind? `tablet_shots_complete` bleibt null, solange niemand
-  // gefragt wurde.
-  //
-  // Optional, weil Frontend und API getrennt ausgerollt werden: Vor dem
-  // API-Deploy fehlen beide Felder, und die Abschlussfrage entfällt.
-  tablet_capture?: boolean;
-  tablet_shots_complete?: boolean | null;
 
   post_submission_edited?: boolean;
   record_updated_at?: string;
