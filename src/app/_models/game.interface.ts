@@ -272,6 +272,16 @@ export interface Game {
   checklist_items?: ChecklistItem[];
   checklist_answers?: ChecklistAnswer[];
 
+  // Tabletmodus (Beta, fe#344): Wurden für dieses Spiel Schüsse am Tablet
+  // erfasst, und hat das Sekretariat beim Abschluss bestätigt, dass sie
+  // vollständig sind? `tablet_shots_complete` bleibt null, solange niemand
+  // gefragt wurde.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden: Vor dem
+  // API-Deploy fehlen beide Felder, und die Abschlussfrage entfällt.
+  tablet_capture?: boolean;
+  tablet_shots_complete?: boolean | null;
+
   post_submission_edited?: boolean;
   record_updated_at?: string;
   record_updated_by_name?: string;

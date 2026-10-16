@@ -1,0 +1,627 @@
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { lastValueFrom } from 'rxjs';
+
+import { GameShotService, StorageService } from '@floorball/core';
+import {
+  Game,
+  GameEvent,
+  GamePlayerEntry,
+  Shot,
+  ShotInput,
+  ShotResult,
+  ShotTeam,
+} from '@floorball/types';
+
+import { ShotBuffer } from './shot-buffer';
+import {
+  ClockSample,
+  GoalLinkCandidate,
+  SideConfig,
+  attacksRight,
+  bestClockOffset,
+  defaultGoalkeeperId,
+  fromAttackDirection,
+  goalLinkCandidates,
+  leftToRightTeam,
+  mergeShots,
+  newClientUuid,
+  normalizeGameTime,
+  otherTeam,
+  playablePeriods,
+  shootingTeamForTap,
+  toAttackDirection,
+  toServerTime,
+} from './tablet-capture.logic';
+
+export interface ShotDraft {
+  client_uuid: string;
+  tapped_at: string;
+  // Angetippte Stelle auf dem Bildschirm (0..1). Normiert wird erst beim
+  // Speichern, weil sich Team und Abschnitt bis dahin noch ändern dürfen.
+  screenX: number;
+  screenY: number;
+  team: ShotTeam;
+  period: number;
+  game_time: string;
+  result: ShotResult | null;
+  shooter_player_id: number | null;
+  goalkeeper_player_id: number | null;
+  isEdit: boolean;
+}
+
+export type DisplayedShot = ReturnType<typeof mergeShots>[number];
+
+const CLOCK_OFFSET_KEY = 'tablet_clock_offset';
+const SIDES_KEY_PREFIX = 'tablet_sides_';
+const RETRY_INTERVAL_MS = 15000;
+const CLOCK_SAMPLES = 3;
+const RECENT_SHOTS = 8;
+
+/**
+ * Erfassungsansicht des Tabletmodus (Beta, fe#344): Spielfeld antippen ergibt
+ * einen Schuss, danach Team, Ergebnis und auf Wunsch Schütze und Torhüter als
+ * große Kacheln.
+ *
+ * Die Spielseite wird über Spiele wiederverwendet (CLAUDE.md): Die Spiel-ID
+ * kommt deshalb ausschließlich aus `game`, und jeder Zustand, der an einem
+ * Spiel hängt (Entwurf, Puffer, Seitenwahl, Serverstand), wird beim Wechsel
+ * der ID neu aufgesetzt. Antworten, die für ein vorheriges Spiel unterwegs
+ * waren, werden verworfen.
+ */
+@Component({
+  selector: 'fb-tablet-capture',
+  templateUrl: './tablet-capture.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
+})
+export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
+  @Input()
+  game!: Game;
+
+  @Input()
+  currentPeriod = '1';
+
+  public readonly results: ShotResult[] = [
+    'goal',
+    'saved',
+    'missed',
+    'blocked',
+  ];
+
+  public buffer: ShotBuffer | null = null;
+  public serverShots: Shot[] = [];
+  public sides: SideConfig = {};
+  public viewPeriod = 1;
+  public draft: ShotDraft | null = null;
+  public gameTimeInvalid = false;
+
+  public clockOffset: number | null = null;
+  public clockStatus: 'measuring' | 'ok' | 'stale' | 'unknown' = 'measuring';
+
+  public syncing = false;
+  // Fachliche Absage des Servers (4xx): Automatisch wird dann nicht weiter
+  // gesendet, sonst stapelte der ErrorInterceptor alle 15 s dieselbe Meldung.
+  public syncBlocked = false;
+
+  // Zuletzt bewusst gewählter Torhüter je Team. Gilt für die folgenden Schüsse
+  // weiter, bis wieder umgestellt wird (Torhüterwechsel im Spiel).
+  private _goalkeeperChoice: Partial<Record<ShotTeam, number | null>> = {};
+
+  private _gameId: number | null = null;
+  private _goalSignature = '';
+  private _retryTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly _onOnline = () => void this.flush();
+
+  constructor(
+    private _shotService: GameShotService,
+    private _storage: StorageService,
+    private _cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    void this.measureClock();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', this._onOnline);
+      this._retryTimer = setInterval(() => {
+        if (!this.syncBlocked && (this.buffer?.size ?? 0) > 0) {
+          void this.flush();
+        }
+      }, RETRY_INTERVAL_MS);
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['game'] && this.game) {
+      if (this.game.id !== this._gameId) {
+        this._resetForGame(this.game.id);
+      } else if (this._currentGoalSignature() !== this._goalSignature) {
+        // Ein neu eingetragenes oder gelöschtes Tor kann die automatische
+        // Verknüpfung in der API geändert haben.
+        this._goalSignature = this._currentGoalSignature();
+        this.loadShots();
+      }
+    }
+    if (changes['currentPeriod'] && !this.draft) {
+      this.viewPeriod = this._periodFromInput();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this._retryTimer) clearInterval(this._retryTimer);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', this._onOnline);
+    }
+  }
+
+  // --- Spielwechsel ----------------------------------------------------------
+
+  private _resetForGame(gameId: number): void {
+    this._gameId = gameId;
+    this.buffer = new ShotBuffer(this._storage, gameId);
+    this.serverShots = [];
+    this.draft = null;
+    this.gameTimeInvalid = false;
+    this.syncBlocked = false;
+    this._goalkeeperChoice = {};
+    this.sides = this._loadSides(gameId);
+    this.viewPeriod = this._periodFromInput();
+    this._goalSignature = this._currentGoalSignature();
+    this.loadShots();
+    void this.flush();
+  }
+
+  private _periodFromInput(): number {
+    const parsed = parseInt(this.currentPeriod, 10);
+    const periods = this.periods;
+    if (isNaN(parsed) || parsed < 1) return periods[0] ?? 1;
+    // Im Penalty-Schießen oder einer unbekannten Phase bleibt die Erfassung
+    // beim letzten spielbaren Abschnitt.
+    return Math.min(parsed, periods[periods.length - 1] ?? parsed);
+  }
+
+  private _currentGoalSignature(): string {
+    return (this.game?.events ?? [])
+      .filter((event) => event.event_type === 'goal')
+      .map((event) => event.event_id)
+      .join(',');
+  }
+
+  // --- Serverzeit ------------------------------------------------------------
+
+  /**
+   * Misst die Abweichung der Geräteuhr zur Serverzeit. Mehrere Messungen
+   * nacheinander, es gilt die mit dem kürzesten Round-Trip. Ohne Verbindung
+   * bleibt der zuletzt gemessene Wert dieses Geräts.
+   */
+  public async measureClock(): Promise<void> {
+    this.clockStatus = 'measuring';
+    const samples: ClockSample[] = [];
+    for (let i = 0; i < CLOCK_SAMPLES; i++) {
+      const sentAt = Date.now();
+      try {
+        const response = await lastValueFrom(this._shotService.getServerTime());
+        samples.push({
+          sentAt,
+          receivedAt: Date.now(),
+          serverNow: response.now,
+        });
+      } catch {
+        break;
+      }
+    }
+
+    const offset = bestClockOffset(samples);
+    if (offset !== null) {
+      this.clockOffset = offset;
+      this.clockStatus = 'ok';
+      this._storage.setItem(CLOCK_OFFSET_KEY, String(offset));
+    } else {
+      const stored = parseInt(this._storage.getItem(CLOCK_OFFSET_KEY), 10);
+      this.clockOffset = isNaN(stored) ? null : stored;
+      this.clockStatus = isNaN(stored) ? 'unknown' : 'stale';
+    }
+    this._cdr.markForCheck();
+  }
+
+  // --- Seitenwahl --------------------------------------------------------------
+
+  get periods(): number[] {
+    return playablePeriods(this.game?.period_titles);
+  }
+
+  get rightAttackingTeam(): ShotTeam {
+    return leftToRightTeam(this.viewPeriod, this.sides);
+  }
+
+  get leftAttackingTeam(): ShotTeam {
+    return otherTeam(this.rightAttackingTeam);
+  }
+
+  public swapSides(): void {
+    if (this._gameId === null) return;
+    this.sides = {
+      ...this.sides,
+      [String(this.viewPeriod)]: otherTeam(this.rightAttackingTeam),
+    };
+    this._storage.setItem(
+      SIDES_KEY_PREFIX + this._gameId,
+      JSON.stringify(this.sides)
+    );
+  }
+
+  public selectViewPeriod(period: number): void {
+    this.viewPeriod = period;
+    if (this.draft) this.draft.period = period;
+  }
+
+  private _loadSides(gameId: number): SideConfig {
+    try {
+      const parsed = JSON.parse(
+        this._storage.getItem(SIDES_KEY_PREFIX + gameId) || '{}'
+      );
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  // --- Erfassen ----------------------------------------------------------------
+
+  /**
+   * Der Zeitstempel entsteht hier, beim ersten Berühren des Spielfelds, und
+   * bleibt beim Bearbeiten erhalten. Nur so taugt er als Torzeitpunkt für
+   * Sprungmarken und Highlights: Das offizielle Tor wird erst beim Bully
+   * eingetragen.
+   */
+  public onFieldTap(event: PointerEvent): void {
+    const deviceNow = Date.now();
+    const target = event.currentTarget as Element | null;
+    const rect = target?.getBoundingClientRect();
+    if (!rect || rect.width <= 0 || rect.height <= 0) return;
+
+    const screenX = (event.clientX - rect.left) / rect.width;
+    const screenY = (event.clientY - rect.top) / rect.height;
+    this.startDraft(screenX, screenY, deviceNow);
+  }
+
+  public startDraft(
+    screenX: number,
+    screenY: number,
+    deviceNow = Date.now()
+  ): void {
+    // Ein offener Entwurf wird nur verschoben: Wer die Stelle nachbessert,
+    // meint denselben Schuss, und dessen Zeitpunkt bleibt.
+    if (this.draft) {
+      this.draft.screenX = screenX;
+      this.draft.screenY = screenY;
+      return;
+    }
+
+    const team = shootingTeamForTap(screenX, this.viewPeriod, this.sides);
+    this.gameTimeInvalid = false;
+    this.draft = {
+      client_uuid: newClientUuid(),
+      tapped_at: toServerTime(deviceNow, this.clockOffset ?? 0),
+      screenX,
+      screenY,
+      team,
+      period: this.viewPeriod,
+      game_time: '',
+      result: null,
+      shooter_player_id: null,
+      goalkeeper_player_id: this._goalkeeperFor(otherTeam(team)),
+      isEdit: false,
+    };
+  }
+
+  public setDraftTeam(team: ShotTeam): void {
+    if (!this.draft || this.draft.team === team) return;
+    this.draft.team = team;
+    this.draft.shooter_player_id = null;
+    this.draft.goalkeeper_player_id = this._goalkeeperFor(otherTeam(team));
+  }
+
+  public setDraftResult(result: ShotResult): void {
+    if (this.draft) this.draft.result = result;
+  }
+
+  public setDraftShooter(playerId: number | null): void {
+    if (!this.draft) return;
+    this.draft.shooter_player_id =
+      this.draft.shooter_player_id === playerId ? null : playerId;
+  }
+
+  public setDraftGoalkeeper(playerId: number | null): void {
+    if (!this.draft) return;
+    this.draft.goalkeeper_player_id = playerId;
+    this._goalkeeperChoice[otherTeam(this.draft.team)] = playerId;
+  }
+
+  public cancelDraft(): void {
+    this.draft = null;
+    this.gameTimeInvalid = false;
+  }
+
+  public saveDraft(): void {
+    const draft = this.draft;
+    if (!draft || !draft.result || !this.buffer) return;
+
+    const gameTime = normalizeGameTime(draft.game_time);
+    if (gameTime === null) {
+      this.gameTimeInvalid = true;
+      return;
+    }
+
+    const position = toAttackDirection(
+      { x: draft.screenX, y: draft.screenY },
+      attacksRight(draft.team, draft.period, this.sides)
+    );
+    const shot: ShotInput = {
+      client_uuid: draft.client_uuid,
+      team: draft.team,
+      period: draft.period,
+      game_time: gameTime,
+      tapped_at: draft.tapped_at,
+      x: position.x,
+      y: position.y,
+      result: draft.result,
+      shooter_player_id: draft.shooter_player_id,
+      goalkeeper_player_id: draft.goalkeeper_player_id,
+    };
+
+    this.buffer.upsert(shot);
+    this.draft = null;
+    this.gameTimeInvalid = false;
+    void this.flush();
+  }
+
+  public editShot(shot: DisplayedShot): void {
+    const screen = fromAttackDirection(
+      { x: shot.x, y: shot.y },
+      attacksRight(shot.team, shot.period, this.sides)
+    );
+    this.gameTimeInvalid = false;
+    this.viewPeriod = shot.period;
+    this.draft = {
+      client_uuid: shot.client_uuid,
+      tapped_at: shot.tapped_at,
+      screenX: screen.x,
+      screenY: screen.y,
+      team: shot.team,
+      period: shot.period,
+      game_time: shot.game_time ?? '',
+      result: shot.result,
+      shooter_player_id: shot.shooter_player_id ?? null,
+      goalkeeper_player_id: shot.goalkeeper_player_id ?? null,
+      isEdit: true,
+    };
+  }
+
+  public deleteShot(clientUuid: string): void {
+    if (!this.buffer) return;
+    const knownToServer = this.serverShots.some(
+      (shot) => shot.client_uuid === clientUuid
+    );
+    this.buffer.remove(clientUuid, knownToServer);
+    if (this.draft?.client_uuid === clientUuid) this.draft = null;
+    void this.flush();
+  }
+
+  private _goalkeeperFor(team: ShotTeam): number | null {
+    if (team in this._goalkeeperChoice) {
+      return this._goalkeeperChoice[team] ?? null;
+    }
+    return this.game ? defaultGoalkeeperId(this.game, team) : null;
+  }
+
+  // --- Übertragung ------------------------------------------------------------
+
+  /**
+   * Sendet den Puffer: erst vorgemerkte Löschungen, dann alle neuen und
+   * geänderten Schüsse in einem POST. Bei Verbindungs- oder Serverfehlern
+   * bleibt alles im Puffer und der Takt versucht es erneut.
+   */
+  public async flush(): Promise<void> {
+    const buffer = this.buffer;
+    const gameId = this._gameId;
+    if (!buffer || gameId === null || this.syncing) return;
+    if (buffer.size === 0) return;
+
+    this.syncing = true;
+    let failed = false;
+    try {
+      for (const uuid of buffer.deletes) {
+        try {
+          const shots = await lastValueFrom(
+            this._shotService.deleteShot(gameId, uuid)
+          );
+          this._applyServerShots(gameId, shots);
+        } catch (err) {
+          // Schon weg (etwa weil die erste Antwort verloren ging): erledigt.
+          if ((err as { status?: number })?.status !== 404) throw err;
+        }
+        buffer.acknowledgeDelete(uuid);
+      }
+
+      const upserts = buffer.upserts;
+      if (upserts.length) {
+        const shots = await lastValueFrom(
+          this._shotService.saveShots(gameId, upserts)
+        );
+        buffer.acknowledgeUpserts(upserts);
+        this._applyServerShots(gameId, shots);
+      }
+      this.syncBlocked = false;
+    } catch (err) {
+      failed = true;
+      const status = (err as { status?: number })?.status ?? 0;
+      if (status >= 400 && status < 500) this.syncBlocked = true;
+    } finally {
+      this.syncing = false;
+      this._cdr.markForCheck();
+    }
+
+    // Was während der Übertragung dazukam, gleich hinterher.
+    if (!failed && buffer === this.buffer && buffer.size > 0) {
+      await this.flush();
+    }
+  }
+
+  public retryNow(): void {
+    this.syncBlocked = false;
+    void this.flush();
+  }
+
+  public loadShots(): void {
+    const gameId = this._gameId;
+    if (gameId === null) return;
+    this._shotService.getShots(gameId).subscribe({
+      next: (shots) => {
+        this._applyServerShots(gameId, shots);
+        this._cdr.markForCheck();
+      },
+      // Ohne Verbindung bleibt die Liste beim lokalen Stand.
+      error: () => undefined,
+    });
+  }
+
+  private _applyServerShots(gameId: number, shots: Shot[]): void {
+    if (gameId !== this._gameId) return;
+    this.serverShots = shots;
+  }
+
+  // --- Anzeige -----------------------------------------------------------------
+
+  private _shotsCache: {
+    server: Shot[];
+    buffer: ShotBuffer | null;
+    version: number;
+    shots: DisplayedShot[];
+  } | null = null;
+
+  get allShots(): DisplayedShot[] {
+    const cache = this._shotsCache;
+    const version = this.buffer?.version ?? 0;
+    if (
+      cache &&
+      cache.server === this.serverShots &&
+      cache.buffer === this.buffer &&
+      cache.version === version
+    ) {
+      return cache.shots;
+    }
+    const shots = mergeShots(
+      this.serverShots,
+      this.buffer?.upserts ?? [],
+      this.buffer?.deletes ?? []
+    );
+    this._shotsCache = {
+      server: this.serverShots,
+      buffer: this.buffer,
+      version,
+      shots,
+    };
+    return shots;
+  }
+
+  get recentShots(): DisplayedShot[] {
+    return this.allShots.slice(0, RECENT_SHOTS);
+  }
+
+  get pendingCount(): number {
+    return this.buffer?.size ?? 0;
+  }
+
+  /** Markierungen des angezeigten Abschnitts in Bildschirmkoordinaten. */
+  get fieldMarkers(): {
+    x: number;
+    y: number;
+    result: ShotResult;
+    pending: boolean;
+  }[] {
+    return this.allShots
+      .filter((shot) => shot.period === this.viewPeriod)
+      .map((shot) => {
+        const screen = fromAttackDirection(
+          { x: shot.x, y: shot.y },
+          attacksRight(shot.team, shot.period, this.sides)
+        );
+        return { ...screen, result: shot.result, pending: shot.pending };
+      });
+  }
+
+  get linkCandidates(): GoalLinkCandidate[] {
+    return goalLinkCandidates(this.game?.events, this.serverShots);
+  }
+
+  public linkShot(shot: Shot, goal: GameEvent): void {
+    const gameId = this._gameId;
+    if (gameId === null) return;
+    this._shotService
+      .linkShot(gameId, shot.client_uuid, goal.event_id)
+      .subscribe({
+        next: (shots) => {
+          this._applyServerShots(gameId, shots);
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  public teamName(team: ShotTeam): string {
+    return (
+      (team === 'home'
+        ? this.game?.home_team_short_name || this.game?.home_team_name
+        : this.game?.guest_team_short_name || this.game?.guest_team_name) ?? ''
+    );
+  }
+
+  public lineup(team: ShotTeam): GamePlayerEntry[] {
+    return [...(this.game?.players?.[team] ?? [])].sort(
+      (a, b) => (a.trikot_number ?? 0) - (b.trikot_number ?? 0)
+    );
+  }
+
+  public fieldPlayers(team: ShotTeam): GamePlayerEntry[] {
+    return this.lineup(team).filter((player) => !player.goalkeeper);
+  }
+
+  /** Torhüter des Teams; ohne gemeldeten Torhüter der ganze Kader. */
+  public goalkeepers(team: ShotTeam): GamePlayerEntry[] {
+    const keepers = this.lineup(team).filter((player) => player.goalkeeper);
+    return keepers.length ? keepers : this.lineup(team);
+  }
+
+  public trikotNumber(
+    team: ShotTeam,
+    playerId: number | null | undefined
+  ): string {
+    if (!playerId) return '';
+    const player = (this.game?.players?.[team] ?? []).find(
+      (entry) => entry.player_id === playerId
+    );
+    return player ? '#' + player.trikot_number : '';
+  }
+
+  public tappedClock(iso: string): string {
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
+
+  public trackShot(_index: number, shot: { client_uuid: string }): string {
+    return shot.client_uuid;
+  }
+}

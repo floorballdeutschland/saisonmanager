@@ -506,3 +506,57 @@
     </div>
   </div>
 </div>
+
+<!--
+  Tabletmodus (fe#344): Frage vor dem Abschließen, nur wenn für das Spiel
+  Schüsse am Tablet erfasst wurden. Gleiches Rahmenmuster wie das Fenster des
+  Spieltagsberichts oben.
+-->
+@if (tabletCompleteVisible) {
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tablet-complete-title"
+    data-testid="tablet-complete-dialog"
+    class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
+  >
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="bg-white rounded-[5px] max-w-lg w-full shadow-xl p-6">
+        <h2 id="tablet-complete-title" class="text-xl font-bold mb-2">
+          {{ "tablet.complete.title" | transloco }}
+        </h2>
+        <p class="text-sm text-fb-gray-400 mb-5">
+          {{ "tablet.complete.content" | transloco }}
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            data-testid="tablet-complete-yes"
+            [disabled]="tabletCompleteSaving"
+            (click)="answerTabletComplete(true)"
+            class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{ "tablet.complete.yes" | transloco }}
+          </button>
+          <button
+            type="button"
+            data-testid="tablet-complete-no"
+            [disabled]="tabletCompleteSaving"
+            (click)="answerTabletComplete(false)"
+            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          >
+            {{ "tablet.complete.no" | transloco }}
+          </button>
+          <button
+            type="button"
+            [disabled]="tabletCompleteSaving"
+            (click)="cancelTabletComplete()"
+            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          >
+            {{ "tablet.complete.cancel" | transloco }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

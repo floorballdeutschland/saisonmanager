@@ -2,6 +2,7 @@ export { LeagueService } from './league.service';
 export { ClubService } from './club.service';
 export { MetaService } from './meta.service';
 export { GameService } from './game.service';
+export { GameShotService } from './game-shot.service';
 export type {
   GameSchedulingConflict,
   SecretaryLicenseList,

@@ -1,0 +1,62 @@
+{
+  "toggle": {
+    "label": "Tabletmodus (Beta)",
+    "hint": "Schüsse mit Position und Zeitpunkt am Tablet erfassen. Gilt nur für dieses Gerät."
+  },
+  "capture": {
+    "title": "Schusserfassung"
+  },
+  "notStarted": "Die Schusserfassung beginnt mit dem Anpfiff.",
+  "period": "Abschnitt",
+  "swapSides": "Seiten tauschen",
+  "field": "Spielfeld: Stelle des Schusses antippen",
+  "hint": "Stelle des Schusses auf dem Spielfeld antippen. Der Zeitpunkt wird sofort festgehalten.",
+  "result": {
+    "goal": "Tor",
+    "saved": "Gehalten",
+    "missed": "Vorbei",
+    "blocked": "Geblockt"
+  },
+  "draft": {
+    "tappedAt": "Angetippt um {{ time }}",
+    "shooter": "Schütze (optional)",
+    "goalkeeper": "Torhüter",
+    "emptyNet": "Leeres Tor",
+    "gameTime": "Spielzeit",
+    "periodLabel": "im {{ period }}. Abschnitt",
+    "gameTimeInvalid": "Bitte die Spielzeit als m:ss eingeben, zum Beispiel 12:34.",
+    "save": "Speichern",
+    "cancel": "Verwerfen",
+    "delete": "Schuss löschen"
+  },
+  "recent": {
+    "title": "Letzte Schüsse",
+    "empty": "Noch keine Schüsse erfasst.",
+    "pending": "wartet",
+    "edit": "Ändern",
+    "delete": "Löschen"
+  },
+  "sync": {
+    "done": "Alle Schüsse übertragen",
+    "pending": "{{ count }} Änderung(en) warten auf Übertragung",
+    "retry": "Jetzt senden"
+  },
+  "clock": {
+    "stale": "Serverzeit nicht erreichbar, es gilt der letzte Abgleich dieses Geräts.",
+    "unknown": "Serverzeit nicht erreichbar, die Zeitpunkte folgen der Uhr dieses Geräts.",
+    "remeasure": "Erneut abgleichen"
+  },
+  "link": {
+    "title": "Tore zuordnen",
+    "hint": "Diese Tore konnten keinem erfassten Schuss automatisch zugeordnet werden. Bitte den passenden Schuss antippen.",
+    "goal": "Tor {{ team }} zum {{ score }} ({{ period }}. Abschnitt, {{ time }})",
+    "shot": "{{ period }}. Abschnitt {{ time }} {{ shooter }} · angetippt {{ tapped }}"
+  },
+  "complete": {
+    "title": "Schüsse vollständig erfasst?",
+    "content": "Für dieses Spiel wurden Schüsse im Tabletmodus erfasst. Wurden alle Schüsse des Spiels erfasst? Unvollständig erfasste Spiele bleiben aus Saisonstatistiken heraus.",
+    "yes": "Ja, vollständig",
+    "no": "Nein, unvollständig",
+    "cancel": "Abbrechen"
+  }
+}
