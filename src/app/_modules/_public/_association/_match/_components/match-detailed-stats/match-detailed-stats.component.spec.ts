@@ -36,6 +36,7 @@ function stats(overrides: Partial<DetailedStats> = {}): DetailedStats {
         y: 0.5,
         result: 'goal',
         shooter: { trikot_number: 10, name: 'A. Schütze' },
+        event_id: 11,
       },
       {
         team: 'home',
@@ -45,6 +46,7 @@ function stats(overrides: Partial<DetailedStats> = {}): DetailedStats {
         y: 0.2,
         result: 'saved',
         shooter: null,
+        event_id: null,
       },
       {
         team: 'guest',
@@ -54,6 +56,7 @@ function stats(overrides: Partial<DetailedStats> = {}): DetailedStats {
         y: 0.6,
         result: 'missed',
         shooter: null,
+        event_id: null,
       },
     ],
     teams: {

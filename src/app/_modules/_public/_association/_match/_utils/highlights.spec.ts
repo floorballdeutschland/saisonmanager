@@ -2,7 +2,6 @@ import { DetailedStatsShot, HighlightScene } from '@floorball/types';
 import {
   hasPlayableHighlights,
   nextSceneIndex,
-  parseGameTime,
   personLabel,
   sceneIndexForShot,
 } from './highlights';
@@ -32,6 +31,7 @@ function goal(overrides: Partial<DetailedStatsShot> = {}): DetailedStatsShot {
     y: 0.5,
     result: 'goal',
     shooter: null,
+    event_id: null,
     ...overrides,
   };
 }
@@ -49,13 +49,6 @@ describe('highlights utils', () => {
     ).toBeTrue();
   });
 
-  it('parseGameTime liest m:ss und mm:ss', () => {
-    expect(parseGameTime('5:07')).toBe(307);
-    expect(parseGameTime('45:00')).toBe(2700);
-    expect(parseGameTime('')).toBeNull();
-    expect(parseGameTime('abc')).toBeNull();
-  });
-
   describe('sceneIndexForShot', () => {
     const scenes = [
       scene({ event_id: 1, team: 'home', period: 1, game_time: '05:00' }),
@@ -69,27 +62,16 @@ describe('highlights utils', () => {
       expect(sceneIndexForShot(goal({ event_id: 99 }), scenes)).toBe(-1);
     });
 
-    it('sucht ohne event_id die nächste Szene desselben Teams und Abschnitts', () => {
+    it('gibt einem Tor ohne Verknüpfung keine Szene, auch bei passender Zeit', () => {
       expect(
-        sceneIndexForShot(goal({ period: 2, game_time: '26:10' }), scenes)
-      ).toBe(3);
-      expect(
-        sceneIndexForShot(goal({ period: 2, game_time: '24:50' }), scenes)
-      ).toBe(2);
-      // Gleiche Zeit, aber anderes Team
-      expect(
-        sceneIndexForShot(goal({ team: 'guest', game_time: '05:00' }), scenes)
-      ).toBe(1);
-    });
-
-    it('ordnet nichts zu, was weiter als die Toleranz entfernt liegt', () => {
-      expect(
-        sceneIndexForShot(goal({ period: 1, game_time: '07:00' }), scenes)
+        sceneIndexForShot(goal({ event_id: null, game_time: '05:00' }), scenes)
       ).toBe(-1);
     });
 
     it('gibt nur Toren eine Szene', () => {
-      expect(sceneIndexForShot(goal({ result: 'saved' }), scenes)).toBe(-1);
+      expect(
+        sceneIndexForShot(goal({ result: 'saved', event_id: 1 }), scenes)
+      ).toBe(-1);
     });
   });
 
