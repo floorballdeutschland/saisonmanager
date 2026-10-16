@@ -5,7 +5,10 @@ import {
   SimpleChange,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NEVER, of, throwError } from 'rxjs';
 
@@ -13,6 +16,7 @@ import { GameService, NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { Game } from '@floorball/types';
 
+import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import { MatchReportComponent } from './match-report.component';
 
 /**
@@ -372,6 +376,135 @@ describe('MatchReportComponent', () => {
         expect(component.checklistConfirmOnly).toBeTrue();
         expect(dialog().textContent).toContain('2 von 2 Fragen');
       });
+    });
+  });
+
+  // Tabletmodus (fe#344): Vor dem Abschließen fragt der Spielbericht, ob die
+  // Schüsse vollständig erfasst wurden, aber nur bei Tablet-Spielen.
+  describe('Frage nach vollständig erfassten Schüssen', () => {
+    let http: HttpTestingController;
+
+    beforeEach(() => {
+      http = TestBed.inject(HttpTestingController);
+    });
+
+    const tabletDialog = () =>
+      fixture.nativeElement.querySelector(
+        '[data-testid="tablet-complete-dialog"]'
+      );
+
+    it('fragt nicht bei Spielen ohne Tablet-Daten', () => {
+      create({ checklist_active: false });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(tabletDialog()).toBeNull();
+      expect(setStatus).toHaveBeenCalledWith(4711, 'match_record_closed');
+    });
+
+    it('fragt bei Tablet-Spielen und schließt nach der Antwort ab', () => {
+      create({ checklist_active: false, tablet_capture: true });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(tabletDialog()).not.toBeNull();
+      expect(setStatus).not.toHaveBeenCalled();
+
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-complete-no"]'
+        ) as HTMLButtonElement
+      ).click();
+      const request = http.expectOne((req) =>
+        req.url.endsWith('games/4711/tablet_capture.json')
+      );
+      expect(request.request.method).toBe('PUT');
+      expect(request.request.body).toEqual({ complete: false });
+      request.flush({ tablet_shots_complete: false });
+      fixture.detectChanges();
+
+      expect(tabletDialog()).toBeNull();
+      expect(component.game.tablet_shots_complete).toBeFalse();
+      expect(setStatus).toHaveBeenCalledWith(4711, 'match_record_closed');
+    });
+
+    it('schließt auch ab, wenn das Speichern der Antwort scheitert', () => {
+      create({ checklist_active: false, tablet_capture: true });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      component.closeMatchRecord();
+      component.answerTabletComplete(true);
+      http
+        .expectOne((req) => req.url.endsWith('games/4711/tablet_capture.json'))
+        .flush({}, { status: 422, statusText: 'Unprocessable' });
+
+      expect(setStatus).toHaveBeenCalledWith(4711, 'match_record_closed');
+    });
+
+    it('überträgt vorher ungesendete Schüsse und warnt, wenn etwas liegen bleibt', async () => {
+      create({ checklist_active: false });
+      const sync = TestBed.inject(TabletShotSyncService);
+      sync.buffer(4711).upsert({
+        client_uuid: 'u1',
+        team: 'home',
+        period: 1,
+        game_time: '',
+        tapped_at: '2026-10-16T12:00:00.000Z',
+        x: 0.5,
+        y: 0.5,
+        result: 'saved',
+      });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      try {
+        // Auch ohne tablet_capture am Spiel: Dieses Gerät hat Schüsse.
+        component.closeMatchRecord();
+        fixture.detectChanges();
+        expect(tabletDialog()).not.toBeNull();
+        expect(component.tabletChecking).toBeTrue();
+
+        http
+          .expectOne((req) => req.url.endsWith('games/4711/shots.json'))
+          .error(new ProgressEvent('error'), { status: 0 });
+        await new Promise((resolve) => setTimeout(resolve));
+        fixture.detectChanges();
+
+        expect(component.tabletChecking).toBeFalse();
+        expect(component.tabletUnsent).toBe(1);
+        expect(
+          fixture.nativeElement.querySelector(
+            '[data-testid="tablet-complete-unsent"]'
+          )
+        ).not.toBeNull();
+        expect(setStatus).not.toHaveBeenCalled();
+      } finally {
+        localStorage.removeItem('tablet_shot_buffer_4711');
+      }
+    });
+
+    it('bricht ohne Statuswechsel ab', () => {
+      create({ checklist_active: false, tablet_capture: true });
+      const setStatus = spyOn(gameService, 'setGameStatus');
+
+      component.handleGameStatusChange('match_record_closed');
+      component.cancelTabletComplete();
+      fixture.detectChanges();
+
+      expect(tabletDialog()).toBeNull();
+      expect(component.appGameStatus).toBe('aftergame');
+      expect(setStatus).not.toHaveBeenCalled();
     });
   });
 });

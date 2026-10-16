@@ -1255,4 +1255,62 @@ describe('ErrorInterceptor', () => {
       jasmine.objectContaining({ queryParams: jasmine.anything() })
     );
   });
+
+  // Tabletmodus (fe#344): Nach dem Berichtsabschluss antwortet die API auf die
+  // Schuss-Endpunkte planmäßig mit 403, ein DELETE auf einen schon gelöschten
+  // Schuss mit 404. Beides zeigt die Erfassung selbst an; ein Rauswurf auf die
+  // Startseite ließ den lokalen Schusspuffer still liegen.
+  describe('Schuss-Endpunkte des Tabletmodus', () => {
+    const tabletUrls = [
+      `${environment.apiURL}games/4711/shots.json`,
+      `${environment.apiURL}games/4711/shots/0b6c-uuid.json`,
+      `${environment.apiURL}games/4711/shots/0b6c-uuid/link.json`,
+      `${environment.apiURL}games/4711/tablet_capture.json`,
+    ];
+
+    for (const url of tabletUrls) {
+      it(`schweigt bei 403 und bleibt auf der Seite: ${url}`, () => {
+        const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+        failWith({ error: 'Spielbericht geschlossen' }, 403, url);
+
+        expect(errorSpy).not.toHaveBeenCalled();
+        expect(navigateSpy).not.toHaveBeenCalled();
+      });
+    }
+
+    it('schweigt bei 404 auf das Löschen eines Schusses', () => {
+      const url = `${environment.apiURL}games/4711/shots/0b6c-uuid.json`;
+      http.delete(url).subscribe({ error: () => undefined });
+      httpMock
+        .expectOne(url)
+        .flush({}, { status: 404, statusText: 'Not Found' });
+
+      expect(errorSpy).not.toHaveBeenCalled();
+    });
+
+    it('meldet übrige 4xx weiterhin', () => {
+      failWith(
+        { message: 'Schütze nicht in der Aufstellung' },
+        422,
+        `${environment.apiURL}games/4711/shots.json`
+      );
+
+      expect(errorSpy).toHaveBeenCalled();
+    });
+
+    // Kein offener Teilstring: Ähnliche Pfade fallen nicht unter die Ausnahme.
+    it('lässt ähnliche Pfade nicht durch', () => {
+      const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+      failWith(
+        {},
+        403,
+        `${environment.apiURL}admin/games/4711/shots_export.json`
+      );
+
+      expect(errorSpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalled();
+    });
+  });
 });

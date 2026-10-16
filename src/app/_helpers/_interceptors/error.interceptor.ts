@@ -467,6 +467,21 @@ export class ErrorInterceptor implements HttpInterceptor {
         // aus einem laufenden Spielbericht werfen, gleich aus welchem Grund.
         const matchReportRequest = request.url.includes('user/games/');
 
+        // Schusserfassung im Tabletmodus (fe#344). Diese Endpunkte liegen unter
+        // `games/`, nicht unter `user/games/`, fallen also nicht unter die
+        // Ausnahme darüber. Nach dem Berichtsabschluss antwortet die API
+        // Vereinen planmäßig mit 403; mit der Umleitung auf die Startseite lag
+        // der lokale Schusspuffer danach still und verloren. Ein 404 ist beim
+        // Löschen erwartet (der Schuss ist schon weg). Für beide schweigt der
+        // Interceptor, die Erfassung zeigt den Zustand selbst an.
+        //
+        // Als Regex auf das Pfadende, kein offener Teilstring: `shots` allein
+        // träfe auch fremde Pfade.
+        const tabletShotRequest =
+          /\/games\/\d+\/(shots(\.json|\/[^/]+(\.json|\/link\.json))|tablet_capture\.json)$/.test(
+            request.url.split('?')[0]
+          );
+
         // Der Overlay-Zugang hängt am SPIELTAG (`user/game_days/:id/overlay_link`)
         // und fällt deshalb nicht unter `user/games/` darüber. Der Zustandsabruf
         // läuft still im Hintergrund, sobald der Abschnitt „Livestream-Overlays"
@@ -603,7 +618,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         }
 
-        if (err.status === 403) {
+        if (err.status === 403 && !tabletShotRequest) {
           // Im Spielbericht bleibt die Ansicht stehen, es gibt also keinen
           // Routenwechsel mehr. Ausgerechnet die Umleitung war bisher aber das
           // Einzige, was alte Meldungen aufgeräumt hat: Die Notification-
@@ -643,7 +658,8 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (
           err.status === 404 &&
           !request.url.includes('/user/referees/') &&
-          !tabletEvaluation
+          !tabletEvaluation &&
+          !tabletShotRequest
         ) {
           // Nur Status und Pfad, nicht das ganze Fehlerobjekt: Sentry legt
           // console-Aufrufe als Wegmarken ab und serialisiert deren Argumente

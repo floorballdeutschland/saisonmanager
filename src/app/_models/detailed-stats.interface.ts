@@ -1,3 +1,5 @@
+import { ShotResult, ShotTeam } from './game-shot.interface';
+
 /**
  * Ausführliche Statistik eines im Tabletmodus erfassten Spiels
  * (`GET games/:id/detailed_stats.json`, fe#344 / api#816).
@@ -8,9 +10,6 @@
  * und y = 1 rechts aus Sicht des Angreifers. Die Seitenwechsel je Abschnitt
  * sind damit bereits herausgerechnet.
  */
-export type ShotTeam = 'home' | 'guest';
-
-export type ShotResult = 'goal' | 'saved' | 'missed' | 'blocked';
 
 /** Person in öffentlicher Anzeigeform (inklusive DSGVO-Anonymisierung). */
 export interface PersonRef {
