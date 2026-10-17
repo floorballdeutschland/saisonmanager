@@ -3,11 +3,24 @@
     "label": "Tabletmodus (Beta)",
     "hint": "Schüsse mit Position und Zeitpunkt am Tablet erfassen. Gilt nur für dieses Gerät."
   },
+  "normalInput": {
+    "show": "Normale Eingabe anzeigen",
+    "hide": "Normale Eingabe ausblenden",
+    "collapsedHint": "Tore, Strafen, Auszeiten und Abschnittswechsel trägt das Sekretariat ein. Hier nur aufklappen, wenn dieses Gerät das Spiel allein erfasst.",
+    "expandedHint": "Achtung: Ein Tor, das das Sekretariat schon eingetragen hat, nicht noch einmal eintragen."
+  },
   "capture": {
     "title": "Schusserfassung"
   },
   "notStarted": "Die Schusserfassung beginnt mit dem Anpfiff.",
   "period": "Abschnitt",
+  "periodStatus": {
+    "capturing": "Erfassung im {{ period }}. Abschnitt",
+    "follows": "folgt dem Spiel",
+    "deviates": "Das Spiel steht im {{ period }}. Abschnitt.",
+    "follow": "Zum {{ period }}. Abschnitt",
+    "pending": "Das Spiel ist in den {{ period }}. Abschnitt gewechselt. Die Erfassung wechselt nach dem Speichern oder Verwerfen dieses Schusses."
+  },
   "swapSides": "Seiten tauschen",
   "field": "Spielfeld: Stelle des Schusses antippen",
   "hint": "Stelle des Schusses auf dem Spielfeld antippen. Der Zeitpunkt wird sofort festgehalten.",

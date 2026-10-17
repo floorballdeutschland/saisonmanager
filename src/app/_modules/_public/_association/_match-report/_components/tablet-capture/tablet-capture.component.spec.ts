@@ -39,6 +39,14 @@ function game(id: number, overrides: Partial<Game> = {}): Game {
   } as unknown as Game;
 }
 
+// Spiel im angegebenen Abschnitt; in der Pause liefert die API z. B. 1.5.
+function inPeriod(id: number, period: number, overrides: Partial<Game> = {}) {
+  return game(id, {
+    current_period_title: { period } as Game['current_period_title'],
+    ...overrides,
+  });
+}
+
 function asShot(input: ShotInput, id = 1): Shot {
   return { ...input, id, event_id: null };
 }
@@ -75,9 +83,8 @@ describe('TabletCaptureComponent', () => {
     localStorage.clear();
   });
 
-  async function start(g: Game = game(4711), period = '1', offsetMs = 0) {
+  async function start(g: Game = game(4711), offsetMs = 0) {
     fixture.componentRef.setInput('game', g);
-    fixture.componentRef.setInput('currentPeriod', period);
     fixture.detectChanges();
     http.expectOne(API + 'games/' + g.id + '/shots.json').flush({ shots: [] });
     for (let i = 0; i < 3; i++) {
@@ -91,7 +98,7 @@ describe('TabletCaptureComponent', () => {
   }
 
   it('hält den Zeitpunkt beim Antippen fest, korrigiert um die Serverzeit', async () => {
-    await start(game(4711), '1', 60000);
+    await start(game(4711), 60000);
     expect(component.clockStatus).toBe('ok');
 
     const field = fixture.nativeElement.querySelector(
@@ -323,7 +330,7 @@ describe('TabletCaptureComponent', () => {
   });
 
   it('speichert normiert auf die Angriffsrichtung und sendet gepuffert', async () => {
-    await start(game(4711), '2');
+    await start(inPeriod(4711, 2));
     // 2. Abschnitt: Heim greift nach links an. Schuss vor dem linken Tor.
     component.startDraft(0.1, 0.3);
     component.setDraftTeam('home');
@@ -545,5 +552,121 @@ describe('TabletCaptureComponent', () => {
 
     // Ausstehende Uhrmessung abräumen.
     http.match(API + 'server_time.json');
+  });
+  describe('Abschnitt folgt dem Spielstand', () => {
+    // Nachladen der Spielseite: neues Objekt für dasselbe Spiel.
+    function reload(g: Game): void {
+      fixture.componentRef.setInput('game', g);
+      fixture.detectChanges();
+    }
+
+    function query(testId: string): HTMLElement | null {
+      return fixture.nativeElement.querySelector(
+        `[data-testid="${testId}"]`
+      ) as HTMLElement | null;
+    }
+
+    it('startet im Abschnitt des Spiels und rundet die Pause ab', async () => {
+      await start(inPeriod(4711, 1.5));
+      expect(component.viewPeriod).toBe(1);
+      expect(component.followsGame).toBeTrue();
+      expect(query('tablet-period-deviates')).toBeNull();
+    });
+
+    it('wechselt mit, wenn ein anderes Gerät den Abschnitt weiterschaltet', async () => {
+      await start(inPeriod(4711, 1));
+      reload(inPeriod(4711, 1.5));
+      expect(component.viewPeriod).toBe(1);
+      reload(inPeriod(4711, 2));
+      expect(component.viewPeriod).toBe(2);
+      expect(component.gamePeriod).toBe(2);
+      expect(component.followsGame).toBeTrue();
+    });
+
+    it('lässt eine Handauswahl stehen, bis sich der Spielabschnitt ändert', async () => {
+      await start(inPeriod(4711, 2));
+      component.selectViewPeriod(1);
+      fixture.detectChanges();
+      expect(query('tablet-period-deviates')).not.toBeNull();
+
+      // Nachladen ohne Abschnittswechsel: Nachtrag bleibt im 1. Abschnitt.
+      reload(inPeriod(4711, 2, { audience: 120 } as Partial<Game>));
+      expect(component.viewPeriod).toBe(1);
+
+      reload(inPeriod(4711, 3));
+      expect(component.viewPeriod).toBe(3);
+      fixture.detectChanges();
+      expect(query('tablet-period-deviates')).toBeNull();
+    });
+
+    it('führt zurück zum Spielabschnitt per Knopf', async () => {
+      await start(inPeriod(4711, 2));
+      component.selectViewPeriod(1);
+      fixture.detectChanges();
+      query('tablet-follow-game-period')!.click();
+      expect(component.viewPeriod).toBe(2);
+    });
+
+    it('wartet mit dem Wechsel, solange ein Entwurf offen ist (Speichern)', async () => {
+      await start(inPeriod(4711, 1));
+      component.startDraft(0.8, 0.5);
+      reload(inPeriod(4711, 2));
+
+      expect(component.viewPeriod).toBe(1);
+      expect(component.draft!.period).toBe(1);
+      expect(component.periodChangePending).toBeTrue();
+      fixture.detectChanges();
+      expect(query('tablet-period-pending')).not.toBeNull();
+
+      component.setDraftResult('saved');
+      component.saveDraft();
+      const post = http.expectOne(API + 'games/4711/shots.json');
+      expect(post.request.body.shots[0].period).toBe(1);
+      expect(component.viewPeriod).toBe(2);
+      expect(component.periodChangePending).toBeFalse();
+      post.flush({ shots: [asShot(post.request.body.shots[0])] });
+      await settle();
+    });
+
+    it('wartet mit dem Wechsel, solange ein Entwurf offen ist (Verwerfen)', async () => {
+      await start(inPeriod(4711, 1));
+      component.startDraft(0.8, 0.5);
+      reload(inPeriod(4711, 2));
+      expect(component.viewPeriod).toBe(1);
+
+      component.cancelDraft();
+      expect(component.viewPeriod).toBe(2);
+    });
+
+    it('kehrt nach dem Korrigieren eines älteren Schusses zurück', async () => {
+      await start(inPeriod(4711, 1));
+      component.startDraft(0.8, 0.5);
+      component.setDraftResult('saved');
+      component.saveDraft();
+      const post = http.expectOne(API + 'games/4711/shots.json');
+      post.flush({ shots: [asShot(post.request.body.shots[0])] });
+      await settle();
+
+      reload(inPeriod(4711, 2));
+      expect(component.viewPeriod).toBe(2);
+
+      component.editShot(component.recentShots[0]);
+      expect(component.viewPeriod).toBe(1);
+      component.cancelDraft();
+      expect(component.viewPeriod).toBe(2);
+    });
+
+    it('beginnt nach einem Spielwechsel im Abschnitt des neuen Spiels', async () => {
+      await start(inPeriod(4711, 3));
+      component.startDraft(0.8, 0.5);
+      reload(inPeriod(4711, 3.5));
+
+      reload(inPeriod(4712, 1));
+      http.expectOne(API + 'games/4712/shots.json').flush({ shots: [] });
+      expect(component.draft).toBeNull();
+      expect(component.viewPeriod).toBe(1);
+      expect(component.gamePeriod).toBe(1);
+      expect(component.periodChangePending).toBeFalse();
+    });
   });
 });

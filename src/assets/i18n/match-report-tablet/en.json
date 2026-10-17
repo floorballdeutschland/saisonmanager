@@ -3,11 +3,24 @@
     "label": "Tablet mode (beta)",
     "hint": "Record shots with position and time on a tablet. Applies to this device only."
   },
+  "normalInput": {
+    "show": "Show regular input",
+    "hide": "Hide regular input",
+    "collapsedHint": "Goals, penalties, timeouts and period changes are entered by the scorekeeper. Only expand this if this device records the game on its own.",
+    "expandedHint": "Careful: do not enter a goal again that the scorekeeper has already entered."
+  },
   "capture": {
     "title": "Shot tracking"
   },
   "notStarted": "Shot tracking starts with the opening whistle.",
   "period": "Period",
+  "periodStatus": {
+    "capturing": "Recording period {{ period }}",
+    "follows": "follows the game",
+    "deviates": "The game is in period {{ period }}.",
+    "follow": "Go to period {{ period }}",
+    "pending": "The game has moved to period {{ period }}. Recording switches after this shot is saved or discarded."
+  },
   "swapSides": "Swap sides",
   "field": "Rink: tap where the shot was taken",
   "hint": "Tap where the shot was taken. The time is recorded immediately.",
