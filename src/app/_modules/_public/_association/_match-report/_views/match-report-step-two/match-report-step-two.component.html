@@ -18,6 +18,41 @@
   </label>
 </div>
 
+<!--
+  Im Tabletmodus ist die normale Eingabe eingeklappt (je Gerät gemerkt): Am
+  zweiten Gerät erfasst eine eigene Person nur die Schüsse, Tore, Strafen und
+  Abschnittswechsel trägt das Sekretariat ein. Ohne Tabletmodus erscheint
+  dieser Umschalter nicht und alles bleibt wie gewohnt.
+-->
+<ng-template #normalInputToggle>
+  <div
+    class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[5px] border border-fb-gray-600 bg-fb-gray-300 p-3"
+  >
+    <button
+      type="button"
+      class="min-h-[48px] rounded-[5px] border border-black bg-white px-4 font-bold"
+      data-testid="tablet-normal-input-toggle"
+      [attr.aria-expanded]="normalInputExpanded"
+      (click)="setNormalInputExpanded(!normalInputExpanded)"
+    >
+      {{
+        (normalInputExpanded
+          ? "tablet.normalInput.hide"
+          : "tablet.normalInput.show"
+        ) | transloco
+      }}
+    </button>
+    <span class="text-sm text-fb-gray-500">
+      {{
+        (normalInputExpanded
+          ? "tablet.normalInput.expandedHint"
+          : "tablet.normalInput.collapsedHint"
+        ) | transloco
+      }}
+    </span>
+  </div>
+</ng-template>
+
 @if (!game.started) {
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
@@ -29,9 +64,10 @@
         >
           {{ "tablet.notStarted" | transloco }}
         </p>
+        <ng-container *ngTemplateOutlet="normalInputToggle"></ng-container>
       }
-      @if (!game.started) {
-        <div class="mt-8 mb-12">
+      @if (showNormalInput) {
+        <div class="mt-8 mb-12" data-testid="normal-input-start">
           <h3 class="text-lg font-bold pb-2">Anpfiffzeit</h3>
           <p class="pb-6">
             Das Spiel ist aktuell noch nicht gestartet. Bitte klicke auf den
@@ -112,11 +148,7 @@
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Ereignisse eingeben</h2>
       @if (tabletMode) {
-        <fb-tablet-capture
-          class="mt-4 block"
-          [game]="game"
-          [currentPeriod]="currentPeriod"
-        ></fb-tablet-capture>
+        <fb-tablet-capture class="mt-4 block" [game]="game"></fb-tablet-capture>
       }
       <nav aria-label="Progress" class="mt-4">
         <ol
@@ -165,225 +197,68 @@
           }
         </ol>
       </nav>
-      @if (!game.ended) {
-        <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8">
-          <fb-button
-            (handleClick)="setEvent('next')"
-            [fullWidth]="true"
-            [size]="'large'"
-          >
-            {{
-              game.current_period_title?.running
-                ? game.current_period_title?.can_end_game
-                  ? game.current_period_title?.status_id === "penalty_shots"
-                    ? "Spiel beenden"
-                    : "Spiel beenden oder nächste Unterbrechung"
-                  : "Nächste Unterbrechung"
-                : "Nächster Spielabschnitt"
-            }}
-          </fb-button>
-          @if (event === "next") {
-            <div>
-              <fb-match-event-form
-                class="col-span-2"
-                type="next"
-                team="both"
-                (updateGame)="reloadGame()"
-                (updatePeriod)="setCurrentPeriod($event)"
-                (scrollToSbbNavigation)="scrollToSbbNavigation()"
-                [currentPeriod]="currentPeriod"
-                [penalties]="penalties"
-                [penaltyCodes]="penaltyCodes"
-                [match]="game"
-              ></fb-match-event-form>
-            </div>
-          }
-        </div>
+      @if (tabletMode) {
+        <ng-container *ngTemplateOutlet="normalInputToggle"></ng-container>
       }
-      <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
-        <fb-match-event-button
-          type="goal"
-          team="home"
-          [event]="event"
-          [team_name]="game.home_team_name"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
-        <fb-match-event-button
-          type="goal"
-          team="guest"
-          [event]="event"
-          [team_name]="game.guest_team_name"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
-        @if (event === "goal-home") {
-          <fb-match-event-form
-            class="col-span-2"
-            type="goal"
-            team="home"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-          ></fb-match-event-form>
-        }
-        @if (event === "goal-guest") {
-          <fb-match-event-form
-            class="col-span-2"
-            type="goal"
-            team="guest"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-          ></fb-match-event-form>
-        }
-        <fb-match-event-button
-          type="penalty"
-          team="home"
-          [event]="event"
-          [team_name]="game.home_team_name"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
-        <fb-match-event-button
-          type="penalty"
-          team="guest"
-          [event]="event"
-          [team_name]="game.guest_team_name"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
-        <!--
-          additionalFields ist für Strafen zwingend: Die Betreuer-Auswahl steht
-          nur zur Verfügung, wenn dort ein Name hinterlegt ist (hasCoach).
-        -->
-        @if (event === "penalty-home") {
-          <fb-match-event-form
-            class="col-span-2"
-            type="penalty"
-            team="home"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-            [additionalFields]="additionalFields"
-          ></fb-match-event-form>
-        }
-        @if (event === "penalty-guest") {
-          <fb-match-event-form
-            class="col-span-2"
-            type="penalty"
-            team="guest"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-            [additionalFields]="additionalFields"
-          ></fb-match-event-form>
-        }
-        <fb-match-event-button
-          type="timeout"
-          team="home"
-          [event]="event"
-          [team_name]="game.home_team_name"
-          [disabled]="isShootout()"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
-        <fb-match-event-button
-          type="timeout"
-          team="guest"
-          [event]="event"
-          [team_name]="game.guest_team_name"
-          [disabled]="isShootout()"
-          (setEvent)="setEvent($event)"
-        ></fb-match-event-button>
-        @if (isShootout()) {
-          <p class="col-span-2 -mt-2 text-sm text-fb-gray-400">
-            Während des Penalty-Schießens können keine Time-Outs eingetragen
-            werden.
-          </p>
-        }
-        @if (additionalFields?.home_timeout_string) {
-          <div
-            class="flex flex-wrap items-center justify-between gap-2 rounded-[5px] border border-fb-gray-600 bg-white p-2 text-sm"
-          >
-            <span class="text-fb-gray-500">
-              Time-Out {{ game.home_team_name }}:
-              {{ additionalFields.home_timeout_string }}
-            </span>
+      @if (showNormalInput) {
+        @if (!game.ended) {
+          <div class="grid grid-cols-1 gap-8 mt-4 lg:mt-8">
             <fb-button
-              [size]="'small'"
-              [variant]="'error'"
-              icon="remove"
-              (handleClick)="removeTimeout('home')"
+              (handleClick)="setEvent('next')"
+              [fullWidth]="true"
+              [size]="'large'"
             >
-              entfernen
+              {{
+                game.current_period_title?.running
+                  ? game.current_period_title?.can_end_game
+                    ? game.current_period_title?.status_id === "penalty_shots"
+                      ? "Spiel beenden"
+                      : "Spiel beenden oder nächste Unterbrechung"
+                    : "Nächste Unterbrechung"
+                  : "Nächster Spielabschnitt"
+              }}
             </fb-button>
+            @if (event === "next") {
+              <div>
+                <fb-match-event-form
+                  class="col-span-2"
+                  type="next"
+                  team="both"
+                  (updateGame)="reloadGame()"
+                  (updatePeriod)="setCurrentPeriod($event)"
+                  (scrollToSbbNavigation)="scrollToSbbNavigation()"
+                  [currentPeriod]="currentPeriod"
+                  [penalties]="penalties"
+                  [penaltyCodes]="penaltyCodes"
+                  [match]="game"
+                ></fb-match-event-form>
+              </div>
+            }
           </div>
         }
-        @if (additionalFields?.guest_timeout_string) {
-          <div
-            class="flex flex-wrap items-center justify-between gap-2 rounded-[5px] border border-fb-gray-600 bg-white p-2 text-sm"
-          >
-            <span class="text-fb-gray-500">
-              Time-Out {{ game.guest_team_name }}:
-              {{ additionalFields.guest_timeout_string }}
-            </span>
-            <fb-button
-              [size]="'small'"
-              [variant]="'error'"
-              icon="remove"
-              (handleClick)="removeTimeout('guest')"
-            >
-              entfernen
-            </fb-button>
-          </div>
-        }
-        @if (event === "timeout-home" && !isShootout()) {
-          <fb-match-event-form
-            class="col-span-2"
-            type="timeout"
+        <div
+          class="grid grid-cols-2 gap-4 mt-4 lg:mt-8"
+          data-testid="normal-input-events"
+        >
+          <fb-match-event-button
+            type="goal"
             team="home"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-          ></fb-match-event-form>
-        }
-        @if (event === "timeout-guest" && !isShootout()) {
-          <fb-match-event-form
-            class="col-span-2"
-            type="timeout"
+            [event]="event"
+            [team_name]="game.home_team_name"
+            (setEvent)="setEvent($event)"
+          ></fb-match-event-button>
+          <fb-match-event-button
+            type="goal"
             team="guest"
-            (updateGame)="reloadGame()"
-            (updatePeriod)="setCurrentPeriod($event)"
-            [currentPeriod]="currentPeriod"
-            [penalties]="penalties"
-            [penaltyCodes]="penaltyCodes"
-            [match]="game"
-          ></fb-match-event-form>
-        }
-      </div>
-    </div>
-  </div>
-  <div class="border-b-4 border-fb-gray-200">
-    <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
-      <h2 class="font-bold text-xl lg:text-2xl">Weitere Infos</h2>
-      @if (additionalFields) {
-        <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
-          <div class="col-span-2">
+            [event]="event"
+            [team_name]="game.guest_team_name"
+            (setEvent)="setEvent($event)"
+          ></fb-match-event-button>
+          @if (event === "goal-home") {
             <fb-match-event-form
-              type="visitors"
-              team="both"
-              [fieldValue]="game.audience?.toString() || ''"
+              class="col-span-2"
+              type="goal"
+              team="home"
               (updateGame)="reloadGame()"
               (updatePeriod)="setCurrentPeriod($event)"
               [currentPeriod]="currentPeriod"
@@ -391,31 +266,198 @@
               [penaltyCodes]="penaltyCodes"
               [match]="game"
             ></fb-match-event-form>
-          </div>
-        </div>
-      } @else {
-        <div class="bg-white my-[5px] py-[15px] px-[30px]">
-          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-            <svg
-              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          }
+          @if (event === "goal-guest") {
+            <fb-match-event-form
+              class="col-span-2"
+              type="goal"
+              team="guest"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          }
+          <fb-match-event-button
+            type="penalty"
+            team="home"
+            [event]="event"
+            [team_name]="game.home_team_name"
+            (setEvent)="setEvent($event)"
+          ></fb-match-event-button>
+          <fb-match-event-button
+            type="penalty"
+            team="guest"
+            [event]="event"
+            [team_name]="game.guest_team_name"
+            (setEvent)="setEvent($event)"
+          ></fb-match-event-button>
+          <!--
+          additionalFields ist für Strafen zwingend: Die Betreuer-Auswahl steht
+          nur zur Verfügung, wenn dort ein Name hinterlegt ist (hasCoach).
+        -->
+          @if (event === "penalty-home") {
+            <fb-match-event-form
+              class="col-span-2"
+              type="penalty"
+              team="home"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+              [additionalFields]="additionalFields"
+            ></fb-match-event-form>
+          }
+          @if (event === "penalty-guest") {
+            <fb-match-event-form
+              class="col-span-2"
+              type="penalty"
+              team="guest"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+              [additionalFields]="additionalFields"
+            ></fb-match-event-form>
+          }
+          <fb-match-event-button
+            type="timeout"
+            team="home"
+            [event]="event"
+            [team_name]="game.home_team_name"
+            [disabled]="isShootout()"
+            (setEvent)="setEvent($event)"
+          ></fb-match-event-button>
+          <fb-match-event-button
+            type="timeout"
+            team="guest"
+            [event]="event"
+            [team_name]="game.guest_team_name"
+            [disabled]="isShootout()"
+            (setEvent)="setEvent($event)"
+          ></fb-match-event-button>
+          @if (isShootout()) {
+            <p class="col-span-2 -mt-2 text-sm text-fb-gray-400">
+              Während des Penalty-Schießens können keine Time-Outs eingetragen
+              werden.
+            </p>
+          }
+          @if (additionalFields?.home_timeout_string) {
+            <div
+              class="flex flex-wrap items-center justify-between gap-2 rounded-[5px] border border-fb-gray-600 bg-white p-2 text-sm"
             >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
-            Daten werden geladen...
-          </div>
+              <span class="text-fb-gray-500">
+                Time-Out {{ game.home_team_name }}:
+                {{ additionalFields.home_timeout_string }}
+              </span>
+              <fb-button
+                [size]="'small'"
+                [variant]="'error'"
+                icon="remove"
+                (handleClick)="removeTimeout('home')"
+              >
+                entfernen
+              </fb-button>
+            </div>
+          }
+          @if (additionalFields?.guest_timeout_string) {
+            <div
+              class="flex flex-wrap items-center justify-between gap-2 rounded-[5px] border border-fb-gray-600 bg-white p-2 text-sm"
+            >
+              <span class="text-fb-gray-500">
+                Time-Out {{ game.guest_team_name }}:
+                {{ additionalFields.guest_timeout_string }}
+              </span>
+              <fb-button
+                [size]="'small'"
+                [variant]="'error'"
+                icon="remove"
+                (handleClick)="removeTimeout('guest')"
+              >
+                entfernen
+              </fb-button>
+            </div>
+          }
+          @if (event === "timeout-home" && !isShootout()) {
+            <fb-match-event-form
+              class="col-span-2"
+              type="timeout"
+              team="home"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          }
+          @if (event === "timeout-guest" && !isShootout()) {
+            <fb-match-event-form
+              class="col-span-2"
+              type="timeout"
+              team="guest"
+              (updateGame)="reloadGame()"
+              (updatePeriod)="setCurrentPeriod($event)"
+              [currentPeriod]="currentPeriod"
+              [penalties]="penalties"
+              [penaltyCodes]="penaltyCodes"
+              [match]="game"
+            ></fb-match-event-form>
+          }
         </div>
       }
     </div>
   </div>
-  <fb-awards [match]="game"></fb-awards>
+  @if (showNormalInput) {
+    <div class="border-b-4 border-fb-gray-200" data-testid="normal-input-more">
+      <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
+        <h2 class="font-bold text-xl lg:text-2xl">Weitere Infos</h2>
+        @if (additionalFields) {
+          <div class="grid grid-cols-2 gap-4 mt-4 lg:mt-8">
+            <div class="col-span-2">
+              <fb-match-event-form
+                type="visitors"
+                team="both"
+                [fieldValue]="game.audience?.toString() || ''"
+                (updateGame)="reloadGame()"
+                (updatePeriod)="setCurrentPeriod($event)"
+                [currentPeriod]="currentPeriod"
+                [penalties]="penalties"
+                [penaltyCodes]="penaltyCodes"
+                [match]="game"
+              ></fb-match-event-form>
+            </div>
+          </div>
+        } @else {
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              <svg
+                class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+                viewBox="0 0 100 101"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                  fill="currentFill"
+                />
+              </svg>
+              Daten werden geladen...
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+    <fb-awards [match]="game"></fb-awards>
+  }
 }

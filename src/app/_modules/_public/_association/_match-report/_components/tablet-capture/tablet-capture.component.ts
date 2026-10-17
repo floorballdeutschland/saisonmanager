@@ -89,6 +89,13 @@ const RECENT_SHOTS = 8;
  * Spiel hängt (Entwurf, Puffer, Seitenwahl, Serverstand), wird beim Wechsel
  * der ID neu aufgesetzt. Antworten, die für ein vorheriges Spiel unterwegs
  * waren, werden verworfen.
+ *
+ * Der Abschnitt der Erfassung folgt dem Spielstand vom Server
+ * (`current_period_title`), nicht dem `currentPeriod` des Spielberichts: Den
+ * verstellt dort auch die Abschnittsauswahl eines Tor- oder Strafformulars,
+ * und die Verknüpfung Tor ↔ Schuss in der API verlangt den Abschnitt, in dem
+ * das Spiel tatsächlich steht. Schaltet ein anderes Gerät weiter, kommt das
+ * mit dem nächsten Nachladen der Spielseite (30-Sekunden-Takt) hier an.
  */
 @Component({
   selector: 'fb-tablet-capture',
@@ -99,9 +106,6 @@ const RECENT_SHOTS = 8;
 export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   game!: Game;
-
-  @Input()
-  currentPeriod = '1';
 
   public readonly results: ShotResult[] = [
     'goal',
@@ -114,6 +118,14 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public serverShots: Shot[] = [];
   public sides: SideConfig = {};
   public viewPeriod = 1;
+  // Spielbarer Abschnitt, in dem das Spiel laut Server gerade steht (in der
+  // Pause der vorherige). `viewPeriod` folgt ihm bei jeder Änderung; eine
+  // Abweichung entsteht nur durch bewusstes Umstellen (Nachträge).
+  public gamePeriod = 1;
+  // Der Abschnitt des Spiels hat sich geändert, während ein Entwurf offen war.
+  // Nachgeführt wird nach dem Speichern oder Verwerfen, damit der Schuss im
+  // Abschnitt bleibt, in dem er angetippt wurde.
+  public periodChangePending = false;
   public draft: ShotDraft | null = null;
   public gameTimeInvalid = false;
 
@@ -136,6 +148,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   private _goalkeeperChoice: Partial<Record<ShotTeam, number | null>> = {};
 
   private _gameId: number | null = null;
+  // Angezeigter Abschnitt vor dem Korrigieren eines älteren Schusses; danach
+  // geht es dorthin zurück.
+  private _periodBeforeEdit: number | null = null;
   private _goalSignature = '';
   private _retryTimer: ReturnType<typeof setInterval> | null = null;
   private _shotsSubscription: Subscription | null = null;
@@ -173,15 +188,15 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['game'] && this.game) {
       if (this.game.id !== this._gameId) {
         this._resetForGame(this.game.id);
-      } else if (this._currentGoalSignature() !== this._goalSignature) {
+        return;
+      }
+      this._followGamePeriod();
+      if (this._currentGoalSignature() !== this._goalSignature) {
         // Ein neu eingetragenes oder gelöschtes Tor kann die automatische
         // Verknüpfung in der API geändert haben.
         this._goalSignature = this._currentGoalSignature();
         this.loadShots();
       }
-    }
-    if (changes['currentPeriod'] && !this.draft) {
-      this.viewPeriod = this._periodFromInput();
     }
   }
 
@@ -206,19 +221,60 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.linkError = false;
     this._goalkeeperChoice = {};
     this.sides = this._loadSides(gameId);
-    this.viewPeriod = this._periodFromInput();
+    this.gamePeriod = this._periodFromGame();
+    this.viewPeriod = this.gamePeriod;
+    this.periodChangePending = false;
+    this._periodBeforeEdit = null;
     this._goalSignature = this._currentGoalSignature();
     this.loadShots();
     this._autoFlush();
   }
 
-  private _periodFromInput(): number {
-    const parsed = parseInt(this.currentPeriod, 10);
+  // Dieselbe Regel wie `currentPeriod` im Spielbericht: In der Pause steht
+  // dort z. B. 1.5, abgerundet der gerade beendete Abschnitt.
+  private _periodFromGame(): number {
+    const parsed = Math.floor(this.game?.current_period_title?.period || 0);
     const periods = this.periods;
     if (isNaN(parsed) || parsed < 1) return periods[0] ?? 1;
     // Im Penalty-Schießen oder einer unbekannten Phase bleibt die Erfassung
     // beim letzten spielbaren Abschnitt.
     return Math.min(parsed, periods[periods.length - 1] ?? parsed);
+  }
+
+  /**
+   * Hat sich der Abschnitt des Spiels geändert, springt die Erfassung mit,
+   * auch wenn vorher von Hand ein anderer gewählt war. Bleibt er gleich, bleibt
+   * auch eine Handauswahl stehen.
+   */
+  private _followGamePeriod(): void {
+    const period = this._periodFromGame();
+    if (period === this.gamePeriod) return;
+    this.gamePeriod = period;
+    if (this.draft) {
+      this.periodChangePending = true;
+    } else {
+      this.viewPeriod = period;
+    }
+  }
+
+  /** Nach dem Schließen eines Entwurfs (Speichern, Verwerfen, Löschen). */
+  private _afterDraftClosed(): void {
+    if (this.periodChangePending) {
+      this.viewPeriod = this.gamePeriod;
+    } else if (this._periodBeforeEdit !== null) {
+      this.viewPeriod = this._periodBeforeEdit;
+    }
+    this.periodChangePending = false;
+    this._periodBeforeEdit = null;
+  }
+
+  /** Zurück zum Abschnitt, in dem das Spiel steht. */
+  public followGamePeriod(): void {
+    this.selectViewPeriod(this.gamePeriod);
+  }
+
+  get followsGame(): boolean {
+    return this.viewPeriod === this.gamePeriod;
   }
 
   private _currentGoalSignature(): string {
@@ -298,6 +354,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public selectViewPeriod(period: number): void {
     this.viewPeriod = period;
     if (this.draft) this.draft.period = period;
+    this._cdr.markForCheck();
   }
 
   private _loadSides(gameId: number): SideConfig {
@@ -424,6 +481,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public cancelDraft(): void {
     this.draft = null;
     this.gameTimeInvalid = false;
+    this._afterDraftClosed();
   }
 
   public saveDraft(): void {
@@ -464,6 +522,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.buffer.upsert(shot);
     this.draft = null;
     this.gameTimeInvalid = false;
+    this._afterDraftClosed();
     this._autoFlush();
   }
 
@@ -473,6 +532,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       attacksRight(shot.team, shot.period, this.sides)
     );
     this.gameTimeInvalid = false;
+    // Nur beim ersten Öffnen merken: Wer von einer Korrektur direkt in die
+    // nächste wechselt, soll danach trotzdem zum Ausgangspunkt zurück.
+    if (!this.draft?.isEdit) this._periodBeforeEdit = this.viewPeriod;
     this.viewPeriod = shot.period;
     this.draft = {
       client_uuid: shot.client_uuid,
@@ -496,7 +558,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       (shot) => shot.client_uuid === clientUuid
     );
     this.buffer.remove(clientUuid, knownToServer);
-    if (this.draft?.client_uuid === clientUuid) this.draft = null;
+    if (this.draft?.client_uuid === clientUuid) {
+      this.draft = null;
+      this._afterDraftClosed();
+    }
     this._autoFlush();
   }
 
