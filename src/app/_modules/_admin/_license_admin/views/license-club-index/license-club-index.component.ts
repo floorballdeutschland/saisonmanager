@@ -5,7 +5,11 @@ import {
   ViewEncapsulation,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { AssociationService, ClubService } from '@floorball/core';
+import {
+  AssociationService,
+  ClubService,
+  SessionService,
+} from '@floorball/core';
 import { ClubWithTeams, GameOperation } from '@floorball/types';
 import { Observable, take } from 'rxjs';
 import { Title } from '@angular/platform-browser';
@@ -22,9 +26,17 @@ export class LicenseClubIndexComponent implements OnInit {
 
   clubAndTeams: ClubWithTeams[] = [];
 
+  /**
+   * Vereine, fuer die das Konto VM ist. Die Liste oben enthaelt auch die
+   * Vereine eines reinen Teammanagers, und die Lizenzuebersicht antwortet
+   * dort mit 403.
+   */
+  vmClubIds: number[] = [];
+
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
+    private _sessionService: SessionService,
     private _cdr: ChangeDetectorRef,
     private _metaTitle: Title,
     private _transloco: TranslocoService
@@ -33,6 +45,10 @@ export class LicenseClubIndexComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this._sessionService.currentUser$.pipe(take(1)).subscribe((user) => {
+      this.vmClubIds = user?.club_ids ?? [];
+    });
+
     // Titel erst setzen, wenn der lazy geladene Scope 'admin/license' verfügbar
     // ist – im Konstruktor liefert translate() sonst nur den rohen Key-Pfad.
     // selectTranslate() lädt scope-korrekt und emittiert erst nach dem Laden;
