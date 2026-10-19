@@ -341,7 +341,7 @@
     "requestRejectedFreeOfCharge": "License request for player {{ firstName }} {{ lastName }} ({{ id }}) rejected free of charge"
   },
   "clubSummary": {
-    "title": "Licences per season",
+    "title": "Licenses per season",
     "season": "Season",
     "team": "Team",
     "approved": "Granted",
@@ -351,7 +351,8 @@
     "other": "Other",
     "total": "Total",
     "noTeams": "The club had no teams in this season.",
-    "loadFailed": "The licence numbers could not be loaded.",
-    "hint": "“Granted” also counts licences that were later deleted or invalidated by a transfer. “Other” covers e.g. requests deleted before a decision. For joint teams, the licences of all participating clubs count."
+    "loadFailed": "The license numbers could not be loaded.",
+    "hint": "“Granted” also counts licenses that were later deleted or invalidated by a transfer. “Other” covers e.g. requests deleted before a decision. For joint teams, the licenses of all participating clubs count.",
+    "retry": "Try again"
   }
 }

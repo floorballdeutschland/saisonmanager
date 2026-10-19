@@ -26,6 +26,14 @@ export class LicenseClubSummaryComponent implements OnInit {
   @Input({ required: true }) clubId!: number;
 
   summary: ClubLicenseSummary | null = null;
+
+  /**
+   * Auswahl getrennt von den Zahlen gehalten: Scheitert ein Saisonwechsel,
+   * verschwindet die Tabelle, die Auswahl aber bleibt, sonst kaeme man ohne
+   * Neuladen der Seite nicht mehr zurueck.
+   */
+  seasons: { id: number; name: string }[] = [];
+  seasonId: number | null = null;
   loading = false;
   loadFailed = false;
 
@@ -52,12 +60,15 @@ export class LicenseClubSummaryComponent implements OnInit {
   }
 
   load(seasonId: number | null): void {
+    this.seasonId = seasonId;
     this.loading = true;
     this.loadFailed = false;
     this._cdr.markForCheck();
     this._clubService.vmGetLicenseSummary(this.clubId, seasonId).subscribe({
       next: (summary) => {
         this.summary = summary;
+        this.seasons = summary.seasons;
+        this.seasonId = summary.season_id;
         this.loading = false;
         this._cdr.markForCheck();
       },

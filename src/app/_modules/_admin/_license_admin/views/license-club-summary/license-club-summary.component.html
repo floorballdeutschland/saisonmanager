@@ -6,20 +6,19 @@
     <div class="uppercase font-bold text-gray-400 text-sm">
       {{ "licenseAdmin.clubSummary.title" | transloco }}
     </div>
-    @if (summary && summary.seasons.length > 0) {
+    @if (seasons.length > 0) {
       <label class="sr-only" [for]="'license-season-' + clubId">
         {{ "licenseAdmin.clubSummary.season" | transloco }}
       </label>
       <select
         [id]="'license-season-' + clubId"
         data-testid="license-summary-season"
-        [value]="summary.season_id"
         [disabled]="loading"
         (change)="selectSeason($any($event.target).value)"
         class="border border-fb-gray-300 rounded px-2 py-1 text-sm bg-white"
       >
-        @for (s of summary.seasons; track s.id) {
-          <option [value]="s.id" [selected]="s.id === summary.season_id">
+        @for (s of seasons; track s.id) {
+          <option [value]="s.id" [selected]="s.id === seasonId">
             {{ s.name }}
           </option>
         }
@@ -35,6 +34,14 @@
   @if (loadFailed) {
     <p class="text-sm text-red-600">
       {{ "licenseAdmin.clubSummary.loadFailed" | transloco }}
+      <button
+        type="button"
+        class="ml-2 underline"
+        data-testid="license-summary-retry"
+        (click)="load(seasonId)"
+      >
+        {{ "licenseAdmin.clubSummary.retry" | transloco }}
+      </button>
     </p>
   }
 

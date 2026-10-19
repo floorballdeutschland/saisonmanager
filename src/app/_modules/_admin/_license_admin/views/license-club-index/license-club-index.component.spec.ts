@@ -6,8 +6,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { getTranslocoTestingModule, SessionService } from '@floorball/core';
-import { of } from 'rxjs';
+import { getTranslocoTestingModule } from '@floorball/core';
 import { LicenseClubSummaryComponent } from '../license-club-summary/license-club-summary.component';
 import { environment } from 'src/environments/environment';
 
@@ -24,13 +23,6 @@ describe('LicenseClubIndexComponent', () => {
         getTranslocoTestingModule(),
       ],
       declarations: [LicenseClubIndexComponent, LicenseClubSummaryComponent],
-      providers: [
-        // VM von 113, nicht von 114 (dort nur Teammanager).
-        {
-          provide: SessionService,
-          useValue: { currentUser$: of({ club_ids: [113] }) },
-        },
-      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -61,15 +53,24 @@ describe('LicenseClubIndexComponent', () => {
 
   // Die Liste enthaelt auch Vereine, in denen das Konto nur Teammanager ist.
   // Dort antwortet die Lizenzuebersicht mit 403, und der ErrorInterceptor
-  // leitete um.
-  it('fragt die Lizenzzahlen nur fuer Vereine ab, in denen das Konto VM ist', () => {
+  // leitete auf die Startseite um. Massgeblich ist das Flag der API, nicht
+  // `club_ids` im localStorage, der nach einem Rollenentzug alt steht.
+  it('fragt die Lizenzzahlen nur fuer Vereine ab, die die API freigibt', () => {
     http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
-      { id: 113, name: 'TSV Rohrdorf-Thansau', teams: [] },
-      { id: 114, name: 'Fremdverein', teams: [] },
+      {
+        id: 113,
+        name: 'TSV Rohrdorf-Thansau',
+        teams: [],
+        license_summary: true,
+      },
+      { id: 114, name: 'Nur Teammanager', teams: [], license_summary: false },
     ]);
     fixture.detectChanges();
 
-    http.expectOne(`${environment.apiURL}vm/clubs/113/license_summary.json`);
+    const req = http.expectOne(
+      `${environment.apiURL}vm/clubs/113/license_summary.json`
+    );
+    expect(req.request.method).toBe('GET');
     http.expectNone(`${environment.apiURL}vm/clubs/114/license_summary.json`);
   });
 });

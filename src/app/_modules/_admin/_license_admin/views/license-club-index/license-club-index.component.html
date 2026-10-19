@@ -44,7 +44,9 @@
                 <h2>{{ club.name }}</h2>
               </div>
             </div>
-            @if (vmClubIds.includes(club.id)) {
+            <!-- Nur wo die API es erlaubt: Die Liste enthaelt auch Vereine
+                 reiner Teammanager, dort antwortete die Uebersicht mit 403. -->
+            @if (club.license_summary) {
               <fb-license-club-summary [clubId]="club.id" />
             }
             <div class="bg-white my-[5px] py-[15px] px-[30px]">

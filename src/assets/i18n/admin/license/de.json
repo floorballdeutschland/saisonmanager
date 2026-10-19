@@ -352,6 +352,7 @@
     "total": "Gesamt",
     "noTeams": "In dieser Saison hatte der Verein keine Mannschaften.",
     "loadFailed": "Die Lizenzzahlen konnten nicht geladen werden.",
-    "hint": "„Erteilt“ zählt auch Lizenzen, die später gelöscht oder durch einen Transfer ungültig wurden. „Sonstige“ sind etwa Anträge, die vor der Entscheidung gelöscht wurden. Bei Spielgemeinschaften zählen die Lizenzen aller beteiligten Vereine."
+    "hint": "„Erteilt“ zählt auch Lizenzen, die später gelöscht oder durch einen Transfer ungültig wurden. „Sonstige“ sind etwa Anträge, die vor der Entscheidung gelöscht wurden. Bei Spielgemeinschaften zählen die Lizenzen aller beteiligten Vereine.",
+    "retry": "Erneut versuchen"
   }
 }

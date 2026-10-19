@@ -89,6 +89,14 @@ export interface ClubWithTeams extends Club {
    * Spielbetrieb eines Vereins noch eine Rechteänderung seit der Anmeldung.
    */
   manage_players?: boolean;
+  /**
+   * Nur aus `vm/clubs_and_teams`: Darf der Benutzer die Lizenzuebersicht
+   * dieses Vereins abrufen (`vm/clubs/:id/license_summary`)? Aus den Rechten
+   * zum Zeitpunkt der Abfrage und nicht aus `club_ids` im localStorage: Der
+   * steht nach einem Rollenentzug bis zur naechsten Anmeldung alt, und die 403
+   * leitete der ErrorInterceptor auf die Startseite um.
+   */
+  license_summary?: boolean;
 }
 
 /** Vereinsmanager eines Vereins, Auswahlliste für die Vereinspost. */

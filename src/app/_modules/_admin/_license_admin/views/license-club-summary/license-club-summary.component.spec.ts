@@ -96,4 +96,35 @@ describe('LicenseClubSummaryComponent', () => {
     expect(fixture.componentInstance.summary).toBeNull();
     expect(fixture.componentInstance.loadFailed).toBeTrue();
   });
+
+  // Die Auswahl darf mit der Tabelle nicht verschwinden, sonst kaeme man nach
+  // einem gescheiterten Wechsel nur per Neuladen zurueck.
+  it('behaelt nach einem Fehler Saisonauswahl und bietet Wiederholen an', () => {
+    const fixture = create();
+    http.expectOne((r) => r.url === url).flush(summary(18));
+    fixture.detectChanges();
+
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector(
+      '[data-testid="license-summary-season"]'
+    );
+    select.value = '17';
+    select.dispatchEvent(new Event('change'));
+    http
+      .expectOne((r) => r.params.get('season_id') === '17')
+      .flush('', { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="license-summary-season"]'
+      )
+    ).not.toBeNull();
+    fixture.nativeElement
+      .querySelector('[data-testid="license-summary-retry"]')
+      .click();
+    http
+      .expectOne((r) => r.params.get('season_id') === '17')
+      .flush(summary(17));
+    expect(fixture.componentInstance.summary?.season_id).toBe(17);
+  });
 });
