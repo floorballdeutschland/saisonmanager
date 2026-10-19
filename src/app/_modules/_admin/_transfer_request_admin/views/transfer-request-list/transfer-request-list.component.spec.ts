@@ -4,9 +4,11 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { of } from 'rxjs';
 
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
+import { AssociationService } from '@floorball/core';
 import { TransferRequest } from '@floorball/types';
 import { TransferRequestListComponent } from './transfer-request-list.component';
 
@@ -64,6 +66,19 @@ describe('TransferRequestListComponent', () => {
         }),
       ],
       declarations: [TransferRequestListComponent],
+      providers: [
+        // Sonst ginge init.json ueber den HttpTestingController und
+        // `httpMock.verify()` schluege an.
+        {
+          provide: AssociationService,
+          useValue: {
+            seasons$: of([
+              { id: 17, name: '2025/2026', current: false },
+              { id: 18, name: '2026/2027', current: true },
+            ]),
+          },
+        },
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
@@ -275,5 +290,136 @@ describe('TransferRequestListComponent', () => {
     expect(fixture.componentInstance.requests).toEqual([]);
     expect(fixture.componentInstance.allSeasons).toBeFalse();
     expect(fixture.componentInstance.loadFailed).toBeTrue();
+  });
+
+  // --- Uebersicht fuer Vereine ------------------------------------------------
+
+  // Jeder Vorgang steht in genau einer der drei Statusspalten, und „erteilt"
+  // zaehlt dieselben Zeilen wie die CSV.
+  it('zaehlt je Typ offen, erteilt und nicht zustande gekommen', () => {
+    const fixture = geladen([
+      request({ id: 1, request_type: 'release', status: 'approved' }),
+      request({ id: 2, request_type: 'release', status: 'revoked' }),
+      request({
+        id: 3,
+        request_type: 'release',
+        status: 'pending_lv',
+        lv_approved_at: null,
+      }),
+      request({ id: 4, request_type: 'transfer', status: 'scheduled' }),
+      request({ id: 5, request_type: 'transfer', status: 'withdrawn' }),
+      request({
+        id: 6,
+        request_type: 'transfer',
+        status: 'rejected_by_club',
+        lv_approved_at: null,
+      }),
+    ]);
+    const c = fixture.componentInstance;
+    const [transfer, release, total] = c.summary;
+
+    expect(release).toEqual(
+      jasmine.objectContaining({ open: 1, granted: 2, failed: 0, total: 3 })
+    );
+    expect(transfer).toEqual(
+      jasmine.objectContaining({ open: 0, granted: 1, failed: 2, total: 3 })
+    );
+    expect(total).toEqual(
+      jasmine.objectContaining({ open: 1, granted: 3, failed: 2, total: 6 })
+    );
+    expect(total.granted).toBe(c.grantedRequests.length);
+  });
+
+  it('zaehlt abgehend und eingehend aus Sicht der eigenen Vereine', () => {
+    const fixture = geladen([
+      request({ id: 1 }),
+      request({
+        id: 2,
+        former_club: { id: 99, name: 'Fremd' },
+        requesting_club: { id: 11, name: 'Heimverein' },
+      }),
+      request({ id: 3 }),
+    ]);
+    const c = fixture.componentInstance;
+    c.currentUserClubIds = [11];
+    // OnPush: Ohne markForCheck bliebe das Template beim alten Stand.
+    fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
+    fixture.detectChanges();
+
+    const total = c.summary[2];
+    expect(total.outgoing).toBe(2);
+    expect(total.incoming).toBe(1);
+    const cell = (id: string) =>
+      fixture.nativeElement
+        .querySelector(`[data-testid="${id}"]`)
+        .textContent.trim();
+    expect(cell('total-outgoing')).toBe('2');
+    expect(cell('total-incoming')).toBe('1');
+  });
+
+  it('bietet Vereinskonten den CSV-Export an, nicht nur dem Verband', () => {
+    const fixture = geladen([request()]);
+    const c = fixture.componentInstance;
+
+    expect(c.canExport).toBeFalse();
+    c.currentUserClubIds = [11];
+    expect(c.canExport).toBeTrue();
+  });
+
+  it('filtert nach einer einzelnen Saison und benennt sie aus init.json', () => {
+    const fixture = geladen([]);
+    const c = fixture.componentInstance;
+
+    c.toggleAllSeasons();
+    httpMock
+      .expectOne((r) => r.url.endsWith('admin/transfer_requests.json'))
+      .flush([
+        request({ id: 1, season_id: 18 }),
+        request({ id: 2, season_id: 17 }),
+        request({
+          id: 3,
+          season_id: 17,
+          status: 'pending_lv',
+          lv_approved_at: null,
+        }),
+      ]);
+    fixture.detectChanges();
+
+    expect(c.seasonOptions).toEqual([
+      { id: 18, name: '2026/2027' },
+      { id: 17, name: '2025/2026' },
+    ]);
+
+    // Ueber das Auswahlfeld, damit auch die (change)-Bindung geprueft ist.
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector(
+      '[data-testid="transfer-season"]'
+    );
+    select.value = '17';
+    select.dispatchEvent(new Event('change'));
+    expect(c.visibleRequests.map((r) => r.id)).toEqual([2, 3]);
+    expect(c.summary[2].total).toBe(2);
+    expect(c.grantedRequests.map((r) => r.id)).toEqual([2]);
+
+    c.selectSeason('');
+    expect(c.visibleRequests.length).toBe(3);
+  });
+
+  // Zurueck auf „nur laufende Saison" darf keine alte Saisonauswahl stehen
+  // lassen, sonst filterte sie beim naechsten Aufklappen unbemerkt mit.
+  it('setzt die Saisonauswahl beim Umschalten zurueck', () => {
+    const fixture = geladen([]);
+    const c = fixture.componentInstance;
+    c.toggleAllSeasons();
+    httpMock
+      .expectOne((r) => r.url.endsWith('admin/transfer_requests.json'))
+      .flush([request({ season_id: 17 })]);
+    c.selectSeason('17');
+
+    c.toggleAllSeasons();
+    httpMock
+      .expectOne((r) => r.url.endsWith('admin/transfer_requests.json'))
+      .flush([]);
+
+    expect(c.selectedSeasonId).toBeNull();
   });
 });

@@ -339,5 +339,20 @@
     "fileTooLarge": "The file may not exceed 5 MB.",
     "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again",
     "requestRejectedFreeOfCharge": "License request for player {{ firstName }} {{ lastName }} ({{ id }}) rejected free of charge"
+  },
+  "clubSummary": {
+    "title": "Licenses per season",
+    "season": "Season",
+    "team": "Team",
+    "approved": "Granted",
+    "requested": "Requested",
+    "denied": "Rejected",
+    "withdrawn": "Withdrawn",
+    "other": "Other",
+    "total": "Total",
+    "noTeams": "The club had no teams in this season.",
+    "loadFailed": "The license numbers could not be loaded.",
+    "hint": "“Granted” also counts licenses that were later deleted or invalidated by a transfer. “Other” covers e.g. requests deleted before a decision. For joint teams, the licenses of all participating clubs count.",
+    "retry": "Try again"
   }
 }
