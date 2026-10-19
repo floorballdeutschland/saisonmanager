@@ -137,19 +137,54 @@
                   }}
                 </td>
                 @if (showDirection) {
-                  <td class="py-2 pr-6 text-right">{{ row.outgoing }}</td>
-                  <td class="py-2 pr-6 text-right">{{ row.incoming }}</td>
+                  <td
+                    class="py-2 pr-6 text-right"
+                    [attr.data-testid]="row.key + '-outgoing'"
+                  >
+                    {{ row.outgoing }}
+                  </td>
+                  <td
+                    class="py-2 pr-6 text-right"
+                    [attr.data-testid]="row.key + '-incoming'"
+                  >
+                    {{ row.incoming }}
+                  </td>
                 }
-                <td class="py-2 pr-6 text-right">{{ row.open }}</td>
-                <td class="py-2 pr-6 text-right">{{ row.granted }}</td>
-                <td class="py-2 pr-6 text-right">{{ row.failed }}</td>
-                <td class="py-2 text-right">{{ row.total }}</td>
+                <td
+                  class="py-2 pr-6 text-right"
+                  [attr.data-testid]="row.key + '-open'"
+                >
+                  {{ row.open }}
+                </td>
+                <td
+                  class="py-2 pr-6 text-right"
+                  [attr.data-testid]="row.key + '-granted'"
+                >
+                  {{ row.granted }}
+                </td>
+                <td
+                  class="py-2 pr-6 text-right"
+                  [attr.data-testid]="row.key + '-failed'"
+                >
+                  {{ row.failed }}
+                </td>
+                <td
+                  class="py-2 text-right"
+                  [attr.data-testid]="row.key + '-total'"
+                >
+                  {{ row.total }}
+                </td>
               </tr>
             }
           </tbody>
         </table>
         <p class="mt-2 text-xs text-fb-gray-500">
           {{ "transferRequestAdmin.list.summaryHint" | transloco }}
+          <!-- Ohne Saisonwahl liefert die API auch offene und geplante
+               Vorgaenge frueherer Saisons mit (season_scope). -->
+          @if (!allSeasons) {
+            {{ "transferRequestAdmin.list.summaryHintCurrent" | transloco }}
+          }
         </p>
       </div>
     }

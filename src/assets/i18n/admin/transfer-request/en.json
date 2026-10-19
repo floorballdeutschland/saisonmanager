@@ -58,7 +58,8 @@
     "sumGranted": "Granted",
     "sumFailed": "Not completed",
     "sumTotal": "Total",
-    "summaryHint": "Counted by the season in which the request was filed. “Granted” includes scheduled and later revoked releases and matches the rows of the CSV."
+    "summaryHint": "Counted by the season in which the request was filed. “Granted” includes scheduled and later revoked releases and matches the rows of the CSV.",
+    "summaryHintCurrent": "This view also includes open and scheduled requests from earlier seasons. For an exact count per season, choose “Show past seasons” and pick a season."
   },
   "initiate": {
     "back": "← Back",

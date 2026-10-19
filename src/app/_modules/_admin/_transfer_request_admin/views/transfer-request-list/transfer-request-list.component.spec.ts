@@ -349,10 +349,12 @@ describe('TransferRequestListComponent', () => {
     const total = c.summary[2];
     expect(total.outgoing).toBe(2);
     expect(total.incoming).toBe(1);
-    expect(
-      fixture.nativeElement.querySelector('[data-testid="summary-total"]')
-        .textContent
-    ).toContain('2');
+    const cell = (id: string) =>
+      fixture.nativeElement
+        .querySelector(`[data-testid="${id}"]`)
+        .textContent.trim();
+    expect(cell('total-outgoing')).toBe('2');
+    expect(cell('total-incoming')).toBe('1');
   });
 
   it('bietet Vereinskonten den CSV-Export an, nicht nur dem Verband', () => {
@@ -388,7 +390,12 @@ describe('TransferRequestListComponent', () => {
       { id: 17, name: '2025/2026' },
     ]);
 
-    c.selectSeason('17');
+    // Ueber das Auswahlfeld, damit auch die (change)-Bindung geprueft ist.
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector(
+      '[data-testid="transfer-season"]'
+    );
+    select.value = '17';
+    select.dispatchEvent(new Event('change'));
     expect(c.visibleRequests.map((r) => r.id)).toEqual([2, 3]);
     expect(c.summary[2].total).toBe(2);
     expect(c.grantedRequests.map((r) => r.id)).toEqual([2]);
