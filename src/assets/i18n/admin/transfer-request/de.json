@@ -48,7 +48,18 @@
     "csvStatus": "Status",
     "csvYes": "Ja",
     "csvNo": "Nein",
-    "incoming": "Eingehende Transfers & Freigaben"
+    "incoming": "Eingehende Transfers & Freigaben",
+    "season": "Saison",
+    "allSeasons": "Alle Saisons",
+    "summaryTitle": "Übersicht",
+    "sumOutgoing": "Abgehend",
+    "sumIncoming": "Eingehend",
+    "sumOpen": "Offen",
+    "sumGranted": "Erteilt",
+    "sumFailed": "Nicht zustande gekommen",
+    "sumTotal": "Gesamt",
+    "summaryHint": "Gezählt wird nach der Saison, in der der Antrag gestellt wurde. „Erteilt“ umfasst auch geplante und später zurückgezogene Freigaben und entspricht den Zeilen der CSV.",
+    "summaryHintCurrent": "Diese Ansicht enthält auch offene und geplante Vorgänge aus früheren Saisons. Genau nach Saison zählt die Übersicht über „Vergangene Saisons anzeigen“ und die Wahl einer Saison."
   },
   "initiate": {
     "back": "← Zurück",

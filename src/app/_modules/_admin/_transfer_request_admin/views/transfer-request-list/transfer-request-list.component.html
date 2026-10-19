@@ -18,7 +18,26 @@
           ) | transloco
         }}
       </button>
-      @if (isSbk && !loading && grantedRequests.length > 0) {
+      @if (allSeasons && !loading && seasonOptions.length > 0) {
+        <label class="sr-only" for="transfer-season">
+          {{ "transferRequestAdmin.list.season" | transloco }}
+        </label>
+        <select
+          id="transfer-season"
+          data-testid="transfer-season"
+          [value]="selectedSeasonId ?? ''"
+          (change)="selectSeason($any($event.target).value)"
+          class="border border-fb-gray-300 rounded px-3 py-2 text-sm bg-white"
+        >
+          <option value="">
+            {{ "transferRequestAdmin.list.allSeasons" | transloco }}
+          </option>
+          @for (s of seasonOptions; track s.id) {
+            <option [value]="s.id">{{ s.name }}</option>
+          }
+        </select>
+      }
+      @if (canExport && !loading && grantedRequests.length > 0) {
         <button
           (click)="exportCsv()"
           class="bg-fb-gray-200 text-fb-gray-500 px-4 py-2 rounded text-sm font-medium hover:bg-fb-gray-300 transition-colors"
@@ -63,10 +82,112 @@
        SBK/Admin erhalten serverseitig alle bzw. die für ihren Verband relevanten
        Anträge (Fixpunkt: abgebender Verein) und sehen damit auch offene/initiierte
        Transfers und Freigaben, um Auskunft über den Status geben zu können.
-       SBK-spezifische Aktionen (CSV-Export, Direktzuweisung) sind in der Kopfzeile
-       über isSbk gegated; die Zurückziehen-Aktion bleibt über canWithdraw auf den
+       SBK-spezifische Aktionen (Direktzuweisung, eingehende Vorgaenge) sind in der
+       Kopfzeile über isSbk gegated, der CSV-Export steht auch Vereinen offen; die Zurückziehen-Aktion bleibt über canWithdraw auf den
        aufnehmenden Verein beschränkt. -->
   @if (!loading) {
+    <!-- Zaehlung ueber dieselben Zeilen wie die Tabellen darunter. „Erteilt"
+         entspricht den Zeilen der CSV. -->
+    @if (!loadFailed && visibleRequests.length > 0) {
+      <div class="mb-8 overflow-x-auto" data-testid="transfer-summary">
+        <h2 class="text-base font-semibold mb-3">
+          {{ "transferRequestAdmin.list.summaryTitle" | transloco }}
+        </h2>
+        <table class="text-sm">
+          <thead>
+            <tr class="border-b border-fb-gray-700 text-left">
+              <th class="py-2 pr-6 font-bold"></th>
+              @if (showDirection) {
+                <th class="py-2 pr-6 font-bold text-right">
+                  {{ "transferRequestAdmin.list.sumOutgoing" | transloco }}
+                </th>
+                <th class="py-2 pr-6 font-bold text-right">
+                  {{ "transferRequestAdmin.list.sumIncoming" | transloco }}
+                </th>
+              }
+              <th class="py-2 pr-6 font-bold text-right">
+                {{ "transferRequestAdmin.list.sumOpen" | transloco }}
+              </th>
+              <th class="py-2 pr-6 font-bold text-right">
+                {{ "transferRequestAdmin.list.sumGranted" | transloco }}
+              </th>
+              <th class="py-2 pr-6 font-bold text-right">
+                {{ "transferRequestAdmin.list.sumFailed" | transloco }}
+              </th>
+              <th class="py-2 font-bold text-right">
+                {{ "transferRequestAdmin.list.sumTotal" | transloco }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of summary; track row.key) {
+              <tr
+                class="border-b border-fb-gray-700"
+                [class.font-semibold]="row.key === 'total'"
+                [attr.data-testid]="'summary-' + row.key"
+              >
+                <td class="py-2 pr-6">
+                  {{
+                    (row.key === "release"
+                      ? "transferRequestAdmin.list.typeRelease"
+                      : row.key === "transfer"
+                        ? "transferRequestAdmin.list.typeTransfer"
+                        : "transferRequestAdmin.list.sumTotal"
+                    ) | transloco
+                  }}
+                </td>
+                @if (showDirection) {
+                  <td
+                    class="py-2 pr-6 text-right"
+                    [attr.data-testid]="row.key + '-outgoing'"
+                  >
+                    {{ row.outgoing }}
+                  </td>
+                  <td
+                    class="py-2 pr-6 text-right"
+                    [attr.data-testid]="row.key + '-incoming'"
+                  >
+                    {{ row.incoming }}
+                  </td>
+                }
+                <td
+                  class="py-2 pr-6 text-right"
+                  [attr.data-testid]="row.key + '-open'"
+                >
+                  {{ row.open }}
+                </td>
+                <td
+                  class="py-2 pr-6 text-right"
+                  [attr.data-testid]="row.key + '-granted'"
+                >
+                  {{ row.granted }}
+                </td>
+                <td
+                  class="py-2 pr-6 text-right"
+                  [attr.data-testid]="row.key + '-failed'"
+                >
+                  {{ row.failed }}
+                </td>
+                <td
+                  class="py-2 text-right"
+                  [attr.data-testid]="row.key + '-total'"
+                >
+                  {{ row.total }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="mt-2 text-xs text-fb-gray-500">
+          {{ "transferRequestAdmin.list.summaryHint" | transloco }}
+          <!-- Ohne Saisonwahl liefert die API auch offene und geplante
+               Vorgaenge frueherer Saisons mit (season_scope). -->
+          @if (!allSeasons) {
+            {{ "transferRequestAdmin.list.summaryHintCurrent" | transloco }}
+          }
+        </p>
+      </div>
+    }
     @if (pendingRequests.length > 0) {
       <div class="mb-8">
         <h2 class="text-base font-semibold mb-3">

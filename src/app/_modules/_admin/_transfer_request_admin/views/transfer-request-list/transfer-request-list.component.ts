@@ -10,11 +10,12 @@ import { Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { Subject, takeUntil } from 'rxjs';
 import {
+  AssociationService,
   NotificationService,
   SessionService,
   TransferRequestService,
 } from '@floorball/core';
-import { TransferRequest } from '@floorball/types';
+import { TransferRequest, TransferRequestType } from '@floorball/types';
 import {
   exportTransferCsv,
   transferStatusClass,
@@ -22,6 +23,22 @@ import {
   transferTypeClass,
   transferTypeLabel,
 } from '../../transfer-request-presentation';
+
+const OPEN_STATUSES: string[] = [
+  'pending_club',
+  'pending_player',
+  'pending_lv',
+];
+
+export interface TransferSummaryRow {
+  key: TransferRequestType | 'total';
+  outgoing: number;
+  incoming: number;
+  open: number;
+  granted: number;
+  failed: number;
+  total: number;
+}
 
 @Component({
   templateUrl: './transfer-request-list.component.html',
@@ -36,11 +53,15 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   isSbk = false;
   withdrawingId: number | null = null;
 
+  /** Saisonnamen aus `init.json`, die Vorgaenge tragen nur die ID. */
+  private _seasonNames = new Map<number, string>();
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _transferService: TransferRequestService,
     private _sessionService: SessionService,
+    private _associationService: AssociationService,
     private _notificationService: NotificationService,
     private _router: Router,
     private _transloco: TranslocoService,
@@ -56,6 +77,15 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
           this.isSbk = !!user?.permissions?.['menu_item_transfer_requests_sbk'];
           this._cdr.markForCheck();
         },
+      });
+
+    // `init.json` und nicht `admin/settings/seasons`: Letzteres ist Admin und
+    // RSK vorbehalten, der Vereinsmanager bekaeme ein 403.
+    this._associationService.seasons$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((seasons) => {
+        this._seasonNames = new Map((seasons ?? []).map((s) => [s.id, s.name]));
+        this._cdr.markForCheck();
       });
 
     this.loadRequests();
@@ -81,7 +111,41 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     if (this.loading) return;
 
     this.allSeasons = !this.allSeasons;
+    this.selectedSeasonId = null;
     this.loadRequests();
+  }
+
+  /**
+   * Einzelne Saison innerhalb von „Vergangene Saisons anzeigen"; `null` heisst
+   * alle. Gefiltert wird im Browser, die Liste ist dann ohnehin vollstaendig
+   * geladen.
+   *
+   * Massgeblich ist `season_id`, also die Saison, in der der Vorgang angelegt
+   * wurde, nicht die des Genehmigungsdatums. Ein im Mai beantragter und im
+   * Juli genehmigter Wechsel zaehlt damit zur alten Saison.
+   */
+  selectedSeasonId: number | null = null;
+
+  selectSeason(value: string): void {
+    this.selectedSeasonId = value ? Number(value) : null;
+    this._cdr.markForCheck();
+  }
+
+  /** Die Saisons, in denen es Vorgaenge gibt, neueste zuerst. */
+  get seasonOptions(): { id: number; name: string }[] {
+    const ids = [...new Set(this.requests.map((r) => r.season_id))].filter(
+      (id) => id != null
+    );
+    return ids
+      .sort((a, b) => b - a)
+      .map((id) => ({ id, name: this._seasonNames.get(id) ?? String(id) }));
+  }
+
+  /** Grundlage fuer Tabellen, Zaehlung und CSV. */
+  get visibleRequests(): TransferRequest[] {
+    if (!this.allSeasons || this.selectedSeasonId === null)
+      return this.requests;
+    return this.requests.filter((r) => r.season_id === this.selectedSeasonId);
   }
 
   /**
@@ -216,6 +280,71 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Der Verein darf die Ausfuhr ebenso ziehen wie der Verband: Er sieht ohnehin
+   * jede Zeile, und nur so kann er eine Gebuehrenrechnung gegenpruefen.
+   */
+  get canExport(): boolean {
+    return this.isSbk || this.currentUserClubIds.length > 0;
+  }
+
+  /**
+   * Zaehlung je Typ. `granted` folgt genau der Auswahl von `grantedRequests`,
+   * damit die Zahl „erteilt" mit den Zeilen der CSV uebereinstimmt; `open` und
+   * `failed` teilen den Rest, jeder Vorgang steht in genau einer der drei.
+   *
+   * Richtung nur fuer Vereinskonten: Abgehend heisst, ein eigener Verein ist
+   * der abgebende, eingehend, ein eigener Verein ist der aufnehmende. Ein
+   * Wechsel zwischen zwei eigenen Vereinen zaehlt in beiden Spalten.
+   */
+  get summary(): TransferSummaryRow[] {
+    const rows: TransferSummaryRow[] = (
+      ['transfer', 'release'] as TransferRequestType[]
+    ).map((type) =>
+      this._summarize(
+        type,
+        this.visibleRequests.filter((r) =>
+          type === 'release'
+            ? r.request_type === 'release'
+            : r.request_type !== 'release'
+        )
+      )
+    );
+    rows.push(this._summarize('total', this.visibleRequests));
+    return rows;
+  }
+
+  get showDirection(): boolean {
+    return this.currentUserClubIds.length > 0;
+  }
+
+  private _summarize(
+    key: TransferRequestType | 'total',
+    requests: TransferRequest[]
+  ): TransferSummaryRow {
+    const own = (id: number | undefined) =>
+      id != null && this.currentUserClubIds.includes(id);
+    const granted = requests.filter((r) => this._isGranted(r)).length;
+    const open = requests.filter(
+      (r) => !this._isGranted(r) && OPEN_STATUSES.includes(r.status)
+    ).length;
+    return {
+      key,
+      outgoing: requests.filter((r) => own(r.former_club?.id)).length,
+      incoming: requests.filter((r) => own(r.requesting_club?.id)).length,
+      open,
+      granted,
+      failed: requests.length - granted - open,
+      total: requests.length,
+    };
+  }
+
+  private _isGranted(r: TransferRequest): boolean {
+    return (
+      !!r.lv_approved_at && r.status !== 'withdrawn' && r.status !== 'expired'
+    );
+  }
+
+  /**
    * Vorgänge, die der Landesverband genehmigt hat und die nicht nachträglich
    * annulliert wurden — Grundlage der Gebührenabrechnung, die einmal am
    * Saisonende läuft.
@@ -239,10 +368,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
    * der Datei, statt von einem Filter verschluckt zu werden.
    */
   get grantedRequests(): TransferRequest[] {
-    return this.requests.filter(
-      (r) =>
-        !!r.lv_approved_at && r.status !== 'withdrawn' && r.status !== 'expired'
-    );
+    return this.visibleRequests.filter((r) => this._isGranted(r));
   }
 
   exportCsv(): void {
@@ -250,7 +376,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   get pendingRequests(): TransferRequest[] {
-    return this.requests.filter(
+    return this.visibleRequests.filter(
       (r) =>
         r.status === 'pending_club' ||
         r.status === 'pending_player' ||
@@ -260,7 +386,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   get completedRequests(): TransferRequest[] {
-    return this.requests.filter(
+    return this.visibleRequests.filter(
       (r) =>
         r.status === 'approved' ||
         r.status === 'revoked' ||
