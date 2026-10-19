@@ -48,7 +48,17 @@
     "csvStatus": "Status",
     "csvYes": "Yes",
     "csvNo": "No",
-    "incoming": "Incoming transfers & releases"
+    "incoming": "Incoming transfers & releases",
+    "season": "Season",
+    "allSeasons": "All seasons",
+    "summaryTitle": "Overview",
+    "sumOutgoing": "Outgoing",
+    "sumIncoming": "Incoming",
+    "sumOpen": "Open",
+    "sumGranted": "Granted",
+    "sumFailed": "Not completed",
+    "sumTotal": "Total",
+    "summaryHint": "Counted by the season in which the request was filed. “Granted” includes scheduled and later revoked releases and matches the rows of the CSV."
   },
   "initiate": {
     "back": "← Back",
