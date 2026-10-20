@@ -319,6 +319,51 @@ describe('MatchReportIndexComponent', () => {
     expect(component.rows.map((r) => r.id)).toEqual([1]);
   });
 
+  it('filtert auf Spiele mit Einspruch zum Spieltagsbericht', () => {
+    component.filterStatus = 'withObjection';
+    loadWith([
+      row({ id: 1 }),
+      row({ id: 2, checklist_veto_submitted_at: '2026-02-02T10:00:00Z' }),
+      row({
+        id: 3,
+        checklist_objection_count: 1,
+        checklist_objections: [
+          {
+            kind: 'team',
+            name: 'Gast',
+            confirmed_at: '2026-02-02T10:00:00Z',
+            negative_items: [],
+          },
+        ],
+      }),
+      // Ältere API ohne die neuen Felder.
+      row({ id: 4, checklist_objection_count: undefined }),
+    ]);
+
+    expect(component.rows.map((r) => r.id)).toEqual([2, 3]);
+  });
+
+  it('zählt Einsprüche je Spieltag und führt sie als Vorgang', () => {
+    const objection = row({
+      id: 1,
+      checklist_objection_count: 1,
+      checklist_objections: [
+        {
+          kind: 'referee',
+          name: 'Erika Pfeife',
+          confirmed_at: null,
+          negative_items: [],
+        },
+      ],
+    });
+    loadWith([objection, row({ id: 2 })]);
+
+    expect(component.groups[0].objectionCount).toBe(1);
+    expect(component.hasObjection(objection)).toBeTrue();
+    expect(component.hasLinkedRecords(objection)).toBeTrue();
+    expect(component.hasLinkedRecords(row({ id: 2 }))).toBeFalse();
+  });
+
   it('erkennt Auffälligkeiten und verknüpfte Vorgänge', () => {
     const withPenalty = row({
       flags: { ...row().flags, severe_penalty_count: 1 },
@@ -699,6 +744,34 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
     expect(links.length).toBe(1);
     expect(links[0].getAttribute('href')).toBe('mailto:sam@example.org');
     expect(links[0].textContent?.trim()).toBe('Sam Schiri');
+  });
+
+  it('zeigt Einsprüche von Gastmannschaft und Schiedsrichter mit den verneinten Punkten', () => {
+    show(
+      row({
+        checklist_objection_count: 2,
+        checklist_objections: [
+          {
+            kind: 'team',
+            name: 'Gast',
+            confirmed_at: '2026-02-02T10:00:00Z',
+            negative_items: [{ item_id: 1, question: 'Halle in Ordnung?' }],
+          },
+          {
+            kind: 'referee',
+            name: 'Erika Pfeife',
+            confirmed_at: null,
+            negative_items: [],
+          },
+        ],
+      })
+    );
+
+    const items = element.querySelectorAll(
+      '[data-testid="checklist-objection"]'
+    );
+    expect(items.length).toBe(2);
+    expect(items[0].textContent).toContain('Halle in Ordnung?');
   });
 
   it('nimmt die Adresse als Linktext, wenn der Name nur aus Leerzeichen besteht', () => {
