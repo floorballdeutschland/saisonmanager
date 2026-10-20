@@ -32,6 +32,7 @@ export class TeamService {
     body: {
       properly_conducted: boolean;
       answers?: { item_id: number; answer: boolean }[];
+      comment?: string | null;
     } = { properly_conducted: true }
   ) {
     return this.http.post<TeamGameDayConfirmResponse>(

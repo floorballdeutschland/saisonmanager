@@ -210,14 +210,16 @@ describe('MatchComponent', () => {
       component.ngOnDestroy();
     });
 
-    it('verwirft die Antwort eines Uploads, der vor dem Spielwechsel begann', () => {
+    it('verwirft die Antwort eines Uploads, der vor dem Spielwechsel begann', async () => {
       const { component, http } = loadAs({
         uploaded: false,
         required: true,
         recipient: 'vsk',
       });
-      const file = new File(['x'], 'alt.pdf', { type: 'application/pdf' });
-      component.onRefereeReportFile({
+      const file = new File(['%PDF-1.4'], 'alt.pdf', {
+        type: 'application/pdf',
+      });
+      await component.onRefereeReportFile({
         target: { files: [file] },
       } as unknown as Event);
       const upload = http.expectOne(
@@ -229,6 +231,111 @@ describe('MatchComponent', () => {
 
       expect(component.refereeReportUploaded).toBeFalse();
       expect(component.refereeReportFilename).toBe('');
+      component.ngOnDestroy();
+    });
+
+    it('lädt ein Foto gar nicht erst hoch', async () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+      const input = {
+        files: [new File(['x'], 'bericht.jpg', { type: 'image/jpeg' })],
+        value: 'C:\\fakepath\\bericht.jpg',
+      };
+
+      await component.onRefereeReportFile({
+        target: input,
+      } as unknown as Event);
+
+      http.expectNone((r) => r.method === 'POST');
+      expect(alertSpy).toHaveBeenCalledOnceWith(
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
+      );
+      expect(input.value).toBe('');
+      expect(component.refereeReportUploading).toBeFalse();
+      component.ngOnDestroy();
+    });
+
+    it('nennt bei einem zu großen PDF dieselbe Grenze', async () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+      const big = new File(['%PDF-1.4'], 'bericht.pdf', {
+        type: 'application/pdf',
+      });
+      Object.defineProperty(big, 'size', { value: 5 * 1024 * 1024 + 1 });
+
+      await component.onRefereeReportFile({
+        target: { files: [big], value: 'bericht.pdf' },
+      } as unknown as Event);
+
+      http.expectNone((r) => r.method === 'POST');
+      expect(alertSpy).toHaveBeenCalledOnceWith(
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
+      );
+      component.ngOnDestroy();
+    });
+
+    it('weist ein in .pdf umbenanntes Foto ohne Upload ab', async () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+
+      await component.onRefereeReportFile({
+        target: {
+          files: [
+            new File(['\x89PNG\r\n\x1a\n'], 'bericht.pdf', {
+              type: 'application/pdf',
+            }),
+          ],
+          value: 'bericht.pdf',
+        },
+      } as unknown as Event);
+
+      http.expectNone((r) => r.method === 'POST');
+      expect(alertSpy).toHaveBeenCalledOnceWith(
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
+      );
+      component.ngOnDestroy();
+    });
+
+    // Die Absage der API zeigt der ErrorInterceptor an; eine eigene Meldung
+    // läge als zweite darüber.
+    it('legt bei einer Absage der API keine eigene Meldung darüber', async () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+      const file = new File(['%PDF-1.4'], 'bericht.pdf', {
+        type: 'application/pdf',
+      });
+
+      await component.onRefereeReportFile({
+        target: { files: [file] },
+      } as unknown as Event);
+      http
+        .expectOne(
+          (r) => r.method === 'POST' && r.url.endsWith('games/1/referee_report')
+        )
+        .flush(
+          { errors: ['Nur PDF-Dateien bis 5 MB sind zulässig.'] },
+          { status: 422, statusText: 'Unprocessable Entity' }
+        );
+
+      expect(alertSpy).not.toHaveBeenCalled();
+      expect(component.refereeReportUploading).toBeFalse();
+      expect(component.refereeReportUploaded).toBeFalse();
       component.ngOnDestroy();
     });
   });

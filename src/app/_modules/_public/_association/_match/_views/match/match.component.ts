@@ -30,6 +30,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
+import {
+  checkPdfUpload,
+  PDF_UPLOAD_MAX_MB,
+  PDF_UPLOAD_ACCEPT,
+} from 'src/app/_helpers/_utils/pdf-upload';
 
 @Component({
   templateUrl: './match.component.html',
@@ -50,6 +55,8 @@ export class MatchComponent implements OnInit, OnDestroy {
   public tab = 'public';
 
   refereeReportUploading = false;
+  readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
+  readonly pdfUploadMaxMb = PDF_UPLOAD_MAX_MB;
   refereeReportUploaded = false;
   refereeReportFilename = '';
   refereeReportRequired = false;
@@ -256,24 +263,34 @@ export class MatchComponent implements OnInit, OnDestroy {
     );
   }
 
-  onRefereeReportFile(event: Event): void {
+  async onRefereeReportFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !this.game) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert(this._transloco.translate('match.refereeReport.tooLarge'));
+    // Wechselt die Seite während des Uploads in ein anderes Spiel, gehört die
+    // Antwort zum alten und darf den Zustand des neuen nicht setzen. Dasselbe
+    // gilt schon für die Vorprüfung, die den Dateikopf asynchron liest.
+    const gameId = this.game.id;
+    const stillCurrent = () =>
+      this._matchId === String(gameId) && this.game?.id === gameId;
+
+    const acceptable = await checkPdfUpload(file);
+    if (!stillCurrent()) return;
+
+    if (!acceptable) {
+      // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
+      input.value = '';
+      alert(
+        this._transloco.translate('match.refereeReport.rejected', {
+          maxMb: PDF_UPLOAD_MAX_MB,
+        })
+      );
       return;
     }
 
     this.refereeReportUploading = true;
     this._cdr.markForCheck();
-
-    // Wechselt die Seite während des Uploads in ein anderes Spiel, gehört die
-    // Antwort zum alten und darf den Zustand des neuen nicht setzen.
-    const gameId = this.game.id;
-    const stillCurrent = () =>
-      this._matchId === String(gameId) && this.game?.id === gameId;
 
     this._gameService.uploadRefereeReport(gameId, file).subscribe({
       next: (res) => {
@@ -284,12 +301,15 @@ export class MatchComponent implements OnInit, OnDestroy {
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
       },
+      // Bewusst ohne eigene Meldung: Der ErrorInterceptor zeigt die Absage
+      // der API (`errors`, etwa „Nur PDF-Dateien bis 5 MB …“) bereits als
+      // Meldung an, ebenso Server- und Verbindungsfehler. Das frühere
+      // „Upload fehlgeschlagen“ lag als zweite, nichtssagende Meldung darüber.
       error: () => {
         if (!stillCurrent()) return;
 
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
-        alert(this._transloco.translate('match.refereeReport.uploadFailed'));
       },
     });
   }
