@@ -49,7 +49,6 @@
     "teamManagersManagePlayers": "Team managers may create, deactivate and reactivate players",
     "teamManagersManagePlayersHint": "Without this option these three actions stay with the club manager. They govern the club roster: creating a player admits a person to the club, deactivating keeps their profile out of the club player list and out of the licence request selection. Team managers can field players and request licences regardless. For a syndicate the option applies to the teams of every participating club.",
     "logo": "Club logo",
-    "logoUploadAfterSave": "Logo can only be uploaded after saving",
     "currentLogo": "Current logo",
     "logoAlt": "Club logo",
     "noLogo": "no logo set",
@@ -84,7 +83,14 @@
     "teamShortNameHint": "At most 8 characters, for example “BW96 III”.",
     "saveTeamInfo": "Save",
     "savingTeamInfo": "Saving …",
-    "teamInfoLocked": "The association has locked changes to name, short name and logo for the running season. Please contact your game operation."
+    "teamInfoLocked": "The association has locked changes to name, short name and logo for the running season. Please contact your game operation.",
+    "tabsLabel": "Club sections",
+    "tabGeneral": "General",
+    "tabAddress": "Address & register",
+    "tabTeams": "Logo & teams",
+    "tabStatus": "Status",
+    "tabStatusDeactivated": "deactivated",
+    "addressAndRegister": "Address and club register"
   },
   "notifications": {
     "deleteSuccess": "Club was permanently deleted.",

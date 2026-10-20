@@ -1,11 +1,16 @@
 <div
-  class="bg-white my-[5px] py-[15px] px-[30px]"
+  [class]="embedded ? '' : 'bg-white my-[5px] py-[15px] px-[30px]'"
   data-testid="license-summary"
 >
   <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
-    <div class="uppercase font-bold text-gray-400 text-sm">
-      {{ "licenseAdmin.clubSummary.title" | transloco }}
-    </div>
+    @if (!embedded) {
+      <div
+        class="uppercase font-bold text-gray-400 text-sm"
+        data-testid="license-summary-title"
+      >
+        {{ "licenseAdmin.clubSummary.title" | transloco }}
+      </div>
+    }
     @if (seasons.length > 0) {
       <label class="sr-only" [for]="'license-season-' + clubId">
         {{ "licenseAdmin.clubSummary.season" | transloco }}

@@ -28,6 +28,13 @@
     "copyCancel": "Abbrechen"
   },
   "edit": {
+    "tabs": {
+      "label": "Bereiche der Liga",
+      "league": "Liga",
+      "rules": "Spielregeln",
+      "modus": "Modus",
+      "media": "Logo & Banner"
+    },
     "headingEdit": "Bearbeiten einer Liga",
     "headingNew": "Neue Liga anlegen",
     "mainData": "Hauptdaten",
@@ -92,6 +99,8 @@
     "noPointTransfer": "keine Punktübernahme",
     "fullPointTransfer": "alle Vorrundenpunkte übernehmen",
     "halfPointTransfer": "halbe Vorrundenpunkte übernehmen",
+    "discardMinimumAge": "Eingabe verwerfen",
+    "tableRules": "Tabellenregeln",
     "directEncounters": "Direktbegegnungen",
     "directEncountersTransfer": "Direktbegegnungen übernehmen",
     "none": "— keine —",
@@ -199,6 +208,7 @@
     "errAgeGroup": "Es muss eine Altersklasse gesetzt werden",
     "errLeagueClass": "Es muss eine Ligaklasse gesetzt werden",
     "errMinimumAge": "Das Mindestalter muss eine ganze Zahl zwischen 1 und 99 sein oder leer bleiben",
+    "errMinimumAgeBadInput": "Die Eingabe beim Mindestalter war keine gültige Zahl. Bitte im Reiter Spielregeln neu eingeben oder verwerfen",
     "errLegacy": "Eine alte Liga kann hier nicht geändert werden.",
     "logoTooLarge": "Datei zu groß (max. 3 MB).",
     "logoUploaded": "Logo erfolgreich hochgeladen.",

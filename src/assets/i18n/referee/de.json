@@ -96,6 +96,7 @@
     "tabGames": "Gepfiffene Spiele",
     "seasonHeading": "Saison {{ name }}",
     "tabTests": "Prüfungsergebnisse",
+    "tabsLabel": "Bereiche der Historie",
     "noGames": "Noch keine Spiele gefunden.",
     "gameCountOne": "{{ count }} Spiel",
     "gameCountOther": "{{ count }} Spiele",
