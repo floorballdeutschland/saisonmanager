@@ -1,5 +1,5 @@
 import { ChangeDetectorRef } from '@angular/core';
-import { Game } from '@floorball/types';
+import { Game, GameAdditionalFields } from '@floorball/types';
 import { LeagueService } from '@floorball/core';
 import { MatchReportStepThreeComponent } from './match-report-step-three.component';
 
@@ -50,5 +50,57 @@ describe('MatchReportStepThreeComponent: Torschützennamen auf der Kachel', () =
     component.game = {} as Game;
 
     expect(component.youthLeagueWarning).toBeFalse();
+  });
+});
+
+describe('MatchReportStepThreeComponent: Unterschriften als Pflicht', () => {
+  function withMissing(
+    missing: string[] | undefined
+  ): MatchReportStepThreeComponent {
+    const component = build();
+    component.additionalFields = {
+      missing_signatures: missing,
+    } as unknown as GameAdditionalFields;
+    return component;
+  }
+
+  it('nennt die fehlenden Unterschriften mit den Bezeichnungen der Maske', () => {
+    const component = withMissing(['home_captain_signed', 'referee2_signed']);
+
+    expect(component.signaturesComplete).toBeFalse();
+    expect(component.missingSignatureLabels).toEqual([
+      'Heim',
+      'Schiedsrichter 2',
+    ]);
+    expect(component.isSignatureMissing('home_captain_signed')).toBeTrue();
+    expect(component.isSignatureMissing('time_keeper_signed')).toBeFalse();
+  });
+
+  it('schließt nicht ab, solange eine Unterschrift fehlt', () => {
+    const component = withMissing(['referee1_signed']);
+    const emitted = spyOn(component.closeMatchRecord, 'emit');
+
+    component.handleFinalize();
+
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('schließt ab, wenn alle Unterschriften abgehakt sind', () => {
+    const component = withMissing([]);
+    const emitted = spyOn(component.closeMatchRecord, 'emit');
+
+    component.handleFinalize();
+
+    expect(component.signaturesComplete).toBeTrue();
+    expect(emitted).toHaveBeenCalled();
+  });
+
+  // Eine API vor der Pflichtregel liefert das Feld nicht. Dann sperrt die Maske
+  // nichts, die Entscheidung bleibt bei der API.
+  it('sperrt nichts, wenn die API keine fehlenden Unterschriften liefert', () => {
+    const component = withMissing(undefined);
+
+    expect(component.signaturesComplete).toBeTrue();
+    expect(component.missingSignatureLabels).toEqual([]);
   });
 });

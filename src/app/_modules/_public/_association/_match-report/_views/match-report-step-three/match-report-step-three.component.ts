@@ -16,6 +16,16 @@ import {
   renderResultTile,
 } from 'src/app/_helpers/_utils/result-tile';
 
+// Bezeichnungen wie an den Haken der Maske (match-event-form).
+const SIGNATURE_LABELS: Record<string, string> = {
+  time_keeper_signed: 'Zeitnehmer/in',
+  record_keeper_signed: 'Schriftführer/in',
+  home_captain_signed: 'Heim',
+  guest_captain_signed: 'Gast',
+  referee1_signed: 'Schiedsrichter 1',
+  referee2_signed: 'Schiedsrichter 2',
+};
+
 @Component({
   selector: 'fb-match-report-step-three',
   templateUrl: './match-report-step-three.component.html',
@@ -85,8 +95,32 @@ export class MatchReportStepThreeComponent {
   }
 
   handleFinalize() {
+    if (!this.signaturesComplete) return;
     this.closeMatchRecord.emit();
   }
+
+  // ── Unterschriften als Pflicht ───────────────────────────────────────────
+  //
+  // Welche Haken fehlen, entscheidet die API (`missing_signatures`, dieselbe
+  // Regel wie die Sperre beim Abschluss): Schiedsrichter 2 nur, wenn er
+  // eingetragen ist, Forfait-Spiele gar nicht. Hier wird sie nicht nachgebaut.
+  // Liefert eine ältere API das Feld nicht, gilt nichts als fehlend; die Sperre
+  // bleibt dann allein die Antwort der API.
+
+  public isSignatureMissing(field: string): boolean {
+    return (this.additionalFields?.missing_signatures ?? []).includes(field);
+  }
+
+  public get signaturesComplete(): boolean {
+    return (this.additionalFields?.missing_signatures ?? []).length === 0;
+  }
+
+  public get missingSignatureLabels(): string[] {
+    return (this.additionalFields?.missing_signatures ?? []).map(
+      (field) => SIGNATURE_LABELS[field] ?? field
+    );
+  }
+
   public get youthLeagueWarning(): boolean {
     return looksLikeYouthLeague(this.game?.league_name);
   }
