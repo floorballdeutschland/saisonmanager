@@ -96,6 +96,8 @@ export interface ChecklistObjection {
   name: string | null;
   confirmed_at: string | null;
   negative_items: ChecklistNegativeItem[];
+  /** Freiwillige Anmerkung der meldenden Seite. Fehlt bei älterer API. */
+  comment?: string | null;
 }
 
 /**

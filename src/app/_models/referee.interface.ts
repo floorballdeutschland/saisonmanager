@@ -730,6 +730,7 @@ export interface RefereeGameDay {
   checklist_items: RefereeChecklistItem[];
   properly_conducted?: boolean | null;
   my_checklist_answers: RefereeChecklistAnswer[];
+  my_comment?: string | null;
   partner_properly_conducted?: boolean | null;
   games: RefereeGameDayGame[];
 }

@@ -641,6 +641,17 @@
                       }
                     </ul>
                   }
+                  @if (objection.comment) {
+                    <p
+                      class="ml-5 italic whitespace-pre-line"
+                      data-testid="checklist-objection-comment"
+                    >
+                      {{
+                        "matchReportAdmin.linked.objectionComment"
+                          | transloco: { comment: objection.comment }
+                      }}
+                    </p>
+                  }
                 </li>
               }
             </ul>

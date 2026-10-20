@@ -125,4 +125,60 @@ describe('TeamGameDaysComponent', () => {
 
     expect(component.gameDays.map((gd) => gd.id)).toEqual([21, 20]);
   });
+
+  describe('Anmerkung zum Einspruch', () => {
+    const day = (): TeamGameDay => ({
+      ...openGameDay(5, '2026-02-01'),
+      checklist_items: [{ id: 1, question: 'Halle offen?' }],
+    });
+
+    function reject(comment: string) {
+      const gd = day();
+      setup([gd]);
+      teamService.confirmTeamGameDay.and.returnValue(
+        of({
+          team_id: 50,
+          confirmed_at: '2026-02-01T20:00:00Z',
+          properly_conducted: false,
+          checklist_answers: [],
+          comment: comment.trim() || null,
+        })
+      );
+      const team = gd.my_teams[0];
+      component.startReject(gd, team);
+      component.setAnswer(1, false);
+      component.rejectComment = comment;
+      component.submitNotOk(gd, team);
+    }
+
+    it('schickt die Anmerkung getrimmt mit', () => {
+      reject('  Halle war zu.  ');
+
+      expect(teamService.confirmTeamGameDay).toHaveBeenCalledWith(5, 50, {
+        properly_conducted: false,
+        answers: [{ item_id: 1, answer: false }],
+        comment: 'Halle war zu.',
+      });
+      expect(component.rejectComment).toBe('');
+      expect(component.gameDays[0].my_teams[0].comment).toBe('Halle war zu.');
+    });
+
+    it('schickt eine leere Anmerkung als null', () => {
+      reject('   ');
+
+      expect(
+        teamService.confirmTeamGameDay.calls.mostRecent().args[2]?.comment
+      ).toBeNull();
+    });
+
+    it('verwirft die Anmerkung beim Abbrechen', () => {
+      const gd = day();
+      setup([gd]);
+      component.startReject(gd, gd.my_teams[0]);
+      component.rejectComment = 'Entwurf';
+      component.cancelReject();
+
+      expect(component.rejectComment).toBe('');
+    });
+  });
 });

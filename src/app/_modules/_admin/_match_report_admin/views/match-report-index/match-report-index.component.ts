@@ -315,11 +315,20 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
 
   // Für die CSV eine Zelle je Spiel: wer widersprochen hat, ohne die Punkte.
   // Die stehen in der Ansicht, eine Zelle mit allen Fragetexten wäre in der
-  // Tabellenkalkulation nicht mehr lesbar.
+  // Tabellenkalkulation nicht mehr lesbar. Die Anmerkung kommt mit, weil sie
+  // anders als die Punkte sagt, was eigentlich passiert ist; Zeilenumbrüche
+  // darin werden zu Leerzeichen, damit die Zelle einzeilig bleibt.
   private _objectionSummary(row: GameDayReportRow): string {
-    const parts = (row.checklist_objections ?? []).map((o) =>
-      this.objectionLabel(o)
-    );
+    const parts = (row.checklist_objections ?? []).map((o) => {
+      const label = this.objectionLabel(o);
+      const comment = o.comment?.replace(/\s+/g, ' ').trim();
+      return comment
+        ? `${label} (${this._transloco.translate(
+            'matchReportAdmin.linked.objectionComment',
+            { comment }
+          )})`
+        : label;
+    });
     if (row.checklist_veto_submitted_at) {
       parts.unshift(
         this._transloco.translate('matchReportAdmin.linked.objectionHost')

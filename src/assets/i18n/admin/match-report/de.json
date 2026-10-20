@@ -87,7 +87,8 @@
     "objectionReferee": "Einspruch von Schiedsrichter*in {{name}} zum Spieltagsbericht",
     "objectionAt": "vom {{date}}",
     "objectionHost": "Einspruch des Ausrichters",
-    "objectionUnknown": "unbekannt"
+    "objectionUnknown": "unbekannt",
+    "objectionComment": "Anmerkung: {{comment}}"
   },
   "proposalStatus": {
     "pending": "offen",

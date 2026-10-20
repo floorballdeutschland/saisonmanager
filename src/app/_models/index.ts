@@ -27,6 +27,7 @@ export {
   TeamGameDayChecklistItem,
   TeamGameDayChecklistAnswer,
   TeamGameDayConfirmResponse,
+  CONFIRMATION_COMMENT_MAX_LENGTH,
 } from './team-game-day.interface';
 export {
   RefereeFeedbackGame,

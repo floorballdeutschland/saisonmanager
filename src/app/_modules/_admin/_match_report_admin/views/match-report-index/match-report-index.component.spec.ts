@@ -2,6 +2,7 @@ import { getTranslocoTestingModule } from '@floorball/core';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -343,6 +344,40 @@ describe('MatchReportIndexComponent', () => {
     expect(component.rows.map((r) => r.id)).toEqual([2, 3]);
   });
 
+  it('nimmt die Anmerkung zum Einspruch einzeilig in die CSV-Zelle auf', () => {
+    spyOn(TestBed.inject(TranslocoService), 'translate').and.callFake(((
+      key: string,
+      params?: Record<string, string>
+    ) =>
+      key === 'matchReportAdmin.linked.objectionComment'
+        ? `Anmerkung: ${params?.['comment']}`
+        : key) as never);
+
+    const summary = component['_objectionSummary'](
+      row({
+        checklist_objections: [
+          {
+            kind: 'team',
+            name: 'Gast',
+            confirmed_at: null,
+            negative_items: [],
+            comment: 'Halle zu.\nKein Ansprechpartner.',
+          },
+          {
+            kind: 'referee',
+            name: 'Erika Pfeife',
+            confirmed_at: null,
+            negative_items: [],
+          },
+        ],
+      })
+    );
+
+    expect(summary).toContain('(Anmerkung: Halle zu. Kein Ansprechpartner.)');
+    expect(summary).not.toContain('\n');
+    expect(summary.match(/Anmerkung/g)?.length).toBe(1);
+  });
+
   it('zählt Einsprüche je Spieltag und führt sie als Vorgang', () => {
     const objection = row({
       id: 1,
@@ -660,7 +695,13 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
     await TestBed.configureTestingModule({
       imports: [
         CommonModule,
-        getTranslocoTestingModule(),
+        getTranslocoTestingModule({
+          de: {
+            matchReportAdmin: {
+              linked: { objectionComment: 'Anmerkung: {{comment}}' },
+            },
+          },
+        }),
         HttpClientTestingModule,
       ],
       declarations: [MatchReportIndexComponent],
@@ -772,6 +813,36 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
     );
     expect(items.length).toBe(2);
     expect(items[0].textContent).toContain('Halle in Ordnung?');
+  });
+
+  it('zeigt die Anmerkung zum Einspruch unter den verneinten Punkten', () => {
+    show(
+      row({
+        checklist_objection_count: 2,
+        checklist_objections: [
+          {
+            kind: 'team',
+            name: 'Gast',
+            confirmed_at: null,
+            negative_items: [],
+            comment: 'Halle war um 13 Uhr noch zu.',
+          },
+          {
+            kind: 'referee',
+            name: 'Erika Pfeife',
+            confirmed_at: null,
+            negative_items: [],
+            comment: null,
+          },
+        ],
+      })
+    );
+
+    const comments = element.querySelectorAll(
+      '[data-testid="checklist-objection-comment"]'
+    );
+    expect(comments.length).toBe(1);
+    expect(comments[0].textContent).toContain('Halle war um 13 Uhr noch zu.');
   });
 
   it('nimmt die Adresse als Linktext, wenn der Name nur aus Leerzeichen besteht', () => {
