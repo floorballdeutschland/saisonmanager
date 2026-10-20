@@ -285,6 +285,12 @@ export class GameEditComponent implements OnInit, OnChanges {
   }
 
   public createGame() {
+    // Zweite Sicherung gegen Doppelanlage (#577): ein weiterer Aufruf, solange
+    // die Anlage laeuft, wuerde ein zweites Spiel erzeugen.
+    if (this.processing) {
+      return;
+    }
+
     this.processing = true;
     this._cdr.markForCheck();
 
