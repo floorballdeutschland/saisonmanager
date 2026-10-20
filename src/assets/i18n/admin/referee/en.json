@@ -108,6 +108,7 @@
     "notFound": "Referee not found.",
     "exclusionsHeading": "Club exclusions",
     "exclusionsHint": "Clubs this person does not want to be assigned to. Their own club is always on the list. The list is a hint for the assigners, not a technical block.",
+    "exclusionsLoadFailed": "Exclusion list not available.",
     "exclusionOwnClub": "Own club",
     "exclusionRemove": "Remove",
     "exclusionAdd": "Add club",

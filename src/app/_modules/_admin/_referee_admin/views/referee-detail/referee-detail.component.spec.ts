@@ -145,6 +145,7 @@ describe('RefereeDetailComponent', () => {
                 courseHistory: 'Kurshistorie',
                 noCourses: 'Keine eingereichten Kursergebnisse.',
                 coursesLoadFailed: 'Kurshistorie nicht verfügbar.',
+                exclusionsLoadFailed: 'Ausschlussliste nicht verfügbar.',
                 exclusionsHeading: 'Vereins-Ausschlüsse',
                 feedbackHeading: 'Schiri-Feedback der Vereine',
                 coursePoints: '{{points}} Punkte',
@@ -540,6 +541,73 @@ describe('RefereeDetailComponent', () => {
         referee.id
       );
       expect(headings()).toEqual(['Vereins-Ausschlüsse']);
+    });
+
+    // Nach einem Fehlschlag laedt der naechste Reiterwechsel neu. Gelingt das,
+    // darf die alte Fehlermeldung nicht stehen bleiben.
+    it('nimmt die Fehlermeldung der Kurse nach erfolgreichem Neuversuch zurueck', async () => {
+      await setUp([], allRights);
+      adminGetCourses.and.returnValues(
+        throwError(() => ({ status: 500 })),
+        of([courseResult])
+      );
+
+      openTab('kurse');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Kurshistorie nicht verfügbar.'
+      );
+      openTab('uebersicht');
+      openTab('kurse');
+
+      expect(fixture.nativeElement.textContent).not.toContain(
+        'Kurshistorie nicht verfügbar.'
+      );
+      expect(fixture.nativeElement.textContent).toContain('Max Lehrer');
+    });
+
+    it('nimmt die Fehlermeldung der Beobachtungen nach erfolgreichem Neuversuch zurueck', async () => {
+      await setUp([], allRights);
+      adminGetForReferee.and.returnValues(
+        throwError(() => ({ status: 500 })),
+        of(observationResponse)
+      );
+
+      openTab('bewertungen');
+      expect(fixture.componentInstance.observationsFailed).toBeTrue();
+      openTab('uebersicht');
+      openTab('bewertungen');
+
+      expect(fixture.componentInstance.observationsFailed).toBeFalse();
+      expect(
+        fixture.nativeElement.querySelectorAll('fb-referee-observation-detail')
+          .length
+      ).toBe(1);
+    });
+
+    // Eine still leere Liste laese die Ansetzung als „keine Ausschluesse".
+    it('meldet einen gescheiterten Abruf der Ausschlussliste und versucht es erneut', async () => {
+      await setUp([], allRights);
+      adminGetRefereeClubExclusions.and.returnValues(
+        throwError(() => ({ status: 500 })),
+        of({
+          club_exclusions: [
+            { id: 1, club_id: 9, club_name: 'TV Beispiel', reason: 'x' },
+          ],
+          club_exclusion_requests: [],
+        })
+      );
+
+      openTab('ausschluesse');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Ausschlussliste nicht verfügbar.'
+      );
+      openTab('uebersicht');
+      openTab('ausschluesse');
+
+      expect(adminGetRefereeClubExclusions).toHaveBeenCalledTimes(2);
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).not.toContain('Ausschlussliste nicht verfügbar.');
+      expect(text).toContain('TV Beispiel');
     });
   });
 });

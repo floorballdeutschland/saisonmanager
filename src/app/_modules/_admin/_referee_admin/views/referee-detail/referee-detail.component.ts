@@ -92,6 +92,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     club_id: null,
     reason: '',
   };
+  exclusionsFailed = false;
   showExclusionForm = false;
   exclusionBusy = false;
 
@@ -245,6 +246,9 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     )
       return;
 
+    // Ein frueherer Fehlschlag darf nach erfolgreichem Neuversuch nicht stehen
+    // bleiben.
+    this.coursesFailed = false;
     this.coursesLoading = true;
     this._refereeService
       .adminGetCourses(this.referee.id)
@@ -329,6 +333,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     )
       return;
 
+    this.observationsFailed = false;
     this.observationsLoading = true;
     this._observationService
       .adminGetForReferee(this.referee.id)
@@ -389,11 +394,19 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
       return;
 
     this._exclusionsRequested = true;
+    this.exclusionsFailed = false;
     this._refereeService
       .adminGetRefereeClubExclusions(this.referee.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (payload) => this._applyExclusionPayload(payload),
+        // Ohne Meldung laese die Ansetzung eine leere Liste als „keine
+        // Ausschluesse". Beim naechsten Reiteroeffnen erneut versuchen.
+        error: () => {
+          this._exclusionsRequested = false;
+          this.exclusionsFailed = true;
+          this._cdr.markForCheck();
+        },
       });
   }
 
@@ -482,6 +495,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   }
 
   private _applyExclusionPayload(payload: RefereeClubExclusionPayload): void {
+    this.exclusionsFailed = false;
     this.exclusions = payload.club_exclusions;
     this.exclusionRequests = payload.club_exclusion_requests;
     this._cdr.markForCheck();

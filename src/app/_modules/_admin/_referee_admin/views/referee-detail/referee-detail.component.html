@@ -587,6 +587,11 @@
               {{ "refereeAdmin.detail.exclusionsHint" | transloco }}
             </p>
 
+            @if (exclusionsFailed) {
+              <p class="text-fb-gray-500 text-sm mb-2">
+                {{ "refereeAdmin.detail.exclusionsLoadFailed" | transloco }}
+              </p>
+            }
             <ul class="flex flex-col gap-2 max-w-2xl">
               @for (entry of exclusions; track entry.club_id) {
                 <li
