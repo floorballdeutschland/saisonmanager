@@ -33,6 +33,16 @@ describe('CollapsibleComponent', () => {
     expect(component.open).toBeTrue();
   });
 
+  it('übernimmt [open] von außen, ohne openChange zu melden', () => {
+    const seen: boolean[] = [];
+    component.openChange.subscribe((v) => seen.push(v));
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+    expect(details().open).toBeTrue();
+    details().dispatchEvent(new Event('toggle'));
+    expect(seen).toEqual([]);
+  });
+
   it('zeigt den Zähler nur, wenn er größer als 0 ist', () => {
     fixture.componentRef.setInput('count', 0);
     fixture.detectChanges();

@@ -18,6 +18,11 @@ import { TabsComponent } from './tabs.component';
       <ng-template fbTab="zwei" fbTabLabel="Zwei" [fbTabBadge]="badge">
         <span data-testid="zwei-inhalt">Inhalt zwei</span>
       </ng-template>
+      @if (showVier) {
+        <ng-template fbTab="vier" fbTabLabel="Vier" [fbTabKeepAlive]="true">
+          <input data-testid="vier-eingabe" />
+        </ng-template>
+      }
       @if (showDrei) {
         <ng-template fbTab="drei" fbTabLabel="Drei" [fbTabInvalid]="invalid"
           >Inhalt drei</ng-template
@@ -31,6 +36,7 @@ import { TabsComponent } from './tabs.component';
 class HostComponent {
   changes: string[] = [];
   showDrei = true;
+  showVier = false;
   invalid = false;
   badge: number | null = null;
 
@@ -131,6 +137,97 @@ describe('TabsComponent', () => {
     fixture.detectChanges();
     expect(tab('zwei').textContent).toContain('3');
     expect(tab('drei').classList).toContain('!text-red-600');
+  });
+
+  it('ersetzt beim Reiterwechsel den Verlaufseintrag', async () => {
+    await setup();
+    const navigate = spyOn(router, 'navigate').and.callThrough();
+    tab('zwei').click();
+    expect(navigate).toHaveBeenCalledWith(
+      [],
+      jasmine.objectContaining({
+        queryParams: { reiter: 'zwei' },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      })
+    );
+  });
+
+  it('räumt eine weggefallene Kennung beim Klick auf den Standardreiter aus der URL', async () => {
+    await setup('/seite?reiter=drei');
+    host.showDrei = false;
+    host.cdr.markForCheck();
+    fixture.detectChanges();
+    expect(panelText()).toBe('Inhalt eins');
+    tab('eins').click();
+    await fixture.whenStable();
+    expect(router.url).toBe('/seite');
+    host.showDrei = true;
+    host.cdr.markForCheck();
+    fixture.detectChanges();
+    expect(panelText()).toBe('Inhalt eins');
+  });
+
+  it('öffnet einen Reiter aus der URL, sobald er nachträglich erscheint', async () => {
+    await setup('/seite?reiter=vier');
+    expect(panelText()).toBe('Inhalt eins');
+    host.showVier = true;
+    host.cdr.markForCheck();
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(tab('vier').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('hält einen Reiter mit fbTabKeepAlive nach dem ersten Öffnen am Leben', async () => {
+    await setup('/seite?reiter=vier');
+    host.showVier = true;
+    host.cdr.markForCheck();
+    fixture.detectChanges();
+    fixture.detectChanges();
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '[data-testid="vier-eingabe"]'
+    );
+    input.value = 'Entwurf';
+    tab('eins').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '[data-testid="tabpanel-vier"]'
+    );
+    expect(panel.hidden).toBeTrue();
+    tab('vier').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const again: HTMLInputElement = fixture.nativeElement.querySelector(
+      '[data-testid="vier-eingabe"]'
+    );
+    expect(again).toBe(input);
+    expect(again.value).toBe('Entwurf');
+  });
+
+  it('zerstört Reiter ohne fbTabKeepAlive beim Verlassen', async () => {
+    await setup('/seite?reiter=zwei');
+    tab('eins').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="zwei-inhalt"]')
+    ).toBeNull();
+  });
+
+  it('springt mit Home, End und ArrowRight', async () => {
+    await setup();
+    const press = async (id: string, key: string) => {
+      tab(id).dispatchEvent(new KeyboardEvent('keydown', { key }));
+      await fixture.whenStable();
+      fixture.detectChanges();
+    };
+    await press('eins', 'End');
+    expect(panelText()).toBe('Inhalt drei');
+    await press('drei', 'Home');
+    expect(panelText()).toBe('Inhalt eins');
+    await press('eins', 'ArrowRight');
+    expect(panelText()).toBe('Inhalt zwei');
   });
 
   it('wandert mit den Pfeiltasten', async () => {
