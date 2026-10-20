@@ -46,9 +46,10 @@
             </div>
             <!-- Nur wo die API es erlaubt: Die Liste enthaelt auch Vereine
                  reiner Teammanager, dort antwortete die Uebersicht mit 403. -->
-            <!-- Eingeklappt und erst beim Aufklappen erzeugt: Der Abruf der
-                 Lizenzzahlen laeuft so nur, wenn jemand sie sehen will, nicht
-                 bei jedem Seitenaufruf fuer jeden Verein. -->
+            <!-- Eingeklappt und erst beim ersten Aufklappen erzeugt: Der Abruf
+                 der Lizenzzahlen laeuft so nur, wenn jemand sie sehen will.
+                 Danach bleibt die Uebersicht stehen, damit Zuklappen weder die
+                 gewaehlte Saison verwirft noch neu abruft. -->
             @if (club.license_summary) {
               <div
                 class="bg-white my-[5px] py-[15px] px-[30px]"
@@ -56,9 +57,10 @@
               >
                 <fb-collapsible
                   [label]="'licenseAdmin.clubSummary.show' | transloco"
-                  [(open)]="summaryOpen[club.id]"
+                  [open]="summaryOpen[club.id]"
+                  (openChange)="onSummaryToggle(club.id, $event)"
                 >
-                  @if (summaryOpen[club.id]) {
+                  @if (summaryLoaded[club.id]) {
                     <fb-license-club-summary
                       [clubId]="club.id"
                       [embedded]="true"

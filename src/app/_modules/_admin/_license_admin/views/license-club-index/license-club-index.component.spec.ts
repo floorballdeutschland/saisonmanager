@@ -107,6 +107,65 @@ describe('LicenseClubIndexComponent', () => {
     ).toBeNull();
   });
 
+  // Zuklappen darf die Uebersicht nicht abbauen: Sonst ging die gewaehlte
+  // Saison verloren und jedes Aufklappen fragte erneut ab.
+  it('behaelt Uebersicht und Saisonwahl ueber Zu- und Aufklappen', () => {
+    flushClubs();
+    toggleSummary(0);
+    http.expectOne(summaryUrl(113)).flush({
+      club: { id: 113, name: 'TSV Rohrdorf-Thansau' },
+      season_id: 18,
+      seasons: [
+        { id: 18, name: '2026/2027' },
+        { id: 17, name: '2025/2026' },
+      ],
+      teams: [],
+      totals: {
+        approved: 0,
+        requested: 0,
+        denied: 0,
+        withdrawn: 0,
+        other: 0,
+        total: 0,
+      },
+    });
+    fixture.detectChanges();
+
+    const select = (): HTMLSelectElement =>
+      fixture.nativeElement.querySelector(
+        '[data-testid="license-summary-season"]'
+      );
+    select().value = '17';
+    select().dispatchEvent(new Event('change'));
+    const req = http.expectOne((r) => r.url === summaryUrl(113));
+    expect(req.request.params.get('season_id')).toBe('17');
+    req.flush({
+      club: { id: 113, name: 'TSV Rohrdorf-Thansau' },
+      season_id: 17,
+      seasons: [
+        { id: 18, name: '2026/2027' },
+        { id: 17, name: '2025/2026' },
+      ],
+      teams: [],
+      totals: {
+        approved: 0,
+        requested: 0,
+        denied: 0,
+        withdrawn: 0,
+        other: 0,
+        total: 0,
+      },
+    });
+    fixture.detectChanges();
+
+    toggleSummary(0);
+    expect(component.summaryOpen[113]).toBeFalse();
+    toggleSummary(0);
+
+    http.expectNone((r) => r.url === summaryUrl(113));
+    expect(select().value).toBe('17');
+  });
+
   // Die Liste enthaelt auch Vereine, in denen das Konto nur Teammanager ist.
   // Dort antwortet die Lizenzuebersicht mit 403, und der ErrorInterceptor
   // leitete auf die Startseite um. Massgeblich ist das Flag der API, nicht

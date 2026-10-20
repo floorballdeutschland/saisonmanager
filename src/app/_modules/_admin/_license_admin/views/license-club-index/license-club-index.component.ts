@@ -25,6 +25,9 @@ export class LicenseClubIndexComponent implements OnInit {
   /** Aufgeklappte Lizenzuebersicht je Verein (club.id), anfangs alle zu. */
   summaryOpen: Record<number, boolean> = {};
 
+  /** Einmal aufgeklappt: Die Uebersicht bleibt danach erzeugt, nur ausgeblendet. */
+  summaryLoaded: Record<number, boolean> = {};
+
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
@@ -33,6 +36,11 @@ export class LicenseClubIndexComponent implements OnInit {
     private _transloco: TranslocoService
   ) {
     this.associations$ = this._associationService.associations$;
+  }
+
+  onSummaryToggle(clubId: number, open: boolean): void {
+    this.summaryOpen[clubId] = open;
+    if (open) this.summaryLoaded[clubId] = true;
   }
 
   public ngOnInit(): void {
