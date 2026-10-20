@@ -1,4 +1,5 @@
 import { GameService, getTranslocoTestingModule } from '@floorball/core';
+import { Game } from '@floorball/types';
 import { of } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -189,5 +190,133 @@ describe('GameEditComponent', () => {
     component.ngOnChanges();
 
     expect(component.game.person_level_assignment).toBe(false);
+  });
+  describe('Aktionsmenue der Zeile', () => {
+    const q = (sel: string): HTMLElement | null =>
+      fixture.nativeElement.querySelector(sel);
+
+    // Ein bestehendes, nicht begonnenes Spiel ohne Aenderungen: der Fall, in
+    // dem alle Menueeintraege angeboten werden.
+    const showExisting = (extra: Partial<Game> = {}, gameDays = 2) => {
+      component.gameDayId = 5;
+      component.allGameDays = Array.from({ length: gameDays }, (_, i) => ({
+        id: i + 5,
+      })) as unknown as typeof component.allGameDays;
+      component.existingGame = {
+        id: 7,
+        forfait: 0,
+        started: false,
+        ...extra,
+      } as unknown as Game;
+      component.resetGame();
+      fixture.detectChanges();
+    };
+
+    const openMenu = () => {
+      q('[data-testid="game-menu-toggle"]')!.click();
+      fixture.detectChanges();
+    };
+
+    const iconTitles = (): string[] =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[title]'
+        ) as NodeListOf<HTMLElement>
+      ).map((b) => b.getAttribute('title') ?? '');
+
+    it('ist geschlossen, bis es geoeffnet wird', () => {
+      showExisting();
+      expect(q('[data-testid="game-menu"]')).toBeNull();
+
+      openMenu();
+
+      expect(q('[data-testid="game-menu"]')).not.toBeNull();
+      expect(q('[data-testid="game-menu-delete"]')).not.toBeNull();
+      expect(q('[data-testid="game-menu-playoff"]')).not.toBeNull();
+      expect(q('[data-testid="game-menu-move"]')).not.toBeNull();
+    });
+
+    it('zeigt Loeschen, Playoff und Spieltag nicht mehr als Symbol', () => {
+      showExisting();
+
+      const titles = iconTitles();
+      expect(titles).not.toContain('scheduleAdmin.gameEdit.titleDeleteGame');
+      expect(titles).not.toContain('scheduleAdmin.gameEdit.titleEditPlayoff');
+      expect(titles).not.toContain('scheduleAdmin.gameEdit.titleMoveGameDay');
+      expect(titles).toContain('scheduleAdmin.gameEdit.titleEditNotice');
+    });
+
+    // Ohne existingGame gibt es kein Menue. Die Playoff-Angaben muessen beim
+    // Anlegen trotzdem erreichbar bleiben.
+    it('laesst bei neuen Spielen das Playoff-Symbol stehen', () => {
+      expect(q('[data-testid="game-menu-toggle"]')).toBeNull();
+      expect(iconTitles()).toContain('scheduleAdmin.gameEdit.titleEditPlayoff');
+    });
+
+    it('schliesst sich nach der Auswahl und fuehrt die Aktion aus', () => {
+      const gameService = TestBed.inject(GameService);
+      const del = spyOn(gameService, 'deleteGame').and.returnValue(
+        of({ success: true })
+      );
+      showExisting();
+      openMenu();
+
+      q('[data-testid="game-menu-delete"]')!.click();
+      fixture.detectChanges();
+
+      expect(del).toHaveBeenCalled();
+      expect(component.menuOpen).toBe(false);
+      expect(q('[data-testid="game-menu"]')).toBeNull();
+    });
+
+    it('schaltet die Playoff-Angaben ueber das Menue um', () => {
+      showExisting();
+      const before = component.hasGameDependencies;
+      openMenu();
+
+      q('[data-testid="game-menu-playoff"]')!.click();
+      fixture.detectChanges();
+
+      expect(component.hasGameDependencies).toBe(!before);
+      expect(component.menuOpen).toBe(false);
+    });
+
+    it('schliesst sich beim Klick daneben', () => {
+      showExisting();
+      openMenu();
+
+      q('[data-testid="game-menu-backdrop"]')!.click();
+      fixture.detectChanges();
+
+      expect(q('[data-testid="game-menu"]')).toBeNull();
+    });
+
+    it('bietet Loeschen nur ohne ungespeicherte Aenderungen an', () => {
+      showExisting();
+      component.game.game_number = 'geaendert';
+      openMenu();
+
+      expect(q('[data-testid="game-menu-delete"]')).toBeNull();
+      expect(q('[data-testid="game-menu-playoff"]')).not.toBeNull();
+    });
+
+    it('bietet Spieltag wechseln nur bei mehreren Spieltagen an', () => {
+      showExisting({}, 1);
+      openMenu();
+
+      expect(q('[data-testid="game-menu-move"]')).toBeNull();
+    });
+
+    it('zeigt bei begonnenen Spielen nur die Wertung', () => {
+      showExisting({ started: true });
+      openMenu();
+
+      expect(q('[data-testid="game-menu-delete"]')).toBeNull();
+      expect(q('[data-testid="game-menu-playoff"]')).toBeNull();
+      expect(q('[data-testid="game-menu-move"]')).toBeNull();
+      expect(q('[data-testid="game-menu"]')!.textContent).toContain(
+        'scheduleAdmin.gameEdit.forfaitHome'
+      );
+    });
   });
 });

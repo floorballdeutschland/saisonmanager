@@ -80,6 +80,9 @@ export class GameEditComponent implements OnInit, OnChanges {
   forfaitGuestGoals: number | null = null;
   hasGameDependencies = false;
   hasMoveGameDay = false;
+  // Aktionsmenue der Zeile (Wertung, Loeschen, Spieltag, Playoff). Frueher ein
+  // Checkbox-Trick ohne Zustand; jetzt hier, damit jeder Eintrag es schliesst.
+  menuOpen = false;
   processing = false;
   conflicts: GameSchedulingConflict[] = [];
 
@@ -537,6 +540,16 @@ export class GameEditComponent implements OnInit, OnChanges {
           this._cdr.markForCheck();
         },
       });
+  }
+
+  public toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+    this._cdr.markForCheck();
+  }
+
+  public closeMenu() {
+    this.menuOpen = false;
+    this._cdr.markForCheck();
   }
 
   public toggleNotice() {
