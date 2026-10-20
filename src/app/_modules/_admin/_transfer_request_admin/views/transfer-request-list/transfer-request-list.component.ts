@@ -30,6 +30,14 @@ import {
  */
 export const ALL_SEASONS_PARAM = 'alle';
 
+/**
+ * Erste Saison mit Transferverfahren im System (2026/2027). Fest und nicht
+ * „die laufende Saison": Die Auswahl soll mit den Jahren wachsen, statt bei
+ * jedem Saisonwechsel die Vorjahre zu verlieren. Aeltere Saisons haben keine
+ * Vorgaenge und blaehten das Feld nur auf.
+ */
+export const FIRST_TRANSFER_SEASON_ID = 18;
+
 const OPEN_STATUSES: string[] = [
   'pending_club',
   'pending_player',
@@ -62,6 +70,9 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   /** Saisons aus `init.json`, die Vorgaenge tragen nur die ID. */
   private _seasons: { id: number; name: string }[] = [];
 
+  /** Namen aller Saisons, auch der aelteren, fuer eine Wahl aus der URL. */
+  private _allSeasonNames = new Map<number, string>();
+
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -91,10 +102,13 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._associationService.seasons$
       .pipe(takeUntil(this._destroy$))
       .subscribe((seasons) => {
-        this._seasons = (seasons ?? []).map((s) => ({
-          id: s.id,
-          name: s.name,
-        }));
+        this._allSeasonNames = new Map(
+          (seasons ?? []).map((s) => [Number(s.id), s.name])
+        );
+        // Nach Zahl verglichen: Saison-IDs kommen teils als String.
+        this._seasons = (seasons ?? [])
+          .map((s) => ({ id: Number(s.id), name: s.name }))
+          .filter((s) => s.id >= FIRST_TRANSFER_SEASON_ID);
         this._cdr.markForCheck();
       });
 
@@ -169,10 +183,11 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Alle Saisons aus `init.json`, neueste zuerst, und nicht nur die mit
-   * Vorgaengen: Die stuenden erst nach dem Abruf aller Saisons fest. Eine
-   * Saison aus der URL, die `init.json` nicht kennt, bleibt waehlbar, sonst
-   * zeigte das Feld etwas anderes als die gefilterte Liste.
+   * Saisons aus `init.json` ab `FIRST_TRANSFER_SEASON_ID`, neueste zuerst,
+   * und nicht nur die mit Vorgaengen: Die stuenden erst nach dem Abruf aller
+   * Saisons fest. Eine Saison aus der URL, die hier fehlt (aelter oder
+   * unbekannt), bleibt waehlbar, sonst zeigte das Feld etwas anderes als die
+   * gefilterte Liste.
    */
   get seasonOptions(): { id: number; name: string }[] {
     const options = [...this._seasons];
@@ -180,9 +195,10 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
       this.selectedSeasonId !== null &&
       !options.some((s) => s.id === this.selectedSeasonId)
     ) {
+      const known = this._allSeasonNames.get(this.selectedSeasonId);
       options.push({
         id: this.selectedSeasonId,
-        name: String(this.selectedSeasonId),
+        name: known ?? String(this.selectedSeasonId),
       });
     }
     return options.sort((a, b) => b.id - a.id);

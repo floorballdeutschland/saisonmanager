@@ -79,8 +79,15 @@ describe('TransferRequestListComponent', () => {
           provide: AssociationService,
           useValue: {
             seasons$: of([
+              { id: 16, name: '2024/2025', current: false },
               { id: 17, name: '2025/2026', current: false },
               { id: 18, name: '2026/2027', current: true },
+              // Kommt im Bestand teils als String.
+              {
+                id: '19' as unknown as number,
+                name: '2027/2028',
+                current: false,
+              },
             ]),
           },
         },
@@ -283,13 +290,15 @@ describe('TransferRequestListComponent', () => {
     const fixture = await geladen([]);
 
     const select = el(fixture, 'transfer-season') as HTMLSelectElement;
+    // Erst ab der Saison, in der das Transferverfahren startete (18); 19 kommt
+    // als String und wird trotzdem nach Zahl einsortiert.
     expect(Array.from(select.options).map((o) => o.value)).toEqual([
       '',
+      '19',
       '18',
-      '17',
       'alle',
     ]);
-    expect(select.options[1].textContent?.trim()).toBe('2026/2027');
+    expect(select.options[2].textContent?.trim()).toBe('2026/2027');
     expect(select.value).toBe('');
   });
 
@@ -299,27 +308,27 @@ describe('TransferRequestListComponent', () => {
     const fixture = await geladen([]);
     const c = fixture.componentInstance;
 
-    await waehleSaison(fixture, '17');
+    await waehleSaison(fixture, '18');
     const zweiter = httpMock.expectOne(listUrl);
     expect(zweiter.request.params.get('all_seasons')).toBe('true');
     zweiter.flush([
-      request({ id: 1, season_id: 18 }),
-      request({ id: 2, season_id: 17 }),
+      request({ id: 1, season_id: 19 }),
+      request({ id: 2, season_id: 18 }),
       request({
         id: 3,
-        season_id: 17,
+        season_id: 18,
         status: 'pending_lv',
         lv_approved_at: null,
       }),
     ]);
     await stabil(fixture);
 
-    expect(router.url).toBe('/?saison=17');
+    expect(router.url).toBe('/?saison=18');
     expect(c.visibleRequests.map((r) => r.id)).toEqual([2, 3]);
     expect(c.summary[2].total).toBe(2);
     expect(c.grantedRequests.map((r) => r.id)).toEqual([2]);
     expect((el(fixture, 'transfer-season') as HTMLSelectElement).value).toBe(
-      '17'
+      '18'
     );
 
     // Zwischen einzelnen Saisons und „Alle" liegt kein neuer Abruf: Die Liste
@@ -350,10 +359,23 @@ describe('TransferRequestListComponent', () => {
     const fixture = await geladen([], '/?saison=9');
 
     expect(fixture.componentInstance.seasonOptions).toEqual([
+      { id: 19, name: '2027/2028' },
       { id: 18, name: '2026/2027' },
-      { id: 17, name: '2025/2026' },
       { id: 9, name: '9' },
     ]);
+  });
+
+  it('behaelt eine aeltere Saison aus der URL mit ihrem Namen', async () => {
+    const fixture = await geladen([], '/?saison=16');
+
+    expect(fixture.componentInstance.seasonOptions).toEqual([
+      { id: 19, name: '2027/2028' },
+      { id: 18, name: '2026/2027' },
+      { id: 16, name: '2024/2025' },
+    ]);
+    expect((el(fixture, 'transfer-season') as HTMLSelectElement).value).toBe(
+      '16'
+    );
   });
 
   it('laedt beim Reiterwechsel nicht neu', async () => {
