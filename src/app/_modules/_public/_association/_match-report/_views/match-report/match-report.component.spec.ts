@@ -507,4 +507,37 @@ describe('MatchReportComponent', () => {
       expect(setStatus).not.toHaveBeenCalled();
     });
   });
+
+  describe('Scan des Spielberichtsbogens', () => {
+    const select = (file: File) => {
+      const input = { files: [file], value: 'bogen' };
+      component.onScanFileSelected({ target: input } as unknown as Event);
+      return input;
+    };
+
+    it('nimmt ein PDF zum Hochladen an', () => {
+      const pdf = new File(['%PDF-1.4'], 'bogen.pdf', {
+        type: 'application/pdf',
+      });
+
+      select(pdf);
+
+      expect(component.selectedScanFile).toBe(pdf);
+      expect(component.scanUploadError).toBe('');
+    });
+
+    it('weist ein Foto vor dem Upload ab', () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+
+      const input = select(
+        new File(['x'], 'bogen.jpg', { type: 'image/jpeg' })
+      );
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toContain('PDF');
+      expect(input.value).toBe('');
+      expect(upload).not.toHaveBeenCalled();
+    });
+  });
 });

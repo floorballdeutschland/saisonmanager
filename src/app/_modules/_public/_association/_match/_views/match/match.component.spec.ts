@@ -231,6 +231,29 @@ describe('MatchComponent', () => {
       expect(component.refereeReportFilename).toBe('');
       component.ngOnDestroy();
     });
+
+    it('lädt ein Foto gar nicht erst hoch', () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+      const input = {
+        files: [new File(['x'], 'bericht.jpg', { type: 'image/jpeg' })],
+        value: 'C:\\fakepath\\bericht.jpg',
+      };
+
+      component.onRefereeReportFile({ target: input } as unknown as Event);
+
+      http.expectNone((r) => r.method === 'POST');
+      expect(alertSpy).toHaveBeenCalledOnceWith(
+        'Bitte wähle eine PDF-Datei. Fotos werden nicht mehr angenommen.'
+      );
+      expect(input.value).toBe('');
+      expect(component.refereeReportUploading).toBeFalse();
+      component.ngOnDestroy();
+    });
   });
 
   // fe#344: Der Reiter „Ausführliche Statistik“ gibt es nur bei Spielen, die im

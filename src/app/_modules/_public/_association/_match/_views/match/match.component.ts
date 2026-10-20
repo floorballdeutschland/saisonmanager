@@ -30,6 +30,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
+import {
+  isPdfFile,
+  PDF_UPLOAD_ACCEPT,
+} from 'src/app/_helpers/_utils/pdf-upload';
 
 @Component({
   templateUrl: './match.component.html',
@@ -50,6 +54,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   public tab = 'public';
 
   refereeReportUploading = false;
+  readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
   refereeReportUploaded = false;
   refereeReportFilename = '';
   refereeReportRequired = false;
@@ -260,6 +265,13 @@ export class MatchComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !this.game) return;
+
+    if (!isPdfFile(file)) {
+      // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
+      input.value = '';
+      alert(this._transloco.translate('match.refereeReport.notPdf'));
+      return;
+    }
 
     if (file.size > 5 * 1024 * 1024) {
       alert(this._transloco.translate('match.refereeReport.tooLarge'));

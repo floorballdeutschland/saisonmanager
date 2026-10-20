@@ -28,6 +28,10 @@ import {
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
+import {
+  isPdfFile,
+  PDF_UPLOAD_ACCEPT,
+} from 'src/app/_helpers/_utils/pdf-upload';
 
 @Component({
   selector: 'fb-match-report',
@@ -134,6 +138,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
   // scan upload
   public existingScan: GameScan | null = null;
   public selectedScanFile: File | null = null;
+  public readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
   public scanUploading = false;
   public scanUploadError = '';
 
@@ -489,8 +494,19 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public onScanFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    this.selectedScanFile = input.files?.[0] ?? null;
+    const file = input.files?.[0] ?? null;
     this.scanUploadError = '';
+
+    if (file && !isPdfFile(file)) {
+      this.selectedScanFile = null;
+      this.scanUploadError =
+        'Bitte wähle eine PDF-Datei. Fotos werden nicht mehr angenommen.';
+      // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
+      input.value = '';
+      return;
+    }
+
+    this.selectedScanFile = file;
   }
 
   public uploadScan() {
