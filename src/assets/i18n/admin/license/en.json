@@ -49,6 +49,7 @@
   "globalList": {
     "title": "License management",
     "filter": "Filter",
+    "moreFilters": "More filters",
     "searchPlayer": "Search player...",
     "searchClub": "Search club...",
     "genderBoth": "male & female",
@@ -341,6 +342,7 @@
     "requestRejectedFreeOfCharge": "License request for player {{ firstName }} {{ lastName }} ({{ id }}) rejected free of charge"
   },
   "clubSummary": {
+    "show": "Show licenses per season",
     "title": "Licenses per season",
     "season": "Season",
     "team": "Team",

@@ -130,7 +130,10 @@
     "titleDeleteGame": "Delete game",
     "titleEditNotice": "Edit game note",
     "titleEditPlayoff": "Edit playoff dependencies / group",
-    "titleMoveGameDay": "Move match day"
+    "titleMoveGameDay": "Move match day",
+    "titleMoreActions": "More actions",
+    "removePlayoff": "Remove playoff dependencies / group",
+    "cancelMoveGameDay": "Keep current match day"
   },
   "importGameDays": {
     "title": "League management",
