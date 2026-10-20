@@ -49,574 +49,648 @@
         </a>
       </div>
     </div>
-    <!-- Stammdaten -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      @if (!referee.guest) {
-        <div>
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            {{ "refereeAdmin.detail.licenseLevel" | transloco }}
-          </p>
-          <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
-        </div>
-      }
-      @if (!referee.guest) {
-        <div>
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            {{ "refereeAdmin.detail.validity" | transloco }}
-          </p>
-          <p
-            [class]="
-              isActive
-                ? 'font-medium text-green-600'
-                : 'font-medium text-red-500'
-            "
-          >
-            {{ referee.gueltigkeit || "–" }}
-            @if (referee.gueltigkeit) {
-              <span class="text-xs ml-1">
-                ({{
+    <!-- Reiter: Die Spielhistorie ist eine lange Tabelle und die
+         Bewertungsbloecke sind nur fuer wenige Rollen da. Die Kopfzeile oben
+         bleibt ueber allen Reitern stehen. Die Abschnitte mit eigenem Abruf
+         (Kurse, Feedback, Beobachtungen, Ausschluesse) laden erst, wenn ihr
+         Reiter zum ersten Mal offen ist (onTab). -->
+    <fb-tabs
+      [label]="'refereeAdmin.detail.tabs.label' | transloco"
+      (activeChange)="onTab($event)"
+    >
+      <ng-template
+        fbTab="uebersicht"
+        [fbTabLabel]="'refereeAdmin.detail.tabs.overview' | transloco"
+      >
+        <!-- Stammdaten -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          @if (!referee.guest) {
+            <div>
+              <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                {{ "refereeAdmin.detail.licenseLevel" | transloco }}
+              </p>
+              <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
+            </div>
+          }
+          @if (!referee.guest) {
+            <div>
+              <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                {{ "refereeAdmin.detail.validity" | transloco }}
+              </p>
+              <p
+                [class]="
                   isActive
-                    ? ("refereeAdmin.detail.statusActive" | transloco)
-                    : ("refereeAdmin.detail.statusExpired" | transloco)
-                }})
-              </span>
+                    ? 'font-medium text-green-600'
+                    : 'font-medium text-red-500'
+                "
+              >
+                {{ referee.gueltigkeit || "–" }}
+                @if (referee.gueltigkeit) {
+                  <span class="text-xs ml-1">
+                    ({{
+                      isActive
+                        ? ("refereeAdmin.detail.statusActive" | transloco)
+                        : ("refereeAdmin.detail.statusExpired" | transloco)
+                    }})
+                  </span>
+                }
+              </p>
+            </div>
+          }
+          @if (!referee.guest) {
+            <div>
+              <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                {{ "refereeAdmin.detail.region" | transloco }}
+              </p>
+              <p class="font-medium">{{ referee.landesverband || "–" }}</p>
+            </div>
+          }
+          @if (!referee.guest) {
+            <div>
+              <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                {{ "refereeAdmin.detail.club" | transloco }}
+              </p>
+              <p class="font-medium">{{ referee.club_name || "–" }}</p>
+            </div>
+          }
+          @if (!referee.guest && referee.qualifications?.length) {
+            @for (q of referee.qualifications; track q) {
+              <div>
+                <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                  {{
+                    "refereeAdmin.detail.qualificationPrefix"
+                      | transloco: { name: q.qualification_type_name }
+                  }}
+                </p>
+                <p class="font-medium">
+                  {{ q.qualification_type_name }}
+                  @if (q.valid_until) {
+                    <span class="text-fb-gray-500 text-sm">{{
+                      "refereeAdmin.detail.qualificationUntil"
+                        | transloco: { date: q.valid_until }
+                    }}</span>
+                  }
+                </p>
+              </div>
             }
-          </p>
+          }
+          @if (referee.email) {
+            <div>
+              <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                {{ "refereeAdmin.detail.email" | transloco }}
+              </p>
+              <p class="font-medium">{{ referee.email }}</p>
+            </div>
+          }
+          @if (referee.user_name) {
+            <div>
+              <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                {{ "refereeAdmin.detail.userAccount" | transloco }}
+              </p>
+              <p class="font-medium font-mono text-sm">
+                {{ referee.user_name }}
+              </p>
+            </div>
+          }
         </div>
-      }
-      @if (!referee.guest) {
-        <div>
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            {{ "refereeAdmin.detail.region" | transloco }}
-          </p>
-          <p class="font-medium">{{ referee.landesverband || "–" }}</p>
-        </div>
-      }
-      @if (!referee.guest) {
-        <div>
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            {{ "refereeAdmin.detail.club" | transloco }}
-          </p>
-          <p class="font-medium">{{ referee.club_name || "–" }}</p>
-        </div>
-      }
-      @if (!referee.guest && referee.qualifications?.length) {
-        @for (q of referee.qualifications; track q) {
-          <div>
-            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              {{
-                "refereeAdmin.detail.qualificationPrefix"
-                  | transloco: { name: q.qualification_type_name }
-              }}
-            </p>
-            <p class="font-medium">
-              {{ q.qualification_type_name }}
-              @if (q.valid_until) {
-                <span class="text-fb-gray-500 text-sm">{{
-                  "refereeAdmin.detail.qualificationUntil"
-                    | transloco: { date: q.valid_until }
-                }}</span>
-              }
-            </p>
-          </div>
-        }
-      }
-      @if (referee.email) {
-        <div>
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            {{ "refereeAdmin.detail.email" | transloco }}
-          </p>
-          <p class="font-medium">{{ referee.email }}</p>
-        </div>
-      }
-      @if (referee.user_name) {
-        <div>
-          <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-            {{ "refereeAdmin.detail.userAccount" | transloco }}
-          </p>
-          <p class="font-medium font-mono text-sm">{{ referee.user_name }}</p>
-        </div>
-      }
-    </div>
-    <!-- Ansetzungsinformationen (nur reguläre Schiedsrichter). Telefonnummer und
+        <!-- Ansetzungsinformationen (nur reguläre Schiedsrichter). Telefonnummer und
          „kurzfristig mobil" liefert die API nur an Rollen mit Zugriff auf die
          Kontaktdaten (Admin, RSK, Ansetzung); einem Vereinsmanager fehlen beide
          Felder in der Antwort, er sieht in diesem Block dann nur Heimadresse
          und bevorzugten Partner. -->
-    @if (
-      !referee.guest &&
-      (referee.strasse ||
-        referee.telefonnummer ||
-        referee.kurzfristig_mobil ||
-        referee.partner_lizenznummer)
-    ) {
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        @if (phoneText(referee.telefonnummer); as phone) {
-          <div>
-            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              {{ "refereeAdmin.detail.phone" | transloco }}
-            </p>
-            <p class="font-medium">
-              <a
-                [href]="telHref(phone)"
-                class="text-blue-700 hover:underline"
-                >{{ phone }}</a
-              >
-              @if (referee.kurzfristig_mobil) {
-                <span
-                  class="ml-1 text-amber-600"
-                  [title]="'refereeAdmin.detail.shortNoticeHint' | transloco"
-                  >⚡ {{ "refereeAdmin.detail.shortNotice" | transloco }}</span
-                >
-              }
-            </p>
-          </div>
-        } @else if (referee.kurzfristig_mobil) {
-          <div>
-            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              {{ "refereeAdmin.detail.shortNotice" | transloco }}
-            </p>
-            <p
-              class="font-medium text-amber-600"
-              [title]="'refereeAdmin.detail.shortNoticeHint' | transloco"
-            >
-              ⚡ {{ "refereeAdmin.detail.shortNoticeNoPhone" | transloco }}
-            </p>
-          </div>
-        }
-        @if (referee.strasse) {
-          <div>
-            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              {{ "refereeAdmin.detail.homeAddress" | transloco }}
-            </p>
-            <p class="font-medium">
-              {{ referee.strasse }} {{ referee.hausnummer }}, {{ referee.plz }}
-              {{ referee.ort }}
-            </p>
-          </div>
-        }
-        @if (referee.partner_lizenznummer) {
-          <div>
-            <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
-              {{ "refereeAdmin.detail.preferredPartner" | transloco }}
-            </p>
-            <p class="font-medium font-mono">
-              {{ referee.partner_lizenznummer }}
-            </p>
-          </div>
-        }
-      </div>
-    }
-    <!-- Spielhistorie -->
-    <h2 class="text-lg font-bold mb-4">
-      {{ "refereeAdmin.detail.gameHistory" | transloco }}
-    </h2>
-    @if (gamesLoading) {
-      <div class="text-fb-gray-500 text-sm py-4">
-        {{ "refereeAdmin.detail.gamesLoading" | transloco }}
-      </div>
-    }
-    @if (!gamesLoading) {
-      <div>
-        <p class="text-sm text-fb-gray-500 mb-3">
-          {{
-            "refereeAdmin.detail.gamesCount"
-              | transloco: { count: games.length }
-          }}
-        </p>
-        @if (games.length > 0) {
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colNumber" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colDate" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colHomeTeam" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colGuestTeam" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colLeague" | transloco }}
-                </th>
-                <th class="py-2 font-bold">
-                  {{ "refereeAdmin.detail.colResult" | transloco }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (g of games; track g) {
-                <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
-                  <td class="py-2 pr-4 font-mono text-fb-gray-500">
-                    {{ g.game_number }}
-                  </td>
-                  <td class="py-2 pr-4">{{ g.date | date: "dd.MM.yyyy" }}</td>
-                  @if (matchLink(g); as link) {
-                    <td class="py-2 pr-4">
-                      <a
-                        [routerLink]="link"
-                        class="hover:underline focus:underline"
-                        [attr.title]="
-                          'refereeAdmin.detail.openMatch' | transloco
-                        "
-                      >
-                        {{ g.home_team }}
-                      </a>
-                    </td>
-                    <td class="py-2 pr-4">
-                      <a
-                        [routerLink]="link"
-                        class="hover:underline focus:underline"
-                        [attr.title]="
-                          'refereeAdmin.detail.openMatch' | transloco
-                        "
-                      >
-                        {{ g.guest_team }}
-                      </a>
-                    </td>
-                  } @else {
-                    <td class="py-2 pr-4">{{ g.home_team }}</td>
-                    <td class="py-2 pr-4">{{ g.guest_team }}</td>
-                  }
-                  <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
-                  <td class="py-2 font-mono">{{ g.result || "–" }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
-        @if (games.length === 0) {
-          <p class="text-fb-gray-500 text-sm">
-            {{ "refereeAdmin.detail.noGames" | transloco }}
-          </p>
-        }
-      </div>
-    }
-
-    <!-- Kurshistorie (Kursimport; nur Admin, RSK, Ansetzung) -->
-    @if (canViewCourses) {
-      <h2 class="text-lg font-bold mb-4 mt-10">
-        {{ "refereeAdmin.detail.courseHistory" | transloco }}
-      </h2>
-      @if (coursesLoading) {
-        <div class="text-fb-gray-500 text-sm py-4">
-          {{ "refereeAdmin.detail.loading" | transloco }}
-        </div>
-      } @else if (coursesFailed) {
-        <p class="text-fb-gray-500 text-sm">
-          {{ "refereeAdmin.detail.coursesLoadFailed" | transloco }}
-        </p>
-      } @else if (courses.length === 0) {
-        <p class="text-fb-gray-500 text-sm">
-          {{ "refereeAdmin.detail.noCourses" | transloco }}
-        </p>
-      } @else {
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-fb-gray-700 text-left">
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colCourseDate" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colCourseLevel" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colCourse1" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colCourse2" | transloco }}
-                </th>
-                <th class="py-2 pr-4 font-bold">
-                  {{ "refereeAdmin.detail.colInstructor" | transloco }}
-                </th>
-                <th class="py-2 font-bold">
-                  {{ "refereeAdmin.detail.colCourseStatus" | transloco }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (c of courses; track c.id) {
-                <tr class="border-b border-fb-gray-800 align-top">
-                  <td class="py-2 pr-4 whitespace-nowrap">
-                    {{ c.kursstichtag || "–" }}
-                  </td>
-                  <td class="py-2 pr-4">
-                    {{ c.lizenzstufe || "–" }}
-                    @if (c.status === "applied" && c.gueltigkeit) {
-                      <span class="block text-xs text-fb-gray-500">{{
-                        "refereeAdmin.detail.courseValidUntil"
-                          | transloco: { date: c.gueltigkeit }
-                      }}</span>
-                    }
-                  </td>
-                  <td class="py-2 pr-4">
-                    {{ courseLine(c.course_data.kurs_1) || "–" }}
-                  </td>
-                  <td class="py-2 pr-4">
-                    {{ courseLine(c.course_data.kurs_2) || "–" }}
-                  </td>
-                  <td class="py-2 pr-4">
-                    {{ c.course_data.ausbilder || "–" }}
-                  </td>
-                  <td class="py-2">
+        @if (
+          !referee.guest &&
+          (referee.strasse ||
+            referee.telefonnummer ||
+            referee.kurzfristig_mobil ||
+            referee.partner_lizenznummer)
+        ) {
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            @if (phoneText(referee.telefonnummer); as phone) {
+              <div>
+                <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                  {{ "refereeAdmin.detail.phone" | transloco }}
+                </p>
+                <p class="font-medium">
+                  <a
+                    [href]="telHref(phone)"
+                    class="text-blue-700 hover:underline"
+                    >{{ phone }}</a
+                  >
+                  @if (referee.kurzfristig_mobil) {
                     <span
-                      class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap"
-                      [class.bg-green-100]="c.status === 'applied'"
-                      [class.text-green-800]="c.status === 'applied'"
-                      [class.bg-red-100]="c.status === 'rejected'"
-                      [class.text-red-800]="c.status === 'rejected'"
-                      [class.bg-gray-100]="c.status === 'pending_review'"
-                      [class.text-gray-700]="c.status === 'pending_review'"
+                      class="ml-1 text-amber-600"
+                      [title]="
+                        'refereeAdmin.detail.shortNoticeHint' | transloco
+                      "
+                      >⚡
+                      {{ "refereeAdmin.detail.shortNotice" | transloco }}</span
                     >
+                  }
+                </p>
+              </div>
+            } @else if (referee.kurzfristig_mobil) {
+              <div>
+                <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                  {{ "refereeAdmin.detail.shortNotice" | transloco }}
+                </p>
+                <p
+                  class="font-medium text-amber-600"
+                  [title]="'refereeAdmin.detail.shortNoticeHint' | transloco"
+                >
+                  ⚡ {{ "refereeAdmin.detail.shortNoticeNoPhone" | transloco }}
+                </p>
+              </div>
+            }
+            @if (referee.strasse) {
+              <div>
+                <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                  {{ "refereeAdmin.detail.homeAddress" | transloco }}
+                </p>
+                <p class="font-medium">
+                  {{ referee.strasse }} {{ referee.hausnummer }},
+                  {{ referee.plz }}
+                  {{ referee.ort }}
+                </p>
+              </div>
+            }
+            @if (referee.partner_lizenznummer) {
+              <div>
+                <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+                  {{ "refereeAdmin.detail.preferredPartner" | transloco }}
+                </p>
+                <p class="font-medium font-mono">
+                  {{ referee.partner_lizenznummer }}
+                </p>
+              </div>
+            }
+          </div>
+        }
+      </ng-template>
+      <ng-template
+        fbTab="spiele"
+        [fbTabLabel]="'refereeAdmin.detail.tabs.games' | transloco"
+        [fbTabBadge]="gamesLoading ? null : games.length"
+      >
+        <!-- Spielhistorie -->
+        <h2 class="text-lg font-bold mb-4">
+          {{ "refereeAdmin.detail.gameHistory" | transloco }}
+        </h2>
+        @if (gamesLoading) {
+          <div class="text-fb-gray-500 text-sm py-4">
+            {{ "refereeAdmin.detail.gamesLoading" | transloco }}
+          </div>
+        }
+        @if (!gamesLoading) {
+          <div>
+            <p class="text-sm text-fb-gray-500 mb-3">
+              {{
+                "refereeAdmin.detail.gamesCount"
+                  | transloco: { count: games.length }
+              }}
+            </p>
+            @if (games.length > 0) {
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-fb-gray-700 text-left">
+                    <th class="py-2 pr-4 font-bold">
+                      {{ "refereeAdmin.detail.colNumber" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4 font-bold">
+                      {{ "refereeAdmin.detail.colDate" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4 font-bold">
+                      {{ "refereeAdmin.detail.colHomeTeam" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4 font-bold">
+                      {{ "refereeAdmin.detail.colGuestTeam" | transloco }}
+                    </th>
+                    <th class="py-2 pr-4 font-bold">
+                      {{ "refereeAdmin.detail.colLeague" | transloco }}
+                    </th>
+                    <th class="py-2 font-bold">
+                      {{ "refereeAdmin.detail.colResult" | transloco }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (g of games; track g) {
+                    <tr
+                      class="border-b border-fb-gray-800 hover:bg-fb-gray-900"
+                    >
+                      <td class="py-2 pr-4 font-mono text-fb-gray-500">
+                        {{ g.game_number }}
+                      </td>
+                      <td class="py-2 pr-4">
+                        {{ g.date | date: "dd.MM.yyyy" }}
+                      </td>
+                      @if (matchLink(g); as link) {
+                        <td class="py-2 pr-4">
+                          <a
+                            [routerLink]="link"
+                            class="hover:underline focus:underline"
+                            [attr.title]="
+                              'refereeAdmin.detail.openMatch' | transloco
+                            "
+                          >
+                            {{ g.home_team }}
+                          </a>
+                        </td>
+                        <td class="py-2 pr-4">
+                          <a
+                            [routerLink]="link"
+                            class="hover:underline focus:underline"
+                            [attr.title]="
+                              'refereeAdmin.detail.openMatch' | transloco
+                            "
+                          >
+                            {{ g.guest_team }}
+                          </a>
+                        </td>
+                      } @else {
+                        <td class="py-2 pr-4">{{ g.home_team }}</td>
+                        <td class="py-2 pr-4">{{ g.guest_team }}</td>
+                      }
+                      <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
+                      <td class="py-2 font-mono">{{ g.result || "–" }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+            @if (games.length === 0) {
+              <p class="text-fb-gray-500 text-sm">
+                {{ "refereeAdmin.detail.noGames" | transloco }}
+              </p>
+            }
+          </div>
+        }
+      </ng-template>
+      @if (canViewCourses) {
+        <ng-template
+          fbTab="kurse"
+          [fbTabLabel]="'refereeAdmin.detail.tabs.courses' | transloco"
+        >
+          <!-- Kurshistorie (Kursimport; nur Admin, RSK, Ansetzung) -->
+          @if (canViewCourses) {
+            <h2 class="text-lg font-bold mb-4">
+              {{ "refereeAdmin.detail.courseHistory" | transloco }}
+            </h2>
+            @if (coursesLoading) {
+              <div class="text-fb-gray-500 text-sm py-4">
+                {{ "refereeAdmin.detail.loading" | transloco }}
+              </div>
+            } @else if (coursesFailed) {
+              <p class="text-fb-gray-500 text-sm">
+                {{ "refereeAdmin.detail.coursesLoadFailed" | transloco }}
+              </p>
+            } @else if (courses.length === 0) {
+              <p class="text-fb-gray-500 text-sm">
+                {{ "refereeAdmin.detail.noCourses" | transloco }}
+              </p>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-fb-gray-700 text-left">
+                      <th class="py-2 pr-4 font-bold">
+                        {{ "refereeAdmin.detail.colCourseDate" | transloco }}
+                      </th>
+                      <th class="py-2 pr-4 font-bold">
+                        {{ "refereeAdmin.detail.colCourseLevel" | transloco }}
+                      </th>
+                      <th class="py-2 pr-4 font-bold">
+                        {{ "refereeAdmin.detail.colCourse1" | transloco }}
+                      </th>
+                      <th class="py-2 pr-4 font-bold">
+                        {{ "refereeAdmin.detail.colCourse2" | transloco }}
+                      </th>
+                      <th class="py-2 pr-4 font-bold">
+                        {{ "refereeAdmin.detail.colInstructor" | transloco }}
+                      </th>
+                      <th class="py-2 font-bold">
+                        {{ "refereeAdmin.detail.colCourseStatus" | transloco }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of courses; track c.id) {
+                      <tr class="border-b border-fb-gray-800 align-top">
+                        <td class="py-2 pr-4 whitespace-nowrap">
+                          {{ c.kursstichtag || "–" }}
+                        </td>
+                        <td class="py-2 pr-4">
+                          {{ c.lizenzstufe || "–" }}
+                          @if (c.status === "applied" && c.gueltigkeit) {
+                            <span class="block text-xs text-fb-gray-500">{{
+                              "refereeAdmin.detail.courseValidUntil"
+                                | transloco: { date: c.gueltigkeit }
+                            }}</span>
+                          }
+                        </td>
+                        <td class="py-2 pr-4">
+                          {{ courseLine(c.course_data.kurs_1) || "–" }}
+                        </td>
+                        <td class="py-2 pr-4">
+                          {{ courseLine(c.course_data.kurs_2) || "–" }}
+                        </td>
+                        <td class="py-2 pr-4">
+                          {{ c.course_data.ausbilder || "–" }}
+                        </td>
+                        <td class="py-2">
+                          <span
+                            class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap"
+                            [class.bg-green-100]="c.status === 'applied'"
+                            [class.text-green-800]="c.status === 'applied'"
+                            [class.bg-red-100]="c.status === 'rejected'"
+                            [class.text-red-800]="c.status === 'rejected'"
+                            [class.bg-gray-100]="c.status === 'pending_review'"
+                            [class.text-gray-700]="
+                              c.status === 'pending_review'
+                            "
+                          >
+                            {{
+                              "refereeAdmin.detail.courseStatus." + c.status
+                                | transloco
+                            }}
+                          </span>
+                          @if (c.status === "rejected" && c.rejection_reason) {
+                            <span class="block text-xs text-fb-gray-500 mt-1">{{
+                              c.rejection_reason
+                            }}</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+        </ng-template>
+      }
+      @if (canViewFeedback || canViewObservations) {
+        <ng-template
+          fbTab="bewertungen"
+          [fbTabLabel]="'refereeAdmin.detail.tabs.ratings' | transloco"
+        >
+          <!-- Schiri-Feedback der Vereine (nur Admin / FD-RSK / FD-Ansetzer) -->
+          @if (canViewFeedback) {
+            <h2 class="text-lg font-bold mb-4">
+              {{ "refereeAdmin.detail.feedbackHeading" | transloco }}
+            </h2>
+            @if (feedbackLoading) {
+              <div class="text-fb-gray-500 text-sm py-4">
+                {{ "refereeAdmin.detail.loading" | transloco }}
+              </div>
+            }
+            @if (!feedbackLoading && feedback) {
+              @if (feedback.summary.count >= minFeedbackCount) {
+                <div class="flex flex-wrap gap-6 mb-4 text-sm">
+                  <div>
+                    <span class="text-fb-gray-500">
+                      {{ "refereeAdmin.detail.feedbackAvgLine" | transloco }}
+                    </span>
+                    <span class="font-bold ml-1">
+                      {{ feedback.summary.avg_line_rating ?? "–" }} / 10
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-fb-gray-500">
                       {{
-                        "refereeAdmin.detail.courseStatus." + c.status
+                        "refereeAdmin.detail.feedbackAvgCommunication"
                           | transloco
                       }}
                     </span>
-                    @if (c.status === "rejected" && c.rejection_reason) {
-                      <span class="block text-xs text-fb-gray-500 mt-1">{{
-                        c.rejection_reason
-                      }}</span>
-                    }
-                  </td>
-                </tr>
+                    <span class="font-bold ml-1">
+                      {{ feedback.summary.avg_communication_rating ?? "–" }} /
+                      10
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-fb-gray-500">
+                      {{ "refereeAdmin.detail.feedbackCount" | transloco }}
+                    </span>
+                    <span class="font-bold ml-1">{{
+                      feedback.summary.count
+                    }}</span>
+                  </div>
+                </div>
+              } @else {
+                <p class="text-fb-gray-500 text-sm">
+                  {{
+                    "refereeAdmin.detail.feedbackBelowThreshold"
+                      | transloco
+                        : {
+                            min: minFeedbackCount,
+                            count: feedback.summary.count,
+                          }
+                  }}
+                </p>
               }
-            </tbody>
-          </table>
-        </div>
-      }
-    }
-
-    <!-- Vereins-Ausschlüsse (nur Ansetzung) -->
-    @if (canManageExclusions) {
-      <h2 class="text-lg font-bold mb-2 mt-10">
-        {{ "refereeAdmin.detail.exclusionsHeading" | transloco }}
-      </h2>
-      <p class="text-fb-gray-500 text-sm mb-4">
-        {{ "refereeAdmin.detail.exclusionsHint" | transloco }}
-      </p>
-
-      <ul class="flex flex-col gap-2 max-w-2xl">
-        @for (entry of exclusions; track entry.club_id) {
-          <li
-            class="flex flex-wrap items-center gap-2 border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm"
-          >
-            <span class="font-bold">{{ entry.club_name }}</span>
-            @if (entry.source === "own_club") {
-              <span
-                class="text-xs uppercase bg-fb-gray-800 text-fb-gray-500 rounded-[3px] px-2 py-[2px]"
-                >{{ "refereeAdmin.detail.exclusionOwnClub" | transloco }}</span
-              >
-            } @else {
-              <span class="text-xs text-fb-gray-500">{{ entry.reason }}</span>
-              <button
-                type="button"
-                [disabled]="exclusionBusy"
-                (click)="removeExclusion(entry)"
-                class="ml-auto text-xs underline disabled:opacity-50"
-              >
-                {{ "refereeAdmin.detail.exclusionRemove" | transloco }}
-              </button>
             }
-          </li>
-        }
-      </ul>
+          }
 
-      @if (openExclusionRequests.length) {
-        <p class="text-xs text-fb-gray-500 mt-2">
-          {{
-            "refereeAdmin.detail.exclusionOpenRequests"
-              | transloco: { count: openExclusionRequests.length }
-          }}
-          <a
-            [routerLink]="['/', 'verwaltung', 'schiedsrichter-ausschluesse']"
-            class="underline"
-            >{{ "refereeAdmin.detail.exclusionToRequests" | transloco }}</a
-          >
-        </p>
-      }
-
-      <div class="mt-3 max-w-2xl">
-        @if (showExclusionForm) {
-          <div
-            class="flex flex-col gap-2 border border-fb-gray-600 rounded-[5px] p-3"
-          >
-            <fb-select-search
-              [(ngModel)]="newExclusion.club_id"
-              [items]="selectableExclusionClubs"
-              [placeholder]="
-                'refereeAdmin.detail.exclusionClubPlaceholder' | transloco
-              "
-            />
-            <input
-              type="text"
-              maxlength="120"
-              [(ngModel)]="newExclusion.reason"
-              [placeholder]="
-                'refereeAdmin.detail.exclusionReasonPlaceholder' | transloco
-              "
-              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
-            />
-            <div class="flex items-center gap-3">
-              <button
-                type="button"
-                [disabled]="exclusionBusy || !newExclusion.club_id"
-                (click)="addExclusion()"
-                class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] disabled:opacity-50"
-              >
-                {{ "refereeAdmin.detail.exclusionSave" | transloco }}
-              </button>
-              <button
-                type="button"
-                (click)="toggleExclusionForm()"
-                class="text-sm underline"
-              >
-                {{ "refereeAdmin.detail.exclusionCancel" | transloco }}
-              </button>
-            </div>
-          </div>
-        } @else {
-          <button
-            type="button"
-            (click)="toggleExclusionForm()"
-            class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
-          >
-            {{ "refereeAdmin.detail.exclusionAdd" | transloco }}
-          </button>
-        }
-      </div>
-    }
-
-    <!-- Schiri-Feedback der Vereine (nur Admin / FD-RSK / FD-Ansetzer) -->
-    @if (canViewFeedback) {
-      <h2 class="text-lg font-bold mb-4 mt-10">
-        {{ "refereeAdmin.detail.feedbackHeading" | transloco }}
-      </h2>
-      @if (feedbackLoading) {
-        <div class="text-fb-gray-500 text-sm py-4">
-          {{ "refereeAdmin.detail.loading" | transloco }}
-        </div>
-      }
-      @if (!feedbackLoading && feedback) {
-        @if (feedback.summary.count >= minFeedbackCount) {
-          <div class="flex flex-wrap gap-6 mb-4 text-sm">
-            <div>
-              <span class="text-fb-gray-500">
-                {{ "refereeAdmin.detail.feedbackAvgLine" | transloco }}
-              </span>
-              <span class="font-bold ml-1">
-                {{ feedback.summary.avg_line_rating ?? "–" }} / 10
-              </span>
-            </div>
-            <div>
-              <span class="text-fb-gray-500">
-                {{ "refereeAdmin.detail.feedbackAvgCommunication" | transloco }}
-              </span>
-              <span class="font-bold ml-1">
-                {{ feedback.summary.avg_communication_rating ?? "–" }} / 10
-              </span>
-            </div>
-            <div>
-              <span class="text-fb-gray-500">
-                {{ "refereeAdmin.detail.feedbackCount" | transloco }}
-              </span>
-              <span class="font-bold ml-1">{{ feedback.summary.count }}</span>
-            </div>
-          </div>
-        } @else {
-          <p class="text-fb-gray-500 text-sm">
-            {{
-              "refereeAdmin.detail.feedbackBelowThreshold"
-                | transloco
-                  : { min: minFeedbackCount, count: feedback.summary.count }
-            }}
-          </p>
-        }
-      }
-    }
-
-    <!-- Beobachtungen der Schiedsrichtercoaches -->
-    @if (canViewObservations) {
-      <h2 class="text-lg font-bold mb-4 mt-10">
-        {{ "refereeObservation.admin.title" | transloco }}
-      </h2>
-      @if (observationsLoading) {
-        <div class="text-fb-gray-500 text-sm py-4">
-          {{ "refereeAdmin.detail.loading" | transloco }}
-        </div>
-      } @else if (observationsFailed) {
-        <p class="text-fb-gray-500 text-sm">
-          {{ "refereeObservation.admin.loadFailed" | transloco }}
-        </p>
-      } @else if (!observations?.observations?.length) {
-        <p class="text-fb-gray-500 text-sm">
-          {{ "refereeObservation.admin.empty" | transloco }}
-        </p>
-      } @else {
-        <!-- Schnitt ueber die EIGENEN Bewertungen dieser Person, nicht ueber
+          <!-- Beobachtungen der Schiedsrichtercoaches -->
+          @if (canViewObservations) {
+            <h2 class="text-lg font-bold mb-4" [class.mt-10]="canViewFeedback">
+              {{ "refereeObservation.admin.title" | transloco }}
+            </h2>
+            @if (observationsLoading) {
+              <div class="text-fb-gray-500 text-sm py-4">
+                {{ "refereeAdmin.detail.loading" | transloco }}
+              </div>
+            } @else if (observationsFailed) {
+              <p class="text-fb-gray-500 text-sm">
+                {{ "refereeObservation.admin.loadFailed" | transloco }}
+              </p>
+            } @else if (!observations?.observations?.length) {
+              <p class="text-fb-gray-500 text-sm">
+                {{ "refereeObservation.admin.empty" | transloco }}
+              </p>
+            } @else {
+              <!-- Schnitt ueber die EIGENEN Bewertungen dieser Person, nicht ueber
              die des Gespanns. Genau dafuer haengen die Bewertungen an der
              Person und nicht am Bogen. -->
-        <div class="flex flex-wrap gap-6 mb-4 text-sm">
-          <div>
-            <span class="text-fb-gray-500">
-              {{ "refereeObservation.admin.count" | transloco }}
-            </span>
-            <span class="font-bold ml-1">{{
-              observations?.summary?.count
-            }}</span>
-          </div>
-          @for (dimension of observationDimensions; track dimension.key) {
-            <div>
-              <span class="text-fb-gray-500">
-                {{
-                  "refereeObservation.dimension." + dimension.key | transloco
-                }}
-              </span>
-              <span class="font-bold ml-1">
-                {{ averageObservationRating(dimension.ratingKey) }} / 7
-              </span>
-            </div>
-          }
-        </div>
-
-        <div class="flex flex-col gap-4">
-          @for (
-            observation of observations?.observations;
-            track observation.id
-          ) {
-            <div>
-              <fb-referee-observation-detail [observation]="observation" />
-              @if (canModerateObservations) {
-                <div class="mt-1">
-                  <button
-                    type="button"
-                    class="text-xs underline hover:no-underline text-fb-gray-500"
-                    (click)="
-                      toggleObservationStatus(
-                        observation.id,
-                        observation.status !== 'hidden'
-                      )
-                    "
-                  >
-                    {{
-                      (observation.status === "hidden"
-                        ? "refereeObservation.admin.unhide"
-                        : "refereeObservation.admin.hide"
-                      ) | transloco
-                    }}
-                  </button>
+              <div class="flex flex-wrap gap-6 mb-4 text-sm">
+                <div>
+                  <span class="text-fb-gray-500">
+                    {{ "refereeObservation.admin.count" | transloco }}
+                  </span>
+                  <span class="font-bold ml-1">{{
+                    observations?.summary?.count
+                  }}</span>
                 </div>
+                @for (dimension of observationDimensions; track dimension.key) {
+                  <div>
+                    <span class="text-fb-gray-500">
+                      {{
+                        "refereeObservation.dimension." + dimension.key
+                          | transloco
+                      }}
+                    </span>
+                    <span class="font-bold ml-1">
+                      {{ averageObservationRating(dimension.ratingKey) }} / 7
+                    </span>
+                  </div>
+                }
+              </div>
+
+              <div class="flex flex-col gap-4">
+                @for (
+                  observation of observations?.observations;
+                  track observation.id
+                ) {
+                  <div>
+                    <fb-referee-observation-detail
+                      [observation]="observation"
+                    />
+                    @if (canModerateObservations) {
+                      <div class="mt-1">
+                        <button
+                          type="button"
+                          class="text-xs underline hover:no-underline text-fb-gray-500"
+                          (click)="
+                            toggleObservationStatus(
+                              observation.id,
+                              observation.status !== 'hidden'
+                            )
+                          "
+                        >
+                          {{
+                            (observation.status === "hidden"
+                              ? "refereeObservation.admin.unhide"
+                              : "refereeObservation.admin.hide"
+                            ) | transloco
+                          }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        </ng-template>
+      }
+      @if (canManageExclusions) {
+        <ng-template
+          fbTab="ausschluesse"
+          [fbTabLabel]="'refereeAdmin.detail.tabs.exclusions' | transloco"
+        >
+          <!-- Vereins-Ausschlüsse (nur Ansetzung) -->
+          @if (canManageExclusions) {
+            <h2 class="text-lg font-bold mb-2">
+              {{ "refereeAdmin.detail.exclusionsHeading" | transloco }}
+            </h2>
+            <p class="text-fb-gray-500 text-sm mb-4">
+              {{ "refereeAdmin.detail.exclusionsHint" | transloco }}
+            </p>
+
+            <ul class="flex flex-col gap-2 max-w-2xl">
+              @for (entry of exclusions; track entry.club_id) {
+                <li
+                  class="flex flex-wrap items-center gap-2 border border-fb-gray-700 rounded-[5px] px-3 py-2 text-sm"
+                >
+                  <span class="font-bold">{{ entry.club_name }}</span>
+                  @if (entry.source === "own_club") {
+                    <span
+                      class="text-xs uppercase bg-fb-gray-800 text-fb-gray-500 rounded-[3px] px-2 py-[2px]"
+                      >{{
+                        "refereeAdmin.detail.exclusionOwnClub" | transloco
+                      }}</span
+                    >
+                  } @else {
+                    <span class="text-xs text-fb-gray-500">{{
+                      entry.reason
+                    }}</span>
+                    <button
+                      type="button"
+                      [disabled]="exclusionBusy"
+                      (click)="removeExclusion(entry)"
+                      class="ml-auto text-xs underline disabled:opacity-50"
+                    >
+                      {{ "refereeAdmin.detail.exclusionRemove" | transloco }}
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+
+            @if (openExclusionRequests.length) {
+              <p class="text-xs text-fb-gray-500 mt-2">
+                {{
+                  "refereeAdmin.detail.exclusionOpenRequests"
+                    | transloco: { count: openExclusionRequests.length }
+                }}
+                <a
+                  [routerLink]="[
+                    '/',
+                    'verwaltung',
+                    'schiedsrichter-ausschluesse',
+                  ]"
+                  class="underline"
+                  >{{
+                    "refereeAdmin.detail.exclusionToRequests" | transloco
+                  }}</a
+                >
+              </p>
+            }
+
+            <div class="mt-3 max-w-2xl">
+              @if (showExclusionForm) {
+                <div
+                  class="flex flex-col gap-2 border border-fb-gray-600 rounded-[5px] p-3"
+                >
+                  <fb-select-search
+                    [(ngModel)]="newExclusion.club_id"
+                    [items]="selectableExclusionClubs"
+                    [placeholder]="
+                      'refereeAdmin.detail.exclusionClubPlaceholder' | transloco
+                    "
+                  />
+                  <input
+                    type="text"
+                    maxlength="120"
+                    [(ngModel)]="newExclusion.reason"
+                    [placeholder]="
+                      'refereeAdmin.detail.exclusionReasonPlaceholder'
+                        | transloco
+                    "
+                    class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm"
+                  />
+                  <div class="flex items-center gap-3">
+                    <button
+                      type="button"
+                      [disabled]="exclusionBusy || !newExclusion.club_id"
+                      (click)="addExclusion()"
+                      class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] disabled:opacity-50"
+                    >
+                      {{ "refereeAdmin.detail.exclusionSave" | transloco }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="toggleExclusionForm()"
+                      class="text-sm underline"
+                    >
+                      {{ "refereeAdmin.detail.exclusionCancel" | transloco }}
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <button
+                  type="button"
+                  (click)="toggleExclusionForm()"
+                  class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+                >
+                  {{ "refereeAdmin.detail.exclusionAdd" | transloco }}
+                </button>
               }
             </div>
           }
-        </div>
+        </ng-template>
       }
-    }
+    </fb-tabs>
   }
 
   @if (!loading && !referee) {

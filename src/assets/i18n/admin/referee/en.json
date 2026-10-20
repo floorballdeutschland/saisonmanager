@@ -121,7 +121,15 @@
     "feedbackAvgLine": "Avg. consistency:",
     "feedbackAvgCommunication": "Avg. communication:",
     "feedbackCount": "Responses:",
-    "feedbackBelowThreshold": "Ratings are shown from {{ min }} responses onwards (currently {{ count }})."
+    "feedbackBelowThreshold": "Ratings are shown from {{ min }} responses onwards (currently {{ count }}).",
+    "tabs": {
+      "label": "Referee profile sections",
+      "overview": "Overview",
+      "games": "Games",
+      "courses": "Courses",
+      "ratings": "Feedback & observations",
+      "exclusions": "Exclusions"
+    }
   },
   "edit": {
     "back": "← Back",

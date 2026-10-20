@@ -121,7 +121,15 @@
     "feedbackAvgLine": "Ø Linie/Konstanz:",
     "feedbackAvgCommunication": "Ø Kommunikation:",
     "feedbackCount": "Rückmeldungen:",
-    "feedbackBelowThreshold": "Die Auswertung wird erst ab {{ min }} Rückmeldungen angezeigt (aktuell {{ count }})."
+    "feedbackBelowThreshold": "Die Auswertung wird erst ab {{ min }} Rückmeldungen angezeigt (aktuell {{ count }}).",
+    "tabs": {
+      "label": "Bereiche des Schiedsrichterprofils",
+      "overview": "Übersicht",
+      "games": "Spiele",
+      "courses": "Kurse",
+      "ratings": "Feedback & Beobachtungen",
+      "exclusions": "Ausschlüsse"
+    }
   },
   "edit": {
     "back": "← Zurück",
