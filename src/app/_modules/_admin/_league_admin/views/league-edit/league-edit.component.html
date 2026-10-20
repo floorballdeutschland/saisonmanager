@@ -28,10 +28,7 @@
                  Speichern steht unter der Leiste, weil es alle Reiter betrifft;
                  die Pruefung laeuft ueber das Modell, nicht ueber das DOM, und
                  erreicht so auch Felder in verborgenen Reitern. -->
-            <fb-tabs
-              [label]="'leagueAdmin.edit.tabs.label' | transloco"
-              (activeChange)="onTab($event)"
-            >
+            <fb-tabs [label]="'leagueAdmin.edit.tabs.label' | transloco">
               <ng-template
                 fbTab="liga"
                 [fbTabLabel]="'leagueAdmin.edit.tabs.league' | transloco"

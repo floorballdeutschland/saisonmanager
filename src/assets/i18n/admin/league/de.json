@@ -206,6 +206,7 @@
     "errAgeGroup": "Es muss eine Altersklasse gesetzt werden",
     "errLeagueClass": "Es muss eine Ligaklasse gesetzt werden",
     "errMinimumAge": "Das Mindestalter muss eine ganze Zahl zwischen 1 und 99 sein oder leer bleiben",
+    "errMinimumAgeBadInput": "Die Eingabe beim Mindestalter war keine gültige Zahl. Bitte im Reiter Spielregeln neu eingeben oder das Feld leeren",
     "errLegacy": "Eine alte Liga kann hier nicht geändert werden.",
     "logoTooLarge": "Datei zu groß (max. 3 MB).",
     "logoUploaded": "Logo erfolgreich hochgeladen.",

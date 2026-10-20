@@ -466,13 +466,6 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     return this._errors(league).some((e) => e.tab === tab);
   }
 
-  // Ein Reiterwechsel zerstoert das Mindestalter-Feld samt dem Text, den der
-  // Browser nicht lesen konnte. Zurueck im Reiter zeigt es das Modell (leer);
-  // die Meldung dazu wuerde dann auf ein leeres Feld zeigen.
-  public onTab(tab: string): void {
-    if (tab !== 'regeln') this.minimumAgeBadInput = false;
-  }
-
   private _errors(
     league: League
   ): { key: string; tab: LeagueEditTab | null }[] {
@@ -506,12 +499,19 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     // Das Mindestalter ist optional. Ist es gesetzt, gelten dieselben Grenzen
     // wie in der API-Validierung (1..99); ein leeres Feld liefert null und
     // bedeutet "keine Untergrenze".
+    //
+    // Eine unlesbare Eingabe sperrt das Speichern, bis das Feld neu befuellt
+    // oder geleert wird, auch nach einem Reiterwechsel: Der zerstoert das Feld
+    // samt Text, das Modell bliebe null und wuerde sonst still als "keine
+    // Untergrenze" gespeichert. Eigene Meldung, weil das Feld danach leer
+    // aussieht.
     const minimumAge = league.minimum_age;
-    if (
-      this.minimumAgeBadInput ||
-      (minimumAge !== null &&
-        minimumAge !== undefined &&
-        (!Number.isInteger(minimumAge) || minimumAge < 1 || minimumAge > 99))
+    if (this.minimumAgeBadInput) {
+      add('errMinimumAgeBadInput', 'regeln');
+    } else if (
+      minimumAge !== null &&
+      minimumAge !== undefined &&
+      (!Number.isInteger(minimumAge) || minimumAge < 1 || minimumAge > 99)
     ) {
       add('errMinimumAge', 'regeln');
     }

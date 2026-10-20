@@ -43,6 +43,7 @@ describe('LeagueEditComponent', () => {
   // Test nicht an den uebrigen Pflichtfeldern haengt.
   describe('errorMsg: Mindestalter', () => {
     const errMinimumAge = 'leagueAdmin.notifications.errMinimumAge';
+    const errBadInput = 'leagueAdmin.notifications.errMinimumAgeBadInput';
 
     function errorsFor(minimumAge: number | null | undefined): string[] {
       const fixture = TestBed.createComponent(LeagueEditComponent);
@@ -89,7 +90,7 @@ describe('LeagueEditComponent', () => {
         validity: { badInput: true },
       } as HTMLInputElement);
 
-      expect(component.errorMsg(league)).toContain(errMinimumAge);
+      expect(component.errorMsg(league)).toContain(errBadInput);
     });
 
     it('vergisst die unlesbare Eingabe, sobald das Feld wieder lesbar ist', () => {
@@ -108,6 +109,7 @@ describe('LeagueEditComponent', () => {
       league.minimum_age = 15;
 
       expect(component.errorMsg(league)).not.toContain(errMinimumAge);
+      expect(component.errorMsg(league)).not.toContain(errBadInput);
     });
   });
 
@@ -219,21 +221,28 @@ describe('LeagueEditComponent', () => {
       expect(tab('modus')!.className).not.toContain('!text-red-600');
     });
 
-    // Das Feld mit dem unlesbaren Text verschwindet beim Reiterwechsel; die
-    // Meldung soll nicht auf das danach leere Feld zeigen.
-    it('vergisst die unlesbare Mindestalter-Eingabe beim Reiterwechsel', async () => {
+    // Der Reiterwechsel zerstoert das Feld samt unlesbarem Text, das Modell
+    // bleibt null. Die Sperre muss bleiben, sonst wuerde still "keine
+    // Untergrenze" gespeichert.
+    it('haelt die unlesbare Mindestalter-Eingabe ueber den Reiterwechsel fest', async () => {
       await open('/ligen/5?reiter=regeln');
       const component = harness.routeDebugElement!
         .componentInstance as LeagueEditComponent;
       component.onMinimumAgeInput({
         validity: { badInput: true },
       } as HTMLInputElement);
-      expect(component.tabInvalid(league, 'regeln')).toBeTrue();
-
-      tab('liga')!.click();
       harness.detectChanges();
 
-      expect(component.tabInvalid(league, 'regeln')).toBeFalse();
+      tab('liga')!.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+
+      expect(panel().getAttribute('data-testid')).toBe('tabpanel-liga');
+      expect(component.error(league)).toBeTrue();
+      expect(tab('regeln')!.className).toContain('!text-red-600');
+      expect(harness.routeNativeElement!.textContent).toContain(
+        'leagueAdmin.notifications.errMinimumAgeBadInput'
+      );
     });
   });
 });

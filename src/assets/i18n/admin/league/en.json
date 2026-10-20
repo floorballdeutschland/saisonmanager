@@ -206,6 +206,7 @@
     "errAgeGroup": "An age group must be set",
     "errLeagueClass": "A league class must be set",
     "errMinimumAge": "The minimum age must be a whole number between 1 and 99, or empty",
+    "errMinimumAgeBadInput": "The minimum age entry was not a valid number. Please re-enter it on the Game rules tab or clear the field",
     "errLegacy": "An old league cannot be edited here.",
     "logoTooLarge": "File too large (max. 3 MB).",
     "logoUploaded": "Logo uploaded successfully.",
