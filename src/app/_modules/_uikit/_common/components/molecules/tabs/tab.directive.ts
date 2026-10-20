@@ -5,6 +5,8 @@ import { Directive, Input, TemplateRef } from '@angular/core';
  * `ng-template` und wird erst gerendert, wenn der Reiter aktiv ist; Abrufe
  * in Kindkomponenten laufen also erst beim ersten Öffnen.
  *
+ * Mit `fbTabKeepAlive` bleibt der Inhalt nach dem ersten Öffnen bestehen.
+ *
  * Ein Reiter, den eine Rolle nicht sehen darf, wird mit `@if` um das
  * `ng-template` weggelassen, nicht ausgeblendet.
  */
@@ -23,6 +25,13 @@ export class TabDirective {
   /** Markiert den Reiter, etwa wenn ein Pflichtfeld darin fehlt. */
   @Input()
   fbTabInvalid = false;
+
+  /**
+   * Inhalt nach dem ersten Öffnen nicht mehr zerstören, sondern nur
+   * ausblenden. Für Kindkomponenten mit eigenem Zustand oder eigenem Speichern.
+   */
+  @Input()
+  fbTabKeepAlive = false;
 
   /** Zahl oder kurzer Text hinter der Beschriftung, z. B. offene Vorgänge. */
   @Input()
