@@ -1,7 +1,9 @@
 {
   "refereeReport": {
     "title": "Berichtsformular hochladen",
-    "hint": "Für dieses Spiel ist ein Berichtsformular der Schiedsrichter verlangt. Schiedsrichter können hier das ausgefüllte Berichtsformular hochladen (PDF, PNG oder JPEG, max. 5 MB).",
+    "hint": "Für dieses Spiel ist ein Berichtsformular der Schiedsrichter verlangt. Schiedsrichter können hier das ausgefüllte Berichtsformular hochladen.",
+    "pdfOnly": "Nur PDF-Dateien bis {{ maxMb }} MB. Fotos werden nicht mehr angenommen.",
+    "pdfHelp": "Ein PDF erstellst du mit dem Handy über eine Scan-App (z. B. „Dokument scannen“ in der Dateien- oder Notizen-App) oder am Rechner über „Drucken“ und „Als PDF speichern“.",
     "forwardedTo": {
       "vsk": "Es wird automatisch an die zuständige VSK weitergeleitet.",
       "sbk": "Es wird automatisch an die zuständige SBK weitergeleitet.",
@@ -14,8 +16,7 @@
     },
     "choose": "Datei wählen und hochladen",
     "uploading": "Hochladen…",
-    "tooLarge": "Die Datei darf maximal 5 MB groß sein.",
-    "uploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen."
+    "rejected": "Nur PDF-Dateien bis {{ maxMb }} MB sind zulässig, Fotos werden nicht angenommen."
   },
   "tabs": {
     "overview": "Übersicht",

@@ -507,4 +507,94 @@ describe('MatchReportComponent', () => {
       expect(setStatus).not.toHaveBeenCalled();
     });
   });
+
+  describe('Scan des Spielberichtsbogens', () => {
+    // Ohne eigenes create() liefe der Block nur auf der Komponente, die ein
+    // vorheriger Test zufällig hinterlassen hat, und für sich allein gar nicht.
+    beforeEach(() => create());
+
+    const REJECTED =
+      'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.';
+    const PNG_HEAD = '\x89PNG\r\n\x1a\n';
+
+    const select = async (file: File) => {
+      const input = { files: [file], value: 'bogen' };
+      await component.onScanFileSelected({ target: input } as unknown as Event);
+      return input;
+    };
+
+    it('nimmt ein PDF zum Hochladen an', async () => {
+      const pdf = new File(['%PDF-1.4'], 'bogen.pdf', {
+        type: 'application/pdf',
+      });
+
+      await select(pdf);
+
+      expect(component.selectedScanFile).toBe(pdf);
+      expect(component.scanUploadError).toBe('');
+    });
+
+    it('weist ein Foto vor dem Upload ab', async () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+
+      const input = await select(
+        new File(['x'], 'bogen.jpg', { type: 'image/jpeg' })
+      );
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(REJECTED);
+      expect(input.value).toBe('');
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    // Der Browser leitet den Typ aus der Endung ab: Das umbenannte Foto kommt
+    // als application/pdf an, erst die Kennung im Dateikopf verrät es.
+    it('weist ein in .pdf umbenanntes Foto ab', async () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+
+      await select(
+        new File([PNG_HEAD], 'bogen.pdf', { type: 'application/pdf' })
+      );
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(REJECTED);
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    it('weist ein zu großes PDF mit derselben Meldung ab', async () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+      const big = new File(['%PDF-1.4'], 'bogen.pdf', {
+        type: 'application/pdf',
+      });
+      Object.defineProperty(big, 'size', { value: 5 * 1024 * 1024 + 1 });
+
+      await select(big);
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(REJECTED);
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    // Die Absage der API zeigt der ErrorInterceptor an; eine Zeile am Feld
+    // wiederholte sie nur.
+    it('wiederholt eine Absage der API nicht am Feld', async () => {
+      spyOn(gameService, 'uploadGameScan').and.returnValue(
+        throwError(() => ({
+          status: 422,
+          error: { errors: [REJECTED] },
+        }))
+      );
+      await select(
+        new File(['%PDF-1.4'], 'bogen.pdf', { type: 'application/pdf' })
+      );
+
+      component.uploadScan();
+
+      expect(component.scanUploadError).toBe('');
+      expect(component.scanUploading).toBeFalse();
+    });
+  });
 });
