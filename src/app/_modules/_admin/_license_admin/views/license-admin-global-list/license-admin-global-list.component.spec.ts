@@ -10,6 +10,7 @@ import { config as rxjsConfig, of } from 'rxjs';
 import { AdminLicenseEntry, Season, User } from '@floorball/types';
 import { AssociationService, SessionService } from '@floorball/core';
 
+import { CollapsibleComponent } from '../../../../_uikit/_common/components/molecules/collapsible/collapsible.component';
 import { LicenseAdminGlobalListComponent } from './license-admin-global-list.component';
 
 describe('LicenseAdminGlobalListComponent', () => {
@@ -51,7 +52,9 @@ describe('LicenseAdminGlobalListComponent', () => {
           },
         }),
       ],
-      declarations: [LicenseAdminGlobalListComponent],
+      // Den echten einklappbaren Bereich einbinden, damit die Specs zu
+      // "Weitere Filter" am gerenderten <details>/<summary> pruefen.
+      declarations: [LicenseAdminGlobalListComponent, CollapsibleComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -1362,14 +1365,21 @@ describe('LicenseAdminGlobalListComponent', () => {
       return { fixture, component: fixture.componentInstance };
     }
 
+    // Liest den gerenderten Bereich: offen laut <details>, Zaehler aus der
+    // Plakette im <summary> (null, wenn keine angezeigt wird).
     function collapsible(
       fixture: ReturnType<
         typeof TestBed.createComponent<LicenseAdminGlobalListComponent>
       >
-    ): { count: number; open: boolean } {
-      return fixture.nativeElement.querySelector(
-        '[data-testid="more-filters"]'
+    ): { count: number | null; open: boolean } {
+      const details: HTMLDetailsElement = fixture.nativeElement.querySelector(
+        '[data-testid="more-filters"] details'
       );
+      const badge = details.querySelector('summary span');
+      return {
+        open: details.open,
+        count: badge ? Number(badge.textContent?.trim()) : null,
+      };
     }
 
     it('zaehlt ohne Auswahl nichts und startet zugeklappt', () => {
@@ -1377,7 +1387,7 @@ describe('LicenseAdminGlobalListComponent', () => {
 
       expect(component.moreFiltersCount).toBe(0);
       expect(component.moreFiltersOpen).toBeFalse();
-      expect(collapsible(fixture).count).toBe(0);
+      expect(collapsible(fixture).count).toBeNull();
       expect(collapsible(fixture).open).toBeFalse();
     });
 
@@ -1422,7 +1432,7 @@ describe('LicenseAdminGlobalListComponent', () => {
       component.resetFilters();
       fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
       fixture.detectChanges();
-      expect(collapsible(fixture).count).toBe(0);
+      expect(collapsible(fixture).count).toBeNull();
     });
 
     it('startet offen, wenn eine gemerkte Auswahl dort einen Filter setzt', () => {
@@ -1442,9 +1452,10 @@ describe('LicenseAdminGlobalListComponent', () => {
       first.component.filterStatusId = 2;
       first.fixture.destroy();
 
-      const { component } = open();
+      const { fixture, component } = open();
 
       expect(component.moreFiltersOpen).toBeFalse();
+      expect(collapsible(fixture).open).toBeFalse();
     });
   });
 });
