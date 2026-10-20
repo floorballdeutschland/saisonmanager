@@ -31,9 +31,21 @@ let nextTabsId = 0;
  * </fb-tabs>
  * ```
  *
- * `activeChange` feuert auch beim ersten Auflösen. Es ist für Nebenwirkungen
- * wie Nachladen gedacht, nicht für Bindings über der Reiterleiste: die sind
- * zu dem Zeitpunkt schon geprüft (NG0100).
+ * `activeChange` feuert auch beim ersten Auflösen, und zwar aus
+ * `ngAfterContentInit` bzw. bei wegfallenden Reitern mitten in der
+ * Prüfung der Seite. Es ist für Nebenwirkungen wie Nachladen gedacht. Bindings
+ * im Template der Seite, ober- wie unterhalb der Leiste, sind zu dem Zeitpunkt
+ * schon geprüft (NG0100); sicher sind nur Bindings in den Reiterinhalten.
+ *
+ * Reiterinhalte werden beim Verlassen zerstört, Kindkomponenten verlieren
+ * ihren Zustand und laufende Abrufe. Wo das schadet (eigene Formulare mit
+ * eigenem Speichern), `[fbTabKeepAlive]="true"` setzen: der Inhalt bleibt
+ * nach dem ersten Öffnen erhalten und wird nur ausgeblendet.
+ *
+ * Nicht auf Seiten verwenden, die Query-Parameter am Router vorbei aus der
+ * Adresse nehmen (`Location.replaceState`, etwa der Code im Spielsekretariat):
+ * `queryParamsHandling: 'merge'` mischt aus dem Zustand des Routers und
+ * schreibt den entfernten Parameter beim ersten Reiterwechsel zurück.
  */
 @Component({
   selector: 'fb-tabs',
@@ -60,6 +72,8 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
   tabs: TabDirective[] = [];
   activeId: string | null = null;
+  /** Bereits geöffnete Reiter, für `fbTabKeepAlive`. */
+  readonly visited = new Set<string>();
   readonly idPrefix = `fb-tabs-${nextTabsId++}`;
 
   private requested: string | null = null;
@@ -76,6 +90,10 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     this.subscriptions.add(
       this.tabQuery.changes.subscribe(() => {
         this.tabs = this.tabQuery.toArray();
+        // Ein weggefallener Reiter startet beim Wiederkommen frisch.
+        for (const id of [...this.visited]) {
+          if (!this.tabs.some((t) => t.id === id)) this.visited.delete(id);
+        }
         this.resolve();
       })
     );
@@ -92,7 +110,10 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
   }
 
   select(id: string): void {
-    if (id === this.activeId) return;
+    // Auch beim aktiven Reiter navigieren, wenn die URL noch eine andere
+    // Kennung trägt (Reiter weggefallen oder unbekannt): sonst käme der
+    // weggefallene Reiter beim Wiederauftauchen ungefragt zurück.
+    if (id === this.activeId && id === this.requested) return;
     this.requested = id;
     this.resolve();
     this.router.navigate([], {
@@ -132,11 +153,19 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     return `${this.idPrefix}-panel-${id}`;
   }
 
+  isRendered(tab: TabDirective): boolean {
+    return (
+      tab.id === this.activeId ||
+      (tab.fbTabKeepAlive && this.visited.has(tab.id))
+    );
+  }
+
   private resolve(): void {
     const known = this.tabs.some((t) => t.id === this.requested);
     const id = known ? this.requested : (this.tabs[0]?.id ?? null);
     if (id === this.activeId) return;
     this.activeId = id;
+    if (id !== null) this.visited.add(id);
     this.cdr.markForCheck();
     if (id !== null) this.activeChange.emit(id);
   }
