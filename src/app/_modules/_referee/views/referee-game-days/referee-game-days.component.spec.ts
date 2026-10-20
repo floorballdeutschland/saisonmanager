@@ -33,6 +33,16 @@ describe('RefereeGameDaysComponent (Bestätigungsstatus)', () => {
           provide: RefereeService,
           useValue: {
             getGameDays: jasmine.createSpy().and.returnValue(of([])),
+            confirmGameDay: jasmine
+              .createSpy()
+              .and.callFake((_id: number, body: { comment?: string | null }) =>
+                of({
+                  confirmed_at: '2026-02-01T20:00:00Z',
+                  properly_conducted: false,
+                  checklist_answers: [],
+                  comment: body.comment ?? null,
+                })
+              ),
           },
         },
         {
@@ -82,6 +92,28 @@ describe('RefereeGameDaysComponent (Bestätigungsstatus)', () => {
         spieltag({ confirmable_from: new Date(jetzt).toISOString() })
       )
     ).toBe('pending');
+  });
+
+  it('schickt die Anmerkung zum Einspruch getrimmt mit', () => {
+    const gd = spieltag({
+      checklist_items: [{ id: 1, question: 'Halle offen?' }],
+    });
+    component.gameDays = [gd];
+    component.startReject(gd);
+    component.setAnswer(1, false);
+    component.rejectComment = '  Zeitnehmer fehlte.  ';
+    component.submitNotOk(gd);
+
+    const service = TestBed.inject(RefereeService) as unknown as {
+      confirmGameDay: jasmine.Spy;
+    };
+    expect(service.confirmGameDay).toHaveBeenCalledWith(gd.id, {
+      properly_conducted: false,
+      answers: [{ item_id: 1, answer: false }],
+      comment: 'Zeitnehmer fehlte.',
+    });
+    expect(component.gameDays[0].my_comment).toBe('Zeitnehmer fehlte.');
+    expect(component.rejectComment).toBe('');
   });
 
   it('meldet ohne Freischaltzeitpunkt "pending"', () => {

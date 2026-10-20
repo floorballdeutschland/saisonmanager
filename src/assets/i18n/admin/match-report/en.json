@@ -87,7 +87,8 @@
     "objectionReferee": "Objection by referee {{name}} to the game day report",
     "objectionAt": "from {{date}}",
     "objectionHost": "Host objection",
-    "objectionUnknown": "unknown"
+    "objectionUnknown": "unknown",
+    "objectionComment": "Note: {{comment}}"
   },
   "proposalStatus": {
     "pending": "open",
