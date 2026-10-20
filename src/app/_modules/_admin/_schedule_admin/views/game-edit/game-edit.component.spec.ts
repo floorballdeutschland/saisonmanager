@@ -1,9 +1,11 @@
 import { GameService, getTranslocoTestingModule } from '@floorball/core';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GameEditComponent } from './game-edit.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { FormsModule } from '@angular/forms';
+import { UikitCommonModule } from '@floorball/uikit/common';
 
 describe('GameEditComponent', () => {
   let component: GameEditComponent;
@@ -11,7 +13,15 @@ describe('GameEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [getTranslocoTestingModule(), HttpClientTestingModule],
+      // FormsModule und die echten UIKit-Bausteine, damit das Formular wie in
+      // der App absendet: ohne NgForm gibt es kein ngSubmit, und die Tests zum
+      // Doppelabsenden (#577) liefen ins Leere.
+      imports: [
+        getTranslocoTestingModule(),
+        HttpClientTestingModule,
+        FormsModule,
+        UikitCommonModule,
+      ],
       declarations: [GameEditComponent],
     }).compileComponents();
   });
@@ -19,6 +29,9 @@ describe('GameEditComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(GameEditComponent);
     component = fixture.componentInstance;
+    // Die Elternansicht liefert die Mannschaften immer mit; fb-select-search
+    // setzt eine Liste voraus.
+    component.teams = [];
     fixture.detectChanges();
   });
 
@@ -189,5 +202,158 @@ describe('GameEditComponent', () => {
     component.ngOnChanges();
 
     expect(component.game.person_level_assignment).toBe(false);
+  });
+  // #577: Der Anlegen-Knopf hatte (click)="createGame()" UND type="submit",
+  // das Formular ruft bei ngSubmit noch einmal createGame -- jedes Spiel wurde
+  // doppelt angelegt. Knoepfe ohne type sind im Formular ebenfalls submit und
+  // legten bei neuen Spielen schon beim Oeffnen der Notiz ein Spiel an.
+  describe('Absenden des Formulars', () => {
+    let create: jasmine.Spy;
+    let update: jasmine.Spy;
+
+    beforeEach(() => {
+      const gameService = TestBed.inject(GameService);
+      create = spyOn(gameService, 'createGame').and.returnValue(
+        of({ success: true })
+      );
+      update = spyOn(gameService, 'updateGame').and.returnValue(
+        of({ success: true })
+      );
+    });
+
+    // Enter in einem Feld loest im Browser einen Klick auf den ersten
+    // Absendeknopf des Formulars aus (implizites Absenden). Ein synthetisches
+    // keydown tut das nicht, und requestSubmit() klickt nichts -- beides
+    // wuerde den doppelten Aufruf ueber (click) nicht zeigen.
+    const pressEnter = () => {
+      const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
+      const defaultButton = Array.from(form.elements).find(
+        (el): el is HTMLButtonElement =>
+          el instanceof HTMLButtonElement && el.type === 'submit'
+      );
+      if (defaultButton) {
+        defaultButton.click();
+      } else {
+        form.requestSubmit();
+      }
+    };
+
+    const showExisting = ({ changed = false } = {}) => {
+      component.gameDayId = 5;
+      component.existingGame = {
+        id: 7,
+        forfait: 0,
+        started: false,
+      } as unknown as typeof component.existingGame;
+      component.resetGame();
+      if (changed) {
+        component.game.game_number = 'geaendert';
+      }
+      fixture.detectChanges();
+    };
+
+    const button = (title: string): HTMLButtonElement =>
+      fixture.nativeElement.querySelector(
+        `button[title="scheduleAdmin.gameEdit.${title}"]`
+      );
+
+    it('legt per Klick auf Anlegen genau ein Spiel an', () => {
+      button('titleCreateGame').click();
+
+      expect(create).toHaveBeenCalledTimes(1);
+    });
+
+    it('legt per Enter im Formular genau ein Spiel an', () => {
+      pressEnter();
+
+      expect(create).toHaveBeenCalledTimes(1);
+    });
+
+    it('setzt die Anlegezeile nach dem Anlegen zurueck', () => {
+      component.gameDayId = 5;
+      component.personLevelAssignmentDefault = true;
+      component.game.game_number = '42';
+      component.game.start_time = '18:00';
+      component.hasNotice = true;
+
+      button('titleCreateGame').click();
+      fixture.detectChanges();
+
+      expect(component.processing).toBe(false);
+      expect(component.game.game_number).toBe('');
+      expect(component.game.start_time).toBe('');
+      expect(component.game.game_day_id).toBe(5);
+      expect(component.game.person_level_assignment).toBe(true);
+      expect(component.hasNotice).toBe(false);
+
+      // Ein zweites Spiel laesst sich ohne Neuladen anlegen.
+      button('titleCreateGame').click();
+      expect(create).toHaveBeenCalledTimes(2);
+    });
+
+    it('legt beim Oeffnen der Notiz kein Spiel an', () => {
+      button('titleEditNotice').click();
+
+      expect(component.hasNotice).toBe(true);
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it('legt beim Oeffnen der Playoff-Angaben kein Spiel an', () => {
+      button('titleEditPlayoff').click();
+
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it('speichert beim Verwerfen nichts', () => {
+      showExisting({ changed: true });
+
+      button('titleDiscardChanges').click();
+
+      expect(create).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it('legt waehrend einer laufenden Anlage kein zweites Spiel an', () => {
+      // Antwort bleibt aus: die erste Anlage laeuft noch.
+      create.and.returnValue(new Subject<{ success: boolean }>());
+
+      component.createGame();
+      component.createGame();
+
+      expect(create).toHaveBeenCalledTimes(1);
+    });
+
+    it('speichert ein geaendertes Spiel per Klick genau einmal', () => {
+      showExisting({ changed: true });
+
+      button('titleSaveChanges').click();
+
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it('speichert ein geaendertes Spiel per Enter genau einmal', () => {
+      showExisting({ changed: true });
+
+      pressEnter();
+
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    // Ohne type war Loeschen der erste Absendeknopf eines unveraenderten
+    // Spiels und damit der, den Enter ausloest: Enter in einem Feld loeschte
+    // das Spiel ohne Rueckfrage.
+    it('loescht ein unveraendertes Spiel nicht per Enter', () => {
+      const del = spyOn(
+        TestBed.inject(GameService),
+        'deleteGame'
+      ).and.returnValue(of({ success: true }));
+      showExisting();
+
+      pressEnter();
+
+      expect(del).not.toHaveBeenCalled();
+    });
   });
 });
