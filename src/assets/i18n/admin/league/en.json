@@ -99,6 +99,7 @@
     "noPointTransfer": "no point carryover",
     "fullPointTransfer": "carry over all preliminary round points",
     "halfPointTransfer": "carry over half of the preliminary round points",
+    "tableRules": "Table rules",
     "directEncounters": "Head-to-head encounters",
     "directEncountersTransfer": "Carry over head-to-head encounters",
     "none": "— none —",

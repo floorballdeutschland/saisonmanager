@@ -273,20 +273,6 @@
                         </option>
                       </select>
                     </div>
-                    <div class="font-bold">
-                      {{ "leagueAdmin.edit.pointSystem" | transloco }}
-                    </div>
-                    <div>
-                      <select
-                        class="w-full"
-                        name="table_modus"
-                        [(ngModel)]="league.table_modus"
-                      >
-                        <option value="classic">
-                          {{ "leagueAdmin.edit.points3" | transloco }}
-                        </option>
-                      </select>
-                    </div>
                     <div>
                       <div class="font-bold">
                         {{ "leagueAdmin.edit.scorerVisible" | transloco }}
@@ -354,27 +340,6 @@
                         </option>
                         <option [ngValue]="false">
                           {{ "leagueAdmin.edit.no" | transloco }}
-                        </option>
-                      </select>
-                    </div>
-                    <div class="font-bold">
-                      {{ "leagueAdmin.edit.directComparison" | transloco }}
-                    </div>
-                    <div>
-                      <select
-                        class="w-full"
-                        name="direct_comparison"
-                        [(ngModel)]="league.direct_comparison"
-                      >
-                        <option [ngValue]="false">
-                          {{
-                            "leagueAdmin.edit.directComparisonOff" | transloco
-                          }}
-                        </option>
-                        <option [ngValue]="true">
-                          {{
-                            "leagueAdmin.edit.directComparisonOn" | transloco
-                          }}
                         </option>
                       </select>
                     </div>
@@ -544,12 +509,59 @@
                   </div>
                 </div>
               </ng-template>
-              <!-- Wie die Liga mit anderen Ligen verknuepft ist: Vorrunde,
-                   uebernommene Direktbegegnungen und Qualifikation. -->
+              <!-- Wie die Tabelle entsteht und wie die Liga mit anderen Ligen
+                   verknuepft ist: Tabellenregeln, Vorrunde, uebernommene
+                   Direktbegegnungen und Qualifikation. -->
               <ng-template
                 fbTab="modus"
                 [fbTabLabel]="'leagueAdmin.edit.tabs.modus' | transloco"
               >
+                <!-- Tabellenregeln: wie die eigenen Spiele gewertet und bei
+                     Punktgleichheit sortiert werden. Vorrunde und
+                     Direktbegegnungen darunter holen dagegen Ergebnisse aus
+                     anderen Ligen in die Tabelle. -->
+                <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                  <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                    {{ "leagueAdmin.edit.tableRules" | transloco }}
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="font-bold">
+                      {{ "leagueAdmin.edit.pointSystem" | transloco }}
+                    </div>
+                    <div>
+                      <select
+                        class="w-full"
+                        name="table_modus"
+                        [(ngModel)]="league.table_modus"
+                      >
+                        <option value="classic">
+                          {{ "leagueAdmin.edit.points3" | transloco }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="font-bold">
+                      {{ "leagueAdmin.edit.directComparison" | transloco }}
+                    </div>
+                    <div>
+                      <select
+                        class="w-full"
+                        name="direct_comparison"
+                        [(ngModel)]="league.direct_comparison"
+                      >
+                        <option [ngValue]="false">
+                          {{
+                            "leagueAdmin.edit.directComparisonOff" | transloco
+                          }}
+                        </option>
+                        <option [ngValue]="true">
+                          {{
+                            "leagueAdmin.edit.directComparisonOn" | transloco
+                          }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
                 <!-- Vorrundeneinstellungen -->
                 <div class="bg-white my-[5px] py-[15px] px-[30px]">
                   <div class="uppercase font-bold text-gray-400 text-sm mb-5">

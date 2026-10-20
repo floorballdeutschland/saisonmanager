@@ -187,6 +187,8 @@ describe('LeagueEditComponent', () => {
       expect(panel().getAttribute('data-testid')).toBe('tabpanel-liga');
       expect(panel().querySelector('[name="league_modus"]')).not.toBeNull();
       expect(panel().querySelector('[name="before_deadline"]')).toBeNull();
+      expect(panel().querySelector('[name="table_modus"]')).toBeNull();
+      expect(panel().querySelector('[name="direct_comparison"]')).toBeNull();
     });
 
     it('oeffnet den Reiter aus der URL', async () => {
@@ -194,6 +196,11 @@ describe('LeagueEditComponent', () => {
       expect(panel().getAttribute('data-testid')).toBe('tabpanel-modus');
       expect(
         panel().querySelector('[name="league_id_preround"]')
+      ).not.toBeNull();
+      // Tabellenregeln stehen mit im Modus-Reiter.
+      expect(panel().querySelector('[name="table_modus"]')).not.toBeNull();
+      expect(
+        panel().querySelector('[name="direct_comparison"]')
       ).not.toBeNull();
     });
 
