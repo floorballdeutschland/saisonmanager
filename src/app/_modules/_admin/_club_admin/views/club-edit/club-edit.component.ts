@@ -20,6 +20,23 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { CLUB_STATE_OPTIONS } from 'src/app/_helpers/_utils/german-states';
 
+export type ClubEditTab = 'allgemein' | 'anschrift' | 'mannschaften' | 'status';
+
+// In welchem Reiter ein Feld des Vereins steht. Grundlage der
+// Reitermarkierung, fuer Luecken aus der Maske wie fuer Absagen des Servers.
+const TAB_OF_FIELD: Partial<Record<keyof Club, ClubEditTab>> = {
+  name: 'allgemein',
+  contact_email: 'allgemein',
+  short_name: 'anschrift',
+  long_name: 'anschrift',
+  street: 'anschrift',
+  house_number: 'anschrift',
+  postcode: 'anschrift',
+  city: 'anschrift',
+  state: 'anschrift',
+  state_association_id: 'anschrift',
+};
+
 @Component({
   templateUrl: './club-edit.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -313,27 +330,50 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   }
 
   public errorMsg(club: Club): string[] {
-    const msg = [];
+    return this._fieldErrors(club).map(([, schluessel]) =>
+      this._transloco.translate(`clubAdmin.notifications.${schluessel}`)
+    );
+  }
+
+  /**
+   * Ist ein Reiter zu markieren? Ja, wenn eine Pflichtangabe darin fehlt oder
+   * der Server beim letzten Speichern ein Feld darin beanstandet hat.
+   *
+   * Die Fehlerliste steht weiter in der Fusszeile unter den Reitern. Die
+   * Markierung sagt zusaetzlich, WO das Feld liegt: Eine fehlende Hausnummer
+   * im verborgenen Reiter „Anschrift" waere sonst nur ueber die Liste zu
+   * finden, und der Speichern-Knopf bliebe ohne sichtbaren Grund weg.
+   */
+  public tabInvalid(club: Club, tab: ClubEditTab): boolean {
+    return (
+      this._fieldErrors(club).some(([feld]) => TAB_OF_FIELD[feld] === tab) ||
+      this.serverErrorFields.some((feld) => TAB_OF_FIELD[feld] === tab)
+    );
+  }
+
+  // Felder, die der Server beim letzten Speichern beanstandet hat. Nur fuer
+  // die Markierung der Reiter; die Meldung selbst zeigt der ErrorInterceptor.
+  serverErrorFields: (keyof Club)[] = [];
+
+  // Liefert [Feld, Uebersetzungsschluessel] je Luecke. Das Feld braucht die
+  // Reitermarkierung, die Meldung die Fusszeile; eine gemeinsame Quelle haelt
+  // beide deckungsgleich.
+  private _fieldErrors(club: Club): [keyof Club, string][] {
+    const fehler: [keyof Club, string][] = [];
 
     // `trim()` wie serverseitig in missing_required_fields_message: Ohne ihn
     // passierte ein Name aus lauter Leerzeichen die Maske, der Speichern-Knopf
     // erschien, und erst der Server wies ihn mit 422 ab.
     if (!club.name?.trim().length) {
-      msg.push(
-        this._transloco.translate('clubAdmin.notifications.nameRequired')
-      );
+      fehler.push(['name', 'nameRequired']);
     }
 
     if (!club.long_name?.trim().length) {
-      msg.push(
-        this._transloco.translate('clubAdmin.notifications.longNameRequired')
-      );
+      fehler.push(['long_name', 'longNameRequired']);
     }
 
     if (!club.short_name?.trim().length) {
-      msg.push(
-        this._transloco.translate('clubAdmin.notifications.shortNameRequired')
-      );
+      fehler.push(['short_name', 'shortNameRequired']);
     }
 
     // Die Rechnungsanschrift (api#641). Der abgebende Landesverband stellt bei
@@ -355,18 +395,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
 
     for (const [feld, schluessel] of anschrift) {
       if (!String(club[feld] ?? '').trim().length) {
-        msg.push(
-          this._transloco.translate(`clubAdmin.notifications.${schluessel}`)
-        );
+        fehler.push([feld, schluessel]);
       }
     }
 
     if (!club.contact_email?.trim().length) {
-      msg.push(
-        this._transloco.translate(
-          'clubAdmin.notifications.contactEmailRequired'
-        )
-      );
+      fehler.push(['contact_email', 'contactEmailRequired']);
     }
 
     // maxlength im Formular deckelt die Neueingabe. Diese Prüfung fängt die
@@ -374,9 +408,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     // scheitert das Speichern erst am Server, und zwar auch dann, wenn der
     // Verein nur seine Kontaktadresse ändern wollte.
     if ((club.short_name?.length ?? 0) > 4) {
-      msg.push(
-        this._transloco.translate('clubAdmin.notifications.shortNameTooLong')
-      );
+      fehler.push(['short_name', 'shortNameTooLong']);
     }
 
     // Eine Adresse, nicht mehrere. Auf Produktion trug ein Verein zwei
@@ -387,9 +419,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       club.contact_email?.length &&
       !/^[^@\s;,]+@[^@\s;,]+\.[^@\s;,]+$/.test(club.contact_email.trim())
     ) {
-      msg.push(
-        this._transloco.translate('clubAdmin.notifications.contactEmailInvalid')
-      );
+      fehler.push(['contact_email', 'contactEmailInvalid']);
     }
 
     // Der Landesverband ordnet den Verein ein: Aus ihm ergibt sich der
@@ -400,14 +430,35 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     // wären ausgerechnet die Vereine ohne Landesverband nicht pflegbar; ob das
     // Leeren erlaubt ist, entscheidet die Berechtigung und damit der Server.
     if (!this.editMode && !club.state_association_id) {
-      msg.push(
-        this._transloco.translate(
-          'clubAdmin.notifications.stateAssociationRequired'
-        )
-      );
+      fehler.push(['state_association_id', 'stateAssociationRequired']);
     }
 
-    return msg;
+    return fehler;
+  }
+
+  // Ordnet eine Absage des Servers Feldern zu, damit der Reiter mit dem Feld
+  // markiert wird. Zwei Formen kommen vor:
+  // - `club.errors` aus der Modellvalidierung: Feldname -> Meldungen
+  //   (etwa ein zu langes Kuerzel oder eine ungueltige Kontaktadresse).
+  // - `{ success: false, message }` aus den Vorpruefungen. Die zum
+  //   Landesverband (Wechsel ohne Recht, Verband ohne Spielbetrieb) nennen ihn
+  //   im Text; eine eigene Feldangabe liefert der Server dafuer nicht.
+  // Fehlende Pflichtangaben meldet der Server ebenfalls so, die faengt aber
+  // schon `_fieldErrors` ab, bevor der Knopf erscheint.
+  private _serverErrorFields(err: HttpErrorResponse): (keyof Club)[] {
+    const body = err?.error;
+    if (!body || typeof body !== 'object') return [];
+
+    const felder = Object.keys(body).filter(
+      (key): key is keyof Club => key in TAB_OF_FIELD
+    );
+    if (
+      typeof body.message === 'string' &&
+      /Landesverband|Spielbetrieb/.test(body.message)
+    ) {
+      felder.push('state_association_id');
+    }
+    return felder;
   }
 
   private readonly _allowedLogoTypes = [
@@ -721,6 +772,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     // Die Auswahl haengt am Formular, nicht am geladenen Vereins-Datensatz.
     // Beim Anlegen gibt es noch keine Vereinsmanager, dann bleibt sie leer.
     club.notify_user_ids = this.notifyUserIds;
+    this.serverErrorFields = [];
 
     this._clubService.adminCreateClub(club).subscribe({
       next: (result) => {
@@ -739,8 +791,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       // Pflichtangaben also genau die Liste der fehlenden Felder. Ein zweiter,
       // wortgleicher Toast lag bisher darüber und musste einzeln weggeklickt
       // werden (beide ohne autoClose). Gleiche Entscheidung wie beim
-      // Logo-Upload darüber (#84, #228).
-      error: () => {},
+      // Logo-Upload darüber (#84, #228). Hier nur die beanstandeten Felder
+      // merken, damit ihr Reiter markiert wird.
+      error: (err: HttpErrorResponse) => {
+        this.serverErrorFields = this._serverErrorFields(err);
+        this._cdr.markForCheck();
+      },
     });
   }
 }

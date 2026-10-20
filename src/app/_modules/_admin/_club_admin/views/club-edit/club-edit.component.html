@@ -27,551 +27,616 @@
       >
         @if (club$ | async; as club) {
           <div>
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "clubAdmin.edit.mainData" | transloco }}
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.clubId" | transloco }}
-                </div>
-                <div>
-                  {{
-                    club.id > 0
-                      ? club.id
-                      : ("clubAdmin.edit.clubIdAfterCreate" | transloco)
-                  }}
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.name" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.name"
-                    type="text"
-                    id="name"
-                    required
-                    class="w-full"
-                  />
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.shortName" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.short_name"
-                    type="text"
-                    id="short_name"
-                    class="w-full"
-                    maxlength="4"
-                    required
-                  />
-                  <p class="text-sm text-gray-500 mt-1">
-                    {{ "clubAdmin.edit.shortNameHint" | transloco }}
-                  </p>
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.registerName" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.long_name"
-                    type="text"
-                    id="long_name"
-                    class="w-full"
-                    required
-                  />
-                </div>
-                <!-- Anschrift des Vereins: Der abgebende Landesverband stellt
-                     bei einem Transfer eine Rechnung an den aufnehmenden Verein
-                     und braucht dafür eine ladungsfähige Anschrift (api#641).
-                     Sie steht bei den Angaben zum Vereinsregister, weil sie
-                     dieselbe Frage beantwortet: wer der Verein rechtlich ist
-                     und wohin Post an ihn geht. -->
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.street" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.street"
-                    type="text"
-                    id="street"
-                    class="w-full"
-                    required
-                  />
-                  <p class="text-sm text-gray-500 mt-1">
-                    {{ "clubAdmin.edit.addressHint" | transloco }}
-                  </p>
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.houseNumber" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.house_number"
-                    type="text"
-                    id="house_number"
-                    class="w-full"
-                    required
-                  />
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.postcode" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.postcode"
-                    type="text"
-                    id="postcode"
-                    class="w-full"
-                    required
-                  />
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.city" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.city"
-                    type="text"
-                    id="city"
-                    class="w-full"
-                    required
-                  />
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.state" | transloco }}
-                </div>
-                <div>
-                  @if (isRestricted) {
-                    <span class="text-gray-700">{{ getStateName(club) }}</span>
-                  } @else {
-                    <select
-                      name="state"
-                      [(ngModel)]="club.state"
-                      class="w-full"
-                    >
-                      <option [ngValue]="null">
-                        {{ "clubAdmin.edit.pleaseSelect" | transloco }}
-                      </option>
-                      @for (s of states; track s) {
-                        <option [ngValue]="s.isocode">
-                          {{ s.name }}
-                        </option>
-                      }
-                    </select>
-                  }
-                </div>
-                <!-- Der Landesverband ordnet den Verein ein: Aus ihm ergibt
-                     sich, welcher Spielbetrieb ihn verwaltet. Er steht deshalb
-                     vor dem abgeleiteten Spielverbund, und die Auswahl gibt es
-                     beim Anlegen wie beim Bearbeiten. Vorher trug ein zweites,
-                     nur beim Anlegen sichtbares Spielbetriebs-Feld die
-                     Zuständigkeit, konnte dem Landesverband widersprechen und
-                     war danach nicht mehr erreichbar. -->
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.stateAssociation" | transloco }}
-                </div>
-                <div>
-                  @if (isRestricted) {
-                    <span class="text-gray-700">{{
-                      getStateAssociationName(club)
-                    }}</span>
-                  } @else {
-                    <fb-select-search
-                      name="state_association_id"
-                      [(ngModel)]="club.state_association_id"
-                      [items]="selectableStateAssociations"
-                      [placeholder]="'clubAdmin.edit.pleaseSelect' | transloco"
-                      [resetLabel]="'clubAdmin.edit.pleaseSelect' | transloco"
-                    />
-                    <p class="text-sm text-gray-500 mt-1">
-                      {{ "clubAdmin.edit.stateAssociationHint" | transloco }}
-                    </p>
-                  }
-                </div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.sportverbund" | transloco }}
-                </div>
-                <div class="text-gray-700">{{ getSportverbund(club) }}</div>
-                <div class="font-bold">
-                  {{ "clubAdmin.edit.contactEmail" | transloco }}
-                </div>
-                <div>
-                  <input
-                    [(ngModel)]="club.contact_email"
-                    type="email"
-                    id="contact_email"
-                    class="w-full"
-                    required
-                    [placeholder]="
-                      'clubAdmin.edit.contactEmailPlaceholder' | transloco
-                    "
-                  />
-                  <p class="text-sm text-gray-500 mt-1">
-                    {{ "clubAdmin.edit.contactEmailHint" | transloco }}
-                  </p>
-                </div>
-                @if (editMode) {
-                  <div class="font-bold">
-                    {{ "clubAdmin.edit.notifyManagers" | transloco }}
+            <!-- Reiter nach Haeufigkeit: Name, Kontaktadresse und Verteiler
+                 aendern sich, Kuerzel, Registername, Anschrift und Logo stellt ein
+                 Verein praktisch einmal ein. Die Fusszeile darunter speichert wie
+                 bisher ALLE Vereinsfelder auf einmal, auch die des verborgenen
+                 Reiters; deshalb steht sie ausserhalb der Reiter, und ein Reiter mit
+                 einer Luecke wird markiert. Die Werte haengen per ngModel am
+                 club-Objekt und ueberstehen damit den Reiterwechsel, obwohl der
+                 Inhalt verborgener Reiter nicht im DOM steht. -->
+            <fb-tabs [label]="'clubAdmin.edit.tabsLabel' | transloco">
+              <ng-template
+                fbTab="allgemein"
+                [fbTabLabel]="'clubAdmin.edit.tabGeneral' | transloco"
+                [fbTabInvalid]="tabInvalid(club, 'allgemein')"
+              >
+                <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                  <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                    {{ "clubAdmin.edit.mainData" | transloco }}
                   </div>
-                  <div>
-                    @if (clubManagers.length) {
-                      <p class="text-sm text-gray-500 mb-2">
-                        {{ "clubAdmin.edit.notifyManagersHint" | transloco }}
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.clubId" | transloco }}
+                    </div>
+                    <div>
+                      {{
+                        club.id > 0
+                          ? club.id
+                          : ("clubAdmin.edit.clubIdAfterCreate" | transloco)
+                      }}
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.name" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.name"
+                        type="text"
+                        id="name"
+                        required
+                        class="w-full"
+                      />
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.contactEmail" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.contact_email"
+                        type="email"
+                        id="contact_email"
+                        class="w-full"
+                        required
+                        [placeholder]="
+                          'clubAdmin.edit.contactEmailPlaceholder' | transloco
+                        "
+                      />
+                      <p class="text-sm text-gray-500 mt-1">
+                        {{ "clubAdmin.edit.contactEmailHint" | transloco }}
                       </p>
-                      @for (manager of clubManagers; track manager.id) {
-                        <label class="block mb-1">
-                          <input
-                            type="checkbox"
-                            class="mr-2 align-middle"
-                            [checked]="isNotifyUser(manager.id)"
-                            (change)="toggleNotifyUser(manager.id)"
-                          />
-                          <span class="align-middle">{{ manager.name }}</span>
-                          @if (manager.email) {
-                            <span class="align-middle text-gray-500"
-                              >&nbsp;({{ manager.email }})</span
-                            >
-                          } @else {
-                            <span class="align-middle text-gray-500"
-                              >&nbsp;{{
-                                "clubAdmin.edit.notifyManagerNoEmail"
-                                  | transloco
-                              }}</span
-                            >
+                    </div>
+                    @if (editMode) {
+                      <div class="font-bold">
+                        {{ "clubAdmin.edit.notifyManagers" | transloco }}
+                      </div>
+                      <div>
+                        @if (clubManagers.length) {
+                          <p class="text-sm text-gray-500 mb-2">
+                            {{
+                              "clubAdmin.edit.notifyManagersHint" | transloco
+                            }}
+                          </p>
+                          @for (manager of clubManagers; track manager.id) {
+                            <label class="block mb-1">
+                              <input
+                                type="checkbox"
+                                class="mr-2 align-middle"
+                                [checked]="isNotifyUser(manager.id)"
+                                (change)="toggleNotifyUser(manager.id)"
+                              />
+                              <span class="align-middle">{{
+                                manager.name
+                              }}</span>
+                              @if (manager.email) {
+                                <span class="align-middle text-gray-500"
+                                  >&nbsp;({{ manager.email }})</span
+                                >
+                              } @else {
+                                <span class="align-middle text-gray-500"
+                                  >&nbsp;{{
+                                    "clubAdmin.edit.notifyManagerNoEmail"
+                                      | transloco
+                                  }}</span
+                                >
+                              }
+                            </label>
                           }
-                        </label>
-                      }
-                    } @else {
-                      <p class="text-sm text-gray-500">
-                        {{ "clubAdmin.edit.notifyManagersEmpty" | transloco }}
-                      </p>
+                        } @else {
+                          <p class="text-sm text-gray-500">
+                            {{
+                              "clubAdmin.edit.notifyManagersEmpty" | transloco
+                            }}
+                          </p>
+                        }
+                      </div>
                     }
+                  </div>
+                </div>
+                <!--
+                  Nur beim Bearbeiten: Ein gerade angelegter Verein hat noch keine
+                  Mannschaften und damit niemanden, für den der Haken etwas
+                  bewirkte. Gleiche Wahl wie beim Verteiler darüber.
+                -->
+                @if (editMode) {
+                  <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                      {{ "clubAdmin.edit.permissions" | transloco }}
+                    </div>
+                    <label class="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        data-testid="team-managers-manage-players"
+                        [(ngModel)]="club.team_managers_manage_players"
+                        name="team_managers_manage_players"
+                        class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+                      />
+                      <span class="flex flex-col gap-0.5">
+                        <span class="text-sm font-bold">
+                          {{
+                            "clubAdmin.edit.teamManagersManagePlayers"
+                              | transloco
+                          }}
+                        </span>
+                        <span class="text-sm text-gray-500">
+                          {{
+                            "clubAdmin.edit.teamManagersManagePlayersHint"
+                              | transloco
+                          }}
+                        </span>
+                      </span>
+                    </label>
                   </div>
                 }
-              </div>
-            </div>
-            <!--
-              Nur beim Bearbeiten: Ein gerade angelegter Verein hat noch keine
-              Mannschaften und damit niemanden, für den der Haken etwas
-              bewirkte. Gleiche Wahl wie beim Verteiler darüber.
-            -->
-            @if (editMode) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  {{ "clubAdmin.edit.permissions" | transloco }}
-                </div>
-                <label class="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    data-testid="team-managers-manage-players"
-                    [(ngModel)]="club.team_managers_manage_players"
-                    name="team_managers_manage_players"
-                    class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-                  />
-                  <span class="flex flex-col gap-0.5">
-                    <span class="text-sm font-bold">
-                      {{
-                        "clubAdmin.edit.teamManagersManagePlayers" | transloco
-                      }}
-                    </span>
-                    <span class="text-sm text-gray-500">
-                      {{
-                        "clubAdmin.edit.teamManagersManagePlayersHint"
-                          | transloco
-                      }}
-                    </span>
-                  </span>
-                </label>
-              </div>
-            }
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "clubAdmin.edit.logo" | transloco }}
-              </div>
-              @if (club.id === 0) {
-                <div class="grid grid-cols-1 gap-4">
-                  {{ "clubAdmin.edit.logoUploadAfterSave" | transloco }}
-                </div>
-              }
-              @if (club.id > 0) {
-                <div class="grid grid-cols-2 gap-4 items-center">
-                  <div class="font-bold">
-                    {{ "clubAdmin.edit.currentLogo" | transloco }}
+              </ng-template>
+              <ng-template
+                fbTab="anschrift"
+                [fbTabLabel]="'clubAdmin.edit.tabAddress' | transloco"
+                [fbTabInvalid]="tabInvalid(club, 'anschrift')"
+              >
+                <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                  <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                    {{ "clubAdmin.edit.addressAndRegister" | transloco }}
                   </div>
-                  <div>
-                    @if (club.logo_url) {
-                      <img
-                        [src]="club.logo_url"
-                        [alt]="'clubAdmin.edit.logoAlt' | transloco"
-                        class="h-16 object-contain"
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.shortName" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.short_name"
+                        type="text"
+                        id="short_name"
+                        class="w-full"
+                        maxlength="4"
+                        required
                       />
-                    }
-                    @if (!club.logo_url) {
-                      <span class="text-gray-400">{{
-                        "clubAdmin.edit.noLogo" | transloco
-                      }}</span>
-                    }
-                  </div>
-                  <div class="font-bold">
-                    {{ "clubAdmin.edit.uploadLogo" | transloco }}
-                  </div>
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      #logoInput
-                      (change)="onLogoSelected(club, logoInput)"
-                    />
-                    <small class="block text-gray-500 mt-1">{{
-                      "clubAdmin.edit.logoHint" | transloco
-                    }}</small>
-                    <small class="block text-gray-500 mt-1">{{
-                      "clubAdmin.edit.logoTransparencyHint" | transloco
-                    }}</small>
+                      <p class="text-sm text-gray-500 mt-1">
+                        {{ "clubAdmin.edit.shortNameHint" | transloco }}
+                      </p>
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.registerName" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.long_name"
+                        type="text"
+                        id="long_name"
+                        class="w-full"
+                        required
+                      />
+                    </div>
+                    <!-- Anschrift des Vereins: Der abgebende Landesverband stellt
+                         bei einem Transfer eine Rechnung an den aufnehmenden Verein
+                         und braucht dafür eine ladungsfähige Anschrift (api#641).
+                         Sie steht bei den Angaben zum Vereinsregister, weil sie
+                         dieselbe Frage beantwortet: wer der Verein rechtlich ist
+                         und wohin Post an ihn geht. -->
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.street" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.street"
+                        type="text"
+                        id="street"
+                        class="w-full"
+                        required
+                      />
+                      <p class="text-sm text-gray-500 mt-1">
+                        {{ "clubAdmin.edit.addressHint" | transloco }}
+                      </p>
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.houseNumber" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.house_number"
+                        type="text"
+                        id="house_number"
+                        class="w-full"
+                        required
+                      />
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.postcode" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.postcode"
+                        type="text"
+                        id="postcode"
+                        class="w-full"
+                        required
+                      />
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.city" | transloco }}
+                    </div>
+                    <div>
+                      <input
+                        [(ngModel)]="club.city"
+                        type="text"
+                        id="city"
+                        class="w-full"
+                        required
+                      />
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.state" | transloco }}
+                    </div>
+                    <div>
+                      @if (isRestricted) {
+                        <span class="text-gray-700">{{
+                          getStateName(club)
+                        }}</span>
+                      } @else {
+                        <select
+                          name="state"
+                          [(ngModel)]="club.state"
+                          class="w-full"
+                        >
+                          <option [ngValue]="null">
+                            {{ "clubAdmin.edit.pleaseSelect" | transloco }}
+                          </option>
+                          @for (s of states; track s) {
+                            <option [ngValue]="s.isocode">
+                              {{ s.name }}
+                            </option>
+                          }
+                        </select>
+                      }
+                    </div>
+                    <!-- Der Landesverband ordnet den Verein ein: Aus ihm ergibt
+                         sich, welcher Spielbetrieb ihn verwaltet. Er steht deshalb
+                         vor dem abgeleiteten Spielverbund, und die Auswahl gibt es
+                         beim Anlegen wie beim Bearbeiten. Vorher trug ein zweites,
+                         nur beim Anlegen sichtbares Spielbetriebs-Feld die
+                         Zuständigkeit, konnte dem Landesverband widersprechen und
+                         war danach nicht mehr erreichbar. -->
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.stateAssociation" | transloco }}
+                    </div>
+                    <div>
+                      @if (isRestricted) {
+                        <span class="text-gray-700">{{
+                          getStateAssociationName(club)
+                        }}</span>
+                      } @else {
+                        <fb-select-search
+                          name="state_association_id"
+                          [(ngModel)]="club.state_association_id"
+                          [items]="selectableStateAssociations"
+                          [placeholder]="
+                            'clubAdmin.edit.pleaseSelect' | transloco
+                          "
+                          [resetLabel]="
+                            'clubAdmin.edit.pleaseSelect' | transloco
+                          "
+                        />
+                        <p class="text-sm text-gray-500 mt-1">
+                          {{
+                            "clubAdmin.edit.stateAssociationHint" | transloco
+                          }}
+                        </p>
+                      }
+                    </div>
+                    <div class="font-bold">
+                      {{ "clubAdmin.edit.sportverbund" | transloco }}
+                    </div>
+                    <div class="text-gray-700">{{ getSportverbund(club) }}</div>
                   </div>
                 </div>
-              }
-            </div>
-            <!-- Abweichende Logos pro Team. Nur am gespeicherten Verein:
-                 Mannschaften haengen an ihm, vor dem Speichern gibt es keine. -->
-            @if (club.id > 0) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div class="uppercase font-bold text-gray-400 text-sm mb-3">
-                  {{ "clubAdmin.edit.teams" | transloco }}
-                </div>
-                <p class="text-sm text-gray-500 mb-5">
-                  {{ "clubAdmin.edit.teamsHint" | transloco }}
-                </p>
-                @if (clubTeamsFailed) {
-                  <div class="text-sm text-red-600">
-                    {{ "clubAdmin.edit.teamLogosLoadError" | transloco }}
-                    <button
-                      type="button"
-                      (click)="loadClubTeams(club.id)"
-                      class="ml-2 underline"
-                    >
-                      {{ "clubAdmin.edit.teamLogosRetry" | transloco }}
-                    </button>
-                  </div>
-                } @else if (!clubTeams.length) {
-                  <span class="text-gray-400 text-sm">{{
-                    "clubAdmin.edit.teamLogosEmpty" | transloco
-                  }}</span>
-                } @else {
-                  @for (team of clubTeams; track team.id) {
-                    <div
-                      class="flex flex-wrap items-center gap-4 py-3 border-t border-gray-100 first:border-t-0"
-                    >
-                      <div class="w-14 shrink-0">
-                        @if (team.logo_url) {
+              </ng-template>
+              <!-- Logo und Mannschaften nur am gespeicherten Verein: Hochladen
+                   braucht die Vereins-ID, und Mannschaften haengen an ihm. Beim Anlegen
+                   fehlt der Reiter deshalb ganz. -->
+              @if (club.id > 0) {
+                <ng-template
+                  fbTab="mannschaften"
+                  [fbTabLabel]="'clubAdmin.edit.tabTeams' | transloco"
+                >
+                  <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                    <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+                      {{ "clubAdmin.edit.logo" | transloco }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                      <div class="font-bold">
+                        {{ "clubAdmin.edit.currentLogo" | transloco }}
+                      </div>
+                      <div>
+                        @if (club.logo_url) {
                           <img
-                            [src]="team.logo_url"
-                            [alt]="'clubAdmin.edit.teamLogoAlt' | transloco"
-                            class="h-14 w-14 object-contain"
+                            [src]="club.logo_url"
+                            [alt]="'clubAdmin.edit.logoAlt' | transloco"
+                            class="h-16 object-contain"
                           />
-                        } @else {
-                          <span class="text-gray-400 text-xs">{{
+                        }
+                        @if (!club.logo_url) {
+                          <span class="text-gray-400">{{
                             "clubAdmin.edit.noLogo" | transloco
                           }}</span>
                         }
                       </div>
-                      <div class="grow min-w-[12rem]">
-                        @if (team.manage_info) {
-                          <div class="flex flex-wrap items-end gap-3 mb-1">
-                            <div class="grow min-w-[10rem]">
-                              <label
-                                class="block text-xs uppercase text-gray-400"
-                                [attr.for]="'team_name_' + team.id"
-                                >{{
-                                  "clubAdmin.edit.teamName" | transloco
-                                }}</label
-                              >
-                              <input
-                                type="text"
-                                [id]="'team_name_' + team.id"
-                                [(ngModel)]="teamInfoDraft(team).name"
-                                [ngModelOptions]="{ standalone: true }"
-                                class="w-full"
-                                required
+                      <div class="font-bold">
+                        {{ "clubAdmin.edit.uploadLogo" | transloco }}
+                      </div>
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          #logoInput
+                          (change)="onLogoSelected(club, logoInput)"
+                        />
+                        <small class="block text-gray-500 mt-1">{{
+                          "clubAdmin.edit.logoHint" | transloco
+                        }}</small>
+                        <small class="block text-gray-500 mt-1">{{
+                          "clubAdmin.edit.logoTransparencyHint" | transloco
+                        }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                    <div class="uppercase font-bold text-gray-400 text-sm mb-3">
+                      {{ "clubAdmin.edit.teams" | transloco }}
+                    </div>
+                    <p class="text-sm text-gray-500 mb-5">
+                      {{ "clubAdmin.edit.teamsHint" | transloco }}
+                    </p>
+                    @if (clubTeamsFailed) {
+                      <div class="text-sm text-red-600">
+                        {{ "clubAdmin.edit.teamLogosLoadError" | transloco }}
+                        <button
+                          type="button"
+                          (click)="loadClubTeams(club.id)"
+                          class="ml-2 underline"
+                        >
+                          {{ "clubAdmin.edit.teamLogosRetry" | transloco }}
+                        </button>
+                      </div>
+                    } @else if (!clubTeams.length) {
+                      <span class="text-gray-400 text-sm">{{
+                        "clubAdmin.edit.teamLogosEmpty" | transloco
+                      }}</span>
+                    } @else {
+                      @for (team of clubTeams; track team.id) {
+                        <div
+                          class="flex flex-wrap items-center gap-4 py-3 border-t border-gray-100 first:border-t-0"
+                        >
+                          <div class="w-14 shrink-0">
+                            @if (team.logo_url) {
+                              <img
+                                [src]="team.logo_url"
+                                [alt]="'clubAdmin.edit.teamLogoAlt' | transloco"
+                                class="h-14 w-14 object-contain"
                               />
-                            </div>
-                            <div class="w-32">
-                              <label
-                                class="block text-xs uppercase text-gray-400"
-                                [attr.for]="'team_short_name_' + team.id"
-                                >{{
-                                  "clubAdmin.edit.teamShortName" | transloco
-                                }}</label
-                              >
-                              <input
-                                type="text"
-                                [id]="'team_short_name_' + team.id"
-                                [(ngModel)]="teamInfoDraft(team).short_name"
-                                [ngModelOptions]="{ standalone: true }"
-                                class="w-full"
-                                maxlength="8"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              (click)="saveTeamInfo(team)"
-                              [disabled]="!canSaveTeamInfo(team)"
-                              class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
-                            >
-                              {{
-                                (savingTeamInfoId === team.id
-                                  ? "clubAdmin.edit.savingTeamInfo"
-                                  : "clubAdmin.edit.saveTeamInfo"
-                                ) | transloco
-                              }}
-                            </button>
-                          </div>
-                          <p class="text-xs text-gray-500 mb-1">
-                            {{ "clubAdmin.edit.teamShortNameHint" | transloco }}
-                          </p>
-                        } @else {
-                          <div class="font-bold">
-                            {{ team.name }}
-                            @if (team.short_name) {
-                              <span class="text-gray-500 font-normal"
-                                >({{ team.short_name }})</span
-                              >
+                            } @else {
+                              <span class="text-gray-400 text-xs">{{
+                                "clubAdmin.edit.noLogo" | transloco
+                              }}</span>
                             }
                           </div>
-                        }
-                        <div class="text-sm text-gray-500">
-                          {{ team.league_name }}
-                          <span
-                            class="ml-1 text-xs font-semibold px-2 py-0.5 rounded"
-                            [class]="
-                              team.logo
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-600'
-                            "
+                          <div class="grow min-w-[12rem]">
+                            @if (team.manage_info) {
+                              <div class="flex flex-wrap items-end gap-3 mb-1">
+                                <div class="grow min-w-[10rem]">
+                                  <label
+                                    class="block text-xs uppercase text-gray-400"
+                                    [attr.for]="'team_name_' + team.id"
+                                    >{{
+                                      "clubAdmin.edit.teamName" | transloco
+                                    }}</label
+                                  >
+                                  <input
+                                    type="text"
+                                    [id]="'team_name_' + team.id"
+                                    [(ngModel)]="teamInfoDraft(team).name"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    class="w-full"
+                                    required
+                                  />
+                                </div>
+                                <div class="w-32">
+                                  <label
+                                    class="block text-xs uppercase text-gray-400"
+                                    [attr.for]="'team_short_name_' + team.id"
+                                    >{{
+                                      "clubAdmin.edit.teamShortName" | transloco
+                                    }}</label
+                                  >
+                                  <input
+                                    type="text"
+                                    [id]="'team_short_name_' + team.id"
+                                    [(ngModel)]="teamInfoDraft(team).short_name"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    class="w-full"
+                                    maxlength="8"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  (click)="saveTeamInfo(team)"
+                                  [disabled]="!canSaveTeamInfo(team)"
+                                  class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+                                >
+                                  {{
+                                    (savingTeamInfoId === team.id
+                                      ? "clubAdmin.edit.savingTeamInfo"
+                                      : "clubAdmin.edit.saveTeamInfo"
+                                    ) | transloco
+                                  }}
+                                </button>
+                              </div>
+                              <p class="text-xs text-gray-500 mb-1">
+                                {{
+                                  "clubAdmin.edit.teamShortNameHint" | transloco
+                                }}
+                              </p>
+                            } @else {
+                              <div class="font-bold">
+                                {{ team.name }}
+                                @if (team.short_name) {
+                                  <span class="text-gray-500 font-normal"
+                                    >({{ team.short_name }})</span
+                                  >
+                                }
+                              </div>
+                            }
+                            <div class="text-sm text-gray-500">
+                              {{ team.league_name }}
+                              <span
+                                class="ml-1 text-xs font-semibold px-2 py-0.5 rounded"
+                                [class]="
+                                  team.logo
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-600'
+                                "
+                              >
+                                {{
+                                  (team.logo
+                                    ? "clubAdmin.edit.teamLogoOwn"
+                                    : "clubAdmin.edit.teamLogoFromClub"
+                                  ) | transloco
+                                }}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="shrink-0">
+                            @if (team.manage_logo) {
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp"
+                                #teamLogoInput
+                                (change)="
+                                  onTeamLogoSelected(team, teamLogoInput)
+                                "
+                              />
+                              @if (team.logo) {
+                                <button
+                                  type="button"
+                                  (click)="removeTeamLogo(team)"
+                                  [disabled]="removingTeamLogoId === team.id"
+                                  class="block mt-1 text-sm text-red-500 underline disabled:opacity-50"
+                                >
+                                  {{
+                                    (removingTeamLogoId === team.id
+                                      ? "clubAdmin.edit.removingTeamLogo"
+                                      : "clubAdmin.edit.removeTeamLogo"
+                                    ) | transloco
+                                  }}
+                                </button>
+                              }
+                            } @else {
+                              <span class="text-sm text-gray-400">{{
+                                (team.info_locked_by_season && !team.manage_info
+                                  ? "clubAdmin.edit.teamInfoLocked"
+                                  : "clubAdmin.edit.teamLogoForeignLeague"
+                                ) | transloco
+                              }}</span>
+                            }
+                          </div>
+                        </div>
+                      }
+                      <small class="block text-gray-500 mt-4">{{
+                        "clubAdmin.edit.logoHint" | transloco
+                      }}</small>
+                    }
+                  </div>
+                </ng-template>
+              }
+              <!-- Deaktivierung -->
+              @if (
+                canDeactivate(club) ||
+                canReactivate(club) ||
+                club.deactivated_at
+              ) {
+                <ng-template
+                  fbTab="status"
+                  [fbTabLabel]="'clubAdmin.edit.tabStatus' | transloco"
+                  [fbTabBadge]="
+                    club.deactivated_at
+                      ? ('clubAdmin.edit.tabStatusDeactivated' | transloco)
+                      : null
+                  "
+                >
+                  <div class="bg-white my-[5px] py-[15px] px-[30px]">
+                    <div
+                      class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+                    >
+                      {{ "clubAdmin.edit.clubStatus" | transloco }}
+                      @if (club.deactivated_at) {
+                        <span
+                          class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
+                        >
+                          {{
+                            "clubAdmin.edit.deactivatedOn"
+                              | transloco
+                                : {
+                                    date:
+                                      club.deactivated_at | date: "dd.MM.yyyy",
+                                  }
+                          }}
+                        </span>
+                      }
+                    </div>
+                    @if (canDeactivate(club) && !confirmDeactivate) {
+                      <div>
+                        <button
+                          (click)="confirmDeactivate = true"
+                          class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
+                        >
+                          {{ "clubAdmin.edit.deactivateClub" | transloco }}
+                        </button>
+                      </div>
+                    }
+                    @if (confirmDeactivate) {
+                      <div class="border border-red-300 rounded p-4 bg-red-50">
+                        <p class="text-sm font-semibold text-red-800 mb-1">
+                          {{
+                            "clubAdmin.edit.deactivateConfirmTitle" | transloco
+                          }}
+                        </p>
+                        <p class="text-sm text-red-700 mb-4">
+                          {{
+                            "clubAdmin.edit.deactivateConfirmText" | transloco
+                          }}
+                        </p>
+                        <div class="flex gap-3">
+                          <button
+                            (click)="deactivateClub(club)"
+                            class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer"
                           >
                             {{
-                              (team.logo
-                                ? "clubAdmin.edit.teamLogoOwn"
-                                : "clubAdmin.edit.teamLogoFromClub"
-                              ) | transloco
+                              "clubAdmin.edit.deactivateConfirmSubmit"
+                                | transloco
                             }}
-                          </span>
+                          </button>
+                          <button
+                            (click)="confirmDeactivate = false"
+                            class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                          >
+                            {{ "clubAdmin.edit.cancel" | transloco }}
+                          </button>
                         </div>
                       </div>
-                      <div class="shrink-0">
-                        @if (team.manage_logo) {
-                          <input
-                            type="file"
-                            accept="image/png,image/jpeg,image/webp"
-                            #teamLogoInput
-                            (change)="onTeamLogoSelected(team, teamLogoInput)"
-                          />
-                          @if (team.logo) {
-                            <button
-                              type="button"
-                              (click)="removeTeamLogo(team)"
-                              [disabled]="removingTeamLogoId === team.id"
-                              class="block mt-1 text-sm text-red-500 underline disabled:opacity-50"
-                            >
-                              {{
-                                (removingTeamLogoId === team.id
-                                  ? "clubAdmin.edit.removingTeamLogo"
-                                  : "clubAdmin.edit.removeTeamLogo"
-                                ) | transloco
-                              }}
-                            </button>
-                          }
-                        } @else {
-                          <span class="text-sm text-gray-400">{{
-                            (team.info_locked_by_season && !team.manage_info
-                              ? "clubAdmin.edit.teamInfoLocked"
-                              : "clubAdmin.edit.teamLogoForeignLeague"
-                            ) | transloco
-                          }}</span>
-                        }
+                    }
+                    @if (canReactivate(club)) {
+                      <div>
+                        <button
+                          (click)="reactivateClub(club)"
+                          class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                        >
+                          {{ "clubAdmin.edit.reactivateClub" | transloco }}
+                        </button>
                       </div>
-                    </div>
-                  }
-                  <small class="block text-gray-500 mt-4">{{
-                    "clubAdmin.edit.logoHint" | transloco
-                  }}</small>
-                }
-              </div>
-            }
-            <!-- Deaktivierung -->
-            @if (
-              canDeactivate(club) || canReactivate(club) || club.deactivated_at
-            ) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div
-                  class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
-                >
-                  {{ "clubAdmin.edit.clubStatus" | transloco }}
-                  @if (club.deactivated_at) {
-                    <span
-                      class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
-                    >
-                      {{
-                        "clubAdmin.edit.deactivatedOn"
-                          | transloco
-                            : {
-                                date: club.deactivated_at | date: "dd.MM.yyyy",
-                              }
-                      }}
-                    </span>
-                  }
-                </div>
-                @if (canDeactivate(club) && !confirmDeactivate) {
-                  <div>
-                    <button
-                      (click)="confirmDeactivate = true"
-                      class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
-                    >
-                      {{ "clubAdmin.edit.deactivateClub" | transloco }}
-                    </button>
+                    }
                   </div>
-                }
-                @if (confirmDeactivate) {
-                  <div class="border border-red-300 rounded p-4 bg-red-50">
-                    <p class="text-sm font-semibold text-red-800 mb-1">
-                      {{ "clubAdmin.edit.deactivateConfirmTitle" | transloco }}
-                    </p>
-                    <p class="text-sm text-red-700 mb-4">
-                      {{ "clubAdmin.edit.deactivateConfirmText" | transloco }}
-                    </p>
-                    <div class="flex gap-3">
-                      <button
-                        (click)="deactivateClub(club)"
-                        class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer"
-                      >
-                        {{
-                          "clubAdmin.edit.deactivateConfirmSubmit" | transloco
-                        }}
-                      </button>
-                      <button
-                        (click)="confirmDeactivate = false"
-                        class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                      >
-                        {{ "clubAdmin.edit.cancel" | transloco }}
-                      </button>
-                    </div>
-                  </div>
-                }
-                @if (canReactivate(club)) {
-                  <div>
-                    <button
-                      (click)="reactivateClub(club)"
-                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    >
-                      {{ "clubAdmin.edit.reactivateClub" | transloco }}
-                    </button>
-                  </div>
-                }
-              </div>
-            }
+                </ng-template>
+              }
+            </fb-tabs>
             <div class="bg-white my-[5px] py-[15px] px-[30px]">
               <div class="flex flex-col gap-2">
                 @if (error(club)) {
@@ -601,11 +666,11 @@
                     </a>
                   }
                   <!-- Die Spielerliste des Vereins liegt hinter
-                         menu_item_player_admin. Ohne diese Klammer landete ein
-                         Vereinsmanager beim Klick ohne Meldung auf der
-                         Startseite (permissionGuard leitet stumm um). Seine
-                         eigene Spielerliste erreicht er über „Meine
-                         Spieler*innen". -->
+                       menu_item_player_admin. Ohne diese Klammer landete ein
+                       Vereinsmanager beim Klick ohne Meldung auf der
+                       Startseite (permissionGuard leitet stumm um). Seine
+                       eigene Spielerliste erreicht er über „Meine
+                       Spieler*innen". -->
                   @if (canEditPlayers) {
                     <a
                       class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
