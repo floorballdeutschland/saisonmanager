@@ -299,6 +299,15 @@ export class GameEditComponent implements OnInit, OnChanges {
 
     this._gameService.createGame(game).subscribe({
       next: () => {
+        // Die Anlegezeile bleibt dieselbe Instanz, die Liste laedt nur neu.
+        // Ohne Zuruecksetzen stuende sie mit Spinner und den alten Werten da,
+        // und ein weiteres Spiel liesse sich erst nach Neuladen anlegen.
+        this.newGame();
+        this.hasNotice = false;
+        this.hasGameDependencies = false;
+        this.conflicts = [];
+        this.processing = false;
+        this._cdr.markForCheck();
         this.refreshSchedule.emit();
         this._notificationService.success('Spiel erfolgreich erstellt', {
           autoClose: true,
