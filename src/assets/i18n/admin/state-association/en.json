@@ -116,7 +116,15 @@
     "assignmentModePersonLabel": "Assigner assigns individuals",
     "assignmentModePersonHint": "Requires the separate Assigner role. Referee pair and coach are assigned individually and notified. Only referees who have reported availability for that day can be assigned.",
     "coachAssignmentLabel": "RSK can assign referee coaches (optional)",
-    "coachAssignmentHint": "The RSK can pick a coach with a valid B qualification for each game, but does not have to. An assigned coach is notified by e-mail and reminded of the observation form at kick-off."
+    "coachAssignmentHint": "The RSK can pick a coach with a valid B qualification for each game, but does not have to. An assigned coach is notified by e-mail and reminded of the observation form at kick-off.",
+    "tabs": {
+      "label": "Sections of the state association",
+      "stammdaten": "Master data",
+      "einstellungen": "Settings",
+      "freigaben": "Game day report & releases",
+      "medien": "Logo & banner",
+      "spielbetrieb": "Game operation"
+    }
   },
   "notifications": {
     "confirmDelete": "Really delete state association \"{{ name }}\"?",

@@ -116,7 +116,15 @@
     "assignmentModePersonLabel": "Ansetzer*in setzt Personen an",
     "assignmentModePersonHint": "Setzt die separate Rolle Ansetzer*in voraus. Gespann und Coach werden personenscharf angesetzt und benachrichtigt. Angesetzt werden können nur Schiedsrichter*innen, die für den Tag eine Verfügbarkeit gemeldet haben.",
     "coachAssignmentLabel": "RSK kann Schiedsrichtercoach*innen ansetzen (freiwillig)",
-    "coachAssignmentHint": "Die RSK kann je Spiel einen Coach mit gültiger B-Qualifikation wählen, muss aber nicht. Ein angesetzter Coach wird per E-Mail benachrichtigt und zum Anpfiff an den Beobachtungsbogen erinnert."
+    "coachAssignmentHint": "Die RSK kann je Spiel einen Coach mit gültiger B-Qualifikation wählen, muss aber nicht. Ein angesetzter Coach wird per E-Mail benachrichtigt und zum Anpfiff an den Beobachtungsbogen erinnert.",
+    "tabs": {
+      "label": "Bereiche des Landesverbands",
+      "stammdaten": "Stammdaten",
+      "einstellungen": "Einstellungen",
+      "freigaben": "Spieltagsbericht & Freigaben",
+      "medien": "Logo & Banner",
+      "spielbetrieb": "Spielbetrieb"
+    }
   },
   "notifications": {
     "confirmDelete": "Landesverband \"{{ name }}\" wirklich löschen?",

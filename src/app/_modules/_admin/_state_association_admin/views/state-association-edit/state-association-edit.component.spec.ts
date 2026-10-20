@@ -1,7 +1,11 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import {
   getTranslocoTestingModule,
@@ -10,6 +14,7 @@ import {
   StateAssociationService,
 } from '@floorball/core';
 import { StateAssociation, User } from '@floorball/types';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import {
   INHERITED_SETTINGS,
   StateAssociationEditComponent,
@@ -449,5 +454,168 @@ describe('StateAssociationEditComponent', () => {
     expect(createComponent().effectiveStateNames).toBe(
       'Sachsen, Sachsen-Anhalt'
     );
+  });
+});
+
+// Die Reiter mit echtem Template und echtem Router: Welcher Reiter offen ist,
+// steht in `?reiter=`, und welche es gibt, haengt an Modus und Verbund.
+describe('StateAssociationEditComponent Reiter', () => {
+  let service: jasmine.SpyObj<StateAssociationService>;
+
+  const OHNE_VERBUND: StateAssociation = {
+    ...KIND_LV,
+    parent_id: null,
+    parent_name: null,
+  };
+
+  beforeEach(async () => {
+    service = jasmine.createSpyObj<StateAssociationService>(
+      'StateAssociationService',
+      ['adminGetAll', 'adminGet', 'adminGetReleaseCandidates', 'adminUpdate']
+    );
+    service.adminGetAll.and.returnValue(of([]));
+    service.adminGet.and.returnValue(of(OHNE_VERBUND));
+    service.adminGetReleaseCandidates.and.returnValue(of([]));
+    service.adminUpdate.and.returnValue(of(OHNE_VERBUND));
+
+    await TestBed.configureTestingModule({
+      imports: [FormsModule, UikitCommonModule, getTranslocoTestingModule()],
+      declarations: [StateAssociationEditComponent],
+      // fb-game-operation-section kommt aus einem anderen Modul.
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        provideRouter([
+          {
+            path: 'verwaltung/landesverbaende/neu',
+            component: StateAssociationEditComponent,
+          },
+          {
+            path: 'verwaltung/landesverbaende/:id/bearbeiten',
+            component: StateAssociationEditComponent,
+          },
+          { path: 'verwaltung/landesverbaende', children: [] },
+        ]),
+        { provide: StateAssociationService, useValue: service },
+        {
+          provide: SessionService,
+          useValue: { currentUser$: of(null) } as unknown as SessionService,
+        },
+        {
+          provide: NotificationService,
+          useValue: jasmine.createSpyObj<NotificationService>(
+            'NotificationService',
+            ['success', 'error']
+          ),
+        },
+      ],
+    }).compileComponents();
+  });
+
+  const open = async (url: string) => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(url, StateAssociationEditComponent);
+    harness.detectChanges();
+    return harness;
+  };
+
+  const tabIds = (harness: RouterTestingHarness) =>
+    harness.fixture.debugElement
+      .queryAll(By.css('[role="tab"]'))
+      .map((el) => el.attributes['data-testid']);
+
+  const panel = (harness: RouterTestingHarness) =>
+    harness.fixture.debugElement.query(By.css('[role="tabpanel"]')).attributes[
+      'data-testid'
+    ];
+
+  it('oeffnet die Stammdaten als Standard', async () => {
+    const harness = await open('/verwaltung/landesverbaende/2/bearbeiten');
+
+    expect(tabIds(harness)).toEqual([
+      'tab-stammdaten',
+      'tab-einstellungen',
+      'tab-freigaben',
+      'tab-medien',
+      'tab-spielbetrieb',
+    ]);
+    expect(panel(harness)).toBe('tabpanel-stammdaten');
+    expect(harness.routeNativeElement?.querySelector('input[name="name"]'))
+      .withContext('Name steht in den Stammdaten')
+      .not.toBeNull();
+  });
+
+  it('oeffnet den Reiter aus der URL', async () => {
+    const harness = await open(
+      '/verwaltung/landesverbaende/2/bearbeiten?reiter=einstellungen'
+    );
+
+    expect(panel(harness)).toBe('tabpanel-einstellungen');
+    expect(
+      harness.routeNativeElement?.querySelector(
+        'input[name="requested_license_playable"]'
+      )
+    ).not.toBeNull();
+    // Speichern steht auch hier, die Einstellungen gehen ueber submit().
+    expect(
+      harness.routeNativeElement?.querySelector('button[type="submit"]')
+    ).not.toBeNull();
+  });
+
+  it('zeigt im Spielbetrieb und in den Freigaben keinen Formular-Knopf', async () => {
+    // Beide speichern selbst; ein Speichern-Knopf darunter liesse glauben,
+    // er gehoere dazu.
+    const harness = await open('/verwaltung/landesverbaende/2/bearbeiten');
+    for (const reiter of ['spielbetrieb', 'freigaben']) {
+      await harness.navigateByUrl(
+        `/verwaltung/landesverbaende/2/bearbeiten?reiter=${reiter}`
+      );
+      harness.detectChanges();
+      expect(panel(harness)).toBe(`tabpanel-${reiter}`);
+      expect(harness.routeNativeElement?.querySelector('button[type="submit"]'))
+        .withContext(reiter)
+        .toBeNull();
+    }
+  });
+
+  it('laesst Freigaben weg, wenn ein Verbund darueber steht', async () => {
+    service.adminGet.and.returnValue(of(KIND_LV));
+    const harness = await open(
+      '/verwaltung/landesverbaende/2/bearbeiten?reiter=freigaben'
+    );
+
+    expect(tabIds(harness)).not.toContain('tab-freigaben');
+    // Unbekannter Reiter faellt auf den Standard zurueck.
+    expect(panel(harness)).toBe('tabpanel-stammdaten');
+  });
+
+  it('zeigt beim Anlegen nur Stammdaten und Einstellungen', async () => {
+    const harness = await open('/verwaltung/landesverbaende/neu');
+
+    expect(tabIds(harness)).toEqual(['tab-stammdaten', 'tab-einstellungen']);
+  });
+
+  it('markiert die Stammdaten, solange der Name fehlt', async () => {
+    const harness = await open('/verwaltung/landesverbaende/2/bearbeiten');
+    const root = harness.routeNativeElement as HTMLElement;
+    const tab = (id: string) =>
+      root.querySelector(`[data-testid="tab-${id}"]`) as HTMLElement;
+
+    expect(tab('stammdaten').textContent).not.toContain('!');
+
+    const name = root.querySelector('input[name="name"]') as HTMLInputElement;
+    name.value = '  ';
+    name.dispatchEvent(new Event('input'));
+    tab('einstellungen').click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    // Im Reiter Einstellungen ist das Namensfeld nicht im DOM; die Markierung
+    // zeigt, warum Speichern gesperrt ist.
+    expect(panel(harness)).toBe('tabpanel-einstellungen');
+    expect(tab('stammdaten').textContent).toContain('!');
+    const submit = root.querySelector(
+      'button[type="submit"]'
+    ) as HTMLButtonElement;
+    expect(submit.disabled).toBeTrue();
   });
 });
