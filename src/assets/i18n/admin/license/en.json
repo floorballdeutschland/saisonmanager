@@ -49,6 +49,7 @@
   "globalList": {
     "title": "License management",
     "filter": "Filter",
+    "moreFilters": "More filters",
     "searchPlayer": "Search player...",
     "searchClub": "Search club...",
     "genderBoth": "male & female",
