@@ -1006,10 +1006,16 @@
          steht schon aus der Route fest, der Verband kommt hinterher. Ohne die
          zweite Bedingung stuende hier fuer einen Wimpernschlag „noch kein
          Spielbetrieb angelegt" samt Anlege-Knopf -- und ein schneller Klick legte
-         einen Spielbetrieb ohne Verband an. -->
-    @if (editMode && stateAssociation.id) {
+         einen Spielbetrieb ohne Verband an.
+
+       Nur mit canManageGameOperation: ohne das Recht rendert der Abschnitt
+       nichts, der Reiter waere leer. KeepAlive, weil der Abschnitt eigene,
+       ungespeicherte Eingaben und laufende Anfragen haelt, die ein
+       Reiterwechsel sonst verwirft. -->
+    @if (editMode && stateAssociation.id && canManageGameOperation) {
       <ng-template
         fbTab="spielbetrieb"
+        [fbTabKeepAlive]="true"
         [fbTabLabel]="
           'stateAssociationAdmin.edit.tabs.spielbetrieb' | transloco
         "

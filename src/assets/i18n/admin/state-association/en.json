@@ -33,7 +33,6 @@
     "statesHint": "States this association is responsible for. It is intended to determine who may deactivate, merge and delete a venue. A parent association does not enter states of its own, it inherits the area of its member associations.",
     "statesNone": "– no state entered –",
     "statesInheritedHint": "Added through the member associations: {{ states }}",
-    "settingsHeading": "Settings",
     "settingsInheritedHint": "These settings are managed by <strong>{{ name }}</strong> and apply to all subordinate state associations. Shown is the value set there, which is the one in effect here.",
     "settingsInheritedPendingHint": "The inherited settings are only available once the parent association has been saved.",
     "expressLicenseLabel": "Express licenses supported",
