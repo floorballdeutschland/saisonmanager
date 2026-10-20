@@ -6,9 +6,9 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import {
   AssociationService,
   NotificationService,
@@ -23,6 +23,12 @@ import {
   transferTypeClass,
   transferTypeLabel,
 } from '../../transfer-request-presentation';
+
+/**
+ * Wert des Query-Parameters `saison` fuer „alle Saisons". Ohne Parameter gilt
+ * die laufende Saison, eine Zahl waehlt genau diese Saison.
+ */
+export const ALL_SEASONS_PARAM = 'alle';
 
 const OPEN_STATUSES: string[] = [
   'pending_club',
@@ -53,8 +59,8 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   isSbk = false;
   withdrawingId: number | null = null;
 
-  /** Saisonnamen aus `init.json`, die Vorgaenge tragen nur die ID. */
-  private _seasonNames = new Map<number, string>();
+  /** Saisons aus `init.json`, die Vorgaenge tragen nur die ID. */
+  private _seasons: { id: number; name: string }[] = [];
 
   private _destroy$ = new Subject<void>();
 
@@ -64,6 +70,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     private _associationService: AssociationService,
     private _notificationService: NotificationService,
     private _router: Router,
+    private _route: ActivatedRoute,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
@@ -84,14 +91,37 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
     this._associationService.seasons$
       .pipe(takeUntil(this._destroy$))
       .subscribe((seasons) => {
-        this._seasonNames = new Map((seasons ?? []).map((s) => [s.id, s.name]));
+        this._seasons = (seasons ?? []).map((s) => ({
+          id: s.id,
+          name: s.name,
+        }));
         this._cdr.markForCheck();
       });
 
-    this.loadRequests();
+    // Die Saisonwahl steht in der URL (`?saison=`), damit Neuladen und ein
+    // geteilter Link dieselbe Auswahl zeigen. Der erste Wert loest auch den
+    // ersten Abruf aus. Neu geladen wird nur, wenn sich der Umfang aendert
+    // (laufend <-> alle); der Wechsel zwischen einzelnen Saisons filtert die
+    // bereits vollstaendige Liste im Browser. `?reiter=` laeuft ueber
+    // denselben Strom und loest damit keinen Abruf aus.
+    this._route.queryParamMap
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((params) => {
+        const raw = params.get('saison');
+        const id = raw && raw !== ALL_SEASONS_PARAM ? Number(raw) : NaN;
+        this.selectedSeasonId = Number.isInteger(id) && id > 0 ? id : null;
+        const all = raw === ALL_SEASONS_PARAM || this.selectedSeasonId !== null;
+        if (all !== this._requestedAllSeasons) {
+          this.allSeasons = all;
+          this.loadRequests();
+        } else {
+          this._cdr.markForCheck();
+        }
+      });
   }
 
   ngOnDestroy(): void {
+    this._load?.unsubscribe();
     this._destroy$.next();
     this._destroy$.complete();
   }
@@ -104,19 +134,14 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
    */
   allSeasons = false;
 
-  /** Welcher Umfang tatsächlich in `requests` steht. */
-  private _loadedAllSeasons = false;
+  /** Mit welchem Umfang zuletzt abgerufen wurde; `null` vor dem ersten Abruf. */
+  private _requestedAllSeasons: boolean | null = null;
 
-  toggleAllSeasons(): void {
-    if (this.loading) return;
-
-    this.allSeasons = !this.allSeasons;
-    this.selectedSeasonId = null;
-    this.loadRequests();
-  }
+  /** Der laufende Abruf; ein neuer bricht ihn ab, damit keine alte Antwort gewinnt. */
+  private _load?: Subscription;
 
   /**
-   * Einzelne Saison innerhalb von „Vergangene Saisons anzeigen"; `null` heisst
+   * Einzelne Saison; `null` heisst laufende Saison oder, mit `allSeasons`,
    * alle. Gefiltert wird im Browser, die Liste ist dann ohnehin vollstaendig
    * geladen.
    *
@@ -126,19 +151,41 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
    */
   selectedSeasonId: number | null = null;
 
-  selectSeason(value: string): void {
-    this.selectedSeasonId = value ? Number(value) : null;
-    this._cdr.markForCheck();
+  /** Wert des Auswahlfelds: `''` laufende Saison, `alle` oder die Saison-ID. */
+  get seasonValue(): string {
+    if (this.selectedSeasonId !== null) return String(this.selectedSeasonId);
+    return this.allSeasons ? ALL_SEASONS_PARAM : '';
   }
 
-  /** Die Saisons, in denen es Vorgaenge gibt, neueste zuerst. */
+  /** Schreibt die Wahl in die URL; geladen wird ueber `queryParamMap`. */
+  selectSeason(value: string): void {
+    this._router.navigate([], {
+      relativeTo: this._route,
+      queryParams: { saison: value || null },
+      queryParamsHandling: 'merge',
+      // Wie der Reiterwechsel kein eigener Verlaufsschritt.
+      replaceUrl: true,
+    });
+  }
+
+  /**
+   * Alle Saisons aus `init.json`, neueste zuerst, und nicht nur die mit
+   * Vorgaengen: Die stuenden erst nach dem Abruf aller Saisons fest. Eine
+   * Saison aus der URL, die `init.json` nicht kennt, bleibt waehlbar, sonst
+   * zeigte das Feld etwas anderes als die gefilterte Liste.
+   */
   get seasonOptions(): { id: number; name: string }[] {
-    const ids = [...new Set(this.requests.map((r) => r.season_id))].filter(
-      (id) => id != null
-    );
-    return ids
-      .sort((a, b) => b - a)
-      .map((id) => ({ id, name: this._seasonNames.get(id) ?? String(id) }));
+    const options = [...this._seasons];
+    if (
+      this.selectedSeasonId !== null &&
+      !options.some((s) => s.id === this.selectedSeasonId)
+    ) {
+      options.push({
+        id: this.selectedSeasonId,
+        name: String(this.selectedSeasonId),
+      });
+    }
+    return options.sort((a, b) => b.id - a.id);
   }
 
   /** Grundlage fuer Tabellen, Zaehlung und CSV. */
@@ -156,38 +203,34 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   loadFailed = false;
 
   loadRequests(): void {
+    this._load?.unsubscribe();
+    this._requestedAllSeasons = this.allSeasons;
     this.loading = true;
     this.loadFailed = false;
     this._cdr.markForCheck();
-    this._transferService
-      .getAll(this.allSeasons)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (result) => {
-          this.requests = result;
-          this._loadedAllSeasons = this.allSeasons;
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this._notificationService.error(
-            this._transloco.translate(
-              'transferRequestAdmin.notifications.loadError'
-            )
-          );
-          // Die alten Zeilen mit weg: Sonst stehen Tabelle und Fehlerkasten
-          // uebereinander, und der Landesverband liest die stehengebliebenen
-          // Zeilen als vollstaendiges Ergebnis.
-          this.requests = [];
-          // Und der Schalter zurueck auf das, was tatsaechlich geladen ist --
-          // sonst behauptet seine Beschriftung, die Vergangenheit sei
-          // eingeblendet.
-          this.allSeasons = this._loadedAllSeasons;
-          this.loading = false;
-          this.loadFailed = true;
-          this._cdr.markForCheck();
-        },
-      });
+    this._load = this._transferService.getAll(this.allSeasons).subscribe({
+      next: (result) => {
+        this.requests = result;
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error(
+          this._transloco.translate(
+            'transferRequestAdmin.notifications.loadError'
+          )
+        );
+        // Die alten Zeilen mit weg: Sonst stehen Tabelle und Fehlerkasten
+        // uebereinander, und der Landesverband liest die stehengebliebenen
+        // Zeilen als vollstaendiges Ergebnis.
+        // Die Saisonwahl bleibt stehen: Sie kommt aus der URL, und
+        // „Erneut versuchen" laedt genau sie noch einmal.
+        this.requests = [];
+        this.loading = false;
+        this.loadFailed = true;
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   openDetail(id: number): void {
