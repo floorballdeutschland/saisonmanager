@@ -130,7 +130,10 @@
     "titleDeleteGame": "Spiel löschen",
     "titleEditNotice": "Spiel-Notiz bearbeiten",
     "titleEditPlayoff": "Playoff-Abhängigkeiten / Gruppe bearbeiten",
-    "titleMoveGameDay": "Spieltag wechseln"
+    "titleMoveGameDay": "Spieltag wechseln",
+    "titleMoreActions": "Weitere Aktionen",
+    "removePlayoff": "Playoff-Abhängigkeiten / Gruppe entfernen",
+    "cancelMoveGameDay": "Spieltag doch nicht wechseln"
   },
   "importGameDays": {
     "title": "Ligaverwaltung",
