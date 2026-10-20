@@ -35,9 +35,10 @@
   }
 </div>
 @for (tab of tabs; track tab.id) {
-  @if (tab.id === activeId) {
+  @if (isRendered(tab)) {
     <div
       role="tabpanel"
+      [hidden]="tab.id !== activeId"
       [id]="panelId(tab.id)"
       [attr.aria-labelledby]="buttonId(tab.id)"
       [attr.data-testid]="'tabpanel-' + tab.id"
