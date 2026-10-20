@@ -93,6 +93,12 @@ export interface GameDayReportRow {
   report_reviewed_by_name?: string | null;
   report_review_comment?: string | null;
   report_changed_since_review?: boolean;
+  /**
+   * Jüngster Zeitpunkt, an dem sich für die SBK etwas ergeben hat. Geht beim
+   * Abhaken als `seen_until` zurück, damit die API einen Vermerk auf einer
+   * veralteten Ansicht mit 409 abweisen kann.
+   */
+  last_change_at?: string | null;
 
   flags: GameReportFlags;
 }
@@ -152,4 +158,5 @@ export interface GameReportReview {
   report_reviewed_by_name: string | null;
   report_review_comment: string | null;
   report_changed_since_review: boolean;
+  last_change_at?: string | null;
 }

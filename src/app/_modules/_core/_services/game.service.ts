@@ -451,10 +451,16 @@ export class GameService {
   }
 
   // Erledigt-Vermerk der SBK in der Arbeitsansicht „Spielberichte".
-  public setReportReview(gameId: number, comment: string | null) {
+  // seenUntil: der `last_change_at` der Zeile, die die SBK vor sich hat. Ist
+  // serverseitig etwas Neueres da, antwortet die API mit 409.
+  public setReportReview(
+    gameId: number,
+    comment: string | null,
+    seenUntil: string | null
+  ) {
     return this.http.post<GameReportReview>(
       environment.apiURL + 'admin/games/' + gameId + '/report_review',
-      { comment }
+      { comment, seen_until: seenUntil }
     );
   }
 

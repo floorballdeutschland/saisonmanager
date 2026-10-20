@@ -638,7 +638,13 @@ describe('MatchReportIndexComponent', () => {
     };
 
     it('speichert den Vermerk mit getrimmtem Kommentar und übernimmt ihn lokal', () => {
-      loadWith([row({ id: 1, can_review: true })]);
+      loadWith([
+        row({
+          id: 1,
+          can_review: true,
+          last_change_at: '2026-02-01T20:00:00.123Z',
+        }),
+      ]);
       const target = component.rows[0];
       component.openReviewForm(target);
       component.reviewComment = '  Mit dem Ausrichter telefoniert.  ';
@@ -648,6 +654,7 @@ describe('MatchReportIndexComponent', () => {
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({
         comment: 'Mit dem Ausrichter telefoniert.',
+        seen_until: '2026-02-01T20:00:00.123Z',
       });
       req.flush({
         id: 1,
@@ -669,7 +676,7 @@ describe('MatchReportIndexComponent', () => {
       component.saveReview(component.rows[0]);
 
       const req = httpMock.expectOne(reviewPath(1));
-      expect(req.request.body).toEqual({ comment: null });
+      expect(req.request.body).toEqual({ comment: null, seen_until: null });
       req.flush({
         id: 1,
         report_reviewed_at: '2026-02-02T10:00:00Z',
@@ -693,6 +700,60 @@ describe('MatchReportIndexComponent', () => {
       expect(component.reviewFormGameId).toBe(1);
       expect(component.reviewComment).toBe('Entwurf');
       expect(component.reviewSavingGameId).toBeNull();
+    });
+
+    it('lädt bei einer veralteten Ansicht (409) die Übersicht neu', () => {
+      loadWith([row({ id: 1, can_review: true })]);
+      const target = component.rows[0];
+      component.openReviewForm(target);
+      component.reviewComment = 'Entwurf';
+      component.saveReview(target);
+
+      httpMock
+        .expectOne(reviewPath(1))
+        .flush(
+          { message: 'Der Bericht hat sich seit dem Laden geändert.' },
+          { status: 409, statusText: 'Conflict' }
+        );
+
+      // Neu geladen, Formular und Entwurf bleiben stehen.
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url ===
+            environment.apiURL + 'admin/game_days/report_overview.json'
+        )
+        .flush({
+          truncated: false,
+          games: [
+            row({ id: 1, can_review: true, checklist_objection_count: 1 }),
+          ],
+        });
+      expect(component.rows[0].checklist_objection_count).toBe(1);
+      expect(component.reviewFormGameId).toBe(1);
+      expect(component.reviewComment).toBe('Entwurf');
+    });
+
+    it('springt auf die letzte Seite, wenn die aktuelle nach dem Abhaken leer wird', () => {
+      const rows = Array.from({ length: component.pageSize + 1 }, (_, i) =>
+        row({ id: i + 1, game_day_id: i + 1, can_review: true })
+      );
+      component.filterReview = 'open';
+      loadWith(rows);
+      component.changePage(2);
+      const last = component.rows[component.rows.length - 1];
+      component.saveReview(last);
+
+      httpMock.expectOne(reviewPath(last.id)).flush({
+        id: last.id,
+        report_reviewed_at: '2026-02-02T10:00:00Z',
+        report_reviewed_by_name: null,
+        report_review_comment: null,
+        report_changed_since_review: false,
+      });
+
+      expect(component.rows.length).toBe(component.pageSize);
+      expect(component.currentPage).toBe(1);
     });
 
     it('nimmt den Vermerk zurück', () => {

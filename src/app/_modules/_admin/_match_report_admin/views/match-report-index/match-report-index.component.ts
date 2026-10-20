@@ -312,7 +312,11 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     if (this.reviewSavingGameId !== null) return;
     this.reviewSavingGameId = row.id;
     this._gameService
-      .setReportReview(row.id, this.reviewComment.trim() || null)
+      .setReportReview(
+        row.id,
+        this.reviewComment.trim() || null,
+        row.last_change_at ?? null
+      )
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (review) => {
@@ -323,11 +327,16 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
             this._transloco.translate('matchReportAdmin.notifications.reviewed')
           );
         },
-        // Die Absage des Servers (Rechte, zu langer Kommentar) zeigt der
-        // ErrorInterceptor. Das Formular bleibt offen, der Text geht nicht
-        // verloren.
-        error: () => {
+        // Die Absage des Servers (Rechte, zu langer Kommentar, veraltete
+        // Ansicht) zeigt der ErrorInterceptor, auch die 409. Das Formular
+        // bleibt offen, der Text geht nicht verloren.
+        //
+        // Bei 409 ist seit dem Laden etwas Neues eingegangen. Die Übersicht
+        // wird neu geholt, damit die SBK es sieht, bevor sie erneut abhakt;
+        // das offene Formular und der Entwurf bleiben dabei stehen.
+        error: (err) => {
           this.reviewSavingGameId = null;
+          if (err?.status === 409) this._load();
           this._cdr.markForCheck();
         },
       });
@@ -362,6 +371,9 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     row.report_reviewed_by_name = review.report_reviewed_by_name;
     row.report_review_comment = review.report_review_comment;
     row.report_changed_since_review = review.report_changed_since_review;
+    if (review.last_change_at !== undefined) {
+      row.last_change_at = review.last_change_at;
+    }
     this.reviewSavingGameId = null;
     this._applyFilterAndGroup();
     this._cdr.markForCheck();
@@ -727,6 +739,9 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   private _applyFilterAndGroup(): void {
     const inScope = this._allRows.filter((row) => this._matchesLeague(row));
     this.rows = inScope.filter((row) => this._matchesFilters(row));
+    // Nach dem Abhaken unter „noch nicht erledigt" kann die letzte Seite leer
+    // werden. Dann auf die neue letzte Seite statt auf eine leere Liste.
+    this.currentPage = Math.min(this.currentPage, this.numberOfPages);
 
     const byGameDay = new Map<number, GameDayReportRow[]>();
     for (const row of inScope) {
