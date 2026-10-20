@@ -31,7 +31,7 @@ import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
 import {
-  isAcceptablePdfUpload,
+  checkPdfUpload,
   PDF_UPLOAD_MAX_MB,
   PDF_UPLOAD_ACCEPT,
 } from 'src/app/_helpers/_utils/pdf-upload';
@@ -263,12 +263,22 @@ export class MatchComponent implements OnInit, OnDestroy {
     );
   }
 
-  onRefereeReportFile(event: Event): void {
+  async onRefereeReportFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !this.game) return;
 
-    if (!isAcceptablePdfUpload(file)) {
+    // Wechselt die Seite während des Uploads in ein anderes Spiel, gehört die
+    // Antwort zum alten und darf den Zustand des neuen nicht setzen. Dasselbe
+    // gilt schon für die Vorprüfung, die den Dateikopf asynchron liest.
+    const gameId = this.game.id;
+    const stillCurrent = () =>
+      this._matchId === String(gameId) && this.game?.id === gameId;
+
+    const acceptable = await checkPdfUpload(file);
+    if (!stillCurrent()) return;
+
+    if (!acceptable) {
       // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
       input.value = '';
       alert(
@@ -281,12 +291,6 @@ export class MatchComponent implements OnInit, OnDestroy {
 
     this.refereeReportUploading = true;
     this._cdr.markForCheck();
-
-    // Wechselt die Seite während des Uploads in ein anderes Spiel, gehört die
-    // Antwort zum alten und darf den Zustand des neuen nicht setzen.
-    const gameId = this.game.id;
-    const stillCurrent = () =>
-      this._matchId === String(gameId) && this.game?.id === gameId;
 
     this._gameService.uploadRefereeReport(gameId, file).subscribe({
       next: (res) => {

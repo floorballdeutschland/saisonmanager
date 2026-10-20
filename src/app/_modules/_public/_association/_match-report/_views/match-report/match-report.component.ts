@@ -29,7 +29,7 @@ import {
 import * as Sentry from '@sentry/angular';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import {
-  isAcceptablePdfUpload,
+  checkPdfUpload,
   PDF_UPLOAD_MAX_MB,
   PDF_UPLOAD_REJECTED_MESSAGE,
   PDF_UPLOAD_ACCEPT,
@@ -144,6 +144,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public readonly pdfUploadMaxMb = PDF_UPLOAD_MAX_MB;
   public scanUploading = false;
   public scanUploadError = '';
+  private _scanSelection = 0;
 
   constructor(
     private _leagueService: LeagueService,
@@ -495,20 +496,27 @@ export class MatchReportComponent implements OnInit, OnChanges {
     });
   }
 
-  public onScanFileSelected(event: Event) {
+  public async onScanFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
     this.scanUploadError = '';
+    this.selectedScanFile = null;
+    if (!file) return;
 
-    if (file && !isAcceptablePdfUpload(file)) {
-      this.selectedScanFile = null;
+    // Die Kennung wird asynchron gelesen. Wählt jemand in der Zwischenzeit
+    // eine andere Datei, gilt nur die letzte Auswahl.
+    const selection = ++this._scanSelection;
+    const acceptable = await checkPdfUpload(file);
+    if (selection !== this._scanSelection) return;
+
+    if (!acceptable) {
       this.scanUploadError = PDF_UPLOAD_REJECTED_MESSAGE;
       // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
       input.value = '';
-      return;
+    } else {
+      this.selectedScanFile = file;
     }
-
-    this.selectedScanFile = file;
+    this._cdr.markForCheck();
   }
 
   public uploadScan() {
@@ -526,9 +534,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
           this.scanUploading = false;
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          this.scanUploadError =
-            err?.error?.errors?.join(', ') ?? 'Upload fehlgeschlagen.';
+        // Bewusst ohne eigene Meldung, wie beim Berichtsformular: Der
+        // ErrorInterceptor zeigt die Absage der API (`errors`) bereits an, eine
+        // Zeile am Feld wiederholte sie nur. Inline steht allein die
+        // Vorprüfung aus onScanFileSelected, die keine Anfrage auslöst.
+        error: () => {
           this.scanUploading = false;
           this._cdr.markForCheck();
         },
