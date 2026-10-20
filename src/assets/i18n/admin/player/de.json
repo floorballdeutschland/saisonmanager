@@ -71,7 +71,6 @@
     "reset": "Zurücksetzen",
     "suspend": "Sperren",
     "cancel": "Abbrechen",
-    "history": "Verlauf:",
     "by": "durch:",
     "historyReason": "- Begründung: {{ reason }}",
     "releases": "Freigaben",

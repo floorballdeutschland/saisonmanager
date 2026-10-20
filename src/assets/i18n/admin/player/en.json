@@ -71,7 +71,6 @@
     "reset": "Reset",
     "suspend": "Suspend",
     "cancel": "Cancel",
-    "history": "History:",
     "by": "by:",
     "historyReason": "- Reason: {{ reason }}",
     "releases": "Releases",
