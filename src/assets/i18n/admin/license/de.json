@@ -341,6 +341,7 @@
     "requestRejectedFreeOfCharge": "Lizenzantrag für Spieler {{ firstName }} {{ lastName }} ({{ id }}) kostenfrei abgelehnt"
   },
   "clubSummary": {
+    "show": "Lizenzen je Saison anzeigen",
     "title": "Lizenzen je Saison",
     "season": "Saison",
     "team": "Mannschaft",

@@ -25,6 +25,13 @@ import { ClubLicenseCounts, ClubLicenseSummary } from '@floorball/types';
 export class LicenseClubSummaryComponent implements OnInit {
   @Input({ required: true }) clubId!: number;
 
+  /**
+   * Eingebettet in eine fremde Karte (einklappbarer Bereich im Lizenzwesen):
+   * ohne eigene Karte und ohne Ueberschrift, die traegt dort schon der
+   * Aufklapp-Schalter.
+   */
+  @Input() embedded = false;
+
   summary: ClubLicenseSummary | null = null;
 
   /**
