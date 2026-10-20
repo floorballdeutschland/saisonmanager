@@ -248,10 +248,60 @@ describe('MatchComponent', () => {
 
       http.expectNone((r) => r.method === 'POST');
       expect(alertSpy).toHaveBeenCalledOnceWith(
-        'Bitte wähle eine PDF-Datei. Fotos werden nicht mehr angenommen.'
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
       );
       expect(input.value).toBe('');
       expect(component.refereeReportUploading).toBeFalse();
+      component.ngOnDestroy();
+    });
+
+    it('nennt bei einem zu großen PDF dieselbe Grenze', () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+      const big = new File(['x'], 'bericht.pdf', { type: 'application/pdf' });
+      Object.defineProperty(big, 'size', { value: 5 * 1024 * 1024 + 1 });
+
+      component.onRefereeReportFile({
+        target: { files: [big], value: 'bericht.pdf' },
+      } as unknown as Event);
+
+      http.expectNone((r) => r.method === 'POST');
+      expect(alertSpy).toHaveBeenCalledOnceWith(
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
+      );
+      component.ngOnDestroy();
+    });
+
+    // Die Absage der API zeigt der ErrorInterceptor an; eine eigene Meldung
+    // läge als zweite darüber.
+    it('legt bei einer Absage der API keine eigene Meldung darüber', () => {
+      const { component, http } = loadAs({
+        uploaded: false,
+        required: true,
+        recipient: 'vsk',
+      });
+      const alertSpy = spyOn(window, 'alert');
+      const file = new File(['x'], 'bericht.pdf', { type: 'application/pdf' });
+
+      component.onRefereeReportFile({
+        target: { files: [file] },
+      } as unknown as Event);
+      http
+        .expectOne(
+          (r) => r.method === 'POST' && r.url.endsWith('games/1/referee_report')
+        )
+        .flush(
+          { errors: ['Nur PDF-Dateien bis 5 MB sind zulässig.'] },
+          { status: 422, statusText: 'Unprocessable Entity' }
+        );
+
+      expect(alertSpy).not.toHaveBeenCalled();
+      expect(component.refereeReportUploading).toBeFalse();
+      expect(component.refereeReportUploaded).toBeFalse();
       component.ngOnDestroy();
     });
   });

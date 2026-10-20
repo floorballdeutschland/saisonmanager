@@ -29,7 +29,9 @@ import {
 import * as Sentry from '@sentry/angular';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import {
-  isPdfFile,
+  isAcceptablePdfUpload,
+  PDF_UPLOAD_MAX_MB,
+  PDF_UPLOAD_REJECTED_MESSAGE,
   PDF_UPLOAD_ACCEPT,
 } from 'src/app/_helpers/_utils/pdf-upload';
 
@@ -139,6 +141,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public existingScan: GameScan | null = null;
   public selectedScanFile: File | null = null;
   public readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
+  public readonly pdfUploadMaxMb = PDF_UPLOAD_MAX_MB;
   public scanUploading = false;
   public scanUploadError = '';
 
@@ -497,10 +500,9 @@ export class MatchReportComponent implements OnInit, OnChanges {
     const file = input.files?.[0] ?? null;
     this.scanUploadError = '';
 
-    if (file && !isPdfFile(file)) {
+    if (file && !isAcceptablePdfUpload(file)) {
       this.selectedScanFile = null;
-      this.scanUploadError =
-        'Bitte wähle eine PDF-Datei. Fotos werden nicht mehr angenommen.';
+      this.scanUploadError = PDF_UPLOAD_REJECTED_MESSAGE;
       // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
       input.value = '';
       return;
@@ -511,12 +513,6 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   public uploadScan() {
     if (!this.selectedScanFile) return;
-
-    const maxSize = 5 * 1024 * 1024;
-    if (this.selectedScanFile.size > maxSize) {
-      this.scanUploadError = 'Die Datei ist zu groß (max. 5 MB).';
-      return;
-    }
 
     this.scanUploading = true;
     this.scanUploadError = '';

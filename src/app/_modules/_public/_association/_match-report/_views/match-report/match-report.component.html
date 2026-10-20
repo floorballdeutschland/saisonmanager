@@ -366,13 +366,15 @@
 
         <ng-template #uploadForm>
           <p class="text-sm text-gray-600 mb-4">
-            Bitte lade einen Scan des physischen Spielberichtsbogens hoch (max.
-            5 MB).
+            Bitte lade einen Scan des physischen Spielberichtsbogens hoch.
           </p>
         </ng-template>
 
         <p class="text-sm mb-1">
-          <strong>Nur PDF-Dateien. Fotos werden nicht mehr angenommen.</strong>
+          <strong
+            >Nur PDF-Dateien bis {{ pdfUploadMaxMb }} MB. Fotos werden nicht
+            mehr angenommen.</strong
+          >
         </p>
         <p class="text-sm text-gray-600 mb-4">
           Ein PDF erstellst du mit dem Handy über eine Scan-App (z. B. „Dokument

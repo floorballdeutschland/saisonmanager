@@ -509,6 +509,10 @@ describe('MatchReportComponent', () => {
   });
 
   describe('Scan des Spielberichtsbogens', () => {
+    // Ohne eigenes create() liefe der Block nur auf der Komponente, die ein
+    // vorheriger Test zufällig hinterlassen hat, und für sich allein gar nicht.
+    beforeEach(() => create());
+
     const select = (file: File) => {
       const input = { files: [file], value: 'bogen' };
       component.onScanFileSelected({ target: input } as unknown as Event);
@@ -535,8 +539,27 @@ describe('MatchReportComponent', () => {
       component.uploadScan();
 
       expect(component.selectedScanFile).toBeNull();
-      expect(component.scanUploadError).toContain('PDF');
+      expect(component.scanUploadError).toBe(
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
+      );
       expect(input.value).toBe('');
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    it('weist ein zu großes PDF mit derselben Meldung ab', () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+      const big = new File(['%PDF-1.4'], 'bogen.pdf', {
+        type: 'application/pdf',
+      });
+      Object.defineProperty(big, 'size', { value: 5 * 1024 * 1024 + 1 });
+
+      select(big);
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(
+        'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.'
+      );
       expect(upload).not.toHaveBeenCalled();
     });
   });

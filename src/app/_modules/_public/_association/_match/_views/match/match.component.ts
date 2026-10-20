@@ -31,7 +31,8 @@ import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
 import {
-  isPdfFile,
+  isAcceptablePdfUpload,
+  PDF_UPLOAD_MAX_MB,
   PDF_UPLOAD_ACCEPT,
 } from 'src/app/_helpers/_utils/pdf-upload';
 
@@ -55,6 +56,7 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   refereeReportUploading = false;
   readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
+  readonly pdfUploadMaxMb = PDF_UPLOAD_MAX_MB;
   refereeReportUploaded = false;
   refereeReportFilename = '';
   refereeReportRequired = false;
@@ -266,15 +268,14 @@ export class MatchComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     if (!file || !this.game) return;
 
-    if (!isPdfFile(file)) {
+    if (!isAcceptablePdfUpload(file)) {
       // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
       input.value = '';
-      alert(this._transloco.translate('match.refereeReport.notPdf'));
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert(this._transloco.translate('match.refereeReport.tooLarge'));
+      alert(
+        this._transloco.translate('match.refereeReport.rejected', {
+          maxMb: PDF_UPLOAD_MAX_MB,
+        })
+      );
       return;
     }
 
@@ -296,12 +297,15 @@ export class MatchComponent implements OnInit, OnDestroy {
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
       },
+      // Bewusst ohne eigene Meldung: Der ErrorInterceptor zeigt die Absage
+      // der API (`errors`, etwa „Nur PDF-Dateien bis 5 MB …“) bereits als
+      // Meldung an, ebenso Server- und Verbindungsfehler. Das frühere
+      // „Upload fehlgeschlagen“ lag als zweite, nichtssagende Meldung darüber.
       error: () => {
         if (!stillCurrent()) return;
 
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
-        alert(this._transloco.translate('match.refereeReport.uploadFailed'));
       },
     });
   }
