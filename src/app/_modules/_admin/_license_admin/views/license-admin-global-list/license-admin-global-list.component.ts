@@ -137,6 +137,11 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   filterGfRole: string | null = null;
   filterExpressOnly = false;
 
+  // Bereich "Weitere Filter". Startet offen, wenn eine gemerkte Auswahl dort
+  // schon etwas setzt: ein unsichtbarer Filter liesse die Liste sonst ohne
+  // erkennbaren Grund leer.
+  moreFiltersOpen = false;
+
   // Lizenz-ID der Zeile, die gerade nach Bestaetigung fragt, und die, deren
   // Widerruf laeuft. Je Lizenz und nicht je Spieler: Wer in zwei Ligen
   // abgelehnt wurde, hat zwei Zeilen, und nur eine davon ist gemeint.
@@ -172,6 +177,25 @@ export class LicenseAdminGlobalListComponent implements OnInit, OnDestroy {
   ) {
     this.restorePageSize();
     this.restoreFilters();
+    this.moreFiltersOpen = this.moreFiltersCount > 0;
+  }
+
+  /**
+   * Anzahl der Filter im Bereich "Weitere Filter", die vom Standard abweichen.
+   * Gleiche Pruefung wie in applyFilters(), damit der Zaehler genau die
+   * Filter nennt, die die Liste tatsaechlich einschraenken.
+   */
+  get moreFiltersCount(): number {
+    return [
+      !!this.filterFieldSize,
+      this.filterFemale !== null,
+      !!this.filterAgeGroup,
+      !!this.filterLeagueClassId,
+      !!this.filterLeagueType,
+      !!this.filterLicenseType,
+      !!this.filterGfRole,
+      this.filterExpressOnly,
+    ].filter(Boolean).length;
   }
 
   private restoreFilters(): void {

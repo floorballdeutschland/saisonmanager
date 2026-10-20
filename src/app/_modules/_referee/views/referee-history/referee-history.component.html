@@ -7,259 +7,242 @@
     {{ "refereeSelf.history.disclaimer" | transloco }}
   </p>
 
-  <!-- Tab switcher -->
-  <div class="flex border-b border-fb-gray-300 mb-6">
-    <button
-      type="button"
-      (click)="activeTab = 'games'"
-      class="px-4 py-2 text-sm font-bold border-b-2 transition-colors"
-      [class.border-black]="activeTab === 'games'"
-      [class.text-black]="activeTab === 'games'"
-      [class.border-transparent]="activeTab !== 'games'"
-      [class.text-fb-gray-500]="activeTab !== 'games'"
+  <fb-tabs [label]="'refereeSelf.history.tabsLabel' | transloco">
+    <ng-template
+      fbTab="spiele"
+      [fbTabLabel]="'refereeSelf.history.tabGames' | transloco"
     >
-      {{ "refereeSelf.history.tabGames" | transloco }}
-    </button>
-    <button
-      type="button"
-      (click)="activeTab = 'tests'"
-      class="px-4 py-2 text-sm font-bold border-b-2 transition-colors"
-      [class.border-black]="activeTab === 'tests'"
-      [class.text-black]="activeTab === 'tests'"
-      [class.border-transparent]="activeTab !== 'tests'"
-      [class.text-fb-gray-500]="activeTab !== 'tests'"
-    >
-      {{ "refereeSelf.history.tabTests" | transloco }}
-    </button>
-  </div>
-
-  <!-- Games tab -->
-  @if (activeTab === "games") {
-    <div>
-      @if (loadingGames) {
-        <div class="text-fb-gray-500 text-sm">
-          {{ "refereeSelf.common.loading" | transloco }}
-        </div>
-      }
-      @if (!loadingGames && seasons.length === 0) {
-        <div class="text-fb-gray-500 text-sm">
-          {{ "refereeSelf.history.noGames" | transloco }}
-        </div>
-      }
-      @if (!loadingGames && seasons.length > 0) {
-        <div class="flex flex-col gap-3">
-          @for (season of seasons; track season) {
-            <div
-              class="border border-fb-gray-300 rounded-[5px] overflow-hidden"
-            >
-              <!-- Season header -->
-              <button
-                type="button"
-                (click)="toggleSeason(season.season_id)"
-                class="w-full flex items-center justify-between px-4 py-3 bg-fb-gray-50 hover:bg-fb-gray-100 text-left"
+      <div>
+        @if (loadingGames) {
+          <div class="text-fb-gray-500 text-sm">
+            {{ "refereeSelf.common.loading" | transloco }}
+          </div>
+        }
+        @if (!loadingGames && seasons.length === 0) {
+          <div class="text-fb-gray-500 text-sm">
+            {{ "refereeSelf.history.noGames" | transloco }}
+          </div>
+        }
+        @if (!loadingGames && seasons.length > 0) {
+          <div class="flex flex-col gap-3">
+            @for (season of seasons; track season) {
+              <div
+                class="border border-fb-gray-300 rounded-[5px] overflow-hidden"
               >
-                <span class="font-bold text-sm">{{
-                  "refereeSelf.history.seasonHeading"
-                    | transloco: { name: season.season_name }
-                }}</span>
-                <span class="flex items-center gap-2 text-xs text-fb-gray-500">
-                  {{
-                    (season.games.length === 1
-                      ? "refereeSelf.history.gameCountOne"
-                      : "refereeSelf.history.gameCountOther"
-                    ) | transloco: { count: season.games.length }
-                  }}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="w-4 h-4 text-gray-400 transition-transform"
-                    [class.rotate-180]="expandedSeasons.has(season.season_id)"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                    />
-                  </svg>
-                </span>
-              </button>
-              <!-- Games table -->
-              @if (expandedSeasons.has(season.season_id)) {
-                <div class="overflow-x-auto">
-                  <table class="w-full text-sm">
-                    <thead
-                      class="border-t border-b border-fb-gray-200 bg-fb-gray-50"
-                    >
-                      <tr>
-                        <th
-                          class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
-                        >
-                          {{ "refereeSelf.history.colDate" | transloco }}
-                        </th>
-                        <th
-                          class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
-                        >
-                          {{ "refereeSelf.history.colHome" | transloco }}
-                        </th>
-                        <th
-                          class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
-                        >
-                          {{ "refereeSelf.history.colGuest" | transloco }}
-                        </th>
-                        <th
-                          class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500 hidden sm:table-cell"
-                        >
-                          {{ "refereeSelf.history.colLeague" | transloco }}
-                        </th>
-                        <th
-                          class="text-right px-4 py-2 font-bold text-xs text-fb-gray-500"
-                        >
-                          {{ "refereeSelf.history.colResult" | transloco }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (game of season.games; track game) {
-                        <tr
-                          class="border-t border-fb-gray-100 hover:bg-fb-gray-50"
-                        >
-                          <td
-                            class="px-4 py-2 text-xs text-fb-gray-500 whitespace-nowrap"
-                          >
-                            {{ formatDate(game.date) }}
-                          </td>
-                          @if (matchLink(game); as link) {
-                            <td class="px-4 py-2">
-                              <a
-                                [routerLink]="link"
-                                class="hover:underline focus:underline"
-                                [attr.title]="
-                                  'refereeSelf.history.openMatch' | transloco
-                                "
-                              >
-                                {{ game.home_team }}
-                              </a>
-                            </td>
-                            <td class="px-4 py-2">
-                              <a
-                                [routerLink]="link"
-                                class="hover:underline focus:underline"
-                                [attr.title]="
-                                  'refereeSelf.history.openMatch' | transloco
-                                "
-                              >
-                                {{ game.guest_team }}
-                              </a>
-                            </td>
-                          } @else {
-                            <td class="px-4 py-2">{{ game.home_team }}</td>
-                            <td class="px-4 py-2">{{ game.guest_team }}</td>
-                          }
-                          <td
-                            class="px-4 py-2 text-xs text-fb-gray-500 hidden sm:table-cell"
-                          >
-                            {{ game.league }}
-                          </td>
-                          <td class="px-4 py-2 text-right font-bold">
-                            {{ game.result || "–" }}
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
-    </div>
-  }
-
-  <!-- Tests tab -->
-  @if (activeTab === "tests") {
-    <div>
-      @if (loadingTests) {
-        <div class="text-fb-gray-500 text-sm">
-          {{ "refereeSelf.common.loading" | transloco }}
-        </div>
-      }
-      @if (!loadingTests && tests.length === 0) {
-        <div class="text-fb-gray-500 text-sm">
-          {{ "refereeSelf.history.noTests" | transloco }}
-        </div>
-      }
-      @if (!loadingTests && tests.length > 0) {
-        <div class="flex flex-col gap-2">
-          @for (result of tests; track result) {
-            <div
-              class="border border-fb-gray-300 rounded-[5px] px-4 py-3 flex items-center justify-between"
-            >
-              <div>
-                <p class="font-bold text-sm">
-                  {{ result.lizenzstufe ? result.lizenzstufe + " · " : "" }}
-                  {{
-                    "refereeSelf.history.courseDate"
-                      | transloco: { date: result.kursstichtag || "–" }
-                  }}
-                </p>
-                @if (result.status === "rejected" && result.rejection_reason) {
-                  <p class="text-xs text-red-600 mt-1">
-                    {{
-                      "refereeSelf.history.rejectionReason"
-                        | transloco: { reason: result.rejection_reason }
-                    }}
-                  </p>
-                }
-                @if (courseLine(result.course_data?.kurs_1); as line1) {
-                  <p class="text-xs text-fb-gray-500 mt-1">
-                    {{ "refereeSelf.history.course1" | transloco }}:
-                    {{ line1 }}
-                  </p>
-                }
-                @if (courseLine(result.course_data?.kurs_2); as line2) {
-                  <p class="text-xs text-fb-gray-500 mt-1">
-                    {{ "refereeSelf.history.course2" | transloco }}:
-                    {{ line2 }}
-                  </p>
-                }
-                @if (result.course_data?.ausbilder) {
-                  <p class="text-xs text-fb-gray-500 mt-1">
-                    {{
-                      "refereeSelf.history.instructor"
-                        | transloco: { name: result.course_data.ausbilder }
-                    }}
-                  </p>
-                }
-              </div>
-              <div class="text-right">
-                <span
-                  class="px-2 py-0.5 rounded text-xs font-bold"
-                  [class.bg-green-100]="result.status === 'applied'"
-                  [class.text-green-800]="result.status === 'applied'"
-                  [class.bg-red-100]="result.status === 'rejected'"
-                  [class.text-red-800]="result.status === 'rejected'"
-                  [class.bg-gray-100]="result.status === 'pending_review'"
-                  [class.text-gray-700]="result.status === 'pending_review'"
+                <!-- Season header -->
+                <button
+                  type="button"
+                  (click)="toggleSeason(season.season_id)"
+                  class="w-full flex items-center justify-between px-4 py-3 bg-fb-gray-50 hover:bg-fb-gray-100 text-left"
                 >
-                  @if (result.status === "applied") {
-                    {{ "refereeSelf.history.statusApplied" | transloco }}
-                  }
-                  @if (result.status === "rejected") {
-                    {{ "refereeSelf.history.statusRejected" | transloco }}
-                  }
-                  @if (result.status === "pending_review") {
-                    {{ "refereeSelf.history.statusPending" | transloco }}
-                  }
-                </span>
+                  <span class="font-bold text-sm">{{
+                    "refereeSelf.history.seasonHeading"
+                      | transloco: { name: season.season_name }
+                  }}</span>
+                  <span
+                    class="flex items-center gap-2 text-xs text-fb-gray-500"
+                  >
+                    {{
+                      (season.games.length === 1
+                        ? "refereeSelf.history.gameCountOne"
+                        : "refereeSelf.history.gameCountOther"
+                      ) | transloco: { count: season.games.length }
+                    }}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-4 h-4 text-gray-400 transition-transform"
+                      [class.rotate-180]="expandedSeasons.has(season.season_id)"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <!-- Games table -->
+                @if (expandedSeasons.has(season.season_id)) {
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead
+                        class="border-t border-b border-fb-gray-200 bg-fb-gray-50"
+                      >
+                        <tr>
+                          <th
+                            class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
+                          >
+                            {{ "refereeSelf.history.colDate" | transloco }}
+                          </th>
+                          <th
+                            class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
+                          >
+                            {{ "refereeSelf.history.colHome" | transloco }}
+                          </th>
+                          <th
+                            class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500"
+                          >
+                            {{ "refereeSelf.history.colGuest" | transloco }}
+                          </th>
+                          <th
+                            class="text-left px-4 py-2 font-bold text-xs text-fb-gray-500 hidden sm:table-cell"
+                          >
+                            {{ "refereeSelf.history.colLeague" | transloco }}
+                          </th>
+                          <th
+                            class="text-right px-4 py-2 font-bold text-xs text-fb-gray-500"
+                          >
+                            {{ "refereeSelf.history.colResult" | transloco }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (game of season.games; track game) {
+                          <tr
+                            class="border-t border-fb-gray-100 hover:bg-fb-gray-50"
+                          >
+                            <td
+                              class="px-4 py-2 text-xs text-fb-gray-500 whitespace-nowrap"
+                            >
+                              {{ formatDate(game.date) }}
+                            </td>
+                            @if (matchLink(game); as link) {
+                              <td class="px-4 py-2">
+                                <a
+                                  [routerLink]="link"
+                                  class="hover:underline focus:underline"
+                                  [attr.title]="
+                                    'refereeSelf.history.openMatch' | transloco
+                                  "
+                                >
+                                  {{ game.home_team }}
+                                </a>
+                              </td>
+                              <td class="px-4 py-2">
+                                <a
+                                  [routerLink]="link"
+                                  class="hover:underline focus:underline"
+                                  [attr.title]="
+                                    'refereeSelf.history.openMatch' | transloco
+                                  "
+                                >
+                                  {{ game.guest_team }}
+                                </a>
+                              </td>
+                            } @else {
+                              <td class="px-4 py-2">{{ game.home_team }}</td>
+                              <td class="px-4 py-2">{{ game.guest_team }}</td>
+                            }
+                            <td
+                              class="px-4 py-2 text-xs text-fb-gray-500 hidden sm:table-cell"
+                            >
+                              {{ game.league }}
+                            </td>
+                            <td class="px-4 py-2 text-right font-bold">
+                              {{ game.result || "–" }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
               </div>
-            </div>
-          }
-        </div>
-      }
-    </div>
-  }
+            }
+          </div>
+        }
+      </div>
+    </ng-template>
+    <ng-template
+      fbTab="tests"
+      [fbTabLabel]="'refereeSelf.history.tabTests' | transloco"
+    >
+      <div>
+        @if (loadingTests) {
+          <div class="text-fb-gray-500 text-sm">
+            {{ "refereeSelf.common.loading" | transloco }}
+          </div>
+        }
+        @if (!loadingTests && tests.length === 0) {
+          <div class="text-fb-gray-500 text-sm">
+            {{ "refereeSelf.history.noTests" | transloco }}
+          </div>
+        }
+        @if (!loadingTests && tests.length > 0) {
+          <div class="flex flex-col gap-2">
+            @for (result of tests; track result) {
+              <div
+                class="border border-fb-gray-300 rounded-[5px] px-4 py-3 flex items-center justify-between"
+              >
+                <div>
+                  <p class="font-bold text-sm">
+                    {{ result.lizenzstufe ? result.lizenzstufe + " · " : "" }}
+                    {{
+                      "refereeSelf.history.courseDate"
+                        | transloco: { date: result.kursstichtag || "–" }
+                    }}
+                  </p>
+                  @if (
+                    result.status === "rejected" && result.rejection_reason
+                  ) {
+                    <p class="text-xs text-red-600 mt-1">
+                      {{
+                        "refereeSelf.history.rejectionReason"
+                          | transloco: { reason: result.rejection_reason }
+                      }}
+                    </p>
+                  }
+                  @if (courseLine(result.course_data?.kurs_1); as line1) {
+                    <p class="text-xs text-fb-gray-500 mt-1">
+                      {{ "refereeSelf.history.course1" | transloco }}:
+                      {{ line1 }}
+                    </p>
+                  }
+                  @if (courseLine(result.course_data?.kurs_2); as line2) {
+                    <p class="text-xs text-fb-gray-500 mt-1">
+                      {{ "refereeSelf.history.course2" | transloco }}:
+                      {{ line2 }}
+                    </p>
+                  }
+                  @if (result.course_data?.ausbilder) {
+                    <p class="text-xs text-fb-gray-500 mt-1">
+                      {{
+                        "refereeSelf.history.instructor"
+                          | transloco: { name: result.course_data.ausbilder }
+                      }}
+                    </p>
+                  }
+                </div>
+                <div class="text-right">
+                  <span
+                    class="px-2 py-0.5 rounded text-xs font-bold"
+                    [class.bg-green-100]="result.status === 'applied'"
+                    [class.text-green-800]="result.status === 'applied'"
+                    [class.bg-red-100]="result.status === 'rejected'"
+                    [class.text-red-800]="result.status === 'rejected'"
+                    [class.bg-gray-100]="result.status === 'pending_review'"
+                    [class.text-gray-700]="result.status === 'pending_review'"
+                  >
+                    @if (result.status === "applied") {
+                      {{ "refereeSelf.history.statusApplied" | transloco }}
+                    }
+                    @if (result.status === "rejected") {
+                      {{ "refereeSelf.history.statusRejected" | transloco }}
+                    }
+                    @if (result.status === "pending_review") {
+                      {{ "refereeSelf.history.statusPending" | transloco }}
+                    }
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </ng-template>
+  </fb-tabs>
 </div>

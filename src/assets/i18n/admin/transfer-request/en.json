@@ -19,6 +19,13 @@
     "colDate": "Date",
     "withdrawing": "…",
     "withdraw": "Withdraw",
+    "currentSeason": "Current season",
+    "tabsLabel": "Transfer list sections",
+    "tabOpen": "Open",
+    "tabCompleted": "Completed",
+    "tabSummary": "Summary",
+    "noOpenRequests": "No open requests.",
+    "noCompletedRequests": "No completed requests.",
     "noRequests": "No transfer requests.",
     "loadFailed": "The list could not be loaded.",
     "retry": "Try again",
@@ -51,7 +58,6 @@
     "incoming": "Incoming transfers & releases",
     "season": "Season",
     "allSeasons": "All seasons",
-    "summaryTitle": "Overview",
     "sumOutgoing": "Outgoing",
     "sumIncoming": "Incoming",
     "sumOpen": "Open",
@@ -59,7 +65,7 @@
     "sumFailed": "Not completed",
     "sumTotal": "Total",
     "summaryHint": "Counted by the season in which the request was filed. “Granted” includes scheduled and later revoked releases and matches the rows of the CSV.",
-    "summaryHintCurrent": "This view also includes open and scheduled requests from earlier seasons. For an exact count per season, choose “Show past seasons” and pick a season."
+    "summaryHintCurrent": "This view also includes open and scheduled requests from earlier seasons. For an exact count per season, pick a single season above."
   },
   "initiate": {
     "back": "← Back",

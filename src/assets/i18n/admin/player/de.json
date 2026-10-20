@@ -71,7 +71,6 @@
     "reset": "Zurücksetzen",
     "suspend": "Sperren",
     "cancel": "Abbrechen",
-    "history": "Verlauf:",
     "by": "durch:",
     "historyReason": "- Begründung: {{ reason }}",
     "releases": "Freigaben",
@@ -185,7 +184,16 @@
     "suspendLicenseChoice": "Lizenz, auf die sich die Sperre bezieht",
     "suspendNoLicense": "keine – nur „alle Wettbewerbe\" möglich",
     "suspendNoLicenseHint": "Dieser Spieler hat keine offene Lizenz der laufenden Saison. Möglich ist damit nur der Geltungsbereich „alle Wettbewerbe\", der zugleich neue Lizenzanträge verhindert.",
-    "suspendAllSuspendedHint": "Alle Lizenzen der laufenden Saison sind bereits von einer Sperre erfasst. Möglich ist damit nur der Geltungsbereich „alle Wettbewerbe\", der zugleich neue Lizenzanträge verhindert."
+    "suspendAllSuspendedHint": "Alle Lizenzen der laufenden Saison sind bereits von einer Sperre erfasst. Möglich ist damit nur der Geltungsbereich „alle Wettbewerbe\", der zugleich neue Lizenzanträge verhindert.",
+    "tabsLabel": "Bereiche des Spielerprofils",
+    "tabData": "Daten",
+    "tabReleases": "Freigaben & Dokumente",
+    "tabManagement": "Verwaltung",
+    "historyLabel": "Verlauf",
+    "homeClubHistory": "Frühere Hauptvereine",
+    "suspensionsHint": "Eine Sperre gilt für eine Mannschaft, einen Wettbewerb, eine Liga oder alle Wettbewerbe. „Alle Wettbewerbe\" setzt zusätzlich jede aktive Lizenz aus und verhindert neue Lizenzanträge – das ist die frühere Beantragungssperre. Dieselbe Maske steht im Reiter Lizenzen an jeder Lizenz der laufenden Saison.",
+    "kindApplicationBlock": "Beantragungssperre",
+    "mergeDuplicateHint": "Diesen Spieler als Master-Datensatz verwenden und einen Duplikat-Datensatz damit zusammenführen."
   },
   "search": {
     "globalSearch": "Globale Spielersuche",
