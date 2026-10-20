@@ -114,6 +114,7 @@
     "selectRole": "Rolle wählen…",
     "addRole": "Rolle hinzufügen",
     "archivedNotice": "Dieses Konto ist seit dem {{date}} archiviert. Ein Login ist nicht mehr möglich.",
+    "moreActions": "Weitere Aktionen",
     "archiveHeading": "Archivieren",
     "archiveHint": "Ein archiviertes Konto kann sich nicht mehr einloggen. Alle Daten und Verknüpfungen bleiben erhalten; das Konto kann jederzeit reaktiviert werden.",
     "unarchiveHint": "Das Konto ist archiviert. Nach dem Reaktivieren ist der Login wieder möglich.",

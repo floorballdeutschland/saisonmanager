@@ -44,6 +44,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   sendingReset = false;
   deleting = false;
   archiving = false;
+  // Archivieren und Loeschen liegen eingeklappt unter "Weitere Aktionen". Bei
+  // einem archivierten Konto startet der Bereich offen: Der Hinweis oben
+  // verweist dann auf das Reaktivieren, das nicht erst gesucht werden soll.
+  moreActionsOpen = false;
 
   // Quelle der Vereins-Dropdowns: auf den eigenen Zuständigkeitsbereich
   // eingegrenzt. Nicht clubsWithTeams verwenden, das ist breiter gescopt als die
@@ -131,6 +135,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: (user) => {
           this.user = user;
           this.email = user.email ?? '';
+          this.moreActionsOpen = !!user.archived_at;
           this.editableTeamIds = user.teams ? [...user.teams] : [];
 
           const goScopedRole = user.roles?.find((r) =>
@@ -244,6 +249,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   // global, VM für die eigenen Vereinskonten); das eigene Konto ist gesperrt.
   get canArchive(): boolean {
     return !this.isSelf && (this.isAdminOrSbk || this.isVm);
+  }
+
+  get showMoreActions(): boolean {
+    return this.canArchive || this.canDelete;
   }
 
   get isVm(): boolean {
