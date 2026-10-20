@@ -82,6 +82,17 @@ export interface GameDayReportRow {
    */
   checklist_objection_count?: number;
   checklist_objections?: ChecklistObjection[];
+  /**
+   * Erledigt-Vermerk der SBK. Alles optional, damit die Ansicht auch gegen
+   * eine ältere API läuft: Ohne `can_review` erscheint kein Knopf.
+   * `report_changed_since_review` meldet, dass nach dem Vermerk der Bericht
+   * geändert wurde oder ein neuer Einspruch einging.
+   */
+  can_review?: boolean;
+  report_reviewed_at?: string | null;
+  report_reviewed_by_name?: string | null;
+  report_review_comment?: string | null;
+  report_changed_since_review?: boolean;
 
   flags: GameReportFlags;
 }
@@ -132,4 +143,13 @@ export interface GameDayReportFilter {
   league_id?: string;
   date_from?: string;
   date_to?: string;
+}
+
+/** Antwort von `POST`/`DELETE admin/games/:id/report_review`. */
+export interface GameReportReview {
+  id: number;
+  report_reviewed_at: string | null;
+  report_reviewed_by_name: string | null;
+  report_review_comment: string | null;
+  report_changed_since_review: boolean;
 }

@@ -622,6 +622,187 @@ describe('MatchReportIndexComponent', () => {
     expect(component.rows.length).toBe(0);
   });
 
+  describe('Erledigt-Vermerk', () => {
+    const reviewPath = (id: number) =>
+      environment.apiURL + 'admin/games/' + id + '/report_review';
+    const objection = {
+      checklist_objection_count: 1,
+      checklist_objections: [
+        {
+          kind: 'team' as const,
+          name: 'Gast',
+          confirmed_at: null,
+          negative_items: [],
+        },
+      ],
+    };
+
+    it('speichert den Vermerk mit getrimmtem Kommentar und übernimmt ihn lokal', () => {
+      loadWith([row({ id: 1, can_review: true })]);
+      const target = component.rows[0];
+      component.openReviewForm(target);
+      component.reviewComment = '  Mit dem Ausrichter telefoniert.  ';
+      component.saveReview(target);
+
+      const req = httpMock.expectOne(reviewPath(1));
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({
+        comment: 'Mit dem Ausrichter telefoniert.',
+      });
+      req.flush({
+        id: 1,
+        report_reviewed_at: '2026-02-02T10:00:00Z',
+        report_reviewed_by_name: 'Sara Sbk',
+        report_review_comment: 'Mit dem Ausrichter telefoniert.',
+        report_changed_since_review: false,
+      });
+
+      expect(component.isReviewed(target)).toBeTrue();
+      expect(target.report_reviewed_by_name).toBe('Sara Sbk');
+      expect(component.reviewFormGameId).toBeNull();
+      expect(component.reviewSavingGameId).toBeNull();
+    });
+
+    it('schickt einen leeren Kommentar als null', () => {
+      loadWith([row({ id: 1, can_review: true })]);
+      component.reviewComment = '   ';
+      component.saveReview(component.rows[0]);
+
+      const req = httpMock.expectOne(reviewPath(1));
+      expect(req.request.body).toEqual({ comment: null });
+      req.flush({
+        id: 1,
+        report_reviewed_at: '2026-02-02T10:00:00Z',
+        report_reviewed_by_name: null,
+        report_review_comment: null,
+        report_changed_since_review: false,
+      });
+    });
+
+    it('lässt das Formular nach einem Fehler offen und gibt die Sperre frei', () => {
+      loadWith([row({ id: 1, can_review: true })]);
+      const target = component.rows[0];
+      component.openReviewForm(target);
+      component.reviewComment = 'Entwurf';
+      component.saveReview(target);
+
+      httpMock
+        .expectOne(reviewPath(1))
+        .flush({}, { status: 403, statusText: 'Forbidden' });
+
+      expect(component.reviewFormGameId).toBe(1);
+      expect(component.reviewComment).toBe('Entwurf');
+      expect(component.reviewSavingGameId).toBeNull();
+    });
+
+    it('nimmt den Vermerk zurück', () => {
+      loadWith([
+        row({
+          id: 1,
+          can_review: true,
+          report_reviewed_at: '2026-02-02T10:00:00Z',
+          report_review_comment: 'alt',
+        }),
+      ]);
+      const target = component.rows[0];
+      component.clearReview(target);
+
+      const req = httpMock.expectOne(reviewPath(1));
+      expect(req.request.method).toBe('DELETE');
+      req.flush({
+        id: 1,
+        report_reviewed_at: null,
+        report_reviewed_by_name: null,
+        report_review_comment: null,
+        report_changed_since_review: false,
+      });
+
+      expect(component.isReviewed(target)).toBeFalse();
+      expect(target.report_review_comment).toBeNull();
+    });
+
+    it('zählt einen Vermerk mit späterer Änderung als offen', () => {
+      expect(
+        component.isReviewed(
+          row({
+            report_reviewed_at: '2026-02-02T10:00:00Z',
+            report_changed_since_review: true,
+          })
+        )
+      ).toBeFalse();
+    });
+
+    it('filtert nach offen und erledigt, Vorgabe zeigt alle', () => {
+      const done = '2026-02-02T10:00:00Z';
+      loadWith([
+        row({ id: 1 }),
+        row({ id: 2, report_reviewed_at: done }),
+        row({
+          id: 3,
+          report_reviewed_at: done,
+          report_changed_since_review: true,
+        }),
+      ]);
+      expect(component.rows.map((r) => r.id).sort()).toEqual([1, 2, 3]);
+
+      component.filterReview = 'open';
+      component.applyFilter();
+      expect(component.rows.map((r) => r.id).sort()).toEqual([1, 3]);
+
+      component.filterReview = 'done';
+      component.applyFilter();
+      expect(component.rows.map((r) => r.id)).toEqual([2]);
+    });
+
+    it('zählt erledigte Einsprüche am Spieltag nicht mehr mit', () => {
+      loadWith([
+        row({
+          id: 1,
+          ...objection,
+          report_reviewed_at: '2026-02-02T10:00:00Z',
+        }),
+        row({ id: 2, ...objection }),
+      ]);
+
+      expect(component.groups[0].objectionCount).toBe(1);
+    });
+
+    it('nimmt den Vermerk in den CSV-Export auf', () => {
+      loadWith([
+        row({
+          id: 1,
+          report_reviewed_at: '2026-02-02T10:00:00Z',
+          report_reviewed_by_name: 'Sara Sbk',
+          report_review_comment: 'Mit Ausrichter geklaert',
+        }),
+      ]);
+      // Den Inhalt beim Erzeugen des Blobs abgreifen statt ihn mit
+      // blob.text() zu lesen: Das await gäbe dem zonenlosen TestBed
+      // Gelegenheit zur ersten Change Detection, und ngOnInit stieße Abrufe
+      // an, die keiner beantwortet.
+      const RealBlob = Blob;
+      let csv = '';
+      // Eine function statt einer Pfeilfunktion: Der Export ruft new Blob(),
+      // und nur eine function lässt sich als Konstruktor aufrufen.
+      spyOn(window, 'Blob').and.callFake(function (
+        parts: BlobPart[],
+        options?: BlobPropertyBag
+      ) {
+        csv = parts.join('');
+        return new RealBlob(parts, options);
+      } as never);
+      spyOn(URL, 'createObjectURL').and.returnValue('blob:x');
+      spyOn(URL, 'revokeObjectURL');
+      spyOn(HTMLAnchorElement.prototype, 'click');
+
+      component.exportCsv();
+
+      expect(csv).toContain('Sara Sbk');
+      expect(csv).toContain('Mit Ausrichter geklaert');
+      expect(csv).toContain('2026-02-02T10:00:00Z');
+    });
+  });
+
   it('setzt die Sperre nach einem Fehler beim Abschließen zurück', () => {
     // Sonst blieben ALLE Abschließen-Knöpfe der Liste dauerhaft deaktiviert.
     loadWith([row({ id: 1, game_status: 'match_record_closed' })]);
@@ -699,6 +880,7 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
           de: {
             matchReportAdmin: {
               linked: { objectionComment: 'Anmerkung: {{comment}}' },
+              review: { comment: 'Kommentar: {{comment}}' },
             },
           },
         }),
@@ -843,6 +1025,71 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
     );
     expect(comments.length).toBe(1);
     expect(comments[0].textContent).toContain('Halle war um 13 Uhr noch zu.');
+  });
+
+  it('zeigt den Erledigt-Knopf, wenn die API es erlaubt', () => {
+    show(row({ can_review: true }));
+    expect(element.querySelector('[data-testid="review-open"]')).not.toBeNull();
+  });
+
+  // Auch gegen eine ältere API ohne das Feld: kein Knopf, der nur 404 bekäme.
+  it('zeigt keinen Erledigt-Knopf ohne can_review', () => {
+    show(row({ can_review: undefined }));
+    expect(element.querySelector('[data-testid="review-open"]')).toBeNull();
+  });
+
+  it('zeigt Vermerk und Kommentar und setzt das Einspruch-Badge grau', () => {
+    show(
+      row({
+        can_review: true,
+        report_reviewed_at: '2026-02-02T10:00:00Z',
+        report_reviewed_by_name: 'Sara Sbk',
+        report_review_comment: 'Mit dem Ausrichter telefoniert.',
+        checklist_objection_count: 1,
+        checklist_objections: [
+          {
+            kind: 'team',
+            name: 'Gast',
+            confirmed_at: null,
+            negative_items: [],
+          },
+        ],
+      })
+    );
+
+    expect(
+      element.querySelector('[data-testid="review-comment"]')?.textContent
+    ).toContain('Mit dem Ausrichter telefoniert.');
+    const badge = element.querySelector('[data-testid="objection-badge"]');
+    expect(badge?.classList).toContain('bg-gray-100');
+    expect(badge?.classList).not.toContain('bg-red-100');
+    expect(element.querySelector('[data-testid="review-open"]')).toBeNull();
+    expect(
+      element.querySelector('[data-testid="review-reopen"]')
+    ).not.toBeNull();
+  });
+
+  it('lässt das Einspruch-Badge rot, wenn seit dem Vermerk etwas dazukam', () => {
+    show(
+      row({
+        can_review: true,
+        report_reviewed_at: '2026-02-02T10:00:00Z',
+        report_changed_since_review: true,
+        checklist_objection_count: 1,
+        checklist_objections: [
+          {
+            kind: 'team',
+            name: 'Gast',
+            confirmed_at: null,
+            negative_items: [],
+          },
+        ],
+      })
+    );
+
+    const badge = element.querySelector('[data-testid="objection-badge"]');
+    expect(badge?.classList).toContain('bg-red-100');
+    expect(element.querySelector('[data-testid="review-open"]')).not.toBeNull();
   });
 
   it('nimmt die Adresse als Linktext, wenn der Name nur aus Leerzeichen besteht', () => {

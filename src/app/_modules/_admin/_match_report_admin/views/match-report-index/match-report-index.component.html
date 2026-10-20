@@ -90,6 +90,26 @@
         </option>
       </select>
     </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-bold uppercase text-fb-gray-500">{{
+        "matchReportAdmin.index.filterReview" | transloco
+      }}</label>
+      <select
+        [(ngModel)]="filterReview"
+        data-testid="filter-review"
+        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+      >
+        <option value="">
+          {{ "matchReportAdmin.index.filterReviewAll" | transloco }}
+        </option>
+        <option value="open">
+          {{ "matchReportAdmin.index.filterReviewOpen" | transloco }}
+        </option>
+        <option value="done">
+          {{ "matchReportAdmin.index.filterReviewDone" | transloco }}
+        </option>
+      </select>
+    </div>
     <button
       type="button"
       (click)="applyFilter()"
@@ -342,11 +362,35 @@
           {{ "matchReportAdmin.index.flagBadge" | transloco }}
         </span>
       }
+      <!-- Nach dem Erledigt-Vermerk grau statt rot: noch sichtbar, aber nicht
+           mehr dringend. -->
       @if (hasObjection(row)) {
         <span
-          class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800"
+          class="px-2 py-0.5 rounded text-xs font-bold"
+          data-testid="objection-badge"
+          [class.bg-red-100]="!isReviewed(row)"
+          [class.text-red-800]="!isReviewed(row)"
+          [class.bg-gray-100]="isReviewed(row)"
+          [class.text-gray-500]="isReviewed(row)"
         >
           {{ "matchReportAdmin.index.objectionBadge" | transloco }}
+        </span>
+      }
+      @if (row.report_reviewed_at) {
+        <span
+          class="px-2 py-0.5 rounded text-xs font-bold"
+          data-testid="reviewed-badge"
+          [class.bg-green-100]="isReviewed(row)"
+          [class.text-green-800]="isReviewed(row)"
+          [class.bg-amber-100]="!isReviewed(row)"
+          [class.text-amber-800]="!isReviewed(row)"
+        >
+          {{
+            (isReviewed(row)
+              ? "matchReportAdmin.index.reviewedBadge"
+              : "matchReportAdmin.index.reviewChangedBadge"
+            ) | transloco
+          }}
         </span>
       }
       @if (hasLinkedRecords(row)) {
@@ -658,8 +702,131 @@
           </div>
         }
 
+        <!-- Erledigt-Vermerk der SBK -->
+        @if (row.report_reviewed_at) {
+          <div
+            class="border-l-4 pl-3"
+            data-testid="review-note"
+            [class.border-green-600]="isReviewed(row)"
+            [class.border-amber-500]="!isReviewed(row)"
+          >
+            <div class="font-bold">
+              @if (row.report_reviewed_by_name) {
+                {{
+                  "matchReportAdmin.review.reviewedAt"
+                    | transloco
+                      : {
+                          date:
+                            row.report_reviewed_at | date: "dd.MM.yyyy, HH:mm",
+                          name: row.report_reviewed_by_name,
+                        }
+                }}
+              } @else {
+                {{
+                  "matchReportAdmin.review.reviewedAtNoName"
+                    | transloco
+                      : {
+                          date:
+                            row.report_reviewed_at | date: "dd.MM.yyyy, HH:mm",
+                        }
+                }}
+              }
+            </div>
+            @if (row.report_changed_since_review) {
+              <p class="text-amber-800">
+                {{ "matchReportAdmin.review.changedSince" | transloco }}
+              </p>
+            }
+            @if (row.report_review_comment) {
+              <p class="whitespace-pre-line" data-testid="review-comment">
+                {{
+                  "matchReportAdmin.review.comment"
+                    | transloco: { comment: row.report_review_comment }
+                }}
+              </p>
+            }
+          </div>
+        }
+        @if (reviewFormGameId === row.id) {
+          <label class="block" data-testid="review-form">
+            <span class="font-bold">{{
+              "matchReportAdmin.review.commentLabel" | transloco
+            }}</span>
+            <span class="text-fb-gray-500">
+              {{ "matchReportAdmin.review.commentOptional" | transloco }}</span
+            >
+            <textarea
+              [(ngModel)]="reviewComment"
+              [maxlength]="reviewCommentMaxLength"
+              rows="3"
+              [placeholder]="
+                'matchReportAdmin.review.commentPlaceholder' | transloco
+              "
+              class="mt-1 block w-full border border-fb-gray-600 rounded-[5px] p-2 text-sm bg-white"
+            ></textarea>
+            <span class="block text-xs text-fb-gray-500 text-right">
+              {{ reviewComment.length }} / {{ reviewCommentMaxLength }}
+            </span>
+          </label>
+        }
+
         <!-- Aktionen -->
         <div class="flex flex-wrap items-center gap-3">
+          @if (row.can_review) {
+            @if (reviewFormGameId === row.id) {
+              <button
+                type="button"
+                data-testid="review-save"
+                [disabled]="reviewSavingGameId !== null"
+                (click)="saveReview(row)"
+                class="px-3 py-1.5 bg-black text-white text-xs font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-40"
+              >
+                {{
+                  (reviewSavingGameId === row.id
+                    ? "matchReportAdmin.review.saving"
+                    : "matchReportAdmin.review.save"
+                  ) | transloco
+                }}
+              </button>
+              <button
+                type="button"
+                [disabled]="reviewSavingGameId !== null"
+                (click)="cancelReviewForm()"
+                class="px-3 py-1.5 border border-black text-xs font-bold rounded-[5px] hover:bg-fb-gray-200 disabled:opacity-40"
+              >
+                {{ "matchReportAdmin.review.cancel" | transloco }}
+              </button>
+            } @else if (!isReviewed(row)) {
+              <button
+                type="button"
+                data-testid="review-open"
+                [disabled]="reviewSavingGameId !== null"
+                (click)="openReviewForm(row)"
+                class="px-3 py-1.5 border border-black text-xs font-bold rounded-[5px] hover:bg-fb-gray-200 disabled:opacity-40"
+              >
+                {{ "matchReportAdmin.review.button" | transloco }}
+              </button>
+            }
+            @if (row.report_reviewed_at && reviewFormGameId !== row.id) {
+              <fb-confirmation
+                [title]="'matchReportAdmin.review.reopenTitle' | transloco"
+                [content]="'matchReportAdmin.review.reopenContent' | transloco"
+                [submitButtonTitle]="
+                  'matchReportAdmin.review.reopenSubmit' | transloco
+                "
+                (handleSubmit)="clearReview(row)"
+              >
+                <button
+                  type="button"
+                  data-testid="review-reopen"
+                  [disabled]="reviewSavingGameId !== null"
+                  class="px-3 py-1.5 border border-black text-xs font-bold rounded-[5px] hover:bg-fb-gray-200 disabled:opacity-40"
+                >
+                  {{ "matchReportAdmin.review.reopen" | transloco }}
+                </button>
+              </fb-confirmation>
+            }
+          }
           @if (gameRouterLink(row); as link) {
             <a
               [routerLink]="link"

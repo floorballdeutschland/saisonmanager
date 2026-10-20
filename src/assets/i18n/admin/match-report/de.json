@@ -56,7 +56,16 @@
     "colScanUploadedAt": "Papierbogen hochgeladen",
     "filterStatusWithObjection": "Mit Einspruch zum Spieltagsbericht",
     "objectionBadge": "Einspruch",
-    "colObjections": "Einsprüche zum Spieltagsbericht"
+    "colObjections": "Einsprüche zum Spieltagsbericht",
+    "filterReview": "Bearbeitung",
+    "filterReviewAll": "Alle",
+    "filterReviewOpen": "Noch nicht erledigt",
+    "filterReviewDone": "Erledigt",
+    "reviewedBadge": "Erledigt",
+    "reviewChangedBadge": "Erledigt, seitdem geändert",
+    "colReviewedAt": "Erledigt am",
+    "colReviewedBy": "Erledigt von",
+    "colReviewComment": "Kommentar zum Erledigt-Vermerk"
   },
   "status": {
     "notStarted": "Nicht begonnen",
@@ -106,6 +115,25 @@
     "loadError": "Die Spielberichte konnten nicht geladen werden.",
     "finalized": "Der Spielbericht wurde abgeschlossen.",
     "scanMissing": "Zu diesem Spiel liegt kein Papierspielberichtsbogen vor.",
-    "scanError": "Der Papierspielberichtsbogen konnte nicht geöffnet werden."
+    "scanError": "Der Papierspielberichtsbogen konnte nicht geöffnet werden.",
+    "reviewed": "Der Spielbericht ist als erledigt markiert.",
+    "reviewCleared": "Der Erledigt-Vermerk wurde zurückgenommen."
+  },
+  "review": {
+    "button": "Als erledigt markieren",
+    "commentLabel": "Kommentar",
+    "commentOptional": "(freiwillig)",
+    "commentPlaceholder": "Was wurde unternommen?",
+    "save": "Erledigt speichern",
+    "saving": "Wird gespeichert …",
+    "cancel": "Abbrechen",
+    "reviewedAt": "Erledigt am {{date}} von {{name}}",
+    "reviewedAtNoName": "Erledigt am {{date}}",
+    "changedSince": "Seit dem Vermerk wurde der Bericht geändert oder es ist ein neuer Einspruch eingegangen.",
+    "comment": "Kommentar: {{comment}}",
+    "reopen": "Wieder öffnen",
+    "reopenTitle": "Erledigt-Vermerk zurücknehmen",
+    "reopenContent": "Soll der Vermerk zurückgenommen werden? Der Kommentar geht dabei verloren.",
+    "reopenSubmit": "Zurücknehmen"
   }
 }
