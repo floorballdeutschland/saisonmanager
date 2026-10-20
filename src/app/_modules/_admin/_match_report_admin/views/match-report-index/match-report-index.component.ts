@@ -15,6 +15,7 @@ import {
 } from '@floorball/core';
 import {
   ChecklistNegativeItem,
+  ChecklistObjection,
   GameDayReportOverview,
   GameDayReportRow,
   GameOperation,
@@ -42,6 +43,7 @@ interface GameDayGroup {
   scanCount: number;
   commentCount: number;
   flaggedCount: number;
+  objectionCount: number;
 }
 
 const CLOSED_STATUSES: GameReportStatus[] = [
@@ -282,8 +284,48 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       !!row.referee_report ||
       !!row.proceeding_proposal ||
       row.checklist_negative_count > 0 ||
-      !!row.checklist_veto_submitted_at
+      this.hasObjection(row)
     );
+  }
+
+  /**
+   * Hat jemand dem Spieltagsbericht widersprochen? Der Ausrichter über den
+   * Einspruchslink, eine Gastmannschaft oder ein Schiedsrichter über die
+   * Bestätigung des Spieltags. Bisher kamen die beiden letzten nur als Mail bei
+   * der SBK an und gingen dort zwischen gleich aussehenden Mails unter.
+   */
+  hasObjection(row: GameDayReportRow): boolean {
+    return (
+      !!row.checklist_veto_submitted_at ||
+      (row.checklist_objection_count ?? 0) > 0
+    );
+  }
+
+  objectionLabel(objection: ChecklistObjection): string {
+    const name =
+      objection.name?.trim() ||
+      this._transloco.translate('matchReportAdmin.linked.objectionUnknown');
+    return this._transloco.translate(
+      objection.kind === 'referee'
+        ? 'matchReportAdmin.linked.objectionReferee'
+        : 'matchReportAdmin.linked.objectionTeam',
+      { name }
+    );
+  }
+
+  // Für die CSV eine Zelle je Spiel: wer widersprochen hat, ohne die Punkte.
+  // Die stehen in der Ansicht, eine Zelle mit allen Fragetexten wäre in der
+  // Tabellenkalkulation nicht mehr lesbar.
+  private _objectionSummary(row: GameDayReportRow): string {
+    const parts = (row.checklist_objections ?? []).map((o) =>
+      this.objectionLabel(o)
+    );
+    if (row.checklist_veto_submitted_at) {
+      parts.unshift(
+        this._transloco.translate('matchReportAdmin.linked.objectionHost')
+      );
+    }
+    return parts.join('; ');
   }
 
   /**
@@ -421,6 +463,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       t('matchReportAdmin.index.colUpdatedBy'),
       t('matchReportAdmin.index.colComment'),
       t('matchReportAdmin.index.colScanUploadedAt'),
+      t('matchReportAdmin.index.colObjections'),
     ];
     const rows = this.rows.map((r) => [
       r.date ?? '',
@@ -435,6 +478,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       r.record_updated_by_name ?? '',
       r.record_comment ?? '',
       r.scan?.uploaded_at ?? '',
+      this._objectionSummary(r),
     ]);
     downloadCsv('spieltage', headers, rows);
   }
@@ -559,6 +603,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       );
     }
     if (this.filterStatus === 'withComment') return !!row.record_comment;
+    if (this.filterStatus === 'withObjection') return this.hasObjection(row);
     return row.game_status === this.filterStatus;
   }
 
@@ -599,6 +644,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
           scanCount: all.filter((g) => !!g.scan).length,
           commentCount: all.filter((g) => !!g.record_comment).length,
           flaggedCount: all.filter((g) => this.hasFlags(g)).length,
+          objectionCount: all.filter((g) => this.hasObjection(g)).length,
         };
       })
       .filter((group) => group.games.length > 0);

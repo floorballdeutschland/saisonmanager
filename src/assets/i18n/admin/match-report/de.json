@@ -53,7 +53,10 @@
     "colUpdatedBy": "Bearbeitet von",
     "colClosedAt": "Abgeschlossen",
     "colComment": "Hinweis an die SBK",
-    "colScanUploadedAt": "Papierbogen hochgeladen"
+    "colScanUploadedAt": "Papierbogen hochgeladen",
+    "filterStatusWithObjection": "Mit Einspruch zum Spieltagsbericht",
+    "objectionBadge": "Einspruch",
+    "colObjections": "Einsprüche zum Spieltagsbericht"
   },
   "status": {
     "notStarted": "Nicht begonnen",
@@ -79,7 +82,12 @@
     "openProposals": "Zur Übersicht",
     "checklistNegative": "{{count}} verneinte(r) Punkt(e) im Spieltagsbericht",
     "checklistVeto": "Einspruch des Ausrichters vom {{date}} mit {{count}} verneinten Punkt(en)",
-    "checklistItemRemoved": "Punkt wurde vom Landesverband entfernt"
+    "checklistItemRemoved": "Punkt wurde vom Landesverband entfernt",
+    "objectionTeam": "Einspruch der Mannschaft {{name}} zum Spieltagsbericht",
+    "objectionReferee": "Einspruch von Schiedsrichter*in {{name}} zum Spieltagsbericht",
+    "objectionAt": "vom {{date}}",
+    "objectionHost": "Einspruch des Ausrichters",
+    "objectionUnknown": "unbekannt"
   },
   "proposalStatus": {
     "pending": "offen",

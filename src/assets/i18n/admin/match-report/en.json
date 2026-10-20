@@ -53,7 +53,10 @@
     "colUpdatedBy": "Edited by",
     "colClosedAt": "Closed",
     "colComment": "Note for the committee",
-    "colScanUploadedAt": "Paper sheet uploaded"
+    "colScanUploadedAt": "Paper sheet uploaded",
+    "filterStatusWithObjection": "With objection to the game day report",
+    "objectionBadge": "Objection",
+    "colObjections": "Objections to the game day report"
   },
   "status": {
     "notStarted": "Not started",
@@ -79,7 +82,12 @@
     "openProposals": "Go to overview",
     "checklistNegative": "{{count}} item(s) answered with no in the game day report",
     "checklistVeto": "Host objection from {{date}} with {{count}} item(s) answered with no",
-    "checklistItemRemoved": "Item was removed by the state association"
+    "checklistItemRemoved": "Item was removed by the state association",
+    "objectionTeam": "Objection by team {{name}} to the game day report",
+    "objectionReferee": "Objection by referee {{name}} to the game day report",
+    "objectionAt": "from {{date}}",
+    "objectionHost": "Host objection",
+    "objectionUnknown": "unknown"
   },
   "proposalStatus": {
     "pending": "open",

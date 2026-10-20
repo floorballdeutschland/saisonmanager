@@ -74,8 +74,28 @@ export interface GameDayReportRow {
   checklist_veto_submitted_at: string | null;
   checklist_veto_negative_count: number;
   checklist_veto_negative_items?: ChecklistNegativeItem[];
+  /**
+   * Widersprüche von Gastmannschaften und Schiedsrichtern gegen den
+   * Spieltagsbericht. Sie gelten für den ganzen Spieltag und stehen deshalb an
+   * jedem seiner Spiele. Optional, damit die Ansicht auch gegen eine ältere API
+   * läuft.
+   */
+  checklist_objection_count?: number;
+  checklist_objections?: ChecklistObjection[];
 
   flags: GameReportFlags;
+}
+
+/**
+ * Ein Spieltag, den eine Gastmannschaft oder ein Schiedsrichter als nicht
+ * ordnungsgemäß durchgeführt gemeldet hat. `negative_items` kann leer sein:
+ * Die Meldung selbst ist der Widerspruch, auch wenn kein Punkt verneint wurde.
+ */
+export interface ChecklistObjection {
+  kind: 'team' | 'referee';
+  name: string | null;
+  confirmed_at: string | null;
+  negative_items: ChecklistNegativeItem[];
 }
 
 /**

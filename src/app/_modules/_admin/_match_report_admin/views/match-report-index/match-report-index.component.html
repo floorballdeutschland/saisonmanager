@@ -85,6 +85,9 @@
         <option value="withComment">
           {{ "matchReportAdmin.index.filterStatusWithComment" | transloco }}
         </option>
+        <option value="withObjection">
+          {{ "matchReportAdmin.index.filterStatusWithObjection" | transloco }}
+        </option>
       </select>
     </div>
     <button
@@ -223,6 +226,13 @@
                   }}
                 </span>
               }
+              @if (group.objectionCount > 0) {
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800"
+                >
+                  {{ "matchReportAdmin.index.objectionBadge" | transloco }}
+                </span>
+              }
               @if (group.flaggedCount > 0) {
                 <span
                   class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800"
@@ -330,6 +340,13 @@
           class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800"
         >
           {{ "matchReportAdmin.index.flagBadge" | transloco }}
+        </span>
+      }
+      @if (hasObjection(row)) {
+        <span
+          class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800"
+        >
+          {{ "matchReportAdmin.index.objectionBadge" | transloco }}
         </span>
       }
       @if (hasLinkedRecords(row)) {
@@ -588,6 +605,36 @@
                     <ul class="list-disc ml-5">
                       @for (
                         item of row.checklist_veto_negative_items ?? [];
+                        track item.item_id
+                      ) {
+                        <li>{{ checklistQuestion(item) }}</li>
+                      }
+                    </ul>
+                  }
+                </li>
+              }
+              <!--
+                Widersprüche von Gastmannschaft und Schiedsrichter gelten für
+                den ganzen Spieltag und stehen deshalb an jedem seiner Spiele.
+              -->
+              @for (objection of row.checklist_objections ?? []; track $index) {
+                <li data-testid="checklist-objection">
+                  {{ objectionLabel(objection) }}
+                  @if (objection.confirmed_at) {
+                    {{
+                      "matchReportAdmin.linked.objectionAt"
+                        | transloco
+                          : {
+                              date:
+                                objection.confirmed_at
+                                | date: "dd.MM.yyyy, HH:mm",
+                            }
+                    }}
+                  }
+                  @if (objection.negative_items.length) {
+                    <ul class="list-disc ml-5">
+                      @for (
+                        item of objection.negative_items;
                         track item.item_id
                       ) {
                         <li>{{ checklistQuestion(item) }}</li>
