@@ -23,7 +23,6 @@ export class RefereeHistoryComponent implements OnInit {
   tests: RefereeCourseResultSummary[] = [];
   loadingGames = true;
   loadingTests = true;
-  activeTab: 'games' | 'tests' = 'games';
 
   expandedSeasons = new Set<number>();
 

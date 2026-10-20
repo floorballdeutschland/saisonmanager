@@ -347,8 +347,9 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       : value;
   }
 
-  toggleImport(list: ClubPlayerList): void {
-    list.showImport = !list.showImport;
+  /** Der Import-Bereich klappt je Verein auf; der Zustand haengt an der Liste. */
+  setImportOpen(list: ClubPlayerList, open: boolean): void {
+    list.showImport = open;
     this._cdr.markForCheck();
   }
 

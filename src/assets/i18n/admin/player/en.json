@@ -71,7 +71,6 @@
     "reset": "Reset",
     "suspend": "Suspend",
     "cancel": "Cancel",
-    "history": "History:",
     "by": "by:",
     "historyReason": "- Reason: {{ reason }}",
     "releases": "Releases",
@@ -185,7 +184,16 @@
     "suspendLicenseChoice": "Licence the suspension refers to",
     "suspendNoLicense": "none – only “all competitions” possible",
     "suspendNoLicenseHint": "This player has no open licence for the current season. That leaves only the scope “all competitions”, which also blocks new licence applications.",
-    "suspendAllSuspendedHint": "Every licence of the current season is already covered by a suspension. That leaves only the scope “all competitions”, which also blocks new licence applications."
+    "suspendAllSuspendedHint": "Every licence of the current season is already covered by a suspension. That leaves only the scope “all competitions”, which also blocks new licence applications.",
+    "tabsLabel": "Sections of the player profile",
+    "tabData": "Data",
+    "tabReleases": "Releases & documents",
+    "tabManagement": "Administration",
+    "historyLabel": "History",
+    "homeClubHistory": "Previous home clubs",
+    "suspensionsHint": "A suspension applies to a team, a competition, a league or all competitions. \"All competitions\" additionally suspends every active license and prevents new license applications; this is the former application block. The same form is available in the Licenses tab on every license of the current season.",
+    "kindApplicationBlock": "Application block",
+    "mergeDuplicateHint": "Use this player as the master record and merge a duplicate record into it."
   },
   "search": {
     "globalSearch": "Global player search",
