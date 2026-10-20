@@ -34,6 +34,11 @@ let nextTabsId = 0;
  * `activeChange` feuert auch beim ersten Auflösen. Es ist für Nebenwirkungen
  * wie Nachladen gedacht, nicht für Bindings über der Reiterleiste: die sind
  * zu dem Zeitpunkt schon geprüft (NG0100).
+ *
+ * Nicht auf Seiten verwenden, die Query-Parameter am Router vorbei aus der
+ * Adresse nehmen (`Location.replaceState`, etwa der Code im Spielsekretariat):
+ * `queryParamsHandling: 'merge'` mischt aus dem Zustand des Routers und
+ * schreibt den entfernten Parameter beim ersten Reiterwechsel zurück.
  */
 @Component({
   selector: 'fb-tabs',
