@@ -14,7 +14,7 @@ import { NEVER, of, throwError } from 'rxjs';
 
 import { GameService, NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { Game } from '@floorball/types';
+import { Game, GameAdditionalFields } from '@floorball/types';
 
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import { MatchReportComponent } from './match-report.component';
@@ -505,6 +505,120 @@ describe('MatchReportComponent', () => {
       expect(tabletDialog()).toBeNull();
       expect(component.appGameStatus).toBe('aftergame');
       expect(setStatus).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Unterschriften vor dem Abschluss', () => {
+    const tabletDialog = () =>
+      fixture.nativeElement.querySelector(
+        '[data-testid="tablet-complete-dialog"]'
+      );
+
+    function missing(fields: string[]) {
+      component.additionalFields = {
+        missing_signatures: fields,
+      } as unknown as GameAdditionalFields;
+    }
+
+    it('weist den Verein ab, bevor Checkliste oder Tablet-Frage kommen', () => {
+      create({ tablet_capture: true, permission: ['edit_game_report'] });
+      missing(['home_captain_signed']);
+      const setStatus = spyOn(gameService, 'setGameStatus');
+      const error = spyOn(notifications, 'error');
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(error).toHaveBeenCalledWith(jasmine.stringContaining('Heim'));
+      expect(component.checklistVisible).toBeFalse();
+      expect(tabletDialog()).toBeNull();
+      expect(setStatus).not.toHaveBeenCalled();
+      expect(component.appGameStatus).toBe('aftergame');
+    });
+
+    it('lässt die SBK mit fehlenden Unterschriften weiter zur Checkliste', () => {
+      create({ permission: ['check_game'] });
+      missing(['home_captain_signed']);
+      const error = spyOn(notifications, 'error');
+
+      component.closeMatchRecord();
+
+      expect(error).not.toHaveBeenCalled();
+      expect(component.checklistVisible).toBeTrue();
+    });
+
+    it('fragt bei Tablet-Spielen erst nach bestandener Prüfung nach den Schüssen', () => {
+      create({
+        checklist_active: false,
+        tablet_capture: true,
+        permission: ['edit_game_report'],
+      });
+      missing([]);
+      spyOn(gameService, 'setGameStatus').and.returnValue(NEVER);
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(tabletDialog()).not.toBeNull();
+    });
+
+    // Vorher rief die Statusnavigation den Statuswechsel direkt auf und ging an
+    // Unterschriften und Checkliste vorbei.
+    it('führt „Kontrolle durch SBK“ in der Navigation über denselben Weg', () => {
+      create({ permission: ['edit_game_report'] });
+      missing(['referee1_signed']);
+      const setStatus = spyOn(gameService, 'setGameStatus');
+      const error = spyOn(notifications, 'error');
+
+      component.requestGameStatusChange('match_record_closed');
+
+      expect(error).toHaveBeenCalled();
+      expect(setStatus).not.toHaveBeenCalled();
+    });
+
+    it('öffnet aus der Navigation die Checkliste, wenn alles abgehakt ist', () => {
+      create({ permission: ['edit_game_report'] });
+      missing([]);
+      const setStatus = spyOn(gameService, 'setGameStatus');
+
+      component.requestGameStatusChange('match_record_closed');
+
+      expect(component.checklistVisible).toBeTrue();
+      expect(setStatus).not.toHaveBeenCalled();
+    });
+
+    it('nennt die fehlenden Unterschriften schon in der Rückfrage der Navigation', () => {
+      create({ permission: ['edit_game_report'] });
+      missing(['guest_captain_signed']);
+      const option = component.gameStatusOptions[3];
+
+      expect(component.statusConfirmationContent(option)).toContain(
+        'Es fehlen noch Unterschriften: Gast'
+      );
+
+      component.game.permission = ['check_game'];
+      expect(component.statusConfirmationContent(option)).toContain(
+        'Als SBK kannst du den Bericht trotzdem abschließen'
+      );
+
+      missing([]);
+      expect(component.statusConfirmationContent(option)).toBe(
+        option.confirmationContent as string
+      );
+    });
+
+    it('lässt die übrigen Schritte der Navigation unverändert', () => {
+      create({
+        game_status: 'match_record_closed',
+        permission: ['check_game'],
+      });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      component.requestGameStatusChange('finalized');
+
+      expect(setStatus).toHaveBeenCalledWith(4711, 'finalized');
     });
   });
 });

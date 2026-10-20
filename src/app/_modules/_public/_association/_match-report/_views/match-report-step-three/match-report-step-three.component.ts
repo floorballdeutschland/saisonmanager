@@ -15,16 +15,10 @@ import {
   looksLikeYouthLeague,
   renderResultTile,
 } from 'src/app/_helpers/_utils/result-tile';
-
-// Bezeichnungen wie an den Haken der Maske (match-event-form).
-const SIGNATURE_LABELS: Record<string, string> = {
-  time_keeper_signed: 'Zeitnehmer/in',
-  record_keeper_signed: 'Schriftführer/in',
-  home_captain_signed: 'Heim',
-  guest_captain_signed: 'Gast',
-  referee1_signed: 'Schiedsrichter 1',
-  referee2_signed: 'Schiedsrichter 2',
-};
+import {
+  missingSignatureLabels,
+  missingSignatures,
+} from 'src/app/_helpers/_utils/missing-signatures';
 
 @Component({
   selector: 'fb-match-report-step-three',
@@ -41,6 +35,12 @@ export class MatchReportStepThreeComponent {
 
   @Input()
   nextStatusOption!: GameStatusOption;
+
+  // Darf die SBK des Spielbetriebs (oder ein Admin) den Bericht abschließen?
+  // Dann übergeht die API die fehlenden Unterschriften, und der Knopf warnt
+  // nur, statt zu sperren (MatchReportComponent#canCheckGame).
+  @Input()
+  canOverrideSignatures = false;
 
   @Output()
   handleReload = new EventEmitter<void>();
@@ -95,29 +95,33 @@ export class MatchReportStepThreeComponent {
   }
 
   handleFinalize() {
-    if (!this.signaturesComplete) return;
+    if (!this.signaturesComplete && !this.canOverrideSignatures) return;
     this.closeMatchRecord.emit();
   }
 
   // ── Unterschriften als Pflicht ───────────────────────────────────────────
   //
-  // Welche Haken fehlen, entscheidet die API (`missing_signatures`, dieselbe
-  // Regel wie die Sperre beim Abschluss): Schiedsrichter 2 nur, wenn er
-  // eingetragen ist, Forfait-Spiele gar nicht. Hier wird sie nicht nachgebaut.
-  // Liefert eine ältere API das Feld nicht, gilt nichts als fehlend; die Sperre
-  // bleibt dann allein die Antwort der API.
+  // Welche Haken fehlen, sagt die API (siehe `missing-signatures.ts`). Der
+  // Verein kann ohne sie nicht abschließen, die SBK wird nur gewarnt und
+  // bestätigt den Abschluss ausdrücklich.
 
   public isSignatureMissing(field: string): boolean {
-    return (this.additionalFields?.missing_signatures ?? []).includes(field);
+    return missingSignatures(this.additionalFields).includes(field);
   }
 
   public get signaturesComplete(): boolean {
-    return (this.additionalFields?.missing_signatures ?? []).length === 0;
+    return missingSignatures(this.additionalFields).length === 0;
   }
 
   public get missingSignatureLabels(): string[] {
-    return (this.additionalFields?.missing_signatures ?? []).map(
-      (field) => SIGNATURE_LABELS[field] ?? field
+    return missingSignatureLabels(this.additionalFields);
+  }
+
+  public get overrideConfirmationContent(): string {
+    return (
+      `Auf dem Spielbericht fehlen Unterschriften: ${this.missingSignatureLabels.join(', ')}. ` +
+      'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
+      'dabei leer. Möchtest du wirklich fortfahren?'
     );
   }
 

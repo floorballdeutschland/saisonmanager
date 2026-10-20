@@ -437,6 +437,27 @@
             >Spiel abschließen</fb-button
           >
         </fb-confirmation>
+      } @else if (canOverrideSignatures) {
+        <p
+          class="mb-4 rounded border border-yellow-400 bg-yellow-50 p-3"
+          data-testid="signatures-missing-sbk"
+        >
+          <strong
+            >Unterschriften fehlen: {{ missingSignatureLabels.join(", ") }}. Als
+            SBK kannst du trotzdem abschließen.</strong
+          >
+          Die Haken bleiben dabei leer.
+        </p>
+        <fb-confirmation
+          (handleSubmit)="handleFinalize()"
+          [title]="nextStatusOption.confirmationTitle"
+          [content]="overrideConfirmationContent"
+          submitButtonTitle="Trotzdem abschließen"
+        >
+          <fb-button [fullWidth]="true" [variant]="'warning'" [size]="'large'"
+            >Spiel ohne alle Unterschriften abschließen</fb-button
+          >
+        </fb-confirmation>
       } @else {
         <p class="mb-4 text-red-600" data-testid="signatures-missing">
           <strong>Es fehlen noch Unterschriften:</strong>
