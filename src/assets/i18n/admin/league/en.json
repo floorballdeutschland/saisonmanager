@@ -28,6 +28,13 @@
     "copyCancel": "Cancel"
   },
   "edit": {
+    "tabs": {
+      "label": "League sections",
+      "league": "League",
+      "rules": "Game rules",
+      "modus": "Format",
+      "media": "Logo & banner"
+    },
     "headingEdit": "Edit a league",
     "headingNew": "Create new league",
     "mainData": "Main data",

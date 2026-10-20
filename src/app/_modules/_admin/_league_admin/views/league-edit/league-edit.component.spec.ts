@@ -1,7 +1,21 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { getTranslocoTestingModule } from '@floorball/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { provideRouter, RouterLink } from '@angular/router';
+import {
+  RouterTestingHarness,
+  RouterTestingModule,
+} from '@angular/router/testing';
+import { of } from 'rxjs';
+import {
+  AssociationService,
+  DocumentTypeService,
+  getTranslocoTestingModule,
+  LeagueService,
+} from '@floorball/core';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import { League } from '@floorball/types';
 import { LeagueEditComponent } from './league-edit.component';
 
@@ -94,6 +108,132 @@ describe('LeagueEditComponent', () => {
       league.minimum_age = 15;
 
       expect(component.errorMsg(league)).not.toContain(errMinimumAge);
+    });
+  });
+
+  // Reiter mit echtem Template. Die Dienste liefern nur, was die Ansicht zum
+  // Aufbauen braucht.
+  describe('Reiter', () => {
+    const existing = {
+      id: 5,
+      game_operation_id: 1,
+      name: 'Testliga',
+      short_name: 'TL',
+      order_key: '1',
+      league_modus: 'league',
+      league_class_id: 'll',
+      age_group: 'Herren',
+      periods: 3,
+      period_length: 20,
+      overtime_length: 10,
+      qualifications: [],
+      required_documents: [],
+    } as unknown as League;
+
+    let league: League;
+    let harness: RouterTestingHarness;
+
+    async function open(url: string): Promise<void> {
+      league = { ...existing };
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [
+          CommonModule,
+          FormsModule,
+          HttpClientTestingModule,
+          UikitCommonModule,
+          RouterLink,
+          getTranslocoTestingModule(),
+        ],
+        declarations: [LeagueEditComponent],
+        providers: [
+          provideRouter([
+            { path: 'ligen/neu', component: LeagueEditComponent },
+            { path: 'ligen/:leagueId', component: LeagueEditComponent },
+          ]),
+          {
+            provide: LeagueService,
+            useValue: {
+              getAdminLeagues: () => of([{ id: 1, name: 'FD', leagues: [] }]),
+              getSingleLeague: () => of(league),
+            },
+          },
+          {
+            provide: DocumentTypeService,
+            useValue: { adminGetDocumentTypes: () => of([]) },
+          },
+          { provide: AssociationService, useValue: { associations$: of([]) } },
+        ],
+      }).compileComponents();
+      harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(url, LeagueEditComponent);
+      harness.detectChanges();
+    }
+
+    function tab(id: string): HTMLElement | null {
+      return harness.routeNativeElement!.querySelector(
+        `[data-testid="tab-${id}"]`
+      );
+    }
+
+    function panel(): HTMLElement {
+      return harness.routeNativeElement!.querySelector('[role="tabpanel"]')!;
+    }
+
+    it('oeffnet die Liga mit den Hauptdaten', async () => {
+      await open('/ligen/5');
+      expect(panel().getAttribute('data-testid')).toBe('tabpanel-liga');
+      expect(panel().querySelector('[name="league_modus"]')).not.toBeNull();
+      expect(panel().querySelector('[name="before_deadline"]')).toBeNull();
+    });
+
+    it('oeffnet den Reiter aus der URL', async () => {
+      await open('/ligen/5?reiter=modus');
+      expect(panel().getAttribute('data-testid')).toBe('tabpanel-modus');
+      expect(
+        panel().querySelector('[name="league_id_preround"]')
+      ).not.toBeNull();
+    });
+
+    it('bietet Logo und Banner nur fuer eine gespeicherte Liga an', async () => {
+      await open('/ligen/5');
+      expect(tab('medien')).not.toBeNull();
+
+      await open('/ligen/neu?reiter=medien');
+      expect(tab('medien')).toBeNull();
+      expect(panel().getAttribute('data-testid')).toBe('tabpanel-liga');
+    });
+
+    it('markiert den Reiter mit dem fehlenden Pflichtfeld', async () => {
+      await open('/ligen/5');
+      expect(tab('regeln')!.className).not.toContain('!text-red-600');
+
+      // Wie eine Eingabe im Formular: ohne markForCheck erreicht der Durchlauf
+      // die Ansicht unter dem Harness-Wurzelelement nicht.
+      league.periods = 0;
+      harness.routeDebugElement!.injector.get(ChangeDetectorRef).markForCheck();
+      harness.detectChanges();
+
+      expect(tab('regeln')!.className).toContain('!text-red-600');
+      expect(tab('liga')!.className).not.toContain('!text-red-600');
+      expect(tab('modus')!.className).not.toContain('!text-red-600');
+    });
+
+    // Das Feld mit dem unlesbaren Text verschwindet beim Reiterwechsel; die
+    // Meldung soll nicht auf das danach leere Feld zeigen.
+    it('vergisst die unlesbare Mindestalter-Eingabe beim Reiterwechsel', async () => {
+      await open('/ligen/5?reiter=regeln');
+      const component = harness.routeDebugElement!
+        .componentInstance as LeagueEditComponent;
+      component.onMinimumAgeInput({
+        validity: { badInput: true },
+      } as HTMLInputElement);
+      expect(component.tabInvalid(league, 'regeln')).toBeTrue();
+
+      tab('liga')!.click();
+      harness.detectChanges();
+
+      expect(component.tabInvalid(league, 'regeln')).toBeFalse();
     });
   });
 });

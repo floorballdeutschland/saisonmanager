@@ -33,6 +33,9 @@ import { TranslocoService } from '@jsverse/transloco';
 // Liste wie BUNDESLIGA_CLASSES in leagues_controller.rb.
 const BUNDESLIGA_CLASSES = ['1fbl', '2fbl'];
 
+// Reiter der Ansicht, in denen Pflichtfelder stehen (siehe tabInvalid).
+type LeagueEditTab = 'liga' | 'regeln';
+
 @Component({
   templateUrl: './league-edit.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -451,64 +454,53 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
   }
 
   public errorMsg(league: League): string[] {
-    // eslint-disable-next-line prefer-const
-    let msg = [];
+    return this._errors(league).map((e) =>
+      this._transloco.translate(`leagueAdmin.notifications.${e.key}`)
+    );
+  }
 
-    if (league.name.length < 1) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errNameRequired')
-      );
-    }
+  // Markiert den Reiter, in dem ein Fehler aus errorMsg steckt. Die Meldungen
+  // stehen unter der Leiste beim Speichern; ohne die Markierung muesste man
+  // die verborgenen Reiter absuchen.
+  public tabInvalid(league: League, tab: LeagueEditTab): boolean {
+    return this._errors(league).some((e) => e.tab === tab);
+  }
 
-    if (league.short_name.length < 1) {
-      msg.push(
-        this._transloco.translate(
-          'leagueAdmin.notifications.errShortNameRequired'
-        )
-      );
-    }
+  // Ein Reiterwechsel zerstoert das Mindestalter-Feld samt dem Text, den der
+  // Browser nicht lesen konnte. Zurueck im Reiter zeigt es das Modell (leer);
+  // die Meldung dazu wuerde dann auf ein leeres Feld zeigen.
+  public onTab(tab: string): void {
+    if (tab !== 'regeln') this.minimumAgeBadInput = false;
+  }
 
-    if (league.game_operation_id < 1) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errAssociation')
-      );
-    }
+  private _errors(
+    league: League
+  ): { key: string; tab: LeagueEditTab | null }[] {
+    const errors: { key: string; tab: LeagueEditTab | null }[] = [];
+    const add = (key: string, tab: LeagueEditTab | null) =>
+      errors.push({ key, tab });
+
+    if (league.name.length < 1) add('errNameRequired', 'liga');
+    if (league.short_name.length < 1) add('errShortNameRequired', 'liga');
+    if (league.game_operation_id < 1) add('errAssociation', 'liga');
 
     const regexpNum = new RegExp(/^\d+$/);
     if (!league.order_key || !regexpNum.test(league.order_key)) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errOrderKey')
-      );
+      add('errOrderKey', 'liga');
     }
 
-    if (!league.periods || !(league.periods > 0)) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errPeriods')
-      );
-    }
-
+    if (!league.periods || !(league.periods > 0)) add('errPeriods', 'regeln');
     if (!league.period_length || !(league.period_length > 0)) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errPeriodLength')
-      );
+      add('errPeriodLength', 'regeln');
     }
-
     if (!league.overtime_length || !(league.overtime_length > 0)) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errOvertimeLength')
-      );
+      add('errOvertimeLength', 'regeln');
     }
 
-    if (!league.age_group) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errAgeGroup')
-      );
-    }
+    if (!league.age_group) add('errAgeGroup', 'liga');
 
     if (league.league_modus === 'league' && !league.league_class_id) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errLeagueClass')
-      );
+      add('errLeagueClass', 'liga');
     }
 
     // Das Mindestalter ist optional. Ist es gesetzt, gelten dieselben Grenzen
@@ -521,18 +513,13 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
         minimumAge !== undefined &&
         (!Number.isInteger(minimumAge) || minimumAge < 1 || minimumAge > 99))
     ) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errMinimumAge')
-      );
+      add('errMinimumAge', 'regeln');
     }
 
-    if (league.legacy_league) {
-      msg.push(
-        this._transloco.translate('leagueAdmin.notifications.errLegacy')
-      );
-    }
+    // Altliga: kein Feld, das man korrigieren koennte, also kein Reiter.
+    if (league.legacy_league) add('errLegacy', null);
 
-    return msg;
+    return errors;
   }
 
   documentTypes: DocumentType[] = [];

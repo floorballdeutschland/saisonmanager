@@ -28,6 +28,13 @@
     "copyCancel": "Abbrechen"
   },
   "edit": {
+    "tabs": {
+      "label": "Bereiche der Liga",
+      "league": "Liga",
+      "rules": "Spielregeln",
+      "modus": "Modus",
+      "media": "Logo & Banner"
+    },
     "headingEdit": "Bearbeiten einer Liga",
     "headingNew": "Neue Liga anlegen",
     "mainData": "Hauptdaten",
