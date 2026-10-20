@@ -1,0 +1,48 @@
+<div
+  class="flex flex-wrap gap-1 mb-6 border-b border-fb-gray-600"
+  role="tablist"
+  [attr.aria-label]="label"
+>
+  @for (tab of tabs; track tab.id; let i = $index) {
+    <button
+      type="button"
+      role="tab"
+      [id]="buttonId(tab.id)"
+      [attr.aria-selected]="tab.id === activeId"
+      [attr.aria-controls]="panelId(tab.id)"
+      [attr.tabindex]="tab.id === activeId ? 0 : -1"
+      [attr.data-testid]="'tab-' + tab.id"
+      (click)="select(tab.id)"
+      (keydown)="onKeydown($event, i)"
+      class="px-4 py-2 text-sm font-bold border-b-2 -mb-px"
+      [class.border-black]="tab.id === activeId"
+      [class.border-transparent]="tab.id !== activeId"
+      [class.text-fb-gray-500]="tab.id !== activeId"
+      [class.!text-red-600]="tab.fbTabInvalid"
+    >
+      {{ tab.fbTabLabel }}
+      @if (tab.fbTabBadge !== null && tab.fbTabBadge !== undefined) {
+        <span
+          class="ml-1 inline-block min-w-5 rounded-full bg-fb-gray-200 px-1.5 text-xs text-black"
+          >{{ tab.fbTabBadge }}</span
+        >
+      }
+      @if (tab.fbTabInvalid) {
+        <span aria-hidden="true">&nbsp;!</span>
+        <span class="sr-only">{{ "tabs.invalid" | transloco }}</span>
+      }
+    </button>
+  }
+</div>
+@for (tab of tabs; track tab.id) {
+  @if (tab.id === activeId) {
+    <div
+      role="tabpanel"
+      [id]="panelId(tab.id)"
+      [attr.aria-labelledby]="buttonId(tab.id)"
+      [attr.data-testid]="'tabpanel-' + tab.id"
+    >
+      <ng-container *ngTemplateOutlet="tab.template" />
+    </div>
+  }
+}
