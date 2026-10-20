@@ -27,6 +27,7 @@ import {
   SessionService,
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
+import { missingSignatureLabels } from 'src/app/_helpers/_utils/missing-signatures';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import {
   checkPdfUpload,
@@ -312,7 +313,72 @@ export class MatchReportComponent implements OnInit, OnChanges {
     );
   }
 
+  /**
+   * Statuswechsel aus der Statusnavigation oben.
+   *
+   * Der Schritt „Kontrolle durch SBK“ geht dort denselben Weg wie der Knopf
+   * „Spiel abschließen“ in Schritt 3: erst die Unterschriften, dann die
+   * Checkliste, dann (im Tabletmodus) die Frage nach den Schüssen. Vorher rief
+   * die Navigation den Statuswechsel direkt auf und übersprang beides; die
+   * Checkliste fing dann erst die API mit ihrer Absage ab.
+   */
+  public requestGameStatusChange(newStatus: string): void {
+    if (newStatus === this.MATCH_RECORD_CLOSED && this._advancesTo(newStatus)) {
+      this.closeMatchRecord();
+      return;
+    }
+    this.handleGameStatusChange(newStatus);
+  }
+
+  /**
+   * Text der Rückfrage in der Statusnavigation. Fehlen Unterschriften, sagt sie
+   * das schon hier: dem Verein, dass der Abschluss so nicht geht, der SBK, dass
+   * sie ohne die Haken abschließt.
+   */
+  public statusConfirmationContent(option: {
+    key: string;
+    confirmationContent?: string;
+  }): string {
+    const missing = missingSignatureLabels(this.additionalFields);
+    if (option.key !== this.MATCH_RECORD_CLOSED || missing.length === 0) {
+      return option.confirmationContent ?? '';
+    }
+    if (this.canCheckGame()) {
+      return (
+        `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
+        'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
+        'dabei leer. Möchtest du wirklich fortfahren?'
+      );
+    }
+    return (
+      `Es fehlen noch Unterschriften: ${missing.join(', ')}. Hake sie unter ` +
+      '„Spiel nachbereiten“ ab, erst dann kann der Spielbericht abgeschlossen werden.'
+    );
+  }
+
+  private _advancesTo(newStatus: string): boolean {
+    const index = (key: string | null | undefined) =>
+      this.gameStatusOptions.findIndex((item) => item.key === key);
+    return index(newStatus) > index(this.game?.game_status);
+  }
+
   public closeMatchRecord() {
+    // Zuerst die Unterschriften, vor Checkliste und Tablet-Frage: Wer den
+    // Bericht so nicht abschließen darf, soll nicht erst sechzehn Fragen
+    // beantworten, um dann abgewiesen zu werden. Die SBK hat den Abschluss
+    // ohne die Haken an beiden Einstiegen schon ausdrücklich bestätigt, für sie
+    // geht es hier weiter. Verbindlich bleibt die Prüfung der API.
+    const missing = missingSignatureLabels(this.additionalFields);
+    if (missing.length > 0 && !this.canCheckGame()) {
+      this._notificationService.error(
+        `Es fehlen noch Unterschriften: ${missing.join(', ')}. ` +
+          'Erst wenn alle Unterschriften abgehakt sind, kann der Spielbericht abgeschlossen werden.'
+      );
+      this.appGameStatus = this.AFTERGAME;
+      this._cdr.markForCheck();
+      return;
+    }
+
     if (
       this.game.checklist_active &&
       (this.game.checklist_items?.length ?? 0) > 0

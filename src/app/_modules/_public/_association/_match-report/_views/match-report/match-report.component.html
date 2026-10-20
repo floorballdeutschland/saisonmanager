@@ -132,9 +132,9 @@
                       isGameStatusActive(index, 'game') > 0;
                     else listButton
                   "
-                  (handleSubmit)="handleGameStatusChange(statusOption.key)"
+                  (handleSubmit)="requestGameStatusChange(statusOption.key)"
                   [title]="statusOption.confirmationTitle"
-                  [content]="statusOption.confirmationContent"
+                  [content]="statusConfirmationContent(statusOption)"
                   [submitButtonTitle]="statusOption.confirmationButton"
                 >
                   <ng-container *ngIf="false; else listButton"> </ng-container>
@@ -221,6 +221,7 @@
           [game]="game"
           [additionalFields]="additionalFields"
           [nextStatusOption]="gameStatusOptions[3]"
+          [canOverrideSignatures]="!!canCheckGame()"
           (handleReload)="reloadGame()"
           (closeMatchRecord)="closeMatchRecord()"
           (handleSbbScroll)="scrollToSbbNavigation()"
