@@ -108,6 +108,7 @@
     "notFound": "Schiedsrichter nicht gefunden.",
     "exclusionsHeading": "Vereins-Ausschlüsse",
     "exclusionsHint": "Vereine, für deren Spiele diese Person nicht angesetzt werden möchte. Der eigene Verein steht immer auf der Liste. Die Liste ist ein Hinweis für die Ansetzung, keine technische Sperre.",
+    "exclusionsLoadFailed": "Ausschlussliste nicht verfügbar.",
     "exclusionOwnClub": "Eigener Verein",
     "exclusionRemove": "Streichen",
     "exclusionAdd": "Verein hinzufügen",
@@ -121,7 +122,15 @@
     "feedbackAvgLine": "Ø Linie/Konstanz:",
     "feedbackAvgCommunication": "Ø Kommunikation:",
     "feedbackCount": "Rückmeldungen:",
-    "feedbackBelowThreshold": "Die Auswertung wird erst ab {{ min }} Rückmeldungen angezeigt (aktuell {{ count }})."
+    "feedbackBelowThreshold": "Die Auswertung wird erst ab {{ min }} Rückmeldungen angezeigt (aktuell {{ count }}).",
+    "tabs": {
+      "label": "Bereiche des Schiedsrichterprofils",
+      "overview": "Übersicht",
+      "games": "Spiele",
+      "courses": "Kurse",
+      "ratings": "Feedback & Beobachtungen",
+      "exclusions": "Ausschlüsse"
+    }
   },
   "edit": {
     "back": "← Zurück",

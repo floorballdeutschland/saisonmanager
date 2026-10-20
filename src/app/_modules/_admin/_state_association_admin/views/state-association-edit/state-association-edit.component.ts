@@ -161,6 +161,15 @@ export class StateAssociationEditComponent implements OnInit, OnDestroy {
     ];
   }
 
+  // Markiert den Reiter „Stammdaten", solange der Name fehlt: Er ist das
+  // einzige Pflichtfeld, und der Speichern-Knopf ist ohne ihn auch in den
+  // anderen Reitern gesperrt. Beim Bearbeiten erst nach dem Laden, sonst
+  // blinkte die Markierung auf, bevor der Datensatz da ist.
+  get nameMissing(): boolean {
+    if (this.editMode && !this.stateAssociation.id) return false;
+    return !this.stateAssociation.name?.trim();
+  }
+
   ngOnInit(): void {
     this._sessionService.currentUser$
       .pipe(takeUntil(this._destroy$))

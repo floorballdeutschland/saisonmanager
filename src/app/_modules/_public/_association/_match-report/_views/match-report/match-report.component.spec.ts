@@ -14,7 +14,7 @@ import { NEVER, of, throwError } from 'rxjs';
 
 import { GameService, NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { Game } from '@floorball/types';
+import { Game, GameAdditionalFields } from '@floorball/types';
 
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import { MatchReportComponent } from './match-report.component';
@@ -505,6 +505,210 @@ describe('MatchReportComponent', () => {
       expect(tabletDialog()).toBeNull();
       expect(component.appGameStatus).toBe('aftergame');
       expect(setStatus).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Unterschriften vor dem Abschluss', () => {
+    const tabletDialog = () =>
+      fixture.nativeElement.querySelector(
+        '[data-testid="tablet-complete-dialog"]'
+      );
+
+    function missing(fields: string[]) {
+      component.additionalFields = {
+        missing_signatures: fields,
+      } as unknown as GameAdditionalFields;
+    }
+
+    it('weist den Verein ab, bevor Checkliste oder Tablet-Frage kommen', () => {
+      create({ tablet_capture: true, permission: ['edit_game_report'] });
+      missing(['home_captain_signed']);
+      const setStatus = spyOn(gameService, 'setGameStatus');
+      const error = spyOn(notifications, 'error');
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(error).toHaveBeenCalledWith(jasmine.stringContaining('Heim'));
+      expect(component.checklistVisible).toBeFalse();
+      expect(tabletDialog()).toBeNull();
+      expect(setStatus).not.toHaveBeenCalled();
+      expect(component.appGameStatus).toBe('aftergame');
+    });
+
+    it('lässt die SBK mit fehlenden Unterschriften weiter zur Checkliste', () => {
+      create({ permission: ['check_game'] });
+      missing(['home_captain_signed']);
+      const error = spyOn(notifications, 'error');
+
+      component.closeMatchRecord();
+
+      expect(error).not.toHaveBeenCalled();
+      expect(component.checklistVisible).toBeTrue();
+    });
+
+    it('fragt bei Tablet-Spielen erst nach bestandener Prüfung nach den Schüssen', () => {
+      create({
+        checklist_active: false,
+        tablet_capture: true,
+        permission: ['edit_game_report'],
+      });
+      missing([]);
+      spyOn(gameService, 'setGameStatus').and.returnValue(NEVER);
+
+      component.closeMatchRecord();
+      fixture.detectChanges();
+
+      expect(tabletDialog()).not.toBeNull();
+    });
+
+    // Vorher rief die Statusnavigation den Statuswechsel direkt auf und ging an
+    // Unterschriften und Checkliste vorbei.
+    it('führt „Kontrolle durch SBK“ in der Navigation über denselben Weg', () => {
+      create({ permission: ['edit_game_report'] });
+      missing(['referee1_signed']);
+      const setStatus = spyOn(gameService, 'setGameStatus');
+      const error = spyOn(notifications, 'error');
+
+      component.requestGameStatusChange('match_record_closed');
+
+      expect(error).toHaveBeenCalled();
+      expect(setStatus).not.toHaveBeenCalled();
+    });
+
+    it('öffnet aus der Navigation die Checkliste, wenn alles abgehakt ist', () => {
+      create({ permission: ['edit_game_report'] });
+      missing([]);
+      const setStatus = spyOn(gameService, 'setGameStatus');
+
+      component.requestGameStatusChange('match_record_closed');
+
+      expect(component.checklistVisible).toBeTrue();
+      expect(setStatus).not.toHaveBeenCalled();
+    });
+
+    it('nennt die fehlenden Unterschriften schon in der Rückfrage der Navigation', () => {
+      create({ permission: ['edit_game_report'] });
+      missing(['guest_captain_signed']);
+      const option = component.gameStatusOptions[3];
+
+      expect(component.statusConfirmationContent(option)).toContain(
+        'Es fehlen noch Unterschriften: Gast'
+      );
+
+      component.game.permission = ['check_game'];
+      expect(component.statusConfirmationContent(option)).toContain(
+        'Als SBK kannst du den Bericht trotzdem abschließen'
+      );
+
+      missing([]);
+      expect(component.statusConfirmationContent(option)).toBe(
+        option.confirmationContent as string
+      );
+    });
+
+    it('lässt die übrigen Schritte der Navigation unverändert', () => {
+      create({
+        game_status: 'match_record_closed',
+        permission: ['check_game'],
+      });
+      const setStatus = spyOn(gameService, 'setGameStatus').and.returnValue(
+        NEVER
+      );
+
+      component.requestGameStatusChange('finalized');
+
+      expect(setStatus).toHaveBeenCalledWith(4711, 'finalized');
+    });
+  });
+
+  describe('Scan des Spielberichtsbogens', () => {
+    // Ohne eigenes create() liefe der Block nur auf der Komponente, die ein
+    // vorheriger Test zufällig hinterlassen hat, und für sich allein gar nicht.
+    beforeEach(() => create());
+
+    const REJECTED =
+      'Nur PDF-Dateien bis 5 MB sind zulässig, Fotos werden nicht angenommen.';
+    const PNG_HEAD = '\x89PNG\r\n\x1a\n';
+
+    const select = async (file: File) => {
+      const input = { files: [file], value: 'bogen' };
+      await component.onScanFileSelected({ target: input } as unknown as Event);
+      return input;
+    };
+
+    it('nimmt ein PDF zum Hochladen an', async () => {
+      const pdf = new File(['%PDF-1.4'], 'bogen.pdf', {
+        type: 'application/pdf',
+      });
+
+      await select(pdf);
+
+      expect(component.selectedScanFile).toBe(pdf);
+      expect(component.scanUploadError).toBe('');
+    });
+
+    it('weist ein Foto vor dem Upload ab', async () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+
+      const input = await select(
+        new File(['x'], 'bogen.jpg', { type: 'image/jpeg' })
+      );
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(REJECTED);
+      expect(input.value).toBe('');
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    // Der Browser leitet den Typ aus der Endung ab: Das umbenannte Foto kommt
+    // als application/pdf an, erst die Kennung im Dateikopf verrät es.
+    it('weist ein in .pdf umbenanntes Foto ab', async () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+
+      await select(
+        new File([PNG_HEAD], 'bogen.pdf', { type: 'application/pdf' })
+      );
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(REJECTED);
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    it('weist ein zu großes PDF mit derselben Meldung ab', async () => {
+      const upload = spyOn(gameService, 'uploadGameScan');
+      const big = new File(['%PDF-1.4'], 'bogen.pdf', {
+        type: 'application/pdf',
+      });
+      Object.defineProperty(big, 'size', { value: 5 * 1024 * 1024 + 1 });
+
+      await select(big);
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(component.scanUploadError).toBe(REJECTED);
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    // Die Absage der API zeigt der ErrorInterceptor an; eine Zeile am Feld
+    // wiederholte sie nur.
+    it('wiederholt eine Absage der API nicht am Feld', async () => {
+      spyOn(gameService, 'uploadGameScan').and.returnValue(
+        throwError(() => ({
+          status: 422,
+          error: { errors: [REJECTED] },
+        }))
+      );
+      await select(
+        new File(['%PDF-1.4'], 'bogen.pdf', { type: 'application/pdf' })
+      );
+
+      component.uploadScan();
+
+      expect(component.scanUploadError).toBe('');
+      expect(component.scanUploading).toBeFalse();
     });
   });
 });

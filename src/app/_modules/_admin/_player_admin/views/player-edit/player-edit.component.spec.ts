@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorHandler } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { PlayerEditComponent } from './player-edit.component';
@@ -34,9 +34,22 @@ import {
 
 describe('PlayerEditComponent', () => {
   let currentUser$: BehaviorSubject<User | null>;
+  // Die Reiter lesen `?reiter=` aus der Route. Gewechselt wird in den Specs
+  // ueber diesen Strom, wie es ein Link oder das Neuladen der Seite taete.
+  let queryParamMap$: BehaviorSubject<ParamMap>;
+
+  /** Reiter oeffnen, als stuende er in der URL. */
+  function openTab(
+    fixture: ComponentFixture<PlayerEditComponent>,
+    id: string
+  ): void {
+    queryParamMap$.next(convertToParamMap({ reiter: id }));
+    fixture.detectChanges();
+  }
 
   beforeEach(async () => {
     currentUser$ = new BehaviorSubject<User | null>(null);
+    queryParamMap$ = new BehaviorSubject(convertToParamMap({}));
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
@@ -74,7 +87,10 @@ describe('PlayerEditComponent', () => {
       providers: [
         {
           provide: ActivatedRoute,
-          useValue: { params: of({ playerId: '7' }) },
+          useValue: {
+            params: of({ playerId: '7' }),
+            queryParamMap: queryParamMap$,
+          },
         },
         { provide: SessionService, useValue: { currentUser$ } },
       ],
@@ -214,6 +230,12 @@ describe('PlayerEditComponent', () => {
   // DatePipe-Provider, den SafeDatePipe injiziert. Ohne ihn stirbt die Maske in
   // Produktion mit NullInjectorError, während ein Pipe-Unittest grün bliebe.
   describe('Lizenzverlauf mit unlesbarem Zeitstempel', () => {
+    // Der Verlauf steht im Reiter Lizenzen, eingeklappt; der Inhalt eines
+    // zugeklappten Bereichs ist trotzdem im DOM.
+    beforeEach(() =>
+      queryParamMap$.next(convertToParamMap({ reiter: 'lizenzen' }))
+    );
+
     function renderMitVerlauf(
       createdAt: string
     ): ComponentFixture<PlayerEditComponent> {
@@ -477,6 +499,10 @@ describe('PlayerEditComponent', () => {
   });
 
   describe('Verweis auf die Transferanträge', () => {
+    beforeEach(() =>
+      queryParamMap$.next(convertToParamMap({ reiter: 'freigaben' }))
+    );
+
     // Die Berechtigung muss vor dem ersten Rendern stehen: die Komponente liest
     // sie in ngOnInit aus currentUser$, ein spaeteres Setzen des Feldes laeuft
     // nicht mehr in die Bindings (Angular 22, dirty-getrackte Views).
@@ -520,7 +546,7 @@ describe('PlayerEditComponent', () => {
       params: Record<string, string> = { clubId: '113' }
     ): ComponentFixture<PlayerEditComponent> {
       TestBed.overrideProvider(ActivatedRoute, {
-        useValue: { params: of(params) },
+        useValue: { params: of(params), queryParamMap: queryParamMap$ },
       });
       currentUser$.next(user as User);
       const fixture = TestBed.createComponent(PlayerEditComponent);
@@ -1577,6 +1603,7 @@ describe('PlayerEditComponent', () => {
               playerAdmin: {
                 edit: {
                   setupSuspension: 'Sperre einrichten',
+                  applicationBlockActive: 'Beantragungssperre aktiv',
                   suspendLicenseChoice: 'Lizenz der Sperre',
                   suspendNoLicense: 'keine',
                   suspendNoLicenseHint:
@@ -1602,7 +1629,10 @@ describe('PlayerEditComponent', () => {
           // der API wird nicht eingespielt.
           {
             provide: ActivatedRoute,
-            useValue: { params: of({ playerId: '7' }) },
+            useValue: {
+              params: of({ playerId: '7' }),
+              queryParamMap: queryParamMap$,
+            },
           },
           {
             provide: SessionService,
@@ -1833,6 +1863,7 @@ describe('PlayerEditComponent', () => {
     it('bleibt bei zurueckgestelltem Saison-Umschalter auf der laufenden Saison', () => {
       const { fixture, component } = renderWithLicense();
       const el = fixture.nativeElement as HTMLElement;
+      openTab(fixture, 'sperren');
 
       (
         el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
@@ -1864,6 +1895,7 @@ describe('PlayerEditComponent', () => {
         licenses: [license('L1', '18'), license('L2', '17')],
       });
       const el = fixture.nativeElement as HTMLElement;
+      openTab(fixture, 'lizenzen');
 
       const gruppen = component.licenseSeasonGroups();
       expect(gruppen.filter((g) => g.current).map((g) => g.seasonId)).toEqual([
@@ -1874,6 +1906,7 @@ describe('PlayerEditComponent', () => {
 
     it('zeigt im Abschnitt ein Formular mit Lizenzauswahl statt der Beantragungssperre', () => {
       const { fixture } = renderWithLicense();
+      openTab(fixture, 'sperren');
 
       const el = fixture.nativeElement as HTMLElement;
       expect(el.textContent).not.toContain('Beantragungssperre einrichten');
@@ -1904,6 +1937,7 @@ describe('PlayerEditComponent', () => {
       const { fixture } = renderWithLicense();
       const el = fixture.nativeElement as HTMLElement;
       const http = TestBed.inject(HttpTestingController);
+      openTab(fixture, 'lizenzen');
 
       (
         el.querySelector('[data-testid="open-license-suspend"]') as HTMLElement
@@ -1936,6 +1970,7 @@ describe('PlayerEditComponent', () => {
       const { fixture, component } = renderWithLicense();
       const el = fixture.nativeElement as HTMLElement;
       const http = TestBed.inject(HttpTestingController);
+      openTab(fixture, 'sperren');
 
       (
         el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
@@ -1994,13 +2029,17 @@ describe('PlayerEditComponent', () => {
       });
 
       const el = fixture.nativeElement as HTMLElement;
+      openTab(fixture, 'sperren');
+      expect(el.textContent).toContain('Beantragungssperre aktiv');
       expect(el.querySelector('[data-testid="open-suspend-form"]')).toBeNull();
       // Die Lizenzzeile bietet ihn ebenfalls nicht an, weil die Sperre jede
-      // Lizenz erfasst -- der Weg zurueck ist das Aufheben.
+      // Lizenz erfasst -- der Weg zurueck ist das Aufheben. Die Lizenz selbst
+      // muss dabei sichtbar sein, sonst prueft das Fehlen des Knopfs nichts.
+      openTab(fixture, 'lizenzen');
+      expect(el.textContent).toContain('Team L1');
       expect(
         el.querySelector('[data-testid="open-license-suspend"]')
       ).toBeNull();
-      expect(el.textContent).toContain('Beantragungssperre aktiv');
     });
 
     // Der Sammeltext behauptete „keine Lizenz" auch dann, wenn eine offene
@@ -2021,6 +2060,7 @@ describe('PlayerEditComponent', () => {
         ],
       });
       const el = fixture.nativeElement as HTMLElement;
+      openTab(fixture, 'sperren');
 
       (
         el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
@@ -2037,6 +2077,7 @@ describe('PlayerEditComponent', () => {
     it('nennt ohne Lizenz der laufenden Saison den anderen Satz', () => {
       const { fixture, component } = renderWithLicense({ licenses: [] });
       const el = fixture.nativeElement as HTMLElement;
+      openTab(fixture, 'sperren');
 
       (
         el.querySelector('[data-testid="open-suspend-form"]') as HTMLElement
@@ -2053,6 +2094,7 @@ describe('PlayerEditComponent', () => {
     // Lizenzauswahl -- die Lizenz steht dort schon fest.
     it('rendert dieselbe Maske an der Lizenz, ohne Lizenzauswahl', () => {
       const { fixture, component } = renderWithLicense();
+      openTab(fixture, 'lizenzen');
 
       const el = fixture.nativeElement as HTMLElement;
       (
@@ -2178,6 +2220,196 @@ describe('PlayerEditComponent', () => {
       expect(component.confirmHidePublicLastName).toBe(true);
       expect(component.hidePublicLastNameReason).toBe('DSGVO 2026-09-22');
       expect(component.canHidePublicLastName).toBe(true);
+    });
+  });
+
+  // Die Maske ist in Reiter geteilt. Geprueft wird hier die Aufteilung selbst:
+  // Standard, Sprung per URL, Rechte, Anlegen ohne Leiste und welche
+  // Lizenzgruppen offen stehen. Die Inhalte pruefen die Abschnitte oben.
+  describe('Reiter', () => {
+    function lizenz(id: string, seasonId: string): PlayerLicense {
+      return {
+        id,
+        team_id: 5,
+        season_id: seasonId,
+        history: [{ created_at: '', license_status: 'erteilt' }],
+        team: { id: 5, name: 'Team ' + id },
+        league: { id: 9, name: 'Liga ' + id },
+      } as unknown as PlayerLicense;
+    }
+
+    function render(
+      setup: {
+        permissions?: Record<string, boolean>;
+        params?: Record<string, string>;
+        currentSeasonId?: number | null;
+        licenses?: PlayerLicense[];
+        suspensions?: unknown[];
+        reiter?: string;
+      } = {}
+    ): {
+      fixture: ComponentFixture<PlayerEditComponent>;
+      el: HTMLElement;
+    } {
+      if (setup.reiter) {
+        queryParamMap$.next(convertToParamMap({ reiter: setup.reiter }));
+      }
+      TestBed.overrideProvider(ActivatedRoute, {
+        useValue: {
+          params: of(setup.params ?? { playerId: '7' }),
+          queryParamMap: queryParamMap$,
+        },
+      });
+      TestBed.overrideProvider(AssociationService, {
+        useValue: {
+          seasons$: of([
+            { id: 18, name: '2026/2027' },
+            { id: 17, name: '2025/2026' },
+          ]),
+          selectedSeasonId$: of(18),
+          realCurrentSeasonId$: of(
+            setup.currentSeasonId === undefined ? 18 : setup.currentSeasonId
+          ),
+        },
+      });
+      currentUser$.next({
+        permissions: setup.permissions ?? {},
+      } as unknown as User);
+
+      const fixture = TestBed.createComponent(PlayerEditComponent);
+      const component = fixture.componentInstance;
+      component.player = {
+        id: 7,
+        licenses: setup.licenses ?? [],
+      } as unknown as Player;
+      component.suspensions = (setup.suspensions ??
+        []) as unknown as PlayerEditComponent['suspensions'];
+      // Ohne checkNoChanges: die Abrufe aus ngOnInit laufen gegen den
+      // HttpTestingController und kommen nie an, das ist hier nicht Thema.
+      fixture.detectChanges(false);
+      return { fixture, el: fixture.nativeElement as HTMLElement };
+    }
+
+    function tabIds(el: HTMLElement): string[] {
+      return Array.from(el.querySelectorAll('[role="tab"]')).map((t) =>
+        (t.getAttribute('data-testid') ?? '').replace('tab-', '')
+      );
+    }
+
+    it('oeffnet die Spielerdaten als Standard', () => {
+      const { el } = render({ permissions: { update_player: true } });
+
+      expect(el.querySelector('[data-testid="tabpanel-daten"]')).not.toBeNull();
+      expect(el.querySelector('#first_name')).not.toBeNull();
+      expect(el.querySelector('[data-testid="tabpanel-lizenzen"]')).toBeNull();
+    });
+
+    it('oeffnet den Reiter aus der URL', () => {
+      const { el } = render({
+        reiter: 'lizenzen',
+        licenses: [lizenz('L1', '18')],
+      });
+
+      expect(
+        el.querySelector('[data-testid="tabpanel-lizenzen"]')
+      ).not.toBeNull();
+      expect(el.querySelector('#first_name')).toBeNull();
+      expect(el.textContent).toContain('Team L1');
+    });
+
+    it('zeigt den Reiter Sperren nur mit dem Recht dazu', () => {
+      expect(tabIds(render().el)).toEqual([
+        'daten',
+        'lizenzen',
+        'freigaben',
+        'verwaltung',
+      ]);
+    });
+
+    it('zaehlt am Reiter Sperren die aktiven Sperren', () => {
+      const { el } = render({
+        permissions: { player_suspend: true },
+        suspensions: [
+          { id: 1, active: true, kind: 'license_suspension' },
+          { id: 2, active: false, kind: 'license_suspension' },
+        ],
+      });
+
+      expect(tabIds(el)).toContain('sperren');
+      expect(
+        el.querySelector('[data-testid="tab-sperren"]')?.textContent
+      ).toContain('1');
+    });
+
+    // Ohne Recht faellt ein ?reiter=sperren auf den Standard zurueck, statt
+    // die Maske auf einem Reiter zu oeffnen, den es fuer die Rolle nicht gibt.
+    it('faellt ohne Recht von ?reiter=sperren auf die Spielerdaten zurueck', () => {
+      const { el } = render({ reiter: 'sperren' });
+
+      expect(el.querySelector('[data-testid="tabpanel-daten"]')).not.toBeNull();
+      expect(el.querySelector('[data-testid="open-suspend-form"]')).toBeNull();
+    });
+
+    it('legt Duplikat zusammenfuehren in die Verwaltung, nur mit Recht', () => {
+      const ohne = render({ reiter: 'verwaltung' }).el;
+      expect(ohne.querySelector('a[href*="duplikat"]')).toBeNull();
+      // Die Deaktivierung steht fuer jede Rolle da, deshalb gibt es den
+      // Reiter auch ohne das Recht zum Zusammenfuehren.
+      expect(ohne.textContent).toContain('playerAdmin.edit.clubLeave');
+    });
+
+    it('zeigt Duplikat zusammenfuehren mit dem Recht', () => {
+      const { el } = render({
+        reiter: 'verwaltung',
+        permissions: { player_merge: true },
+      });
+      expect(el.querySelector('a[href*="duplikat"]')).not.toBeNull();
+    });
+
+    // Beim Anlegen bliebe nur der Reiter Daten uebrig; eine Leiste mit einem
+    // Eintrag waere nur Rauschen.
+    it('zeigt beim Anlegen keine Reiterleiste', () => {
+      const { el } = render({
+        params: { clubId: '3' },
+        permissions: { create_player: true, update_player: true },
+      });
+
+      expect(el.querySelector('[role="tablist"]')).toBeNull();
+      expect(el.querySelector('#first_name')).not.toBeNull();
+    });
+
+    describe('Lizenzgruppen', () => {
+      function details(el: HTMLElement, testid: string): HTMLDetailsElement {
+        return el.querySelector(
+          `[data-testid="${testid}"] details`
+        ) as HTMLDetailsElement;
+      }
+
+      it('laesst die laufende Saison offen und klappt fruehere ein', () => {
+        const { el } = render({
+          reiter: 'lizenzen',
+          licenses: [lizenz('L1', '18'), lizenz('L2', '17')],
+        });
+
+        expect(
+          el.querySelector('[data-testid="license-group-current"]')?.textContent
+        ).toContain('Team L1');
+        expect(details(el, 'license-group-17').open).toBe(false);
+      });
+
+      it('oeffnet ohne bekannte laufende Saison die neueste Gruppe', () => {
+        const { el } = render({
+          reiter: 'lizenzen',
+          currentSeasonId: null,
+          licenses: [lizenz('L1', '18'), lizenz('L2', '17')],
+        });
+
+        expect(
+          el.querySelector('[data-testid="license-group-current"]')
+        ).toBeNull();
+        expect(details(el, 'license-group-18').open).toBe(true);
+        expect(details(el, 'license-group-17').open).toBe(false);
+      });
     });
   });
 });

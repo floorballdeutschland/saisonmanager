@@ -4,3 +4,6 @@ export * from './pagination/pagination.component';
 export * from './password-requirements/password-requirements.component';
 export * from './referee-autocomplete/referee-autocomplete.component';
 export * from './select-search/select-search.component';
+export * from './tabs/tab.directive';
+export * from './tabs/tabs.component';
+export * from './collapsible/collapsible.component';

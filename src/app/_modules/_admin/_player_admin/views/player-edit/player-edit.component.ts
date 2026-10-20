@@ -534,6 +534,17 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
     return this.player?.clubs?.filter((club) => club.home_club) || [];
   }
 
+  // Fuer den Reiter Freigaben: Der laufende Hauptverein steht offen, beendete
+  // Eintraege sind Historie und liegen eingeklappt darunter. Dasselbe
+  // Kriterium wie die Anzeige „bis heute" (kein valid_until).
+  public currentHomeClubs() {
+    return this.homeClubs().filter((club) => !club.valid_until);
+  }
+
+  public pastHomeClubs() {
+    return this.homeClubs().filter((club) => !!club.valid_until);
+  }
+
   public getNations(): void {
     this._playerService.getNations().subscribe({
       next: (result) => {
@@ -1235,6 +1246,14 @@ export class PlayerEditComponent implements OnInit, OnDestroy {
         if (!b.seasonId) return -1;
         return Number(b.seasonId) - Number(a.seasonId);
       });
+  }
+
+  /**
+   * Typisierter Zugriff fuer die Vorlage `#licenseList`: Deren Kontextvariable
+   * ist `any`, ueber diesen Umweg prueft der Compiler die Lizenzzeilen weiter.
+   */
+  public licensesOf(group: LicenseSeasonGroup): PlayerLicense[] {
+    return group.licenses;
   }
 
   // --- Erst-/Zweitlizenz-Zuordnung (GF-Erwachsenenbereich) -----------------

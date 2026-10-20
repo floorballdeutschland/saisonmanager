@@ -132,9 +132,9 @@
                       isGameStatusActive(index, 'game') > 0;
                     else listButton
                   "
-                  (handleSubmit)="handleGameStatusChange(statusOption.key)"
+                  (handleSubmit)="requestGameStatusChange(statusOption.key)"
                   [title]="statusOption.confirmationTitle"
-                  [content]="statusOption.confirmationContent"
+                  [content]="statusConfirmationContent(statusOption)"
                   [submitButtonTitle]="statusOption.confirmationButton"
                 >
                   <ng-container *ngIf="false; else listButton"> </ng-container>
@@ -221,6 +221,7 @@
           [game]="game"
           [additionalFields]="additionalFields"
           [nextStatusOption]="gameStatusOptions[3]"
+          [canOverrideSignatures]="!!canCheckGame()"
           (handleReload)="reloadGame()"
           (closeMatchRecord)="closeMatchRecord()"
           (handleSbbScroll)="scrollToSbbNavigation()"
@@ -366,15 +367,26 @@
 
         <ng-template #uploadForm>
           <p class="text-sm text-gray-600 mb-4">
-            Bitte lade einen Scan oder ein Foto des physischen
-            Spielberichtsbogens hoch (PDF, PNG oder JPEG, max. 5 MB).
+            Bitte lade einen Scan des physischen Spielberichtsbogens hoch.
           </p>
         </ng-template>
+
+        <p class="text-sm mb-1">
+          <strong
+            >Nur PDF-Dateien bis {{ pdfUploadMaxMb }} MB. Fotos werden nicht
+            mehr angenommen.</strong
+          >
+        </p>
+        <p class="text-sm text-gray-600 mb-4">
+          Ein PDF erstellst du mit dem Handy über eine Scan-App (z. B. „Dokument
+          scannen“ in der Dateien- oder Notizen-App) oder am Rechner über
+          „Drucken“ und „Als PDF speichern“.
+        </p>
 
         <div class="flex flex-col gap-3 max-w-md">
           <input
             type="file"
-            accept="application/pdf,image/png,image/jpeg"
+            [accept]="pdfUploadAccept"
             (change)="onScanFileSelected($event)"
             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
           />

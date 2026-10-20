@@ -700,6 +700,7 @@ export class RefereeService {
     body: {
       properly_conducted: boolean;
       answers?: { item_id: number; answer: boolean }[];
+      comment?: string | null;
     } = { properly_conducted: true }
   ) {
     return this.http.post<{
@@ -710,6 +711,7 @@ export class RefereeService {
         question: string;
         answer: boolean;
       }[];
+      comment?: string | null;
     }>(
       environment.apiURL + 'referee/game_days/' + gameDayId + '/confirm',
       body
