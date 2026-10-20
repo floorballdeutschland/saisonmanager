@@ -926,17 +926,16 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
     expect(component.tabInvalid(club, 'anschrift')).toBeTrue();
     expect(component.tabInvalid(club, 'allgemein')).toBeFalse();
 
+    // Korrigiert heisst: Die Markierung erlischt, sobald der Wert nicht mehr
+    // der beanstandete ist. Ob der neue gilt, entscheidet erst der Server.
+    club.short_name = 'VE';
+    expect(component.tabInvalid(club, 'anschrift')).toBeFalse();
+
     // Der naechste Versuch beginnt ohne die alte Beanstandung.
+    club.short_name = 'VER';
     component.submit(club);
-    httpMock.expectOne(`${environment.apiURL}admin/clubs.json`).flush(
-      {
-        success: false,
-        message: 'Keine Berechtigung für den Ziel-Spielbetrieb',
-      },
-      { status: 403, statusText: 'Forbidden' }
-    );
-    expect(component.serverErrorFields).toEqual(['state_association_id']);
-    expect(component.tabInvalid(club, 'anschrift')).toBeTrue();
+    expect(component.serverErrors).toEqual({});
+    httpMock.expectOne(`${environment.apiURL}admin/clubs.json`).flush(club);
   });
 
   // Deaktivieren duerfen nur Verband und Admin. Ohne das Recht gibt es nichts
@@ -1091,6 +1090,7 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
 // Reiter. Logo und Mannschaften gibt es erst am gespeicherten Verein.
 describe('ClubEditComponent im Anlege-Modus', () => {
   let harness: RouterTestingHarness;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -1106,6 +1106,7 @@ describe('ClubEditComponent im Anlege-Modus', () => {
         provideRouter([{ path: 'verein/neu', component: ClubEditComponent }]),
       ],
     }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   async function oeffne(url: string): Promise<HTMLElement> {
@@ -1150,5 +1151,36 @@ describe('ClubEditComponent im Anlege-Modus', () => {
     expect(
       el.querySelector('fb-select-search[name="state_association_id"]')
     ).not.toBeNull();
+  });
+
+  // Die Landesverband-Absage beim Anlegen kommt als 422 mit Text, ohne
+  // Feldangabe (state_association_error_message). Die Maske prueft nur, dass
+  // ein Verband gewaehlt ist; ob er einen Spielbetrieb hat, weiss der Server.
+  // Beim Bearbeiten antwortet er mit 403, darauf leitet der ErrorInterceptor
+  // auf die Startseite um, deshalb gibt es diesen Fall nur hier.
+  it('markiert Anschrift bei der Landesverband-Absage und hebt sie bei Korrektur auf', async () => {
+    harness = await RouterTestingHarness.create();
+    const component = await harness.navigateByUrl(
+      '/verein/neu',
+      ClubEditComponent
+    );
+    const club = vollstaendigerVerein({ id: 0, state_association_id: 99 });
+    expect(component.tabInvalid(club, 'anschrift')).toBeFalse();
+
+    component.submit(club);
+    httpMock.expectOne(`${environment.apiURL}admin/clubs.json`).flush(
+      {
+        success: false,
+        message:
+          'Für diesen Landesverband gibt es keinen Spielbetrieb. Der Verein hätte keinen zuständigen Verband.',
+      },
+      { status: 422, statusText: 'Unprocessable Entity' }
+    );
+
+    expect(component.tabInvalid(club, 'anschrift')).toBeTrue();
+    expect(component.tabInvalid(club, 'allgemein')).toBeFalse();
+
+    club.state_association_id = 5;
+    expect(component.tabInvalid(club, 'anschrift')).toBeFalse();
   });
 });

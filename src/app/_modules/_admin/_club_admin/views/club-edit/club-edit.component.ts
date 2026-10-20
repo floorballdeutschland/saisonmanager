@@ -347,13 +347,19 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   public tabInvalid(club: Club, tab: ClubEditTab): boolean {
     return (
       this._fieldErrors(club).some(([feld]) => TAB_OF_FIELD[feld] === tab) ||
-      this.serverErrorFields.some((feld) => TAB_OF_FIELD[feld] === tab)
+      (Object.keys(this.serverErrors) as (keyof Club)[]).some(
+        (feld) =>
+          TAB_OF_FIELD[feld] === tab && club[feld] === this.serverErrors[feld]
+      )
     );
   }
 
-  // Felder, die der Server beim letzten Speichern beanstandet hat. Nur fuer
-  // die Markierung der Reiter; die Meldung selbst zeigt der ErrorInterceptor.
-  serverErrorFields: (keyof Club)[] = [];
+  // Felder, die der Server beim letzten Speichern beanstandet hat, je mit dem
+  // Wert, den er abgelehnt hat. Nur fuer die Markierung der Reiter; die
+  // Meldung selbst zeigt der ErrorInterceptor. Der Wert ist gemerkt, damit die
+  // Markierung erlischt, sobald das Feld korrigiert wird: Ob der neue Wert
+  // gilt, weiss erst der Server, aber der beanstandete ist es nicht mehr.
+  serverErrors: Partial<Record<keyof Club, unknown>> = {};
 
   // Liefert [Feld, Uebersetzungsschluessel] je Luecke. Das Feld braucht die
   // Reitermarkierung, die Meldung die Fusszeile; eine gemeinsame Quelle haelt
@@ -440,9 +446,12 @@ export class ClubEditComponent implements OnInit, OnDestroy {
   // markiert wird. Zwei Formen kommen vor:
   // - `club.errors` aus der Modellvalidierung: Feldname -> Meldungen
   //   (etwa ein zu langes Kuerzel oder eine ungueltige Kontaktadresse).
-  // - `{ success: false, message }` aus den Vorpruefungen. Die zum
-  //   Landesverband (Wechsel ohne Recht, Verband ohne Spielbetrieb) nennen ihn
-  //   im Text; eine eigene Feldangabe liefert der Server dafuer nicht.
+  // - `{ success: false, message }` aus den Vorpruefungen. Erreichbar ist hier
+  //   die 422 beim Anlegen (state_association_error_message: Verband fehlt,
+  //   existiert nicht oder hat keinen Spielbetrieb). Sie nennt den Verband nur
+  //   im Text, eine eigene Feldangabe liefert der Server nicht. Die
+  //   Landesverband-Absagen beim Bearbeiten kommen als 403, und darauf leitet
+  //   der ErrorInterceptor auf die Startseite um; bis hierher kommen sie nicht.
   // Fehlende Pflichtangaben meldet der Server ebenfalls so, die faengt aber
   // schon `_fieldErrors` ab, bevor der Knopf erscheint.
   private _serverErrorFields(err: HttpErrorResponse): (keyof Club)[] {
@@ -772,7 +781,7 @@ export class ClubEditComponent implements OnInit, OnDestroy {
     // Die Auswahl haengt am Formular, nicht am geladenen Vereins-Datensatz.
     // Beim Anlegen gibt es noch keine Vereinsmanager, dann bleibt sie leer.
     club.notify_user_ids = this.notifyUserIds;
-    this.serverErrorFields = [];
+    this.serverErrors = {};
 
     this._clubService.adminCreateClub(club).subscribe({
       next: (result) => {
@@ -794,7 +803,10 @@ export class ClubEditComponent implements OnInit, OnDestroy {
       // Logo-Upload darüber (#84, #228). Hier nur die beanstandeten Felder
       // merken, damit ihr Reiter markiert wird.
       error: (err: HttpErrorResponse) => {
-        this.serverErrorFields = this._serverErrorFields(err);
+        this.serverErrors = {};
+        for (const feld of this._serverErrorFields(err)) {
+          this.serverErrors[feld] = club[feld];
+        }
         this._cdr.markForCheck();
       },
     });
