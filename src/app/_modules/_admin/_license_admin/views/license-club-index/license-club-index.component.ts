@@ -22,6 +22,9 @@ export class LicenseClubIndexComponent implements OnInit {
 
   clubAndTeams: ClubWithTeams[] = [];
 
+  /** Aufgeklappte Lizenzuebersicht je Verein (club.id), anfangs alle zu. */
+  summaryOpen: Record<number, boolean> = {};
+
   constructor(
     private _associationService: AssociationService,
     private _clubService: ClubService,
