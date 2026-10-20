@@ -1,9 +1,14 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
+import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { getTranslocoTestingModule } from '@floorball/core';
+import { of } from 'rxjs';
+import { getTranslocoTestingModule, SessionService } from '@floorball/core';
 import { UikitCommonModule } from '@floorball/uikit/common';
 import {
   ClubWithTeams,
@@ -147,8 +152,8 @@ describe('UserEditComponent', () => {
 
 // Archivieren und Loeschen liegen eingeklappt unter "Weitere Aktionen". Der
 // Passwort-Reset bleibt davor sichtbar; bei einem archivierten Konto startet
-// der Bereich offen, damit das Reaktivieren neben dem Archiv-Hinweis nicht
-// erst gesucht werden muss.
+// der Bereich offen, damit das Reaktivieren, auf das der Archiv-Hinweis oben
+// verweist, ohne Aufklappen bereitsteht.
 describe('UserEditComponent – Weitere Aktionen', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -165,10 +170,10 @@ describe('UserEditComponent – Weitere Aktionen', () => {
 
   // Ohne ngOnInit: Die Ladeanfragen sind hier nicht Gegenstand, die Maske
   // rendert allein aus `user` und `currentUser`.
-  function render(
-    permissions: Record<string, boolean>,
-    archivedAt: string | null = null
-  ): { el: HTMLElement; component: UserEditComponent } {
+  function render(permissions: Record<string, boolean>): {
+    el: HTMLElement;
+    component: UserEditComponent;
+  } {
     const fixture = TestBed.createComponent(UserEditComponent);
     const component = fixture.componentInstance;
     spyOn(component, 'ngOnInit');
@@ -178,11 +183,9 @@ describe('UserEditComponent – Weitere Aktionen', () => {
       email: 'konto@example.org',
       roles: [],
       teams: [],
-      archived_at: archivedAt,
+      archived_at: null,
     } as unknown as UserAdminEntry;
     component.currentUser = { id: 1, permissions } as unknown as User;
-    // Wie das Laden in ngOnInit
-    component.moreActionsOpen = !!archivedAt;
     fixture.detectChanges();
     return { el: fixture.nativeElement as HTMLElement, component };
   }
@@ -216,8 +219,34 @@ describe('UserEditComponent – Weitere Aktionen', () => {
     expect(resetButton!.closest('details')).toBeNull();
   });
 
-  it('startet bei einem archivierten Konto offen', () => {
-    const { el } = render(admin, '2026-10-01T10:00:00Z');
+  // Ueber das echte Laden: ngOnInit holt das Konto, erst dessen archived_at
+  // entscheidet, ob der Bereich offen startet.
+  it('startet bei einem archivierten Konto nach dem Laden offen', () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { params: { id: '12' } } },
+    });
+    TestBed.overrideProvider(SessionService, {
+      useValue: {
+        currentUser$: of({ id: 1, permissions: admin } as unknown as User),
+      },
+    });
+    const fixture = TestBed.createComponent(UserEditComponent);
+    fixture.detectChanges();
+
+    TestBed.inject(HttpTestingController)
+      .match((req) => req.url.endsWith('/12.json'))
+      .forEach((req) =>
+        req.flush({
+          id: 12,
+          username: 'konto',
+          email: 'konto@example.org',
+          roles: [],
+          teams: [],
+          archived_at: '2026-10-01T10:00:00Z',
+        })
+      );
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
 
     expect(details(el)!.open).toBeTrue();
     expect(details(el)!.textContent).toContain('unarchiveButton');

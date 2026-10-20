@@ -44,9 +44,11 @@ export class UserEditComponent implements OnInit, OnDestroy {
   sendingReset = false;
   deleting = false;
   archiving = false;
-  // Archivieren und Loeschen liegen eingeklappt unter "Weitere Aktionen". Bei
-  // einem archivierten Konto startet der Bereich offen: Der Hinweis oben
-  // verweist dann auf das Reaktivieren, das nicht erst gesucht werden soll.
+  // Archivieren und Loeschen liegen eingeklappt unter "Weitere Aktionen" am
+  // Ende der Maske. Bei einem archivierten Konto startet der Bereich offen,
+  // damit das Reaktivieren, auf das der Archiv-Hinweis oben verweist, ohne
+  // Aufklappen bereitsteht. Nur beim ersten Laden gesetzt, damit der Bereich
+  // nach dem Archivieren/Reaktivieren nicht von selbst umklappt.
   moreActionsOpen = false;
 
   // Quelle der Vereins-Dropdowns: auf den eigenen Zuständigkeitsbereich

@@ -113,7 +113,7 @@
     "removeRole": "Remove",
     "selectRole": "Select role…",
     "addRole": "Add role",
-    "archivedNotice": "This account has been archived since {{date}}. Logging in is no longer possible.",
+    "archivedNotice": "This account has been archived since {{date}}. Logging in is no longer possible. Reactivate it under “More actions” at the end of the page.",
     "moreActions": "More actions",
     "archiveHeading": "Archive",
     "archiveHint": "An archived account can no longer log in. All data and references are kept; the account can be reactivated at any time.",
