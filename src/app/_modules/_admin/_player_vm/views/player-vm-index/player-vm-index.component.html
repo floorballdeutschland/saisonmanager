@@ -167,7 +167,10 @@
     <!-- Der Import betrifft nur diesen Verein; die Beschriftung nennt ihn,
          damit er nicht mit dem Export im Kopf (alle Vereine) verwechselt
          wird. Er erscheint unter denselben Bedingungen wie bisher der
-         Umschalter in der Zahlenzeile. -->
+         Umschalter in der Zahlenzeile. Anders als das fruehere Panel
+         verschwindet er damit auch, wenn alle Zeilen ausgeblendet sind; der
+         Zustand (showImport, Bericht) bleibt an der Liste und ist beim
+         Wiedereinblenden wieder da. -->
     @if (emailKnown(list) && visiblePlayers(list).length > 0) {
       <div class="mb-6" data-testid="import-toggle">
         <fb-collapsible

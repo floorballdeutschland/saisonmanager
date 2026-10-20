@@ -430,6 +430,11 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="missing-email-count"]')
     ).toBeNull();
+    // Der Import fuellt vor allem Adressen nach; ohne das Feld fehlt er
+    // samt seinem Bereich „Weitere Aktionen" je Verein.
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-toggle"]')
+    ).toBeNull();
   });
 
   // Ein Verein ohne Luecke soll das auch bestaetigt bekommen, statt gar nichts
@@ -456,6 +461,10 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     ) as HTMLElement;
     expect(zaehler.textContent).toContain('Alle mit E-Mail-Adresse');
     expect(zaehler.classList).not.toContain('text-red-600');
+    // Gegenprobe zum Test davor: Mit Feld steht der Import-Bereich da.
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-toggle"]')
+    ).not.toBeNull();
   });
 
   // Die Einleitung erklärt das Deaktivieren; ohne einen einzigen eigenen Verein
