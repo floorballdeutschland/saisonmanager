@@ -7,6 +7,8 @@ import {
   OnInit,
   Output,
   ChangeDetectionStrategy,
+  ElementRef,
+  ViewChild,
 } from '@angular/core';
 import {
   Arena,
@@ -83,6 +85,7 @@ export class GameEditComponent implements OnInit, OnChanges {
   // Aktionsmenue der Zeile (Wertung, Loeschen, Spieltag, Playoff). Frueher ein
   // Checkbox-Trick ohne Zustand; jetzt hier, damit jeder Eintrag es schliesst.
   menuOpen = false;
+  @ViewChild('menuToggle') menuToggle?: ElementRef<HTMLButtonElement>;
   processing = false;
   conflicts: GameSchedulingConflict[] = [];
 
@@ -550,6 +553,17 @@ export class GameEditComponent implements OnInit, OnChanges {
   public closeMenu() {
     this.menuOpen = false;
     this._cdr.markForCheck();
+  }
+
+  // Escape sitzt am umschliessenden Element, nicht am Menue: nach dem Oeffnen
+  // liegt der Fokus noch auf dem Knopf daneben. Danach Fokus zurueck auf den
+  // Knopf, damit er nicht im entfernten Menue verloren geht.
+  public closeMenuByEscape() {
+    if (!this.menuOpen) {
+      return;
+    }
+    this.closeMenu();
+    this.menuToggle?.nativeElement.focus();
   }
 
   public toggleNotice() {

@@ -291,6 +291,40 @@ describe('GameEditComponent', () => {
       expect(q('[data-testid="game-menu"]')).toBeNull();
     });
 
+    // Nach dem Oeffnen liegt der Fokus auf dem Knopf, nicht im Menue. Escape
+    // muss von dort aus wirken und den Fokus auf dem Knopf lassen.
+    it('schliesst sich mit Escape vom Knopf aus', () => {
+      showExisting();
+      const toggle = q('[data-testid="game-menu-toggle"]')!;
+      toggle.focus();
+      openMenu();
+
+      toggle.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      );
+      fixture.detectChanges();
+
+      expect(q('[data-testid="game-menu"]')).toBeNull();
+      expect(document.activeElement).toBe(toggle);
+    });
+
+    it('bringt den Fokus nach Escape aus dem Menue auf den Knopf zurueck', () => {
+      showExisting();
+      openMenu();
+      const entry = q('[data-testid="game-menu-playoff"]')!;
+      entry.focus();
+
+      entry.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      );
+      fixture.detectChanges();
+
+      expect(q('[data-testid="game-menu"]')).toBeNull();
+      expect(document.activeElement).toBe(
+        q('[data-testid="game-menu-toggle"]')
+      );
+    });
+
     it('bietet Loeschen nur ohne ungespeicherte Aenderungen an', () => {
       showExisting();
       component.game.game_number = 'geaendert';
