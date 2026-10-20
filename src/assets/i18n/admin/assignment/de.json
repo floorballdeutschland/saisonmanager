@@ -28,6 +28,7 @@
     "colResult": "Ergebnis",
     "tabOpen": "Offen",
     "tabHistory": "Vergangene",
+    "tabsLabel": "Offene und vergangene Ansetzungen",
     "historyEmpty": "Keine vergangenen Ansetzungen.",
     "historyHint": "Angezeigt werden die laut Spielbericht tatsächlich eingesetzten Schiedsrichter. Fehlt der Eintrag im Bericht, steht ersatzweise die Ansetzung da.",
     "historySourceAssignment": "angesetzt",

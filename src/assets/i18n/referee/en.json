@@ -96,6 +96,7 @@
     "tabGames": "Officiated games",
     "seasonHeading": "Season {{ name }}",
     "tabTests": "Exam results",
+    "tabsLabel": "History sections",
     "noGames": "No games found yet.",
     "gameCountOne": "{{ count }} game",
     "gameCountOther": "{{ count }} games",
