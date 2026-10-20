@@ -403,8 +403,9 @@ describe('TransferRequestListComponent', () => {
     ).toBeFalse();
   });
 
-  // Der Zurueck-Knopf aendert die URL auch waehrend eines Abrufs; dann
-  // gewinnt der neue Abruf, der alte wird abgebrochen.
+  // Die Saisonwahl ist waehrend des Abrufs gesperrt, die URL aber nicht: Ein
+  // eingefuegter Link oder eine Navigation von aussen aendert sie trotzdem.
+  // Dann gewinnt der neue Abruf, der alte wird abgebrochen.
   it('bricht einen laufenden Abruf ab, wenn sich der Umfang aendert', async () => {
     const fixture = await erstellt();
     const erster = httpMock.expectOne(listUrl);
@@ -601,5 +602,18 @@ describe('TransferRequestListComponent', () => {
     expect(c.canExport).toBeFalse();
     c.currentUserClubIds = [11];
     expect(c.canExport).toBeTrue();
+  });
+
+  it('zeigt ohne Vereins- oder Verbandskonto keinen CSV-Export', async () => {
+    const fixture = await geladen([request()], '/?reiter=auswertung');
+
+    const panel = el(fixture, 'tabpanel-auswertung')!;
+    expect(fixture.componentInstance.canExport).toBeFalse();
+    expect(
+      panel.querySelector('[data-testid="transfer-summary"]')
+    ).not.toBeNull();
+    expect(
+      panel.querySelector('[data-testid="transfer-export-csv"]')
+    ).toBeNull();
   });
 });
