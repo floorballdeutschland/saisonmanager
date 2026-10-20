@@ -49,6 +49,7 @@
   "globalList": {
     "title": "Lizenzverwaltung",
     "filter": "Filter",
+    "moreFilters": "Weitere Filter",
     "searchPlayer": "Spieler suchen...",
     "searchClub": "Verein suchen...",
     "genderBoth": "männlich & weiblich",

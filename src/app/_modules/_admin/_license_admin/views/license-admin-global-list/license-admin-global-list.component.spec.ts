@@ -1,4 +1,4 @@
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   HttpClientTestingModule,
@@ -10,6 +10,7 @@ import { config as rxjsConfig, of } from 'rxjs';
 import { AdminLicenseEntry, Season, User } from '@floorball/types';
 import { AssociationService, SessionService } from '@floorball/core';
 
+import { CollapsibleComponent } from '../../../../_uikit/_common/components/molecules/collapsible/collapsible.component';
 import { LicenseAdminGlobalListComponent } from './license-admin-global-list.component';
 
 describe('LicenseAdminGlobalListComponent', () => {
@@ -51,7 +52,9 @@ describe('LicenseAdminGlobalListComponent', () => {
           },
         }),
       ],
-      declarations: [LicenseAdminGlobalListComponent],
+      // Den echten einklappbaren Bereich einbinden, damit die Specs zu
+      // "Weitere Filter" am gerenderten <details>/<summary> pruefen.
+      declarations: [LicenseAdminGlobalListComponent, CollapsibleComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -1337,6 +1340,122 @@ describe('LicenseAdminGlobalListComponent', () => {
       expect(component.filterSeasonId).toBe(18);
       expect(requests.length).toBe(1);
       expect(requests[0].request.params.get('season_id')).toBe('18');
+    });
+  });
+
+  // Seltene Filter liegen im einklappbaren Bereich "Weitere Filter". Der
+  // Zaehler und das offene Starten sollen verhindern, dass ein unsichtbarer
+  // Filter die Liste ohne erkennbaren Grund leert.
+  describe('Weitere Filter', () => {
+    function open(): {
+      fixture: ReturnType<
+        typeof TestBed.createComponent<LicenseAdminGlobalListComponent>
+      >;
+      component: LicenseAdminGlobalListComponent;
+    } {
+      TestBed.inject(AssociationService).seasons$ = of([
+        { id: 18, name: '2026/2027', current: true },
+      ] as Season[]);
+      const fixture = TestBed.createComponent(LicenseAdminGlobalListComponent);
+      fixture.detectChanges();
+      TestBed.inject(HttpTestingController)
+        .match((r) => r.url.endsWith('admin/licenses.json'))
+        .forEach((r) => r.flush([]));
+      fixture.detectChanges();
+      return { fixture, component: fixture.componentInstance };
+    }
+
+    // Liest den gerenderten Bereich: offen laut <details>, Zaehler aus der
+    // Plakette im <summary> (null, wenn keine angezeigt wird).
+    function collapsible(
+      fixture: ReturnType<
+        typeof TestBed.createComponent<LicenseAdminGlobalListComponent>
+      >
+    ): { count: number | null; open: boolean } {
+      const details: HTMLDetailsElement = fixture.nativeElement.querySelector(
+        '[data-testid="more-filters"] details'
+      );
+      const badge = details.querySelector('summary span');
+      return {
+        open: details.open,
+        count: badge ? Number(badge.textContent?.trim()) : null,
+      };
+    }
+
+    it('zaehlt ohne Auswahl nichts und startet zugeklappt', () => {
+      const { fixture, component } = open();
+
+      expect(component.moreFiltersCount).toBe(0);
+      expect(component.moreFiltersOpen).toBeFalse();
+      expect(collapsible(fixture).count).toBeNull();
+      expect(collapsible(fixture).open).toBeFalse();
+    });
+
+    it('zaehlt jeden Filter im Bereich, der vom Standard abweicht', () => {
+      const { component } = open();
+
+      component.filterFieldSize = 'GF';
+      // "maennlich" ist false und muss trotzdem zaehlen
+      component.filterFemale = false;
+      component.filterAgeGroup = 'U17';
+      component.filterLeagueClassId = '3';
+      component.filterLeagueType = 'cup';
+      component.filterLicenseType = 'primary';
+      component.filterGfRole = 'none';
+      component.filterExpressOnly = true;
+
+      expect(component.moreFiltersCount).toBe(8);
+    });
+
+    it('zaehlt die sichtbaren Filter nicht mit', () => {
+      const { component } = open();
+
+      component.search = 'Muster';
+      component.clubSearch = 'Berlin';
+      component.filterGameOperationId = 7;
+      component.filterLeagueId = 3;
+      component.filterStatusId = 2;
+
+      expect(component.moreFiltersCount).toBe(0);
+    });
+
+    it('zeigt den Zaehler am Bereich und setzt ihn mit "Filter zuruecksetzen" auf 0', () => {
+      const { fixture, component } = open();
+
+      component.filterExpressOnly = true;
+      component.filterLicenseType = 'secondary';
+      // OnPush: im Bauteil selbst markieren, nicht im Testgeruest
+      fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+      expect(collapsible(fixture).count).toBe(2);
+
+      component.resetFilters();
+      fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+      expect(collapsible(fixture).count).toBeNull();
+    });
+
+    it('startet offen, wenn eine gemerkte Auswahl dort einen Filter setzt', () => {
+      const first = open();
+      first.component.filterAgeGroup = 'U17';
+      first.fixture.destroy();
+
+      const { fixture, component } = open();
+
+      expect(component.moreFiltersOpen).toBeTrue();
+      expect(collapsible(fixture).open).toBeTrue();
+      expect(collapsible(fixture).count).toBe(1);
+    });
+
+    it('bleibt zu, wenn die gemerkte Auswahl nur sichtbare Filter setzt', () => {
+      const first = open();
+      first.component.filterStatusId = 2;
+      first.fixture.destroy();
+
+      const { fixture, component } = open();
+
+      expect(component.moreFiltersOpen).toBeFalse();
+      expect(collapsible(fixture).open).toBeFalse();
     });
   });
 });
