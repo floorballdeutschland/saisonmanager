@@ -251,5 +251,48 @@ describe('LeagueEditComponent', () => {
         'leagueAdmin.notifications.errMinimumAgeBadInput'
       );
     });
+
+    // Zurueck im Reiter ist das Feld leer, und ein leeres Zahlenfeld loest
+    // kein input aus. Verwerfen ist der einzige Weg zu "keine Untergrenze".
+    it('laesst die unlesbare Eingabe nach dem Reiterwechsel verwerfen', async () => {
+      await open('/ligen/5?reiter=regeln');
+      const component = harness.routeDebugElement!
+        .componentInstance as LeagueEditComponent;
+      component.onMinimumAgeInput({
+        validity: { badInput: true },
+      } as HTMLInputElement);
+      harness.detectChanges();
+
+      tab('liga')!.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      tab('regeln')!.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+
+      const field = panel().querySelector<HTMLInputElement>(
+        '[name="minimum_age"]'
+      )!;
+      expect(field.value).toBe('');
+      expect(component.error(league)).toBeTrue();
+
+      harness
+        .routeNativeElement!.querySelector<HTMLButtonElement>(
+          '[data-testid="discard-minimum-age"]'
+        )!
+        .click();
+      harness.detectChanges();
+
+      expect(component.error(league)).toBeFalse();
+      expect(league.minimum_age).toBeNull();
+      expect(
+        harness.routeNativeElement!.querySelector(
+          '[data-testid="discard-minimum-age"]'
+        )
+      ).toBeNull();
+      expect(harness.routeNativeElement!.textContent).toContain(
+        'leagueAdmin.edit.saveChanges'
+      );
+    });
   });
 });

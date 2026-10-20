@@ -25,7 +25,8 @@
           <div>
             <!-- Reiter: Die Hauptdaten bleiben vorn, weil sie bei jedem Anlegen
                  gebraucht werden. Spielregeln und Modus aendern sich selten.
-                 Speichern steht unter der Leiste, weil es alle Reiter betrifft;
+                 Speichern steht unter den Reitern, ausserhalb jedes Reiters,
+                 und wird immer gerendert, weil es alle Reiter betrifft;
                  die Pruefung laeuft ueber das Modell, nicht ueber das DOM, und
                  erreicht so auch Felder in verborgenen Reitern. -->
             <fb-tabs [label]="'leagueAdmin.edit.tabs.label' | transloco">
@@ -983,6 +984,20 @@
                     </h3>
                     @for (msg of errorMsg(league); track msg) {
                       <p>{{ msg }}</p>
+                    }
+                    <!-- Nach einem Reiterwechsel ist das Mindestalter-Feld leer;
+                         ein leeres Zahlenfeld loest kein input aus, das Feld
+                         "leeren" geht also nicht. Verwerfen heisst bewusst:
+                         keine Untergrenze. -->
+                    @if (minimumAgeBadInput) {
+                      <button
+                        type="button"
+                        data-testid="discard-minimum-age"
+                        (click)="discardMinimumAgeInput(league)"
+                        class="mt-2 font-bold text-black text-sm px-4 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+                      >
+                        {{ "leagueAdmin.edit.discardMinimumAge" | transloco }}
+                      </button>
                     }
                   </div>
                 }

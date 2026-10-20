@@ -5,6 +5,8 @@ import {
   OnInit,
   ViewEncapsulation,
   ChangeDetectionStrategy,
+  ElementRef,
+  ViewChild,
 } from '@angular/core';
 import {
   AssociationService,
@@ -384,6 +386,20 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this.minimumAgeBadInput = input.validity.badInput;
     this._cdr.markForCheck();
   }
+
+  // Steht das Feld noch im DOM (Reiter Spielregeln offen), wird auch der
+  // unlesbare Text darin geleert. Sonst stuende er sichtbar da, waehrend
+  // "keine Untergrenze" gespeichert wird.
+  public discardMinimumAgeInput(league: League): void {
+    league.minimum_age = null;
+    this.minimumAgeBadInput = false;
+    const input = this._minimumAgeInput?.nativeElement;
+    if (input) input.value = '';
+    this._cdr.markForCheck();
+  }
+
+  @ViewChild('minimumAgeInput')
+  private _minimumAgeInput?: ElementRef<HTMLInputElement>;
 
   public getLeague(id: string) {
     this.league$ = this._leagueService
