@@ -40,7 +40,7 @@
     "reactivate": "Reactivate",
     "empty": "No players found for your club.",
     "exportCsv": "CSV export",
-    "moreActions": "More actions",
+    "exportSection": "Export",
     "moreActionsClub": "More actions for {{ club }}",
     "exportHint": "Downloads all players as a CSV file. It also serves as the template for the import.",
     "exportHintAllClubs": "Downloads the players of all clubs on this page into one CSV file (column “Verein”). The import, in contrast, runs per club, under “More actions” at each list.",

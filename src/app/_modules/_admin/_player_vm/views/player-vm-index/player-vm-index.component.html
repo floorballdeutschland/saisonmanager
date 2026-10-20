@@ -1,6 +1,7 @@
 <div class="p-4 lg:p-8">
   <!-- Export und Import braucht ein Verein selten, das Anlegen dagegen
-       staendig. Beide liegen deshalb in eingeklappten „Weitere Aktionen"; der
+       staendig. Beide liegen deshalb eingeklappt (Kopf „Export", Liste
+       „Weitere Aktionen fuer <Verein>"); der
        Anlege-Knopf bleibt offen sichtbar. Der Export nimmt ALLE Vereine der
        Seite in eine Datei (Spalte „Verein") und steht darum im Kopf. Der
        Import laeuft dagegen je Verein, weil die API den Verein braucht, gegen
@@ -11,8 +12,8 @@
     <h1 class="text-2xl font-bold">
       {{ "playerVm.index.title" | transloco }}
     </h1>
-    <div class="shrink-0 max-w-xs" data-testid="more-actions-head">
-      <fb-collapsible [label]="'playerVm.index.moreActions' | transloco">
+    <div class="shrink-0 max-w-xs" data-testid="export-section">
+      <fb-collapsible [label]="'playerVm.index.exportSection' | transloco">
         <button
           data-testid="export-csv"
           type="button"

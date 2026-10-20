@@ -40,7 +40,7 @@
     "reactivate": "Reaktivieren",
     "empty": "Keine Spieler*innen für deinen Verein gefunden.",
     "exportCsv": "CSV-Export",
-    "moreActions": "Weitere Aktionen",
+    "exportSection": "Export",
     "moreActionsClub": "Weitere Aktionen für {{ club }}",
     "exportHint": "Lädt alle Spieler*innen als CSV-Datei herunter. Sie dient auch als Vorlage für den Import.",
     "exportHintAllClubs": "Lädt die Spieler*innen aller Vereine dieser Seite in eine CSV-Datei (Spalte „Verein“). Der Import läuft dagegen je Verein, unter „Weitere Aktionen“ an der jeweiligen Liste.",

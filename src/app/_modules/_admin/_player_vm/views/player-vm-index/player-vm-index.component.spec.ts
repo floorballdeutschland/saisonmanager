@@ -493,6 +493,7 @@ describe('PlayerVmIndexComponent (CSV)', () => {
                 emailMissingCount: '{{ count }} ohne E-Mail-Adresse',
                 emailAllPresent: 'Alle mit E-Mail-Adresse',
                 moreActionsClub: 'Weitere Aktionen für {{ club }}',
+                exportSection: 'Export',
                 colEmail: 'E-Mail',
                 colBirthdate: 'Geburtsdatum',
                 skipAlreadySet: 'war schon gefüllt',
@@ -804,7 +805,8 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     expect(component.clubLists[1].showImport).toBeFalse();
   });
 
-  // Export und Import liegen eingeklappt unter „Weitere Aktionen". Der Export
+  // Export und Import liegen eingeklappt („Export" im Kopf, „Weitere Aktionen
+  // fuer <Verein>" an der Liste). Der Export
   // gilt fuer alle Vereine und steht im Kopf, der Import je Verein an dessen
   // Liste; die Beschriftung des Imports nennt den Verein, damit beides nicht
   // verwechselt wird.
@@ -826,7 +828,8 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    const kopf = el.querySelector('[data-testid="more-actions-head"]')!;
+    const kopf = el.querySelector('[data-testid="export-section"]')!;
+    expect(kopf.querySelector('summary')!.textContent!.trim()).toBe('Export');
     expect(kopf.querySelector('[data-testid="export-csv"]')).not.toBeNull();
     expect(kopf.querySelector('details')!.open).toBeFalse();
 
