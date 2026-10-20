@@ -12,6 +12,7 @@ import {
   GameAdditionalFields,
   GameDayReportFilter,
   GameDayReportOverview,
+  GameReportReview,
   GameEvent,
   GameEventInput,
   GameFields,
@@ -446,6 +447,26 @@ export class GameService {
     return this.http.get<GameDayReportOverview>(
       environment.apiURL + 'admin/game_days/report_overview.json',
       { params }
+    );
+  }
+
+  // Erledigt-Vermerk der SBK in der Arbeitsansicht „Spielberichte".
+  // seenUntil: der `last_change_at` der Zeile, die die SBK vor sich hat. Ist
+  // serverseitig etwas Neueres da, antwortet die API mit 409.
+  public setReportReview(
+    gameId: number,
+    comment: string | null,
+    seenUntil: string | null
+  ) {
+    return this.http.post<GameReportReview>(
+      environment.apiURL + 'admin/games/' + gameId + '/report_review',
+      { comment, seen_until: seenUntil }
+    );
+  }
+
+  public clearReportReview(gameId: number) {
+    return this.http.delete<GameReportReview>(
+      environment.apiURL + 'admin/games/' + gameId + '/report_review'
     );
   }
 
