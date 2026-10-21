@@ -644,6 +644,88 @@ describe('MatchEventFormComponent', () => {
     });
   });
 
+  // api#835: Ein Tor vor erfassten Toren schreibt deren Spielstand um und geht
+  // nur mit ausdrücklicher Bestätigung durch.
+  describe('Tor vor erfassten Toren', () => {
+    let gameService: GameService;
+
+    beforeEach(() => {
+      gameService = TestBed.inject(GameService);
+      component.type = 'goal';
+      component.team = 'guest';
+      component.currentPeriod = '1';
+      component.minutes = 3;
+      component.seconds = 13;
+      component.minutesValid = true;
+      component.secondsValid = true;
+      component.playerNumber = 82;
+      component.match = {
+        id: 1,
+        league_id: 1,
+        players: { home: [], guest: [] },
+        referees: [],
+        result: { home_goals: 1, guest_goals: 0 },
+        events: [
+          {
+            event_id: 1,
+            event_type: 'goal',
+            event_team: 'home',
+            period: 1,
+            time: '6:33',
+          },
+        ],
+      } as unknown as Game;
+    });
+
+    it('sperrt das Speichern, bis die Änderung bestätigt ist', () => {
+      expect(component.rewrittenGoalCount()).toBe(1);
+      expect(component.submitDisabled()).toBeTrue();
+
+      component.onScoreChangeConfirmed(true);
+
+      expect(component.submitDisabled()).toBeFalse();
+    });
+
+    it('schickt die Bestätigung mit', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.onScoreChangeConfirmed(true);
+
+      component.submitEvent();
+
+      expect(
+        addEvent.calls.mostRecent().args[1].confirm_score_change
+      ).toBeTrue();
+    });
+
+    // Der Haken gilt für die bestätigte Eingabe. Wer danach die Zeit ändert,
+    // muss neu prüfen.
+    it('verlangt nach einer Zeitänderung eine neue Bestätigung', () => {
+      component.onScoreChangeConfirmed(true);
+      component.minutes = 2;
+
+      expect(component.scoreChangeConfirmed()).toBeFalse();
+      expect(component.submitDisabled()).toBeTrue();
+    });
+
+    it('fragt bei einem Tor nach dem letzten Tor nicht nach', () => {
+      const addEvent = spyOn(gameService, 'addEvent').and.returnValue(of([]));
+      component.minutes = 9;
+
+      expect(component.rewrittenGoalCount()).toBe(0);
+      expect(component.submitDisabled()).toBeFalse();
+      component.submitEvent();
+      expect(
+        addEvent.calls.mostRecent().args[1].confirm_score_change
+      ).toBeUndefined();
+    });
+
+    it('gilt nicht für Strafen', () => {
+      component.type = 'penalty';
+
+      expect(component.rewrittenGoalCount()).toBe(0);
+    });
+  });
+
   describe('technisches Tor', () => {
     let gameService: GameService;
 
