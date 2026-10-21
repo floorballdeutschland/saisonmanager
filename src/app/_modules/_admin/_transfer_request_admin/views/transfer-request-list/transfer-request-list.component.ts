@@ -6,15 +6,16 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import {
+  AssociationService,
   NotificationService,
   SessionService,
   TransferRequestService,
 } from '@floorball/core';
-import { TransferRequest } from '@floorball/types';
+import { TransferRequest, TransferRequestType } from '@floorball/types';
 import {
   exportTransferCsv,
   transferStatusClass,
@@ -22,6 +23,36 @@ import {
   transferTypeClass,
   transferTypeLabel,
 } from '../../transfer-request-presentation';
+
+/**
+ * Wert des Query-Parameters `saison` fuer „alle Saisons". Ohne Parameter gilt
+ * die laufende Saison, eine Zahl waehlt genau diese Saison.
+ */
+export const ALL_SEASONS_PARAM = 'alle';
+
+/**
+ * Erste Saison mit Transferverfahren im System (2026/2027). Fest und nicht
+ * „die laufende Saison": Die Auswahl soll mit den Jahren wachsen, statt bei
+ * jedem Saisonwechsel die Vorjahre zu verlieren. Aeltere Saisons haben keine
+ * Vorgaenge und blaehten das Feld nur auf.
+ */
+export const FIRST_TRANSFER_SEASON_ID = 18;
+
+const OPEN_STATUSES: string[] = [
+  'pending_club',
+  'pending_player',
+  'pending_lv',
+];
+
+export interface TransferSummaryRow {
+  key: TransferRequestType | 'total';
+  outgoing: number;
+  incoming: number;
+  open: number;
+  granted: number;
+  failed: number;
+  total: number;
+}
 
 @Component({
   templateUrl: './transfer-request-list.component.html',
@@ -36,13 +67,21 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   isSbk = false;
   withdrawingId: number | null = null;
 
+  /** Saisons aus `init.json`, die Vorgaenge tragen nur die ID. */
+  private _seasons: { id: number; name: string }[] = [];
+
+  /** Namen aller Saisons, auch der aelteren, fuer eine Wahl aus der URL. */
+  private _allSeasonNames = new Map<number, string>();
+
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _transferService: TransferRequestService,
     private _sessionService: SessionService,
+    private _associationService: AssociationService,
     private _notificationService: NotificationService,
     private _router: Router,
+    private _route: ActivatedRoute,
     private _transloco: TranslocoService,
     private _cdr: ChangeDetectorRef
   ) {}
@@ -58,10 +97,45 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
         },
       });
 
-    this.loadRequests();
+    // `init.json` und nicht `admin/settings/seasons`: Letzteres ist Admin und
+    // RSK vorbehalten, der Vereinsmanager bekaeme ein 403.
+    this._associationService.seasons$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((seasons) => {
+        this._allSeasonNames = new Map(
+          (seasons ?? []).map((s) => [Number(s.id), s.name])
+        );
+        // Nach Zahl verglichen: Saison-IDs kommen teils als String.
+        this._seasons = (seasons ?? [])
+          .map((s) => ({ id: Number(s.id), name: s.name }))
+          .filter((s) => s.id >= FIRST_TRANSFER_SEASON_ID);
+        this._cdr.markForCheck();
+      });
+
+    // Die Saisonwahl steht in der URL (`?saison=`), damit Neuladen und ein
+    // geteilter Link dieselbe Auswahl zeigen. Der erste Wert loest auch den
+    // ersten Abruf aus. Neu geladen wird nur, wenn sich der Umfang aendert
+    // (laufend <-> alle); der Wechsel zwischen einzelnen Saisons filtert die
+    // bereits vollstaendige Liste im Browser. `?reiter=` laeuft ueber
+    // denselben Strom und loest damit keinen Abruf aus.
+    this._route.queryParamMap
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((params) => {
+        const raw = params.get('saison');
+        const id = raw && raw !== ALL_SEASONS_PARAM ? Number(raw) : NaN;
+        this.selectedSeasonId = Number.isInteger(id) && id > 0 ? id : null;
+        const all = raw === ALL_SEASONS_PARAM || this.selectedSeasonId !== null;
+        if (all !== this._requestedAllSeasons) {
+          this.allSeasons = all;
+          this.loadRequests();
+        } else {
+          this._cdr.markForCheck();
+        }
+      });
   }
 
   ngOnDestroy(): void {
+    this._load?.unsubscribe();
     this._destroy$.next();
     this._destroy$.complete();
   }
@@ -74,14 +148,67 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
    */
   allSeasons = false;
 
-  /** Welcher Umfang tatsächlich in `requests` steht. */
-  private _loadedAllSeasons = false;
+  /** Mit welchem Umfang zuletzt abgerufen wurde; `null` vor dem ersten Abruf. */
+  private _requestedAllSeasons: boolean | null = null;
 
-  toggleAllSeasons(): void {
-    if (this.loading) return;
+  /** Der laufende Abruf; ein neuer bricht ihn ab, damit keine alte Antwort gewinnt. */
+  private _load?: Subscription;
 
-    this.allSeasons = !this.allSeasons;
-    this.loadRequests();
+  /**
+   * Einzelne Saison; `null` heisst laufende Saison oder, mit `allSeasons`,
+   * alle. Gefiltert wird im Browser, die Liste ist dann ohnehin vollstaendig
+   * geladen.
+   *
+   * Massgeblich ist `season_id`, also die Saison, in der der Vorgang angelegt
+   * wurde, nicht die des Genehmigungsdatums. Ein im Mai beantragter und im
+   * Juli genehmigter Wechsel zaehlt damit zur alten Saison.
+   */
+  selectedSeasonId: number | null = null;
+
+  /** Wert des Auswahlfelds: `''` laufende Saison, `alle` oder die Saison-ID. */
+  get seasonValue(): string {
+    if (this.selectedSeasonId !== null) return String(this.selectedSeasonId);
+    return this.allSeasons ? ALL_SEASONS_PARAM : '';
+  }
+
+  /** Schreibt die Wahl in die URL; geladen wird ueber `queryParamMap`. */
+  selectSeason(value: string): void {
+    this._router.navigate([], {
+      relativeTo: this._route,
+      queryParams: { saison: value || null },
+      queryParamsHandling: 'merge',
+      // Wie der Reiterwechsel kein eigener Verlaufsschritt.
+      replaceUrl: true,
+    });
+  }
+
+  /**
+   * Saisons aus `init.json` ab `FIRST_TRANSFER_SEASON_ID`, neueste zuerst,
+   * und nicht nur die mit Vorgaengen: Die stuenden erst nach dem Abruf aller
+   * Saisons fest. Eine Saison aus der URL, die hier fehlt (aelter oder
+   * unbekannt), bleibt waehlbar, sonst zeigte das Feld etwas anderes als die
+   * gefilterte Liste.
+   */
+  get seasonOptions(): { id: number; name: string }[] {
+    const options = [...this._seasons];
+    if (
+      this.selectedSeasonId !== null &&
+      !options.some((s) => s.id === this.selectedSeasonId)
+    ) {
+      const known = this._allSeasonNames.get(this.selectedSeasonId);
+      options.push({
+        id: this.selectedSeasonId,
+        name: known ?? String(this.selectedSeasonId),
+      });
+    }
+    return options.sort((a, b) => b.id - a.id);
+  }
+
+  /** Grundlage fuer Tabellen, Zaehlung und CSV. */
+  get visibleRequests(): TransferRequest[] {
+    if (!this.allSeasons || this.selectedSeasonId === null)
+      return this.requests;
+    return this.requests.filter((r) => r.season_id === this.selectedSeasonId);
   }
 
   /**
@@ -92,38 +219,34 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   loadFailed = false;
 
   loadRequests(): void {
+    this._load?.unsubscribe();
+    this._requestedAllSeasons = this.allSeasons;
     this.loading = true;
     this.loadFailed = false;
     this._cdr.markForCheck();
-    this._transferService
-      .getAll(this.allSeasons)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (result) => {
-          this.requests = result;
-          this._loadedAllSeasons = this.allSeasons;
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this._notificationService.error(
-            this._transloco.translate(
-              'transferRequestAdmin.notifications.loadError'
-            )
-          );
-          // Die alten Zeilen mit weg: Sonst stehen Tabelle und Fehlerkasten
-          // uebereinander, und der Landesverband liest die stehengebliebenen
-          // Zeilen als vollstaendiges Ergebnis.
-          this.requests = [];
-          // Und der Schalter zurueck auf das, was tatsaechlich geladen ist --
-          // sonst behauptet seine Beschriftung, die Vergangenheit sei
-          // eingeblendet.
-          this.allSeasons = this._loadedAllSeasons;
-          this.loading = false;
-          this.loadFailed = true;
-          this._cdr.markForCheck();
-        },
-      });
+    this._load = this._transferService.getAll(this.allSeasons).subscribe({
+      next: (result) => {
+        this.requests = result;
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this._notificationService.error(
+          this._transloco.translate(
+            'transferRequestAdmin.notifications.loadError'
+          )
+        );
+        // Die alten Zeilen mit weg: Sonst stehen Tabelle und Fehlerkasten
+        // uebereinander, und der Landesverband liest die stehengebliebenen
+        // Zeilen als vollstaendiges Ergebnis.
+        // Die Saisonwahl bleibt stehen: Sie kommt aus der URL, und
+        // „Erneut versuchen" laedt genau sie noch einmal.
+        this.requests = [];
+        this.loading = false;
+        this.loadFailed = true;
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   openDetail(id: number): void {
@@ -216,6 +339,71 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Der Verein darf die Ausfuhr ebenso ziehen wie der Verband: Er sieht ohnehin
+   * jede Zeile, und nur so kann er eine Gebuehrenrechnung gegenpruefen.
+   */
+  get canExport(): boolean {
+    return this.isSbk || this.currentUserClubIds.length > 0;
+  }
+
+  /**
+   * Zaehlung je Typ. `granted` folgt genau der Auswahl von `grantedRequests`,
+   * damit die Zahl „erteilt" mit den Zeilen der CSV uebereinstimmt; `open` und
+   * `failed` teilen den Rest, jeder Vorgang steht in genau einer der drei.
+   *
+   * Richtung nur fuer Vereinskonten: Abgehend heisst, ein eigener Verein ist
+   * der abgebende, eingehend, ein eigener Verein ist der aufnehmende. Ein
+   * Wechsel zwischen zwei eigenen Vereinen zaehlt in beiden Spalten.
+   */
+  get summary(): TransferSummaryRow[] {
+    const rows: TransferSummaryRow[] = (
+      ['transfer', 'release'] as TransferRequestType[]
+    ).map((type) =>
+      this._summarize(
+        type,
+        this.visibleRequests.filter((r) =>
+          type === 'release'
+            ? r.request_type === 'release'
+            : r.request_type !== 'release'
+        )
+      )
+    );
+    rows.push(this._summarize('total', this.visibleRequests));
+    return rows;
+  }
+
+  get showDirection(): boolean {
+    return this.currentUserClubIds.length > 0;
+  }
+
+  private _summarize(
+    key: TransferRequestType | 'total',
+    requests: TransferRequest[]
+  ): TransferSummaryRow {
+    const own = (id: number | undefined) =>
+      id != null && this.currentUserClubIds.includes(id);
+    const granted = requests.filter((r) => this._isGranted(r)).length;
+    const open = requests.filter(
+      (r) => !this._isGranted(r) && OPEN_STATUSES.includes(r.status)
+    ).length;
+    return {
+      key,
+      outgoing: requests.filter((r) => own(r.former_club?.id)).length,
+      incoming: requests.filter((r) => own(r.requesting_club?.id)).length,
+      open,
+      granted,
+      failed: requests.length - granted - open,
+      total: requests.length,
+    };
+  }
+
+  private _isGranted(r: TransferRequest): boolean {
+    return (
+      !!r.lv_approved_at && r.status !== 'withdrawn' && r.status !== 'expired'
+    );
+  }
+
+  /**
    * Vorgänge, die der Landesverband genehmigt hat und die nicht nachträglich
    * annulliert wurden — Grundlage der Gebührenabrechnung, die einmal am
    * Saisonende läuft.
@@ -239,10 +427,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
    * der Datei, statt von einem Filter verschluckt zu werden.
    */
   get grantedRequests(): TransferRequest[] {
-    return this.requests.filter(
-      (r) =>
-        !!r.lv_approved_at && r.status !== 'withdrawn' && r.status !== 'expired'
-    );
+    return this.visibleRequests.filter((r) => this._isGranted(r));
   }
 
   exportCsv(): void {
@@ -250,7 +435,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   get pendingRequests(): TransferRequest[] {
-    return this.requests.filter(
+    return this.visibleRequests.filter(
       (r) =>
         r.status === 'pending_club' ||
         r.status === 'pending_player' ||
@@ -260,7 +445,7 @@ export class TransferRequestListComponent implements OnInit, OnDestroy {
   }
 
   get completedRequests(): TransferRequest[] {
-    return this.requests.filter(
+    return this.visibleRequests.filter(
       (r) =>
         r.status === 'approved' ||
         r.status === 'revoked' ||

@@ -210,6 +210,10 @@ export interface Game {
   // Frontend-Deploy und dem passenden API-Deploy fehlt das Feld, und der
   // Kader-Dialog filtert dann wie bisher allein auf „erteilt".
   requested_license_playable?: boolean;
+  // Hoechstzahl Spieler je Mannschaft (Grossfeld 20, Kleinfeld 14), api#784.
+  // Fehlt oder ist null bei Ligen ohne Feldgroesse und vor dem API-Deploy:
+  // dann zeigt die Kadermaske keinen Zaehler und sperrt nichts.
+  max_lineup_players?: number | null;
   arena: number;
   arena_name: string;
   arena_address: string;
@@ -238,6 +242,14 @@ export interface Game {
   current_period_title: PeriodTitles;
   live_stream_link?: string | null;
   vod_link?: string | null;
+  // Tabletmodus (fe#344, api#816): `tablet_capture` ist wahr, sobald für das
+  // Spiel ein Schuss am Tablet erfasst wurde. Nur dann zeigt die Spielseite den
+  // Reiter „Ausführliche Statistik“. `tablet_shots_complete` bestätigt das
+  // Sekretariat beim Abschluss, `null` heißt: nicht beantwortet.
+  //
+  // Optional, weil Frontend und API getrennt ausgerollt werden.
+  tablet_capture?: boolean;
+  tablet_shots_complete?: boolean | null;
   permission?: string[];
   forfait?: number;
   // Von der SBK festgesetztes Ergebnis einer kampflosen Wertung, und daneben

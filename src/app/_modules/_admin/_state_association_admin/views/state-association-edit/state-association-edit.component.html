@@ -15,927 +15,1055 @@
     </h1>
   </div>
 
-  <form (ngSubmit)="submit()" class="flex flex-col gap-4 mb-8">
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold">{{
-        "stateAssociationAdmin.edit.nameLabel" | transloco
-      }}</label>
-      <input
-        type="text"
-        [(ngModel)]="stateAssociation.name"
-        name="name"
-        required
-        [placeholder]="'stateAssociationAdmin.edit.namePlaceholder' | transloco"
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      />
-    </div>
-
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold">{{
-        "stateAssociationAdmin.edit.shortNameLabel" | transloco
-      }}</label>
-      <input
-        type="text"
-        [(ngModel)]="stateAssociation.short_name"
-        name="short_name"
-        [placeholder]="
-          'stateAssociationAdmin.edit.shortNamePlaceholder' | transloco
-        "
-        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-      />
-    </div>
-
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-bold">{{
-        "stateAssociationAdmin.edit.parentLabel" | transloco
-      }}</label>
-      @if (canManageLifecycle) {
-        <select
-          [(ngModel)]="stateAssociation.parent_id"
-          (ngModelChange)="onParentChanged()"
-          name="parent_id"
-          [disabled]="hasChildren"
-          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-        >
-          <option [ngValue]="null">
-            {{ "stateAssociationAdmin.edit.parentNone" | transloco }}
-          </option>
-          @for (sa of rootStateAssociations; track sa) {
-            <option [ngValue]="sa.id">
-              {{ sa.name }}
-            </option>
-          }
-        </select>
-      }
-      @if (!canManageLifecycle) {
-        <span class="text-sm py-2">
-          {{
-            stateAssociation.parent_name ||
-              ("stateAssociationAdmin.edit.parentNone" | transloco)
-          }}
-        </span>
-      }
-      @if (canManageLifecycle && hasChildren) {
-        <span class="text-xs text-fb-gray-400">
-          {{ "stateAssociationAdmin.edit.parentHasChildrenHint" | transloco }}
-        </span>
-      }
-      @if (hasParent) {
-        <span
-          class="text-xs text-fb-gray-400"
-          [innerHTML]="
-            'stateAssociationAdmin.edit.parentInheritedHint'
-              | transloco: { name: stateAssociation.parent_name }
-          "
-        >
-        </span>
-      }
-    </div>
-
-    <div class="border-t border-fb-gray-200 pt-4">
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        {{ "stateAssociationAdmin.edit.statesHeading" | transloco }}
-      </div>
-
-      <span class="text-xs text-fb-gray-400 block mb-3">
-        {{ "stateAssociationAdmin.edit.statesHint" | transloco }}
-      </span>
-
-      @if (canManageLifecycle) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          @for (state of germanStates; track state.isocode) {
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                [checked]="isStateSelected(state.isocode)"
-                (change)="toggleState(state.isocode)"
-                [name]="'state_' + state.isocode"
-                class="h-4 w-4 rounded border-fb-gray-600 accent-black"
-              />
-              <span class="text-sm">{{ state.name }}</span>
-            </label>
-          }
-        </div>
-      }
-
-      @if (!canManageLifecycle) {
-        <span class="text-sm py-2 block">
-          {{
-            effectiveStateNames ||
-              ("stateAssociationAdmin.edit.statesNone" | transloco)
-          }}
-        </span>
-      }
-
-      @if (canManageLifecycle && inheritedStates.length) {
-        <span class="text-xs text-fb-gray-400 block mt-3">
-          {{
-            "stateAssociationAdmin.edit.statesInheritedHint"
-              | transloco: { states: inheritedStateNames }
-          }}
-        </span>
-      }
-    </div>
-
-    <div
-      class="border-t border-fb-gray-200 pt-4"
-      [class.opacity-40]="hasParent"
+  <!-- Die Maske ist in Reiter geteilt, damit die selten gebrauchten Bereiche
+       nicht ueber den Stammdaten stehen. Stammdaten, Einstellungen und Medien
+       sind je ein eigenes <form> mit demselben Speichern-Knopf: alle drei
+       schreiben ueber submit() in denselben Datensatz, und das Modell haelt
+       die Werte auch fuer die gerade nicht gerenderten Reiter. Freigaben und
+       Spieltagsbericht speichern jede Aenderung sofort selbst und brauchen
+       den Knopf deshalb nicht. -->
+  <fb-tabs [label]="'stateAssociationAdmin.edit.tabs.label' | transloco">
+    <!-- Name ist das einzige Pflichtfeld. Ohne ihn ist Speichern in jedem
+         Reiter gesperrt; die Markierung zeigt, wo er fehlt. -->
+    <ng-template
+      fbTab="stammdaten"
+      [fbTabLabel]="'stateAssociationAdmin.edit.tabs.stammdaten' | transloco"
+      [fbTabInvalid]="nameMissing"
     >
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        {{ "stateAssociationAdmin.edit.emailHeading" | transloco }}
-      </div>
-
-      <div class="flex flex-col gap-3">
+      <form (ngSubmit)="submit()" class="flex flex-col gap-4 mb-8">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-bold">{{
-            "stateAssociationAdmin.edit.vskEmailLabel" | transloco
+            "stateAssociationAdmin.edit.nameLabel" | transloco
           }}</label>
-          <input
-            type="email"
-            [(ngModel)]="stateAssociation.vsk_email"
-            name="vsk_email"
-            [disabled]="hasParent"
-            [placeholder]="mailboxPlaceholder('vsk')"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-          />
-          @if (!hasParent) {
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.vskEmailHint" | transloco
-            }}</span>
-          }
-          @if (showInheritedValues) {
-            <span class="text-xs text-fb-gray-400 italic">
-              {{
-                "stateAssociationAdmin.edit.inheritedFrom"
-                  | transloco
-                    : {
-                        name: stateAssociation.parent_name,
-                        value:
-                          stateAssociation.effective_vsk_email ||
-                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
-                      }
-              }}
-            </span>
-          }
-          @if (inheritedPending) {
-            <span class="text-xs text-fb-gray-400 italic">{{
-              "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
-            }}</span>
-          }
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">{{
-            "stateAssociationAdmin.edit.sbkEmailLabel" | transloco
-          }}</label>
-          <input
-            type="email"
-            [(ngModel)]="stateAssociation.sbk_email"
-            name="sbk_email"
-            [disabled]="hasParent"
-            [placeholder]="mailboxPlaceholder('sbk')"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-          />
-          @if (!hasParent) {
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.sbkEmailHint" | transloco
-            }}</span>
-          }
-          @if (showInheritedValues) {
-            <span class="text-xs text-fb-gray-400 italic">
-              {{
-                "stateAssociationAdmin.edit.inheritedFrom"
-                  | transloco
-                    : {
-                        name: stateAssociation.parent_name,
-                        value:
-                          stateAssociation.effective_sbk_email ||
-                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
-                      }
-              }}
-            </span>
-          }
-          @if (inheritedPending) {
-            <span class="text-xs text-fb-gray-400 italic">{{
-              "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
-            }}</span>
-          }
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-bold">{{
-            "stateAssociationAdmin.edit.rskEmailLabel" | transloco
-          }}</label>
-          <input
-            type="email"
-            [(ngModel)]="stateAssociation.rsk_email"
-            name="rsk_email"
-            [disabled]="hasParent"
-            [placeholder]="mailboxPlaceholder('rsk')"
-            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
-          />
-          @if (!hasParent) {
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.rskEmailHint" | transloco
-            }}</span>
-          }
-          @if (showInheritedValues) {
-            <span class="text-xs text-fb-gray-400 italic">
-              {{
-                "stateAssociationAdmin.edit.inheritedFrom"
-                  | transloco
-                    : {
-                        name: stateAssociation.parent_name,
-                        value:
-                          stateAssociation.effective_rsk_email ||
-                          ("stateAssociationAdmin.edit.emptyValue" | transloco),
-                      }
-              }}
-            </span>
-          }
-          @if (inheritedPending) {
-            <span class="text-xs text-fb-gray-400 italic">{{
-              "stateAssociationAdmin.edit.inheritedAfterSaveHint" | transloco
-            }}</span>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- Freigaben (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
-    @if (editMode && !hasParent) {
-      <div class="border-t border-fb-gray-200 pt-6 mb-6">
-        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
-          {{ "stateAssociationAdmin.edit.releasesHeading" | transloco }}
-        </div>
-        <p class="text-xs text-fb-gray-400 mb-4">
-          {{ "stateAssociationAdmin.edit.releasesDescription" | transloco }}
-        </p>
-        @if (releases.length === 0) {
-          <div class="text-sm text-fb-gray-400 mb-4">
-            {{ "stateAssociationAdmin.edit.releasesEmpty" | transloco }}
-          </div>
-        }
-        <div class="flex flex-col gap-2 mb-4">
-          @for (release of releases; track release) {
-            <div
-              class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
-            >
-              <span class="flex-1 text-sm">{{
-                release.recipient_game_operation_name
-              }}</span>
-              <button
-                type="button"
-                (click)="deleteRelease(release.id)"
-                class="text-xs text-red-500 hover:text-red-700 px-2"
-              >
-                {{ "stateAssociationAdmin.edit.releaseRevoke" | transloco }}
-              </button>
-            </div>
-          }
-        </div>
-        <div class="flex gap-2">
-          <select
-            [(ngModel)]="selectedGameOperationId"
-            name="new_release_go"
-            [ngModelOptions]="{ standalone: true }"
-            class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-          >
-            <option [ngValue]="null">
-              {{
-                "stateAssociationAdmin.edit.releaseSelectPlaceholder"
-                  | transloco
-              }}
-            </option>
-            @for (go of availableGameOperations; track go) {
-              <option [ngValue]="go.id">
-                {{ go.name }}
-              </option>
-            }
-          </select>
-          <button
-            type="button"
-            (click)="addRelease()"
-            [disabled]="addingRelease || !selectedGameOperationId"
-            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-          >
-            {{
-              (addingRelease
-                ? "stateAssociationAdmin.edit.releaseAdding"
-                : "stateAssociationAdmin.edit.releaseGrant"
-              ) | transloco
-            }}
-          </button>
-        </div>
-      </div>
-    }
-
-    <!-- Spieltagsbericht (nur im Bearbeitungsmodus, nur bei Verbünden ohne Parent) -->
-    @if (editMode && !hasParent) {
-      <div class="border-t border-fb-gray-200 pt-6 mb-6">
-        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
-          {{ "stateAssociationAdmin.edit.checklistHeading" | transloco }}
-        </div>
-        <p class="text-xs text-fb-gray-400 mb-4">
-          {{ "stateAssociationAdmin.edit.checklistDescription" | transloco }}
-        </p>
-        @if (checklistItems.length === 0) {
-          <div class="text-sm text-fb-gray-400 mb-4">
-            {{ "stateAssociationAdmin.edit.checklistEmpty" | transloco }}
-          </div>
-        }
-        <div class="flex flex-col gap-2 mb-4">
-          @for (item of checklistItems; track item) {
-            <div
-              class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
-            >
-              @if (editingItemId !== item.id) {
-                <span class="flex-1 text-sm">{{ item.question }}</span>
-                <button
-                  type="button"
-                  (click)="startEdit(item)"
-                  class="text-xs text-fb-gray-400 hover:text-black px-2"
-                >
-                  {{ "stateAssociationAdmin.edit.checklistEdit" | transloco }}
-                </button>
-                <button
-                  type="button"
-                  (click)="deleteChecklistItem(item.id)"
-                  class="text-xs text-red-500 hover:text-red-700 px-2"
-                >
-                  {{ "stateAssociationAdmin.edit.checklistDelete" | transloco }}
-                </button>
-              }
-              @if (editingItemId === item.id) {
-                <input
-                  type="text"
-                  [(ngModel)]="editingQuestion"
-                  [ngModelOptions]="{ standalone: true }"
-                  class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
-                />
-                <button
-                  type="button"
-                  (click)="saveEdit(item)"
-                  class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
-                >
-                  {{ "stateAssociationAdmin.edit.checklistOk" | transloco }}
-                </button>
-                <button
-                  type="button"
-                  (click)="cancelEdit()"
-                  class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
-                >
-                  {{ "stateAssociationAdmin.edit.checklistCancel" | transloco }}
-                </button>
-              }
-            </div>
-          }
-        </div>
-        <div class="flex gap-2">
           <input
             type="text"
-            [(ngModel)]="newQuestion"
-            [ngModelOptions]="{ standalone: true }"
+            [(ngModel)]="stateAssociation.name"
+            name="name"
+            required
             [placeholder]="
-              'stateAssociationAdmin.edit.checklistNewPlaceholder' | transloco
+              'stateAssociationAdmin.edit.namePlaceholder' | transloco
             "
-            class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
-            (keydown.enter)="$event.preventDefault(); addChecklistItem()"
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
           />
-          <button
-            type="button"
-            (click)="addChecklistItem()"
-            [disabled]="addingItem || !newQuestion.trim()"
-            class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
-          >
-            {{
-              (addingItem
-                ? "stateAssociationAdmin.edit.checklistAdding"
-                : "stateAssociationAdmin.edit.checklistAdd"
-              ) | transloco
-            }}
-          </button>
         </div>
-      </div>
-    }
 
-    <div class="border-t border-fb-gray-200 pt-4">
-      <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-        {{ "stateAssociationAdmin.edit.settingsHeading" | transloco }}
-      </div>
-      <!-- Mit uebergeordnetem Verbund ist der ganze Block gesperrt: Die Haken
-           zeigen dann den dort gesetzten Wert, nicht den am eigenen Datensatz
-           stehengebliebenen. Der Hinweis steht einmal ueber dem Block statt
-           unter jedem einzelnen Punkt. -->
-      @if (hasParent) {
-        <div class="text-xs text-fb-gray-400 italic mb-3">
-          @if (showInheritedValues) {
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">{{
+            "stateAssociationAdmin.edit.shortNameLabel" | transloco
+          }}</label>
+          <input
+            type="text"
+            [(ngModel)]="stateAssociation.short_name"
+            name="short_name"
+            [placeholder]="
+              'stateAssociationAdmin.edit.shortNamePlaceholder' | transloco
+            "
+            class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-bold">{{
+            "stateAssociationAdmin.edit.parentLabel" | transloco
+          }}</label>
+          @if (canManageLifecycle) {
+            <select
+              [(ngModel)]="stateAssociation.parent_id"
+              (ngModelChange)="onParentChanged()"
+              name="parent_id"
+              [disabled]="hasChildren"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+            >
+              <option [ngValue]="null">
+                {{ "stateAssociationAdmin.edit.parentNone" | transloco }}
+              </option>
+              @for (sa of rootStateAssociations; track sa) {
+                <option [ngValue]="sa.id">
+                  {{ sa.name }}
+                </option>
+              }
+            </select>
+          }
+          @if (!canManageLifecycle) {
+            <span class="text-sm py-2">
+              {{
+                stateAssociation.parent_name ||
+                  ("stateAssociationAdmin.edit.parentNone" | transloco)
+              }}
+            </span>
+          }
+          @if (canManageLifecycle && hasChildren) {
+            <span class="text-xs text-fb-gray-400">
+              {{
+                "stateAssociationAdmin.edit.parentHasChildrenHint" | transloco
+              }}
+            </span>
+          }
+          @if (hasParent) {
             <span
+              class="text-xs text-fb-gray-400"
               [innerHTML]="
-                'stateAssociationAdmin.edit.settingsInheritedHint'
+                'stateAssociationAdmin.edit.parentInheritedHint'
                   | transloco: { name: stateAssociation.parent_name }
               "
             >
             </span>
-          } @else {
-            {{
-              "stateAssociationAdmin.edit.settingsInheritedPendingHint"
-                | transloco
-            }}
           }
         </div>
-      }
-      <div class="flex flex-col gap-3">
-        <div
-          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
-        >
-          {{ "stateAssociationAdmin.edit.licensesHeading" | transloco }}
-        </div>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('express_license_enabled')"
-            (ngModelChange)="setSetting('express_license_enabled', $event)"
-            name="express_license_enabled"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.expressLicenseLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.expressLicenseHint" | transloco
-            }}</span>
+
+        <div class="border-t border-fb-gray-200 pt-4">
+          <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+            {{ "stateAssociationAdmin.edit.statesHeading" | transloco }}
+          </div>
+
+          <span class="text-xs text-fb-gray-400 block mb-3">
+            {{ "stateAssociationAdmin.edit.statesHint" | transloco }}
           </span>
-        </label>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('requested_license_playable')"
-            (ngModelChange)="setSetting('requested_license_playable', $event)"
-            name="requested_license_playable"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.requestedLicensePlayableLabel"
-                | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.requestedLicensePlayableHint"
-                | transloco
-            }}</span>
-          </span>
-        </label>
-        <!-- Nur wenn Kurse im System fuer diesen Verband freigeschaltet sind;
-             ohne Kurse bewirkt die Einstellung nichts. -->
-        @if (stateAssociation.referee_courses_enabled) {
-          <label
-            class="flex items-start gap-3"
-            [class.cursor-not-allowed]="hasParent"
-            [class.cursor-pointer]="!hasParent"
-          >
-            <input
-              type="checkbox"
-              data-test="course-club-confirmation"
-              [ngModel]="setting('course_club_confirmation_required')"
-              (ngModelChange)="
-                setSetting('course_club_confirmation_required', $event)
-              "
-              name="course_club_confirmation_required"
-              [disabled]="hasParent"
-              class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-            />
-            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-              <span class="text-sm font-bold">{{
-                "stateAssociationAdmin.edit.courseClubConfirmationLabel"
-                  | transloco
-              }}</span>
-              <span class="text-xs text-fb-gray-400">{{
-                "stateAssociationAdmin.edit.courseClubConfirmationHint"
-                  | transloco
-              }}</span>
+
+          @if (canManageLifecycle) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              @for (state of germanStates; track state.isocode) {
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    [checked]="isStateSelected(state.isocode)"
+                    (change)="toggleState(state.isocode)"
+                    [name]="'state_' + state.isocode"
+                    class="h-4 w-4 rounded border-fb-gray-600 accent-black"
+                  />
+                  <span class="text-sm">{{ state.name }}</span>
+                </label>
+              }
+            </div>
+          }
+
+          @if (!canManageLifecycle) {
+            <span class="text-sm py-2 block">
+              {{
+                effectiveStateNames ||
+                  ("stateAssociationAdmin.edit.statesNone" | transloco)
+              }}
             </span>
-          </label>
-        }
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('team_info_editable_during_season')"
-            (ngModelChange)="
-              setSetting('team_info_editable_during_season', $event)
-            "
-            name="team_info_editable_during_season"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.teamInfoEditableLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.teamInfoEditableHint" | transloco
-            }}</span>
-          </span>
-        </label>
-      </div>
-      <div class="flex flex-col gap-3 mt-6">
+          }
+
+          @if (canManageLifecycle && inheritedStates.length) {
+            <span class="text-xs text-fb-gray-400 block mt-3">
+              {{
+                "stateAssociationAdmin.edit.statesInheritedHint"
+                  | transloco: { states: inheritedStateNames }
+              }}
+            </span>
+          }
+        </div>
+
         <div
-          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+          class="border-t border-fb-gray-200 pt-4"
+          [class.opacity-40]="hasParent"
         >
-          {{ "stateAssociationAdmin.edit.reportsHeading" | transloco }}
+          <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+            {{ "stateAssociationAdmin.edit.emailHeading" | transloco }}
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">{{
+                "stateAssociationAdmin.edit.vskEmailLabel" | transloco
+              }}</label>
+              <input
+                type="email"
+                [(ngModel)]="stateAssociation.vsk_email"
+                name="vsk_email"
+                [disabled]="hasParent"
+                [placeholder]="mailboxPlaceholder('vsk')"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+              />
+              @if (!hasParent) {
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.vskEmailHint" | transloco
+                }}</span>
+              }
+              @if (showInheritedValues) {
+                <span class="text-xs text-fb-gray-400 italic">
+                  {{
+                    "stateAssociationAdmin.edit.inheritedFrom"
+                      | transloco
+                        : {
+                            name: stateAssociation.parent_name,
+                            value:
+                              stateAssociation.effective_vsk_email ||
+                              ("stateAssociationAdmin.edit.emptyValue"
+                                | transloco),
+                          }
+                  }}
+                </span>
+              }
+              @if (inheritedPending) {
+                <span class="text-xs text-fb-gray-400 italic">{{
+                  "stateAssociationAdmin.edit.inheritedAfterSaveHint"
+                    | transloco
+                }}</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">{{
+                "stateAssociationAdmin.edit.sbkEmailLabel" | transloco
+              }}</label>
+              <input
+                type="email"
+                [(ngModel)]="stateAssociation.sbk_email"
+                name="sbk_email"
+                [disabled]="hasParent"
+                [placeholder]="mailboxPlaceholder('sbk')"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+              />
+              @if (!hasParent) {
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.sbkEmailHint" | transloco
+                }}</span>
+              }
+              @if (showInheritedValues) {
+                <span class="text-xs text-fb-gray-400 italic">
+                  {{
+                    "stateAssociationAdmin.edit.inheritedFrom"
+                      | transloco
+                        : {
+                            name: stateAssociation.parent_name,
+                            value:
+                              stateAssociation.effective_sbk_email ||
+                              ("stateAssociationAdmin.edit.emptyValue"
+                                | transloco),
+                          }
+                  }}
+                </span>
+              }
+              @if (inheritedPending) {
+                <span class="text-xs text-fb-gray-400 italic">{{
+                  "stateAssociationAdmin.edit.inheritedAfterSaveHint"
+                    | transloco
+                }}</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-bold">{{
+                "stateAssociationAdmin.edit.rskEmailLabel" | transloco
+              }}</label>
+              <input
+                type="email"
+                [(ngModel)]="stateAssociation.rsk_email"
+                name="rsk_email"
+                [disabled]="hasParent"
+                [placeholder]="mailboxPlaceholder('rsk')"
+                class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black disabled:bg-fb-gray-900 disabled:cursor-not-allowed"
+              />
+              @if (!hasParent) {
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.rskEmailHint" | transloco
+                }}</span>
+              }
+              @if (showInheritedValues) {
+                <span class="text-xs text-fb-gray-400 italic">
+                  {{
+                    "stateAssociationAdmin.edit.inheritedFrom"
+                      | transloco
+                        : {
+                            name: stateAssociation.parent_name,
+                            value:
+                              stateAssociation.effective_rsk_email ||
+                              ("stateAssociationAdmin.edit.emptyValue"
+                                | transloco),
+                          }
+                  }}
+                </span>
+              }
+              @if (inheritedPending) {
+                <span class="text-xs text-fb-gray-400 italic">{{
+                  "stateAssociationAdmin.edit.inheritedAfterSaveHint"
+                    | transloco
+                }}</span>
+              }
+            </div>
+          </div>
         </div>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('scan_required')"
-            (ngModelChange)="setSetting('scan_required', $event)"
-            name="scan_required"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.scanRequiredLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.scanRequiredHint" | transloco
-            }}</span>
-          </span>
-        </label>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('report_form_email_enabled')"
-            (ngModelChange)="setSetting('report_form_email_enabled', $event)"
-            name="report_form_email_enabled"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.reportFormEmailLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.reportFormEmailHint" | transloco
-            }}</span>
-          </span>
-        </label>
-        <label
-          class="flex items-start gap-3 ml-7"
-          [class.cursor-not-allowed]="
-            hasParent || !setting('report_form_email_enabled')
-          "
-          [class.cursor-pointer]="
-            !(hasParent || !setting('report_form_email_enabled'))
-          "
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('manual_proceeding_creation')"
-            (ngModelChange)="setSetting('manual_proceeding_creation', $event)"
-            name="manual_proceeding_creation"
-            [disabled]="hasParent || !setting('report_form_email_enabled')"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span
-            class="flex flex-col gap-0.5"
-            [class.opacity-40]="
-              hasParent || !setting('report_form_email_enabled')
-            "
-          >
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.manualProceedingLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.manualProceedingHint" | transloco
-            }}</span>
-          </span>
-        </label>
-      </div>
-      <div class="flex flex-col gap-3 mt-6">
-        <div
-          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
-        >
-          {{ "stateAssociationAdmin.edit.refereesHeading" | transloco }}
-        </div>
-        <label
-          class="flex items-start gap-3"
-          [class.cursor-not-allowed]="hasParent"
-          [class.cursor-pointer]="!hasParent"
-        >
-          <input
-            type="checkbox"
-            [ngModel]="setting('referee_license_review_enabled')"
-            (ngModelChange)="
-              setSetting('referee_license_review_enabled', $event)
-            "
-            name="referee_license_review_enabled"
-            [disabled]="hasParent"
-            class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-          />
-          <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-            <span class="text-sm font-bold">{{
-              "stateAssociationAdmin.edit.refereeReviewLabel" | transloco
-            }}</span>
-            <span class="text-xs text-fb-gray-400">{{
-              "stateAssociationAdmin.edit.refereeReviewHint" | transloco
-            }}</span>
-          </span>
-        </label>
-      </div>
-      <div class="flex flex-col gap-3 mt-6">
-        <div
-          class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
-        >
-          {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
-        </div>
-        <div id="assignment-intro" class="text-xs text-fb-gray-400">
-          {{ "stateAssociationAdmin.edit.assignmentIntro" | transloco }}
-        </div>
-        <!-- Der Ansetzungsweg ist eine Auswahl aus drei Möglichkeiten, keine drei
+        <ng-container *ngTemplateOutlet="formActions" />
+      </form>
+    </ng-template>
+
+    <ng-template
+      fbTab="einstellungen"
+      [fbTabLabel]="'stateAssociationAdmin.edit.tabs.einstellungen' | transloco"
+    >
+      <form (ngSubmit)="submit()" class="flex flex-col gap-4 mb-8">
+        <div>
+          <!-- Mit uebergeordnetem Verbund ist der ganze Block gesperrt: Die Haken
+               zeigen dann den dort gesetzten Wert, nicht den am eigenen Datensatz
+               stehengebliebenen. Der Hinweis steht einmal ueber dem Block statt
+               unter jedem einzelnen Punkt. -->
+          @if (hasParent) {
+            <div class="text-xs text-fb-gray-400 italic mb-3">
+              @if (showInheritedValues) {
+                <span
+                  [innerHTML]="
+                    'stateAssociationAdmin.edit.settingsInheritedHint'
+                      | transloco: { name: stateAssociation.parent_name }
+                  "
+                >
+                </span>
+              } @else {
+                {{
+                  "stateAssociationAdmin.edit.settingsInheritedPendingHint"
+                    | transloco
+                }}
+              }
+            </div>
+          }
+          <div class="flex flex-col gap-3">
+            <div
+              class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+            >
+              {{ "stateAssociationAdmin.edit.licensesHeading" | transloco }}
+            </div>
+            <label
+              class="flex items-start gap-3"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('express_license_enabled')"
+                (ngModelChange)="setSetting('express_license_enabled', $event)"
+                name="express_license_enabled"
+                [disabled]="hasParent"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.expressLicenseLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.expressLicenseHint" | transloco
+                }}</span>
+              </span>
+            </label>
+            <label
+              class="flex items-start gap-3"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('requested_license_playable')"
+                (ngModelChange)="
+                  setSetting('requested_license_playable', $event)
+                "
+                name="requested_license_playable"
+                [disabled]="hasParent"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.requestedLicensePlayableLabel"
+                    | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.requestedLicensePlayableHint"
+                    | transloco
+                }}</span>
+              </span>
+            </label>
+            <!-- Nur wenn Kurse im System fuer diesen Verband freigeschaltet sind;
+                 ohne Kurse bewirkt die Einstellung nichts. -->
+            @if (stateAssociation.referee_courses_enabled) {
+              <label
+                class="flex items-start gap-3"
+                [class.cursor-not-allowed]="hasParent"
+                [class.cursor-pointer]="!hasParent"
+              >
+                <input
+                  type="checkbox"
+                  data-test="course-club-confirmation"
+                  [ngModel]="setting('course_club_confirmation_required')"
+                  (ngModelChange)="
+                    setSetting('course_club_confirmation_required', $event)
+                  "
+                  name="course_club_confirmation_required"
+                  [disabled]="hasParent"
+                  class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+                />
+                <span
+                  class="flex flex-col gap-0.5"
+                  [class.opacity-40]="hasParent"
+                >
+                  <span class="text-sm font-bold">{{
+                    "stateAssociationAdmin.edit.courseClubConfirmationLabel"
+                      | transloco
+                  }}</span>
+                  <span class="text-xs text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.courseClubConfirmationHint"
+                      | transloco
+                  }}</span>
+                </span>
+              </label>
+            }
+            <label
+              class="flex items-start gap-3"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('team_info_editable_during_season')"
+                (ngModelChange)="
+                  setSetting('team_info_editable_during_season', $event)
+                "
+                name="team_info_editable_during_season"
+                [disabled]="hasParent"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.teamInfoEditableLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.teamInfoEditableHint" | transloco
+                }}</span>
+              </span>
+            </label>
+          </div>
+          <div class="flex flex-col gap-3 mt-6">
+            <div
+              class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+            >
+              {{ "stateAssociationAdmin.edit.reportsHeading" | transloco }}
+            </div>
+            <label
+              class="flex items-start gap-3"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('scan_required')"
+                (ngModelChange)="setSetting('scan_required', $event)"
+                name="scan_required"
+                [disabled]="hasParent"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.scanRequiredLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.scanRequiredHint" | transloco
+                }}</span>
+              </span>
+            </label>
+            <label
+              class="flex items-start gap-3"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('report_form_email_enabled')"
+                (ngModelChange)="
+                  setSetting('report_form_email_enabled', $event)
+                "
+                name="report_form_email_enabled"
+                [disabled]="hasParent"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.reportFormEmailLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.reportFormEmailHint" | transloco
+                }}</span>
+              </span>
+            </label>
+            <label
+              class="flex items-start gap-3 ml-7"
+              [class.cursor-not-allowed]="
+                hasParent || !setting('report_form_email_enabled')
+              "
+              [class.cursor-pointer]="
+                !(hasParent || !setting('report_form_email_enabled'))
+              "
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('manual_proceeding_creation')"
+                (ngModelChange)="
+                  setSetting('manual_proceeding_creation', $event)
+                "
+                name="manual_proceeding_creation"
+                [disabled]="hasParent || !setting('report_form_email_enabled')"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="
+                  hasParent || !setting('report_form_email_enabled')
+                "
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.manualProceedingLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.manualProceedingHint" | transloco
+                }}</span>
+              </span>
+            </label>
+          </div>
+          <div class="flex flex-col gap-3 mt-6">
+            <div
+              class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+            >
+              {{ "stateAssociationAdmin.edit.refereesHeading" | transloco }}
+            </div>
+            <label
+              class="flex items-start gap-3"
+              [class.cursor-not-allowed]="hasParent"
+              [class.cursor-pointer]="!hasParent"
+            >
+              <input
+                type="checkbox"
+                [ngModel]="setting('referee_license_review_enabled')"
+                (ngModelChange)="
+                  setSetting('referee_license_review_enabled', $event)
+                "
+                name="referee_license_review_enabled"
+                [disabled]="hasParent"
+                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+              />
+              <span
+                class="flex flex-col gap-0.5"
+                [class.opacity-40]="hasParent"
+              >
+                <span class="text-sm font-bold">{{
+                  "stateAssociationAdmin.edit.refereeReviewLabel" | transloco
+                }}</span>
+                <span class="text-xs text-fb-gray-400">{{
+                  "stateAssociationAdmin.edit.refereeReviewHint" | transloco
+                }}</span>
+              </span>
+            </label>
+          </div>
+          <div class="flex flex-col gap-3 mt-6">
+            <div
+              class="text-xs font-bold uppercase text-fb-gray-500 border-b border-fb-gray-200 pb-1"
+            >
+              {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
+            </div>
+            <div id="assignment-intro" class="text-xs text-fb-gray-400">
+              {{ "stateAssociationAdmin.edit.assignmentIntro" | transloco }}
+            </div>
+            <!-- Der Ansetzungsweg ist eine Auswahl aus drei Möglichkeiten, keine drei
              unabhängigen Schalter. Die Unteroptionen erscheinen nur unter der
              Möglichkeit, zu der sie gehören (siehe assignmentMode). Ein
              fieldset statt role="radiogroup", weil die Unteroptionen
              Checkboxen sind und eine radiogroup nur Radios enthalten soll. -->
-        <fieldset
-          class="flex flex-col gap-3"
-          aria-describedby="assignment-intro"
-        >
-          <legend class="sr-only">
-            {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
-          </legend>
-          <label
-            class="flex items-start gap-3"
-            [class.cursor-not-allowed]="hasParent"
-            [class.cursor-pointer]="!hasParent"
-          >
-            <input
-              type="radio"
-              [(ngModel)]="assignmentMode"
-              value="none"
-              name="assignment_mode"
-              [disabled]="hasParent"
-              class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
-            />
-            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-              <span class="text-sm font-bold">{{
-                "stateAssociationAdmin.edit.assignmentModeNoneLabel" | transloco
-              }}</span>
-              <span class="text-xs text-fb-gray-400">{{
-                "stateAssociationAdmin.edit.assignmentModeNoneHint" | transloco
-              }}</span>
-            </span>
-          </label>
-          <label
-            class="flex items-start gap-3"
-            [class.cursor-not-allowed]="hasParent"
-            [class.cursor-pointer]="!hasParent"
-          >
-            <input
-              type="radio"
-              [(ngModel)]="assignmentMode"
-              value="club"
-              name="assignment_mode"
-              [disabled]="hasParent"
-              class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
-            />
-            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-              <span class="text-sm font-bold">{{
-                "stateAssociationAdmin.edit.assignmentModeClubLabel" | transloco
-              }}</span>
-              <span class="text-xs text-fb-gray-400">{{
-                "stateAssociationAdmin.edit.assignmentModeClubHint" | transloco
-              }}</span>
-            </span>
-          </label>
-          @if (assignmentMode === "club") {
-            <label
-              class="flex items-start gap-3 ml-7"
-              [class.cursor-not-allowed]="hasParent"
-              [class.cursor-pointer]="!hasParent"
+            <fieldset
+              class="flex flex-col gap-3"
+              aria-describedby="assignment-intro"
             >
-              <input
-                type="checkbox"
-                [(ngModel)]="coachAssignment"
-                [disabled]="hasParent"
-                name="coach_assignment_enabled"
-                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-              />
-              <span
-                class="flex flex-col gap-0.5"
-                [class.opacity-40]="hasParent"
+              <legend class="sr-only">
+                {{ "stateAssociationAdmin.edit.assignmentHeading" | transloco }}
+              </legend>
+              <label
+                class="flex items-start gap-3"
+                [class.cursor-not-allowed]="hasParent"
+                [class.cursor-pointer]="!hasParent"
               >
-                <span class="text-sm font-bold">{{
-                  "stateAssociationAdmin.edit.coachAssignmentLabel" | transloco
-                }}</span>
-                <span class="text-xs text-fb-gray-400">{{
-                  "stateAssociationAdmin.edit.coachAssignmentHint" | transloco
-                }}</span>
-              </span>
-            </label>
-          }
-          <label
-            class="flex items-start gap-3"
-            [class.cursor-not-allowed]="hasParent"
-            [class.cursor-pointer]="!hasParent"
-          >
-            <input
-              type="radio"
-              [(ngModel)]="assignmentMode"
-              value="person"
-              name="assignment_mode"
-              [disabled]="hasParent"
-              class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
-            />
-            <span class="flex flex-col gap-0.5" [class.opacity-40]="hasParent">
-              <span class="text-sm font-bold">{{
-                "stateAssociationAdmin.edit.assignmentModePersonLabel"
-                  | transloco
-              }}</span>
-              <span class="text-xs text-fb-gray-400">{{
-                "stateAssociationAdmin.edit.assignmentModePersonHint"
-                  | transloco
-              }}</span>
-            </span>
-          </label>
-          @if (assignmentMode === "person") {
-            <label
-              class="flex items-start gap-3 ml-7"
-              [class.cursor-not-allowed]="hasParent"
-              [class.cursor-pointer]="!hasParent"
-            >
-              <input
-                type="checkbox"
-                [(ngModel)]="personLevelAssignmentDefault"
-                [disabled]="hasParent"
-                name="person_level_assignment_default"
-                class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
-              />
-              <span
-                class="flex flex-col gap-0.5"
-                [class.opacity-40]="hasParent"
+                <input
+                  type="radio"
+                  [(ngModel)]="assignmentMode"
+                  value="none"
+                  name="assignment_mode"
+                  [disabled]="hasParent"
+                  class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
+                />
+                <span
+                  class="flex flex-col gap-0.5"
+                  [class.opacity-40]="hasParent"
+                >
+                  <span class="text-sm font-bold">{{
+                    "stateAssociationAdmin.edit.assignmentModeNoneLabel"
+                      | transloco
+                  }}</span>
+                  <span class="text-xs text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.assignmentModeNoneHint"
+                      | transloco
+                  }}</span>
+                </span>
+              </label>
+              <label
+                class="flex items-start gap-3"
+                [class.cursor-not-allowed]="hasParent"
+                [class.cursor-pointer]="!hasParent"
               >
-                <span class="text-sm font-bold">{{
-                  "stateAssociationAdmin.edit.personLevelDefaultLabel"
-                    | transloco
-                }}</span>
-                <span class="text-xs text-fb-gray-400">{{
-                  "stateAssociationAdmin.edit.personLevelDefaultHint"
-                    | transloco
-                }}</span>
-              </span>
-            </label>
-          }
-        </fieldset>
-      </div>
-    </div>
+                <input
+                  type="radio"
+                  [(ngModel)]="assignmentMode"
+                  value="club"
+                  name="assignment_mode"
+                  [disabled]="hasParent"
+                  class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
+                />
+                <span
+                  class="flex flex-col gap-0.5"
+                  [class.opacity-40]="hasParent"
+                >
+                  <span class="text-sm font-bold">{{
+                    "stateAssociationAdmin.edit.assignmentModeClubLabel"
+                      | transloco
+                  }}</span>
+                  <span class="text-xs text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.assignmentModeClubHint"
+                      | transloco
+                  }}</span>
+                </span>
+              </label>
+              @if (assignmentMode === "club") {
+                <label
+                  class="flex items-start gap-3 ml-7"
+                  [class.cursor-not-allowed]="hasParent"
+                  [class.cursor-pointer]="!hasParent"
+                >
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="coachAssignment"
+                    [disabled]="hasParent"
+                    name="coach_assignment_enabled"
+                    class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+                  />
+                  <span
+                    class="flex flex-col gap-0.5"
+                    [class.opacity-40]="hasParent"
+                  >
+                    <span class="text-sm font-bold">{{
+                      "stateAssociationAdmin.edit.coachAssignmentLabel"
+                        | transloco
+                    }}</span>
+                    <span class="text-xs text-fb-gray-400">{{
+                      "stateAssociationAdmin.edit.coachAssignmentHint"
+                        | transloco
+                    }}</span>
+                  </span>
+                </label>
+              }
+              <label
+                class="flex items-start gap-3"
+                [class.cursor-not-allowed]="hasParent"
+                [class.cursor-pointer]="!hasParent"
+              >
+                <input
+                  type="radio"
+                  [(ngModel)]="assignmentMode"
+                  value="person"
+                  name="assignment_mode"
+                  [disabled]="hasParent"
+                  class="mt-0.5 h-4 w-4 border-fb-gray-600 accent-black"
+                />
+                <span
+                  class="flex flex-col gap-0.5"
+                  [class.opacity-40]="hasParent"
+                >
+                  <span class="text-sm font-bold">{{
+                    "stateAssociationAdmin.edit.assignmentModePersonLabel"
+                      | transloco
+                  }}</span>
+                  <span class="text-xs text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.assignmentModePersonHint"
+                      | transloco
+                  }}</span>
+                </span>
+              </label>
+              @if (assignmentMode === "person") {
+                <label
+                  class="flex items-start gap-3 ml-7"
+                  [class.cursor-not-allowed]="hasParent"
+                  [class.cursor-pointer]="!hasParent"
+                >
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="personLevelAssignmentDefault"
+                    [disabled]="hasParent"
+                    name="person_level_assignment_default"
+                    class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+                  />
+                  <span
+                    class="flex flex-col gap-0.5"
+                    [class.opacity-40]="hasParent"
+                  >
+                    <span class="text-sm font-bold">{{
+                      "stateAssociationAdmin.edit.personLevelDefaultLabel"
+                        | transloco
+                    }}</span>
+                    <span class="text-xs text-fb-gray-400">{{
+                      "stateAssociationAdmin.edit.personLevelDefaultHint"
+                        | transloco
+                    }}</span>
+                  </span>
+                </label>
+              }
+            </fieldset>
+          </div>
+        </div>
+        <ng-container *ngTemplateOutlet="formActions" />
+      </form>
+    </ng-template>
 
-    <!-- Logo (nur im Bearbeitungsmodus) -->
-    @if (editMode) {
-      <div class="border-t border-fb-gray-200 pt-6 mb-6">
-        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          {{ "stateAssociationAdmin.edit.logoHeading" | transloco }}
-        </div>
-        <div class="grid grid-cols-2 gap-4 items-center">
-          <div class="font-bold text-sm">
-            {{ "stateAssociationAdmin.edit.currentLogo" | transloco }}
-          </div>
+    <!-- Freigaben und Spieltagsbericht nur im Bearbeitungsmodus und nur bei
+         Verbuenden ohne Parent. Beide speichern sofort, ohne Formular. -->
+    @if (editMode && !hasParent) {
+      <ng-template
+        fbTab="freigaben"
+        [fbTabLabel]="'stateAssociationAdmin.edit.tabs.freigaben' | transloco"
+      >
+        <div class="flex flex-col gap-4 mb-8">
           <div>
-            @if (stateAssociation.logo_url) {
-              <img
-                [src]="stateAssociation.logo_url"
-                [alt]="'stateAssociationAdmin.edit.logoAlt' | transloco"
-                class="h-16 object-contain"
-              />
+            <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+              {{ "stateAssociationAdmin.edit.releasesHeading" | transloco }}
+            </div>
+            <p class="text-xs text-fb-gray-400 mb-4">
+              {{ "stateAssociationAdmin.edit.releasesDescription" | transloco }}
+            </p>
+            @if (releases.length === 0) {
+              <div class="text-sm text-fb-gray-400 mb-4">
+                {{ "stateAssociationAdmin.edit.releasesEmpty" | transloco }}
+              </div>
             }
-            @if (!stateAssociation.logo_url) {
-              <span class="text-sm text-fb-gray-400">{{
-                "stateAssociationAdmin.edit.noLogo" | transloco
-              }}</span>
-            }
-          </div>
-          <div class="font-bold text-sm">
-            {{ "stateAssociationAdmin.edit.uploadLogo" | transloco }}
-          </div>
-          <div>
-            <input
-              type="file"
-              [attr.accept]="acceptImageTypes"
-              #logoInput
-              (change)="onLogoSelected(logoInput)"
-            />
-            <small class="block text-fb-gray-400 mt-1">{{
-              "stateAssociationAdmin.edit.logoHint" | transloco
-            }}</small>
-            <small class="block text-fb-gray-400 mt-1">{{
-              "stateAssociationAdmin.edit.logoTransparencyHint" | transloco
-            }}</small>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- Werbebanner (nur im Bearbeitungsmodus) -->
-    @if (editMode) {
-      <div class="border-t border-fb-gray-200 pt-6 mb-6">
-        <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
-          {{ "stateAssociationAdmin.edit.bannerHeading" | transloco }}
-        </div>
-        <div class="grid grid-cols-2 gap-4 items-center">
-          <div class="font-bold text-sm">
-            {{ "stateAssociationAdmin.edit.currentBanner" | transloco }}
-          </div>
-          <div>
-            @if (stateAssociation.banner_url) {
-              <img
-                [src]="stateAssociation.banner_url"
-                [alt]="'stateAssociationAdmin.edit.bannerAlt' | transloco"
-                class="w-full max-w-xs object-contain"
-                style="aspect-ratio: 6/1"
-              />
-            }
-            @if (!stateAssociation.banner_url) {
-              <span class="text-sm text-fb-gray-400">{{
-                "stateAssociationAdmin.edit.noBanner" | transloco
-              }}</span>
-            }
-          </div>
-          <div class="font-bold text-sm">
-            {{ "stateAssociationAdmin.edit.uploadBanner" | transloco }}
-          </div>
-          <div>
-            <input
-              type="file"
-              [attr.accept]="acceptImageTypes"
-              #bannerInput
-              (change)="onBannerSelected(bannerInput)"
-            />
-            <small class="block text-fb-gray-400 mt-1">{{
-              "stateAssociationAdmin.edit.bannerHint" | transloco
-            }}</small>
-          </div>
-          <div class="font-bold text-sm">
-            {{ "stateAssociationAdmin.edit.linkUrlLabel" | transloco }}
-          </div>
-          <div>
-            <input
-              type="url"
-              [(ngModel)]="stateAssociation.banner_link_url"
-              [ngModelOptions]="{ standalone: true }"
-              [placeholder]="
-                'stateAssociationAdmin.edit.linkUrlPlaceholder' | transloco
-              "
-              class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
-            />
-            <small class="block text-fb-gray-400 mt-1">{{
-              "stateAssociationAdmin.edit.linkUrlHint" | transloco
-            }}</small>
-          </div>
-          <div></div>
-          <div>
-            @if (stateAssociation.banner_url) {
+            <div class="flex flex-col gap-2 mb-4">
+              @for (release of releases; track release) {
+                <div
+                  class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+                >
+                  <span class="flex-1 text-sm">{{
+                    release.recipient_game_operation_name
+                  }}</span>
+                  <button
+                    type="button"
+                    (click)="deleteRelease(release.id)"
+                    class="text-xs text-red-500 hover:text-red-700 px-2"
+                  >
+                    {{ "stateAssociationAdmin.edit.releaseRevoke" | transloco }}
+                  </button>
+                </div>
+              }
+            </div>
+            <div class="flex gap-2">
+              <select
+                [(ngModel)]="selectedGameOperationId"
+                name="new_release_go"
+                [ngModelOptions]="{ standalone: true }"
+                class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+              >
+                <option [ngValue]="null">
+                  {{
+                    "stateAssociationAdmin.edit.releaseSelectPlaceholder"
+                      | transloco
+                  }}
+                </option>
+                @for (go of availableGameOperations; track go) {
+                  <option [ngValue]="go.id">
+                    {{ go.name }}
+                  </option>
+                }
+              </select>
               <button
                 type="button"
-                (click)="deleteBanner()"
-                [disabled]="deletingBanner"
-                class="text-sm text-red-500 underline disabled:opacity-50"
+                (click)="addRelease()"
+                [disabled]="addingRelease || !selectedGameOperationId"
+                class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
               >
                 {{
-                  (deletingBanner
-                    ? "stateAssociationAdmin.edit.removingBanner"
-                    : "stateAssociationAdmin.edit.removeBanner"
+                  (addingRelease
+                    ? "stateAssociationAdmin.edit.releaseAdding"
+                    : "stateAssociationAdmin.edit.releaseGrant"
                   ) | transloco
                 }}
               </button>
+            </div>
+          </div>
+
+          <div class="border-t border-fb-gray-200 pt-6 mb-6">
+            <div class="text-sm font-bold text-fb-gray-400 uppercase mb-1">
+              {{ "stateAssociationAdmin.edit.checklistHeading" | transloco }}
+            </div>
+            <p class="text-xs text-fb-gray-400 mb-4">
+              {{
+                "stateAssociationAdmin.edit.checklistDescription" | transloco
+              }}
+            </p>
+            @if (checklistItems.length === 0) {
+              <div class="text-sm text-fb-gray-400 mb-4">
+                {{ "stateAssociationAdmin.edit.checklistEmpty" | transloco }}
+              </div>
             }
+            <div class="flex flex-col gap-2 mb-4">
+              @for (item of checklistItems; track item) {
+                <div
+                  class="flex items-center gap-2 border border-fb-gray-600 rounded-[5px] px-3 py-2"
+                >
+                  @if (editingItemId !== item.id) {
+                    <span class="flex-1 text-sm">{{ item.question }}</span>
+                    <button
+                      type="button"
+                      (click)="startEdit(item)"
+                      class="text-xs text-fb-gray-400 hover:text-black px-2"
+                    >
+                      {{
+                        "stateAssociationAdmin.edit.checklistEdit" | transloco
+                      }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="deleteChecklistItem(item.id)"
+                      class="text-xs text-red-500 hover:text-red-700 px-2"
+                    >
+                      {{
+                        "stateAssociationAdmin.edit.checklistDelete" | transloco
+                      }}
+                    </button>
+                  }
+                  @if (editingItemId === item.id) {
+                    <input
+                      type="text"
+                      [(ngModel)]="editingQuestion"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="flex-1 border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm focus:outline-none focus:border-black"
+                    />
+                    <button
+                      type="button"
+                      (click)="saveEdit(item)"
+                      class="text-xs font-bold px-2 py-1 bg-black text-white rounded-[5px]"
+                    >
+                      {{ "stateAssociationAdmin.edit.checklistOk" | transloco }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="cancelEdit()"
+                      class="text-xs px-2 py-1 border border-fb-gray-600 rounded-[5px]"
+                    >
+                      {{
+                        "stateAssociationAdmin.edit.checklistCancel" | transloco
+                      }}
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="newQuestion"
+                [ngModelOptions]="{ standalone: true }"
+                [placeholder]="
+                  'stateAssociationAdmin.edit.checklistNewPlaceholder'
+                    | transloco
+                "
+                class="flex-1 border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm focus:outline-none focus:border-black"
+                (keydown.enter)="$event.preventDefault(); addChecklistItem()"
+              />
+              <button
+                type="button"
+                (click)="addChecklistItem()"
+                [disabled]="addingItem || !newQuestion.trim()"
+                class="px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+              >
+                {{
+                  (addingItem
+                    ? "stateAssociationAdmin.edit.checklistAdding"
+                    : "stateAssociationAdmin.edit.checklistAdd"
+                  ) | transloco
+                }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </ng-template>
     }
 
+    <!-- Logo und Banner laden sofort hoch; der Link des Banners geht aber
+         ueber submit(), deshalb steht der Speichern-Knopf auch hier. -->
+    @if (editMode) {
+      <ng-template
+        fbTab="medien"
+        [fbTabLabel]="'stateAssociationAdmin.edit.tabs.medien' | transloco"
+      >
+        <form (ngSubmit)="submit()" class="flex flex-col gap-4 mb-8">
+          <div>
+            <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+              {{ "stateAssociationAdmin.edit.logoHeading" | transloco }}
+            </div>
+            <div class="grid grid-cols-2 gap-4 items-center">
+              <div class="font-bold text-sm">
+                {{ "stateAssociationAdmin.edit.currentLogo" | transloco }}
+              </div>
+              <div>
+                @if (stateAssociation.logo_url) {
+                  <img
+                    [src]="stateAssociation.logo_url"
+                    [alt]="'stateAssociationAdmin.edit.logoAlt' | transloco"
+                    class="h-16 object-contain"
+                  />
+                }
+                @if (!stateAssociation.logo_url) {
+                  <span class="text-sm text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.noLogo" | transloco
+                  }}</span>
+                }
+              </div>
+              <div class="font-bold text-sm">
+                {{ "stateAssociationAdmin.edit.uploadLogo" | transloco }}
+              </div>
+              <div>
+                <input
+                  type="file"
+                  [attr.accept]="acceptImageTypes"
+                  #logoInput
+                  (change)="onLogoSelected(logoInput)"
+                />
+                <small class="block text-fb-gray-400 mt-1">{{
+                  "stateAssociationAdmin.edit.logoHint" | transloco
+                }}</small>
+                <small class="block text-fb-gray-400 mt-1">{{
+                  "stateAssociationAdmin.edit.logoTransparencyHint" | transloco
+                }}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-fb-gray-200 pt-6 mb-6">
+            <div class="text-sm font-bold text-fb-gray-400 uppercase mb-3">
+              {{ "stateAssociationAdmin.edit.bannerHeading" | transloco }}
+            </div>
+            <div class="grid grid-cols-2 gap-4 items-center">
+              <div class="font-bold text-sm">
+                {{ "stateAssociationAdmin.edit.currentBanner" | transloco }}
+              </div>
+              <div>
+                @if (stateAssociation.banner_url) {
+                  <img
+                    [src]="stateAssociation.banner_url"
+                    [alt]="'stateAssociationAdmin.edit.bannerAlt' | transloco"
+                    class="w-full max-w-xs object-contain"
+                    style="aspect-ratio: 6/1"
+                  />
+                }
+                @if (!stateAssociation.banner_url) {
+                  <span class="text-sm text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.noBanner" | transloco
+                  }}</span>
+                }
+              </div>
+              <div class="font-bold text-sm">
+                {{ "stateAssociationAdmin.edit.uploadBanner" | transloco }}
+              </div>
+              <div>
+                <input
+                  type="file"
+                  [attr.accept]="acceptImageTypes"
+                  #bannerInput
+                  (change)="onBannerSelected(bannerInput)"
+                />
+                <small class="block text-fb-gray-400 mt-1">{{
+                  "stateAssociationAdmin.edit.bannerHint" | transloco
+                }}</small>
+              </div>
+              <div class="font-bold text-sm">
+                {{ "stateAssociationAdmin.edit.linkUrlLabel" | transloco }}
+              </div>
+              <div>
+                <input
+                  type="url"
+                  [(ngModel)]="stateAssociation.banner_link_url"
+                  [ngModelOptions]="{ standalone: true }"
+                  [placeholder]="
+                    'stateAssociationAdmin.edit.linkUrlPlaceholder' | transloco
+                  "
+                  class="border border-fb-gray-300 rounded px-3 py-1.5 text-sm w-full"
+                />
+                <small class="block text-fb-gray-400 mt-1">{{
+                  "stateAssociationAdmin.edit.linkUrlHint" | transloco
+                }}</small>
+              </div>
+              <div></div>
+              <div>
+                @if (stateAssociation.banner_url) {
+                  <button
+                    type="button"
+                    (click)="deleteBanner()"
+                    [disabled]="deletingBanner"
+                    class="text-sm text-red-500 underline disabled:opacity-50"
+                  >
+                    {{
+                      (deletingBanner
+                        ? "stateAssociationAdmin.edit.removingBanner"
+                        : "stateAssociationAdmin.edit.removeBanner"
+                      ) | transloco
+                    }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+          <ng-container *ngTemplateOutlet="formActions" />
+        </form>
+      </ng-template>
+    }
+
+    <!-- Der Spielbetrieb dieses Verbands. Bewusst ausserhalb der Formulare: Es
+         sind zwei Datensaetze an zwei Endpunkten, der Abschnitt bringt seinen
+         eigenen Speichern-Knopf mit. Nur beim Bearbeiten, ein noch nicht
+         angelegter Verband kann keinen Spielbetrieb tragen.
+
+         Erst mit der `id`, also nach der Antwort des Detail-Endpunkts: `editMode`
+         steht schon aus der Route fest, der Verband kommt hinterher. Ohne die
+         zweite Bedingung stuende hier fuer einen Wimpernschlag „noch kein
+         Spielbetrieb angelegt" samt Anlege-Knopf -- und ein schneller Klick legte
+         einen Spielbetrieb ohne Verband an.
+
+       Nur mit canManageGameOperation: ohne das Recht rendert der Abschnitt
+       nichts, der Reiter waere leer. KeepAlive, weil der Abschnitt eigene,
+       ungespeicherte Eingaben und laufende Anfragen haelt, die ein
+       Reiterwechsel sonst verwirft. -->
+    @if (editMode && stateAssociation.id && canManageGameOperation) {
+      <ng-template
+        fbTab="spielbetrieb"
+        [fbTabKeepAlive]="true"
+        [fbTabLabel]="
+          'stateAssociationAdmin.edit.tabs.spielbetrieb' | transloco
+        "
+      >
+        <fb-game-operation-section
+          [stateAssociation]="stateAssociation"
+          [allStateAssociations]="allStateAssociations"
+          [canManage]="canManageGameOperation"
+        />
+      </ng-template>
+    }
+  </fb-tabs>
+
+  <ng-template #formActions>
     <div class="flex items-center gap-3 mt-2">
       <button
         type="submit"
@@ -956,23 +1084,5 @@
         {{ "stateAssociationAdmin.edit.cancel" | transloco }}
       </a>
     </div>
-  </form>
-
-  <!-- Der Spielbetrieb dieses Verbands. Bewusst ausserhalb des Formulars: Es
-       sind zwei Datensaetze an zwei Endpunkten, der Abschnitt bringt seinen
-       eigenen Speichern-Knopf mit. Nur beim Bearbeiten, ein noch nicht
-       angelegter Verband kann keinen Spielbetrieb tragen.
-
-       Erst mit der `id`, also nach der Antwort des Detail-Endpunkts: `editMode`
-       steht schon aus der Route fest, der Verband kommt hinterher. Ohne die
-       zweite Bedingung stuende hier fuer einen Wimpernschlag „noch kein
-       Spielbetrieb angelegt" samt Anlege-Knopf -- und ein schneller Klick legte
-       einen Spielbetrieb ohne Verband an. -->
-  @if (editMode && stateAssociation.id) {
-    <fb-game-operation-section
-      [stateAssociation]="stateAssociation"
-      [allStateAssociations]="allStateAssociations"
-      [canManage]="canManageGameOperation"
-    />
-  }
+  </ng-template>
 </div>

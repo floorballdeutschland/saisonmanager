@@ -1,0 +1,80 @@
+{
+  "toggle": {
+    "label": "Tabletmodus (Beta)",
+    "hint": "Schüsse mit Position und Zeitpunkt am Tablet erfassen. Gilt nur für dieses Gerät."
+  },
+  "normalInput": {
+    "show": "Normale Eingabe anzeigen",
+    "hide": "Normale Eingabe ausblenden",
+    "collapsedHint": "Tore, Strafen, Auszeiten und Abschnittswechsel trägt das Sekretariat ein. Hier nur aufklappen, wenn dieses Gerät das Spiel allein erfasst.",
+    "expandedHint": "Achtung: Ein Tor, das das Sekretariat schon eingetragen hat, nicht noch einmal eintragen."
+  },
+  "capture": {
+    "title": "Schusserfassung"
+  },
+  "notStarted": "Die Schusserfassung beginnt mit dem Anpfiff.",
+  "period": "Abschnitt",
+  "periodStatus": {
+    "capturing": "Erfassung im {{ period }}. Abschnitt",
+    "follows": "folgt dem Spiel",
+    "deviates": "Das Spiel steht im {{ period }}. Abschnitt.",
+    "follow": "Zum {{ period }}. Abschnitt",
+    "pending": "Das Spiel ist in den {{ period }}. Abschnitt gewechselt. Die Erfassung wechselt nach dem Speichern oder Verwerfen dieses Schusses."
+  },
+  "swapSides": "Seiten tauschen",
+  "field": "Spielfeld: Stelle des Schusses antippen",
+  "hint": "Stelle des Schusses auf dem Spielfeld antippen. Der Zeitpunkt wird sofort festgehalten.",
+  "result": {
+    "goal": "Tor",
+    "saved": "Gehalten",
+    "missed": "Vorbei",
+    "blocked": "Geblockt"
+  },
+  "draft": {
+    "tappedAt": "Angetippt um {{ time }}",
+    "shooter": "Schütze (optional)",
+    "goalkeeper": "Torhüter",
+    "emptyNet": "Leeres Tor",
+    "gameTime": "Spielzeit",
+    "periodLabel": "im {{ period }}. Abschnitt",
+    "gameTimeInvalid": "Bitte die Spielzeit als m:ss eingeben, zum Beispiel 12:34.",
+    "save": "Speichern",
+    "cancel": "Verwerfen",
+    "delete": "Schuss löschen"
+  },
+  "recent": {
+    "title": "Letzte Schüsse",
+    "empty": "Noch keine Schüsse erfasst.",
+    "pending": "wartet",
+    "edit": "Ändern",
+    "delete": "Löschen"
+  },
+  "sync": {
+    "done": "Alle Schüsse übertragen",
+    "pending": "{{ count }} Änderung(en) warten auf Übertragung",
+    "retry": "Jetzt senden",
+    "forbidden": "{{ count }} Schüsse nicht übertragen, der Bericht ist geschlossen oder die Berechtigung fehlt."
+  },
+  "clock": {
+    "stale": "Serverzeit nicht erreichbar, es gilt der letzte Abgleich dieses Geräts.",
+    "unknown": "Serverzeit nicht erreichbar, die Zeitpunkte folgen der Uhr dieses Geräts.",
+    "remeasure": "Erneut abgleichen"
+  },
+  "link": {
+    "title": "Tore zuordnen",
+    "hint": "Diese Tore konnten keinem erfassten Schuss automatisch zugeordnet werden. Bitte den passenden Schuss antippen.",
+    "goal": "Tor {{ team }} zum {{ score }} ({{ period }}. Abschnitt, {{ time }})",
+    "shot": "{{ period }}. Abschnitt {{ time }} {{ shooter }} · angetippt {{ tapped }}",
+    "error": "Die Zuordnung wurde abgewiesen. Ist der Bericht schon geschlossen?"
+  },
+  "complete": {
+    "title": "Schüsse vollständig erfasst?",
+    "content": "Für dieses Spiel wurden Schüsse im Tabletmodus erfasst. Wurden alle Schüsse des Spiels erfasst? Unvollständig erfasste Spiele bleiben aus Saisonstatistiken heraus.",
+    "yes": "Ja, vollständig",
+    "no": "Nein, unvollständig",
+    "cancel": "Abbrechen",
+    "unsent": "{{ count }} Änderung(en) an Schüssen von diesem Gerät sind noch nicht übertragen. Nach dem Abschließen nimmt der Server sie nicht mehr an. Bitte die Verbindung prüfen und erneut versuchen.",
+    "checking": "Schüsse werden übertragen…",
+    "retry": "Erneut senden"
+  }
+}

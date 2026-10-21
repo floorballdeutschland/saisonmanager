@@ -1,0 +1,83 @@
+{
+  "refereeReport": {
+    "title": "Upload incident report",
+    "hint": "The referees are required to submit an incident report for this game. Referees can upload the completed report form here.",
+    "pdfOnly": "PDF files up to {{ maxMb }} MB only. Photos are no longer accepted.",
+    "pdfHelp": "On a phone, create a PDF with a scanner app (e.g. “Scan document” in the Files or Notes app); on a computer, use “Print” and “Save as PDF”.",
+    "forwardedTo": {
+      "vsk": "It is forwarded automatically to the responsible disciplinary committee (VSK).",
+      "sbk": "It is forwarded automatically to the responsible game operations office (SBK).",
+      "vsk_and_sbk": "It is forwarded automatically to the responsible disciplinary committee (VSK) and game operations office (SBK)."
+    },
+    "uploaded": {
+      "vsk": "{{ filename }} was uploaded and forwarded to the VSK.",
+      "sbk": "{{ filename }} was uploaded and forwarded to the SBK.",
+      "vsk_and_sbk": "{{ filename }} was uploaded and forwarded to the VSK and the SBK."
+    },
+    "choose": "Choose file and upload",
+    "uploading": "Uploading…",
+    "rejected": "Only PDF files up to {{ maxMb }} MB are accepted, photos are not."
+  },
+  "tabs": {
+    "overview": "Overview",
+    "detailedStats": "Detailed statistics"
+  },
+  "detailedStats": {
+    "title": "Detailed statistics",
+    "loading": "Loading statistics …",
+    "failed": "The statistics could not be loaded.",
+    "incomplete": "Shots were not recorded completely. The figures only show the recorded shots.",
+    "periodN": "Period {{ n }}",
+    "name": "Name",
+    "result": {
+      "goal": "Goal",
+      "saved": "Saved",
+      "blocked": "Blocked",
+      "missed": "Missed"
+    },
+    "filter": {
+      "label": "Select period",
+      "all": "All"
+    },
+    "chart": {
+      "title": "Shot map",
+      "direction": "Direction of attack",
+      "ariaLabel": "Shot map {{ team }}: {{ count }} shots"
+    },
+    "shots": {
+      "title": "Shots per period",
+      "period": "Period",
+      "total": "Total",
+      "shots": "Shots",
+      "onGoal": "On goal",
+      "goals": "Goals",
+      "blocked": "Blocked",
+      "missed": "Missed"
+    },
+    "goalkeepers": {
+      "title": "Goalkeepers",
+      "saves": "Saves",
+      "shotsAgainst": "Shots on goal",
+      "savePct": "Save %"
+    },
+    "players": {
+      "title": "Shots per player"
+    }
+  },
+  "highlights": {
+    "title": "Goal scenes",
+    "consent": {
+      "notice": "The scenes come from the live stream recording on YouTube. Content from YouTube (Google) is only loaded after you click; data such as your IP address is then transmitted to YouTube.",
+      "button": "Load scenes from YouTube",
+      "buttonScene": "Load scene {{ n }} from YouTube",
+      "failed": "YouTube could not be loaded. Please try again later."
+    },
+    "loading": "Loading video …",
+    "nowPlaying": "Scene {{ n }} of {{ total }}",
+    "finished": "all scenes shown",
+    "playAll": "Play all scenes",
+    "assist": "Assist",
+    "jumpHint": "Tap a goal in the shot map to jump to its scene.",
+    "goalAria": "Goal {{ time }}, jump to scene"
+  }
+}

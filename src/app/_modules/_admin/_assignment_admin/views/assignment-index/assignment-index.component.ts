@@ -7,6 +7,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
@@ -29,7 +30,8 @@ import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
 import { phoneText, telHref } from 'src/app/_helpers/_utils/phone-link';
 
 type AssignmentMode = 'referees' | 'club';
-type AssignmentTab = 'open' | 'history';
+// Kennungen der Reiter, so stehen sie auch als ?reiter= in der URL.
+type AssignmentTab = 'offen' | 'verlauf';
 type RefereeSlot = 'referee1' | 'referee2' | 'coach';
 
 // Herkunft eines im Verlauf angezeigten Namens: aus dem Spielbericht (wer
@@ -104,8 +106,10 @@ interface MergedGame {
 export class AssignmentIndexComponent implements OnInit, OnDestroy {
   rows: MergedGame[] = [];
   // Ansicht: offene (ansetzbare) Spiele vs. Verlauf der bereits erfolgten
-  // Ansetzungen. Beide speisen sich aus demselben Ladevorgang.
-  activeTab: AssignmentTab = 'open';
+  // Ansetzungen. Beide speisen sich aus demselben Ladevorgang. Den Reiter
+  // fuehrt <fb-tabs> in der URL; der Startwert kommt in ngOnInit aus der URL,
+  // weil Filterleiste und Export ueber der Leiste schon vom Reiter abhaengen.
+  activeTab: AssignmentTab = 'offen';
   seasons: SeasonInfo[] = [];
   // Vereine, die als „angesetzter Verein" gewählt werden können (eigener LV +
   // geteilte LV). Einmalig geladen, für alle Zeilen geteilt.
@@ -121,8 +125,8 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   // heute zurück. Beim Wechsel wird die zuletzt gewählte Grenze je Tab bewahrt,
   // damit die Filterleiste in beiden Ansichten sinnvoll vorbelegt ist.
   private _tabDates: Record<AssignmentTab, { from: string; to: string }> = {
-    open: { from: todayIso(), to: '' },
-    history: { from: '', to: todayIso() },
+    offen: { from: todayIso(), to: '' },
+    verlauf: { from: '', to: todayIso() },
   };
 
   // Weiche, clientseitige Vorfilter für die Schiri-Auswahl-Dropdowns. Schränken
@@ -164,10 +168,18 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     private _settingsService: SettingsService,
     private _sessionService: SessionService,
     private _transloco: TranslocoService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    // Vor dem ersten Rendern setzen: das erste activeChange von <fb-tabs>
+    // kommt erst, wenn die Filterleiste schon geprueft ist (NG0100).
+    if (this._route.snapshot.queryParamMap.get('reiter') === 'verlauf') {
+      this.activeTab = 'verlauf';
+      this.filterDateFrom = this._tabDates.verlauf.from;
+      this.filterDateTo = this._tabDates.verlauf.to;
+    }
     this.clubMode =
       this._sessionService.currentUserValue?.permissions?.[
         'referee_assignment_club_mode'
@@ -1057,7 +1069,10 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
       : 'bg-yellow-100 text-yellow-800';
   }
 
-  setTab(tab: AssignmentTab): void {
+  // Aufgerufen von (activeChange) der Reiterleiste, auch beim ersten
+  // Aufloesen; dann stimmt activeTab schon und es passiert nichts.
+  setTab(id: string): void {
+    const tab: AssignmentTab = id === 'verlauf' ? 'verlauf' : 'offen';
     if (tab === this.activeTab) return;
 
     this._tabDates[this.activeTab] = {
@@ -1067,6 +1082,9 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     this.filterDateFrom = this._tabDates[tab].from;
     this.filterDateTo = this._tabDates[tab].to;
+    // Ein Wechsel ueber die Adresse (Link mit ?reiter=) kommt ohne
+    // Template-Ereignis, das die OnPush-Ansicht markieren wuerde.
+    this._cdr.markForCheck();
     this._load();
   }
 
@@ -1175,7 +1193,9 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
   }): string {
     const suffix = [
       r.lizenzstufe,
-      r.guest ? this._transloco.translate('assignmentAdmin.index.guestBadge') : null,
+      r.guest
+        ? this._transloco.translate('assignmentAdmin.index.guestBadge')
+        : null,
     ]
       .filter(Boolean)
       .join(', ');
@@ -1198,7 +1218,7 @@ export class AssignmentIndexComponent implements OnInit, OnDestroy {
     // anderen Spielbestand, und _buildRows würde die Zeilenzustände der offenen
     // Spiele verwerfen – samt der dort noch nicht gespeicherten Schiri-Auswahl.
     const games$ =
-      this.activeTab === 'history'
+      this.activeTab === 'verlauf'
         ? of(null)
         : this._refereeService.adminGetAssignableGames(filters);
 
