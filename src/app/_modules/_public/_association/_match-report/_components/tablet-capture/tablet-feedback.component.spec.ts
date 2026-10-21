@@ -95,18 +95,48 @@ describe('TabletFeedbackComponent', () => {
     http.expectNone(API + 'games/4711/tablet_feedback.json');
   });
 
-  it('zeigt einen Fehler und behält den Text', () => {
+  it('zeigt 403 selbst an, weil der Interceptor dort schweigt, und behält den Text', () => {
     component.toggle();
     component.message = 'Knöpfe zu klein';
     component.send();
 
     http
       .expectOne(API + 'games/4711/tablet_feedback.json')
-      .flush({}, { status: 500, statusText: 'Server Error' });
+      .flush({}, { status: 403, statusText: 'Forbidden' });
     fixture.detectChanges();
 
     expect(query('tablet-feedback-error')).not.toBeNull();
     expect(component.message).toBe('Knöpfe zu klein');
+    expect(component.sending).toBeFalse();
+  });
+
+  it('überlässt 422 und 500 dem Interceptor, ohne zweite Meldung', () => {
+    component.toggle();
+    component.message = 'Knöpfe zu klein';
+    component.send();
+    http
+      .expectOne(API + 'games/4711/tablet_feedback.json')
+      .flush({}, { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    expect(query('tablet-feedback-error')).toBeNull();
+    expect(component.message).toBe('Knöpfe zu klein');
+    expect(component.canSend).toBeTrue();
+  });
+
+  it('prüft die Antwortadresse wie die API', () => {
+    component.message = 'ok';
+    for (const ungueltig of [
+      'max.müller@verein.de',
+      'a@b..de',
+      'a@-b.de',
+      'a b@c.de',
+    ]) {
+      component.replyTo = ungueltig;
+      expect(component.replyToValid).withContext(ungueltig).toBeFalse();
+    }
+    component.replyTo = 'max.mueller+beta@verein-x.de';
+    expect(component.replyToValid).toBeTrue();
   });
 
   it('setzt sich beim Spielwechsel zurück und verwirft die alte Antwort', () => {

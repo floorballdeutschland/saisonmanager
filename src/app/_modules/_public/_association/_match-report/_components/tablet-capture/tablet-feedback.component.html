@@ -41,25 +41,38 @@
           [(ngModel)]="message"
         ></textarea>
       </label>
-      <label class="flex flex-col gap-1 text-sm font-bold">
-        {{ "tablet.feedback.replyTo" | transloco }}
+      <div class="flex flex-col gap-1 text-sm">
+        <label for="tablet-feedback-reply-to" class="font-bold">
+          {{ "tablet.feedback.replyTo" | transloco }}
+        </label>
         <input
+          id="tablet-feedback-reply-to"
           type="email"
           name="replyTo"
           autocomplete="email"
-          class="min-h-[48px] rounded-[5px] border border-fb-gray-600 px-2 text-base font-normal"
+          class="min-h-[48px] rounded-[5px] border border-fb-gray-600 px-2 text-base"
           data-testid="tablet-feedback-reply-to"
+          aria-describedby="tablet-feedback-reply-to-hint"
+          [attr.aria-invalid]="!replyToValid"
           [(ngModel)]="replyTo"
         />
-        <span class="font-normal text-fb-gray-500">
-          {{ "tablet.feedback.replyToHint" | transloco }}
+        <span
+          id="tablet-feedback-reply-to-hint"
+          class="text-fb-gray-500"
+          aria-live="polite"
+        >
+          @if (replyToValid) {
+            {{ "tablet.feedback.replyToHint" | transloco }}
+          } @else {
+            <span
+              class="text-red-700"
+              data-testid="tablet-feedback-reply-to-invalid"
+            >
+              {{ "tablet.feedback.replyToInvalid" | transloco }}
+            </span>
+          }
         </span>
-        @if (!replyToValid) {
-          <span class="font-normal text-red-700">
-            {{ "tablet.feedback.replyToInvalid" | transloco }}
-          </span>
-        }
-      </label>
+      </div>
       @if (error) {
         <p
           class="rounded-[5px] border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-800"

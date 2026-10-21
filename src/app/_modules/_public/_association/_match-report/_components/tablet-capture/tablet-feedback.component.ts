@@ -7,9 +7,16 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
+import { HttpErrorResponse } from '@angular/common/http';
+
 import { GameShotService } from '@floorball/core';
 
 export const TABLET_FEEDBACK_MAX_LENGTH = 4000;
+
+// Dasselbe Muster wie die API (URI::MailTo::EMAIL_REGEXP, das HTML5-Muster),
+// damit eine hier akzeptierte Adresse dort nicht mit 422 abprallt.
+const EMAIL_PATTERN =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 /**
  * Rückmeldung zur Beta des Tabletmodus (fe#560). Ein eingeklappter Kasten
@@ -19,6 +26,10 @@ export const TABLET_FEEDBACK_MAX_LENGTH = 4000;
  * Die Antwortadresse ist freiwillig. Angemeldet nimmt die API ohne Angabe die
  * des Kontos; mit dem Sekretariats-Link gibt es keine, die Rückmeldung kommt
  * dann anonym an.
+ *
+ * Fehler meldet wie überall der ErrorInterceptor. Nur bei 403/404 schweigt
+ * er für diesen Pfad (keine Umleitung aus der laufenden Erfassung), dann
+ * zeigt der Kasten die Meldung selbst.
  *
  * Die Spiel-ID kommt als Eingabe und wird beim Wechsel des Spiels neu gesetzt
  * (die Spielseite wird über Spiele wiederverwendet, CLAUDE.md).
@@ -70,12 +81,13 @@ export class TabletFeedbackComponent implements OnChanges {
 
   public get replyToValid(): boolean {
     const address = this.replyTo.trim();
-    return address === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address);
+    return address === '' || EMAIL_PATTERN.test(address);
   }
 
   public toggle(): void {
     this.open = !this.open;
     this.sent = false;
+    this.error = false;
   }
 
   public send(): void {
@@ -102,12 +114,12 @@ export class TabletFeedbackComponent implements OnChanges {
           this.message = '';
           this._cdr.markForCheck();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           if (gameId !== this.gameId) {
             return;
           }
           this.sending = false;
-          this.error = true;
+          this.error = err.status === 403 || err.status === 404;
           this._cdr.markForCheck();
         },
       });
