@@ -10,6 +10,7 @@ import { Subject, Subscription, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import {
+  CONFIRMATION_COMMENT_MAX_LENGTH,
   RefereeGameDay,
   RefereeGameDayGame,
   RefereeGameDayOfficial,
@@ -29,6 +30,9 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   // "Nicht ordnungsgemäß"-Flow: aktuell offener Spieltag + Antworten je Frage.
   rejectingId: number | null = null;
   rejectAnswers: Record<number, boolean | null> = {};
+  // Freiwillige Anmerkung zum Einspruch, geht mit der Meldung an die SBK.
+  rejectComment = '';
+  readonly commentMaxLength = CONFIRMATION_COMMENT_MAX_LENGTH;
 
   // Einmalige Rückfrage zur Kontaktfreigabe: nur solange das Profil noch nie
   // geantwortet hat (null). Ein Ladefehler des Profils zeigt sie nicht.
@@ -127,12 +131,14 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   startReject(gd: RefereeGameDay): void {
     this.rejectingId = gd.id;
     this.rejectAnswers = {};
+    this.rejectComment = '';
     gd.checklist_items.forEach((i) => (this.rejectAnswers[i.id] = null));
   }
 
   cancelReject(): void {
     this.rejectingId = null;
     this.rejectAnswers = {};
+    this.rejectComment = '';
   }
 
   setAnswer(itemId: number, value: boolean): void {
@@ -156,7 +162,7 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
       item_id: i.id,
       answer: this.rejectAnswers[i.id] as boolean,
     }));
-    this._submit(gd, false, answers);
+    this._submit(gd, false, answers, this.rejectComment.trim() || null);
   }
 
   confirmationStatus(gd: RefereeGameDay): string {
@@ -193,11 +199,12 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
   private _submit(
     gd: RefereeGameDay,
     properly: boolean,
-    answers?: { item_id: number; answer: boolean }[]
+    answers?: { item_id: number; answer: boolean }[],
+    comment: string | null = null
   ): void {
     this.confirmingId = gd.id;
     this._refereeService
-      .confirmGameDay(gd.id, { properly_conducted: properly, answers })
+      .confirmGameDay(gd.id, { properly_conducted: properly, answers, comment })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (res) => {
@@ -208,12 +215,14 @@ export class RefereeGameDaysComponent implements OnInit, OnDestroy {
                   my_confirmed_at: res.confirmed_at,
                   properly_conducted: res.properly_conducted,
                   my_checklist_answers: res.checklist_answers,
+                  my_comment: res.comment,
                 }
               : g
           );
           this.confirmingId = null;
           this.rejectingId = null;
           this.rejectAnswers = {};
+          this.rejectComment = '';
           this._cdr.markForCheck();
           this._notificationService.success(
             this._transloco.translate(

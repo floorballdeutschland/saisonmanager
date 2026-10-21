@@ -33,7 +33,6 @@
     "statesHint": "States this association is responsible for. It is intended to determine who may deactivate, merge and delete a venue. A parent association does not enter states of its own, it inherits the area of its member associations.",
     "statesNone": "– no state entered –",
     "statesInheritedHint": "Added through the member associations: {{ states }}",
-    "settingsHeading": "Settings",
     "settingsInheritedHint": "These settings are managed by <strong>{{ name }}</strong> and apply to all subordinate state associations. Shown is the value set there, which is the one in effect here.",
     "settingsInheritedPendingHint": "The inherited settings are only available once the parent association has been saved.",
     "expressLicenseLabel": "Express licenses supported",
@@ -116,7 +115,15 @@
     "assignmentModePersonLabel": "Assigner assigns individuals",
     "assignmentModePersonHint": "Requires the separate Assigner role. Referee pair and coach are assigned individually and notified. Only referees who have reported availability for that day can be assigned.",
     "coachAssignmentLabel": "RSK can assign referee coaches (optional)",
-    "coachAssignmentHint": "The RSK can pick a coach with a valid B qualification for each game, but does not have to. An assigned coach is notified by e-mail and reminded of the observation form at kick-off."
+    "coachAssignmentHint": "The RSK can pick a coach with a valid B qualification for each game, but does not have to. An assigned coach is notified by e-mail and reminded of the observation form at kick-off.",
+    "tabs": {
+      "label": "Sections of the state association",
+      "stammdaten": "Master data",
+      "einstellungen": "Settings",
+      "freigaben": "Game day report & releases",
+      "medien": "Logo & banner",
+      "spielbetrieb": "Game operation"
+    }
   },
   "notifications": {
     "confirmDelete": "Really delete state association \"{{ name }}\"?",

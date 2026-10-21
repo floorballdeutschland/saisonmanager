@@ -49,6 +49,7 @@
   "globalList": {
     "title": "Lizenzverwaltung",
     "filter": "Filter",
+    "moreFilters": "Weitere Filter",
     "searchPlayer": "Spieler suchen...",
     "searchClub": "Verein suchen...",
     "genderBoth": "männlich & weiblich",
@@ -111,6 +112,8 @@
     "statusRequested": "Beantragt",
     "statusRejected": "Abgelehnt",
     "statusWithdrawn": "Zurückgezogen",
+    "statusInvalid": "Ungültig",
+    "statusSuspended": "Gesperrt",
     "filterAllFieldSizes": "Alle Spielformen",
     "fieldSizeLarge": "Großfeld",
     "fieldSizeSmall": "Kleinfeld",
@@ -136,6 +139,9 @@
     "csvExpress": "Express",
     "csvRequested": "Beantragt",
     "csvApproved": "Erteilt",
+    "csvStatusChangedAt": "Statusänderung am",
+    "csvStatusChangedBy": "Statusänderung durch",
+    "csvStatusReason": "Grund",
     "csvZweitlizenz": "Zweitlizenz",
     "csvErstlizenz": "Erstlizenz",
     "csvZusatzlizenz": "Zusatzlizenz",
@@ -334,5 +340,21 @@
     "fileTooLarge": "Die Datei darf maximal 5 MB groß sein.",
     "rejectionRevoked": "Ablehnung für Spieler {{ firstName }} {{ lastName }} ({{ id }}) widerrufen, der Antrag steht wieder auf „beantragt\"",
     "requestRejectedFreeOfCharge": "Lizenzantrag für Spieler {{ firstName }} {{ lastName }} ({{ id }}) kostenfrei abgelehnt"
+  },
+  "clubSummary": {
+    "show": "Lizenzen je Saison anzeigen",
+    "title": "Lizenzen je Saison",
+    "season": "Saison",
+    "team": "Mannschaft",
+    "approved": "Erteilt",
+    "requested": "Beantragt",
+    "denied": "Abgelehnt",
+    "withdrawn": "Zurückgezogen",
+    "other": "Sonstige",
+    "total": "Gesamt",
+    "noTeams": "In dieser Saison hatte der Verein keine Mannschaften.",
+    "loadFailed": "Die Lizenzzahlen konnten nicht geladen werden.",
+    "hint": "„Erteilt“ zählt auch Lizenzen, die später gelöscht oder durch einen Transfer ungültig wurden. „Sonstige“ sind etwa Anträge, die vor der Entscheidung gelöscht wurden. Bei Spielgemeinschaften zählen die Lizenzen aller beteiligten Vereine.",
+    "retry": "Erneut versuchen"
   }
 }

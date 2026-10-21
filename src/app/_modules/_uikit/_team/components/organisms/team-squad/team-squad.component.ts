@@ -44,6 +44,13 @@ export class TeamSquadComponent implements OnInit {
    * ein Frontend-Deploy vor dem API-Deploy wie bisher nur „erteilt" zulässt.
    */
   @Input() requestedLicensePlayable = false;
+  /**
+   * Höchstzahl Spieler je Mannschaft (Großfeld 20, Kleinfeld 14, api#784).
+   * `null`, wenn die Liga keine Feldgröße hat oder die API den Wert noch nicht
+   * liefert: dann weder Zähler noch Sperre. Die eigentliche Sperre ist die
+   * 422 der API, deren Meldung der ErrorInterceptor zeigt.
+   */
+  @Input() maxPlayers: number | null = null;
   @Output() handleClose: EventEmitter<void> = new EventEmitter<void>();
 
   licenseHash!: LicenseHash;
@@ -151,6 +158,12 @@ export class TeamSquadComponent implements OnInit {
 
   setPlayerFocus(playerId: number) {
     this.playerFocus = playerId;
+  }
+
+  get lineupFull(): boolean {
+    return (
+      this.maxPlayers !== null && (this.players?.length ?? 0) >= this.maxPlayers
+    );
   }
 
   isGoalieSet() {

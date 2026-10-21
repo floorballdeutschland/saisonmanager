@@ -27,6 +27,7 @@ export {
   TeamGameDayChecklistItem,
   TeamGameDayChecklistAnswer,
   TeamGameDayConfirmResponse,
+  CONFIRMATION_COMMENT_MAX_LENGTH,
 } from './team-game-day.interface';
 export {
   RefereeFeedbackGame,
@@ -52,6 +53,10 @@ export * from './game.interface';
 export { GamePlayers } from './game.interface';
 export { GamePlayerEntry } from './game.interface';
 export { GameAdditionalFields } from './game-additional-fields.interface';
+export {
+  RefereeReportRecipient,
+  RefereeReportStatus,
+} from './referee-report.interface';
 export * from './game-day-report.interface';
 export { GameFlags } from './game-flags.interface';
 export { RefereeEntry } from './referee-entry.interface';
@@ -73,6 +78,7 @@ export * from './normalized-event.interface';
 export * from './league-with-operation.interface';
 export * from './team.interface';
 export * from './club.interface';
+export * from './club-license-summary.interface';
 export * from './contact.interface';
 export * from './player.interface';
 export * from './nation.interface';
@@ -109,3 +115,6 @@ export * from './secretary-hall-day.interface';
 export * from './live-stream.interface';
 export * from './player-statistics.interface';
 export * from './streaming.interface';
+export * from './game-shot.interface';
+export * from './detailed-stats.interface';
+export * from './highlights.interface';

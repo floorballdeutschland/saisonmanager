@@ -57,6 +57,13 @@ export interface AdminLicenseEntry {
   free_rejection?: boolean;
   requested_at: string | null;
   approved_at: string | null;
+  // Letzte Statusänderung der Zeile: wann, wer, warum (api#787). Für eine
+  // gelöschte oder transferungültige Lizenz die einzige Auskunft, warum sie
+  // nicht mehr gilt. Ältere API-Stände liefern die Felder nicht.
+  status_changed_at?: string | null;
+  status_changed_by_id?: number | null;
+  status_changed_by_name?: string | null;
+  status_reason?: string | null;
   valid_until: string | null;
   required_documents: string[];
   // Je Dokumentart drei Einträge: <key> (liegt vor), <key>_url (Abruf) und

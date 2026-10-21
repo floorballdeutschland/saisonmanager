@@ -36,6 +36,12 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   @Input() captainPlayerId!: number | null;
   @Input() events: GameEvent[] = [];
   /**
+   * Kader hat die Obergrenze erreicht (api#784). Sperrt nur das Eintragen
+   * neuer Personen; wer schon im Kader steht, kann ausgetragen werden und
+   * seine Nummer ändern.
+   */
+  @Input() lineupFull = false;
+  /**
    * Das Spiel, dessen Kader diese Zeile zeigt. Kommt von der Spielseite und
    * nicht aus der Adresse: Beim Wechsel in ein anderes Spiel zeigt die Adresse
    * sofort das neue Spiel, die Liste aber erst, wenn es geladen ist. Dazwischen
@@ -93,6 +99,8 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
   }
 
   public addLinupPlayer(checkDuplicateNumbers = true) {
+    if (this.addBlocked()) return;
+
     if (
       checkDuplicateNumbers &&
       this.lineup &&
@@ -216,6 +224,11 @@ export class TeamSquadPlayerComponent implements OnInit, AfterViewInit {
     const value =
       this.captainPlayerId === this.player.id ? null : this.player.id;
     this.setCaptainPlayerId.emit(value);
+  }
+
+  /** Neue Person bei vollem Kader. Eine Nummernänderung ist kein Neueintrag. */
+  addBlocked(): boolean {
+    return this.lineupFull && !this.gamePlayerEntry;
   }
 
   hasGameEvents(): boolean {

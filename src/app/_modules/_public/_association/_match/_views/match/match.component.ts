@@ -14,7 +14,12 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { Game, GameAdditionalFields, GameOperation } from '@floorball/types';
+import {
+  Game,
+  GameAdditionalFields,
+  GameOperation,
+  RefereeReportRecipient,
+} from '@floorball/types';
 import {
   AssociationService,
   GameService,
@@ -24,6 +29,12 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
+import {
+  checkPdfUpload,
+  PDF_UPLOAD_MAX_MB,
+  PDF_UPLOAD_ACCEPT,
+} from 'src/app/_helpers/_utils/pdf-upload';
 
 @Component({
   templateUrl: './match.component.html',
@@ -44,8 +55,12 @@ export class MatchComponent implements OnInit, OnDestroy {
   public tab = 'public';
 
   refereeReportUploading = false;
+  readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
+  readonly pdfUploadMaxMb = PDF_UPLOAD_MAX_MB;
   refereeReportUploaded = false;
   refereeReportFilename = '';
+  refereeReportRequired = false;
+  refereeReportRecipient: RefereeReportRecipient | null = null;
 
   private _destroy$ = new Subject<boolean>();
 
@@ -58,7 +73,8 @@ export class MatchComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _cdr: ChangeDetectorRef,
     private _location: Location,
-    private _metaTitle: Title
+    private _metaTitle: Title,
+    private _transloco: TranslocoService
   ) {
     // _router.events.pipe(takeUntil(this._destroy$)).subscribe(() => {
     //   const matchId = this._route.snapshot?.paramMap.get('matchId');
@@ -97,6 +113,9 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._route.params.subscribe({
       next: (params) => {
         if (params['matchId']) {
+          if (params['matchId'] !== this._matchId) {
+            this.resetRefereeReport();
+          }
           this._matchId = params['matchId'];
           this.getMatch(params['matchId']);
 
@@ -113,6 +132,18 @@ export class MatchComponent implements OnInit, OnDestroy {
         }
       },
     });
+  }
+
+  // Die Seite bleibt beim Wechsel in ein anderes Spiel dieselbe Komponente.
+  // Der Upload-Zustand gehört zum alten Spiel und fällt sofort weg, nicht erst
+  // mit der Antwort für das neue: Scheitert dort ein Abruf, stünde sonst der
+  // Upload-Bereich des alten Spiels über dem neuen.
+  private resetRefereeReport(): void {
+    this.refereeReportRequired = false;
+    this.refereeReportRecipient = null;
+    this.refereeReportUploaded = false;
+    this.refereeReportFilename = '';
+    this.refereeReportUploading = false;
   }
 
   get hasSecretaryToken(): boolean {
@@ -135,8 +166,11 @@ export class MatchComponent implements OnInit, OnDestroy {
       next: (game) => {
         if (!stillCurrent()) return;
 
+        // Nur die Eingabe braucht die Zusatzfelder ohne Anmeldung, nicht der
+        // Statistik-Reiter: Den sehen auch Besucher, und der Abruf liegt unter
+        // user/.
         if (
-          this.tab !== 'public' ||
+          this.tab === 'secretary' ||
           this._sessionService.currentUser ||
           this.hasSecretaryToken
         ) {
@@ -154,10 +188,14 @@ export class MatchComponent implements OnInit, OnDestroy {
                     .getRefereeReport(parseInt(id, 10), silent)
                     .subscribe({
                       next: (report) => {
-                        if (report.uploaded) {
-                          this.refereeReportUploaded = true;
-                          this.refereeReportFilename = report.filename ?? '';
-                        }
+                        if (!stillCurrent()) return;
+
+                        this.refereeReportRequired = !!report.required;
+                        this.refereeReportRecipient = report.recipient ?? null;
+                        // Auch zurücksetzen: Die Seite bleibt beim Wechsel in ein
+                        // anderes Spiel dieselbe Komponente.
+                        this.refereeReportUploaded = !!report.uploaded;
+                        this.refereeReportFilename = report.filename ?? '';
                         this._cdr.markForCheck();
                       },
                     });
@@ -189,6 +227,12 @@ export class MatchComponent implements OnInit, OnDestroy {
     if (JSON.stringify(game) !== JSON.stringify(this.game)) {
       this.game = game;
 
+      // Der Statistik-Reiter gehört nur zu Tablet-Spielen. Wechselt die Seite
+      // von dort in ein Spiel ohne Tablet-Daten, gibt es ihn nicht mehr.
+      if (this.tab === 'stats' && !game.tablet_capture) {
+        this.tab = 'public';
+      }
+
       this._metaTitle.setTitle(
         `Spiel ${game.home_team_name} gegen ${game.guest_team_name} - ${game.league_name} | Floorball Saisonmanager`
       );
@@ -201,18 +245,12 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._location.back();
   }
 
+  // Ob ein Berichtsformular verlangt ist und wohin es geht, entscheidet die
+  // API (GET referee_report, api#789). Die Seite leitet das nicht mehr selbst
+  // aus den Strafen ab: Sie prüfte die Straf-id 5, und das ist die technische
+  // Matchstrafe, die volle Matchstrafe blieb ohne Upload-Bereich.
   get hasIncidentReport(): boolean {
-    if (!this.game) return false;
-    const events =
-      (this.game as Game & { events?: { penalty_id?: string | number }[] })
-        .events ?? [];
-    const hasSpielausschluss = events.some(
-      (e) => e.penalty_id?.toString() === '5'
-    );
-    // Besonderes Ereignis oder Spielausschluss (rote Karte) lösen nach
-    // Spielbericht-Abschluss die Erinnerungs-E-Mail an die Schiris aus, die
-    // den Berichtsformular-Upload einfordert.
-    return !!(this.additionalFields?.special_event || hasSpielausschluss);
+    return this.refereeReportRequired;
   }
 
   // Der Upload wird erst nach Abschluss des Spielberichts angeboten – also
@@ -225,30 +263,53 @@ export class MatchComponent implements OnInit, OnDestroy {
     );
   }
 
-  onRefereeReportFile(event: Event): void {
+  async onRefereeReportFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !this.game) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Die Datei darf maximal 5 MB groß sein.');
+    // Wechselt die Seite während des Uploads in ein anderes Spiel, gehört die
+    // Antwort zum alten und darf den Zustand des neuen nicht setzen. Dasselbe
+    // gilt schon für die Vorprüfung, die den Dateikopf asynchron liest.
+    const gameId = this.game.id;
+    const stillCurrent = () =>
+      this._matchId === String(gameId) && this.game?.id === gameId;
+
+    const acceptable = await checkPdfUpload(file);
+    if (!stillCurrent()) return;
+
+    if (!acceptable) {
+      // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
+      input.value = '';
+      alert(
+        this._transloco.translate('match.refereeReport.rejected', {
+          maxMb: PDF_UPLOAD_MAX_MB,
+        })
+      );
       return;
     }
 
     this.refereeReportUploading = true;
     this._cdr.markForCheck();
 
-    this._gameService.uploadRefereeReport(this.game.id, file).subscribe({
+    this._gameService.uploadRefereeReport(gameId, file).subscribe({
       next: (res) => {
+        if (!stillCurrent()) return;
+
         this.refereeReportUploaded = true;
         this.refereeReportFilename = res.filename;
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
       },
+      // Bewusst ohne eigene Meldung: Der ErrorInterceptor zeigt die Absage
+      // der API (`errors`, etwa „Nur PDF-Dateien bis 5 MB …“) bereits als
+      // Meldung an, ebenso Server- und Verbindungsfehler. Das frühere
+      // „Upload fehlgeschlagen“ lag als zweite, nichtssagende Meldung darüber.
       error: () => {
+        if (!stillCurrent()) return;
+
         this.refereeReportUploading = false;
         this._cdr.markForCheck();
-        alert('Upload fehlgeschlagen. Bitte erneut versuchen.');
       },
     });
   }

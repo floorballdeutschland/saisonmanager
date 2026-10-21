@@ -61,7 +61,7 @@ const STATUS_ICONS: Record<number, LicenseStatusIcon> = {
   },
   // Transfer: Pfeil nach rechts -- die Lizenz ist zu einer anderen Mannschaft
   // weitergezogen. Grau wie die übrigen ungültigen: `licenseStatusBadgeClass`
-  // führt für 6 keinen eigenen Fall und färbt das Abzeichen ebenfalls grau.
+  // färbt das Abzeichen für 4, 6 und 7 ebenfalls grau.
   6: {
     labelKey: 'licenseAdmin.teamEntry.status.transfer',
     colorClass: 'text-fb-gray-400',
