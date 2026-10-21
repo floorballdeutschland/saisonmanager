@@ -1,0 +1,43 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">
+    {{ "refereeCourseAdmin.leadView.title" | transloco }}
+  </h1>
+  @if (loading) {
+    <div class="text-fb-gray-500">
+      {{ "refereeCourseAdmin.import.loading" | transloco }}
+    </div>
+  } @else if (courses.length === 0) {
+    <p class="text-fb-gray-500" data-test="empty">
+      {{ "refereeCourseAdmin.leadView.empty" | transloco }}
+    </p>
+  } @else {
+    <ul class="flex flex-col gap-2">
+      @for (course of courses; track course.id) {
+        <li>
+          <a
+            class="block p-4 border border-fb-gray-700 rounded-[5px] hover:border-black"
+            [routerLink]="['/', 'verwaltung', 'meine-kurse', course.id]"
+          >
+            <span class="font-bold">{{ course.title }}</span>
+            <span class="block text-sm text-fb-gray-500">
+              {{ course.starts_on | date: "dd.MM.yyyy" }}
+              ·
+              {{
+                "refereeCourseAdmin.courses.format." + course.format | transloco
+              }}
+              ·
+              {{
+                "refereeCourseAdmin.courses.status." + course.status | transloco
+              }}
+              ·
+              {{
+                "refereeCourseAdmin.leadView.participants"
+                  | transloco: { count: course.taken_seats ?? 0 }
+              }}
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</div>

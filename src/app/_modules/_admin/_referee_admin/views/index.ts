@@ -5,6 +5,7 @@ export * from './referee-qualification-types/referee-qualification-types.compone
 export * from './referee-tags/referee-tags.component';
 export * from './referee-license-levels/referee-license-levels.component';
 export * from './referee-settings/referee-settings.component';
+export * from './referee-course-process-settings/referee-course-process-settings.component';
 export * from './referee-merge/referee-merge.component';
 export * from './referee-exclusion-requests/referee-exclusion-requests.component';
 export * from './referee-change-requests/referee-change-requests.component';

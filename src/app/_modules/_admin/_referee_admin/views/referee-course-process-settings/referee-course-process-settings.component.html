@@ -1,0 +1,137 @@
+<section class="mb-10" data-test="course-processes">
+  <h2 class="text-lg font-bold">
+    {{ "refereeAdmin.courseProcesses.title" | transloco }}
+  </h2>
+  <p class="text-fb-gray-500 text-sm mb-4">
+    {{ "refereeAdmin.courseProcesses.intro" | transloco }}
+  </p>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm">
+      {{ "refereeAdmin.settings.loading" | transloco }}
+    </div>
+  }
+
+  @if (draft) {
+    <div class="flex flex-col gap-4">
+      <label
+        class="flex items-start gap-3 p-4 border border-fb-gray-700 rounded-[5px] cursor-pointer"
+      >
+        <input
+          type="checkbox"
+          class="mt-1"
+          data-test="csv-import-enabled"
+          [(ngModel)]="draft.csv_import_enabled"
+        />
+        <span>
+          <span class="block font-bold text-sm">{{
+            "refereeAdmin.courseProcesses.csvImport" | transloco
+          }}</span>
+          <span class="block text-fb-gray-500 text-sm">{{
+            "refereeAdmin.courseProcesses.csvImportHint" | transloco
+          }}</span>
+          @if (
+            !draft.csv_import_enabled && (settings?.open_import_rows ?? 0) > 0
+          ) {
+            <span class="block text-sm mt-1" data-test="open-import-rows">{{
+              "refereeAdmin.courseProcesses.openImportRows"
+                | transloco: { count: settings?.open_import_rows }
+            }}</span>
+          }
+        </span>
+      </label>
+
+      <div class="p-4 border border-fb-gray-700 rounded-[5px]">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            class="mt-1"
+            data-test="courses-enabled"
+            [(ngModel)]="draft.courses_enabled"
+          />
+          <span>
+            <span class="block font-bold text-sm">{{
+              "refereeAdmin.courseProcesses.courses" | transloco
+            }}</span>
+            <span class="block text-fb-gray-500 text-sm">{{
+              "refereeAdmin.courseProcesses.coursesHint" | transloco
+            }}</span>
+          </span>
+        </label>
+
+        @if (draft.courses_enabled) {
+          <fieldset class="mt-4 ml-7">
+            <legend class="text-xs font-bold mb-2">
+              {{ "refereeAdmin.courseProcesses.stateAssociations" | transloco }}
+            </legend>
+            <p class="text-fb-gray-500 text-xs mb-2">
+              {{
+                "refereeAdmin.courseProcesses.stateAssociationsHint" | transloco
+              }}
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
+              @for (sa of stateAssociations; track sa.id) {
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    [attr.data-test]="'sa-' + sa.id"
+                    [checked]="isSelected(sa.id)"
+                    (change)="
+                      toggleStateAssociation(sa.id, $any($event.target).checked)
+                    "
+                  />
+                  {{ sa.name }}
+                </label>
+              }
+            </div>
+          </fieldset>
+        }
+      </div>
+
+      @if (bothOff) {
+        <div
+          class="p-3 text-sm border border-red-500 bg-red-100 text-red-700 rounded-[5px]"
+          data-test="both-off"
+        >
+          {{ "refereeAdmin.courseProcesses.bothOff" | transloco }}
+        </div>
+      }
+
+      <p class="text-fb-gray-500 text-xs">
+        {{ "refereeAdmin.courseProcesses.reloginHint" | transloco }}
+        @if (settings?.updated_at) {
+          <br />
+          {{
+            "refereeAdmin.courseProcesses.lastChange"
+              | transloco
+                : {
+                    date: settings?.updated_at | date: "dd.MM.yyyy HH:mm",
+                    user: settings?.updated_by ?? "–",
+                  }
+          }}
+        }
+      </p>
+
+      <div class="flex gap-2">
+        <button
+          type="button"
+          data-test="save"
+          (click)="save()"
+          [disabled]="!dirty || saving"
+          class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+        >
+          {{ "refereeAdmin.settings.save" | transloco }}
+        </button>
+        @if (dirty) {
+          <button
+            type="button"
+            (click)="reset()"
+            class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black"
+          >
+            {{ "refereeAdmin.settings.cancel" | transloco }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+</section>

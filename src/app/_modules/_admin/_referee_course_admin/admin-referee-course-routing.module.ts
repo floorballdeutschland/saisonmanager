@@ -26,6 +26,53 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: { scrollTop: true, permission: 'menu_item_referee_course_review' },
   },
+  // Kurse im System. Die festen Pfade (neu, vorlagen) stehen vor :id.
+  ...[
+    { path: '', component: Views.CourseIndexComponent },
+    { path: 'neu', component: Views.CourseEditComponent },
+    { path: 'vorlagen', component: Views.CourseFieldTemplatesComponent },
+    { path: ':id', component: Views.CourseDetailComponent },
+    { path: ':id/bearbeiten', component: Views.CourseEditComponent },
+  ].map((route) => ({
+    ...route,
+    path: route.path
+      ? `verwaltung/schiri-kurse-planung/${route.path}`
+      : 'verwaltung/schiri-kurse-planung',
+    pathMatch: 'full' as const,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_courses' },
+  })),
+  // Rechnungsexport der Kurse je Landesverband.
+  {
+    path: 'verwaltung/schiri-kurse-abrechnung',
+    pathMatch: 'full',
+    component: Views.CourseBillingComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_course_billing' },
+  },
+  // Lizenzvergabe durch FD für Kurse im System.
+  {
+    path: 'verwaltung/schiri-kurse-lizenzen',
+    pathMatch: 'full',
+    component: Views.CourseLicensingComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_course_licensing' },
+  },
+  // „Meine Kurse" der Kursleitung.
+  {
+    path: 'verwaltung/meine-kurse',
+    pathMatch: 'full',
+    component: Views.LeadCourseIndexComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_courses_lead' },
+  },
+  {
+    path: 'verwaltung/meine-kurse/:id',
+    pathMatch: 'full',
+    component: Views.LeadCourseDetailComponent,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_courses_lead' },
+  },
 ];
 
 @NgModule({

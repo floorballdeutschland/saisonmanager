@@ -40,6 +40,8 @@ export * from './system-health.service';
 export * from './email-log.service';
 export * from './email-template.service';
 export * from './referee-course-import.service';
+export * from './referee-course.service';
+export * from './referee-course-signup.service';
 export * from './proceeding-proposal.service';
 export * from './live-stream.service';
 export * from './streaming.service';

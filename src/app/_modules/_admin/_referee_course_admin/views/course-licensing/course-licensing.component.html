@@ -1,0 +1,277 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-2">
+    {{ "refereeCourseAdmin.licensing.title" | transloco }}
+  </h1>
+  <p class="text-fb-gray-500 text-sm mb-6">
+    {{ "refereeCourseAdmin.licensing.intro" | transloco }}
+  </p>
+
+  <div class="flex flex-wrap items-center gap-4 mb-6 text-sm">
+    <label class="flex items-center gap-2">
+      <input
+        type="radio"
+        name="status"
+        [checked]="status === 'pending'"
+        (change)="setStatus('pending')"
+      />
+      {{ "refereeCourseAdmin.licensing.pending" | transloco }}
+    </label>
+    <label class="flex items-center gap-2">
+      <input
+        type="radio"
+        name="status"
+        data-test="tab-done"
+        [checked]="status === 'done'"
+        (change)="setStatus('done')"
+      />
+      {{ "refereeCourseAdmin.licensing.done" | transloco }}
+    </label>
+    @if (status === "pending") {
+      <button
+        type="button"
+        data-test="approve-selected"
+        class="ml-auto px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+        [disabled]="busy || selectedReady.length === 0"
+        (click)="approveSelected()"
+      >
+        {{
+          "refereeCourseAdmin.licensing.approveSelected"
+            | transloco: { count: selectedReady.length }
+        }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="text-fb-gray-500">
+      {{ "refereeCourseAdmin.import.loading" | transloco }}
+    </div>
+  } @else if (rows.length === 0) {
+    <p class="text-fb-gray-500" data-test="empty">
+      {{ "refereeCourseAdmin.licensing.empty" | transloco }}
+    </p>
+  }
+
+  @for (group of groups; track group.id) {
+    <section class="mb-10" data-test="course-group">
+      <h2 class="text-lg font-bold">
+        <a
+          class="hover:underline"
+          [routerLink]="['/', 'verwaltung', 'schiri-kurse-planung', group.id]"
+          >{{ group.title }}</a
+        >
+      </h2>
+      <p class="text-sm text-fb-gray-500 mb-2">
+        {{
+          group.stateAssociation ??
+            ("refereeCourseAdmin.courses.national" | transloco)
+        }}
+        · {{ group.endsOn | date: "dd.MM.yyyy" }}
+        @if (group.levels.length) {
+          · {{ "refereeCourseAdmin.licensing.courseLevels" | transloco }}
+          {{ group.levels.join("/") }}
+        }
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-fb-gray-700">
+              @if (status === "pending") {
+                <th class="py-2 px-2"></th>
+              }
+              <th class="py-2 px-2">
+                {{ "refereeCourseAdmin.licensing.colPerson" | transloco }}
+              </th>
+              <th class="py-2 px-2">
+                {{ "refereeCourseAdmin.licensing.colReferee" | transloco }}
+              </th>
+              <th class="py-2 px-2">
+                {{ "refereeCourseAdmin.licensing.colTest" | transloco }}
+              </th>
+              <th class="py-2 px-2">
+                {{ "refereeCourseAdmin.licensing.colLicense" | transloco }}
+              </th>
+              <th class="py-2 px-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of group.rows; track row.id) {
+              <tr
+                class="border-b border-fb-gray-800 align-top"
+                data-test="licensing-row"
+              >
+                @if (status === "pending") {
+                  <td class="py-2 px-2">
+                    <input
+                      type="checkbox"
+                      [attr.aria-label]="
+                        'refereeCourseAdmin.licensing.select' | transloco
+                      "
+                      [disabled]="!ready(row)"
+                      [checked]="selected.has(row.id)"
+                      (change)="toggle(row, $any($event.target).checked)"
+                    />
+                  </td>
+                }
+                <td class="py-2 px-2">
+                  <span class="font-bold"
+                    >{{ row.person.nachname }}, {{ row.person.vorname }}</span
+                  >
+                  <span class="block text-xs text-fb-gray-500">
+                    {{ row.person.geburtsdatum | date: "dd.MM.yyyy" }} ·
+                    {{ row.person.club ?? "–" }}
+                  </span>
+                  @if (row.registration?.desired_level) {
+                    <span class="block text-xs">{{
+                      "refereeCourseAdmin.licensing.desired"
+                        | transloco: { level: row.registration?.desired_level }
+                    }}</span>
+                  }
+                </td>
+                <td class="py-2 px-2">
+                  @if (row.referee) {
+                    <a
+                      class="underline"
+                      [routerLink]="[
+                        '/',
+                        'verwaltung',
+                        'schiedsrichter',
+                        row.referee.lizenznummer,
+                      ]"
+                      >{{ row.referee.lizenznummer }}</a
+                    >
+                    <span class="block text-xs text-fb-gray-500">
+                      {{ row.referee.lizenzstufe || "–" }}
+                      @if (row.referee.gueltigkeit) {
+                        ·
+                        {{
+                          "refereeCourseAdmin.courseDetail.licenseUntil"
+                            | transloco
+                              : {
+                                  date:
+                                    (row.referee.gueltigkeit
+                                    | date: "dd.MM.yyyy"),
+                                }
+                        }}
+                      }
+                    </span>
+                    @if (row.referee.career_ended) {
+                      <span class="block text-xs text-red-700">{{
+                        "refereeCourseAdmin.licensing.careerEnded" | transloco
+                      }}</span>
+                    }
+                    @if (row.status === "pending_review") {
+                      <button
+                        type="button"
+                        class="text-xs hover:underline"
+                        [disabled]="busy"
+                        (click)="assign(row, null)"
+                      >
+                        {{ "refereeCourseAdmin.licensing.asNew" | transloco }}
+                      </button>
+                    }
+                  } @else {
+                    <span>{{
+                      "refereeCourseAdmin.licensing.newReferee" | transloco
+                    }}</span>
+                    @if (
+                      row.status === "pending_review" &&
+                      row.registration?.match_candidates?.length
+                    ) {
+                      @for (
+                        c of row.registration?.match_candidates ?? [];
+                        track c.id
+                      ) {
+                        <button
+                          type="button"
+                          class="block text-xs hover:underline text-left"
+                          [disabled]="busy"
+                          (click)="assign(row, c.id)"
+                        >
+                          {{
+                            "refereeCourseAdmin.licensing.assignTo"
+                              | transloco
+                                : {
+                                    name: c.vorname + " " + c.nachname,
+                                    nr: c.lizenznummer ?? "–",
+                                  }
+                          }}
+                        </button>
+                      }
+                    }
+                  }
+                </td>
+                <td class="py-2 px-2">
+                  {{ row.registration?.test_version || "–" }}
+                  @if (row.registration?.points !== null) {
+                    · {{ row.registration?.points }}
+                    {{ "refereeCourseAdmin.licensing.points" | transloco }}
+                  }
+                </td>
+                <td class="py-2 px-2">
+                  @if (row.status === "pending_review") {
+                    <select
+                      class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm"
+                      [attr.data-test]="'level-' + row.id"
+                      [disabled]="busy"
+                      [ngModel]="row.lizenzstufe"
+                      (ngModelChange)="setLevel(row, $event)"
+                    >
+                      <option [ngValue]="null">–</option>
+                      @for (level of levels; track level) {
+                        <option [ngValue]="level">{{ level }}</option>
+                      }
+                    </select>
+                    @if (row.gueltigkeit) {
+                      <span class="block text-xs text-fb-gray-500">{{
+                        "refereeCourseAdmin.courseDetail.licenseUntil"
+                          | transloco
+                            : { date: (row.gueltigkeit | date: "dd.MM.yyyy") }
+                      }}</span>
+                    }
+                  } @else if (row.status === "applied") {
+                    <span class="font-bold">{{ row.lizenzstufe }}</span>
+                    <span class="block text-xs text-fb-gray-500">{{
+                      "refereeCourseAdmin.courseDetail.licenseUntil"
+                        | transloco
+                          : { date: (row.gueltigkeit | date: "dd.MM.yyyy") }
+                    }}</span>
+                  } @else {
+                    <span class="text-red-700">{{
+                      "refereeCourseAdmin.courseDetail.licenseRejected"
+                        | transloco
+                    }}</span>
+                    <span class="block text-xs">{{
+                      row.rejection_reason
+                    }}</span>
+                  }
+                </td>
+                <td class="py-2 px-2 whitespace-nowrap">
+                  @if (row.status === "pending_review") {
+                    <button
+                      type="button"
+                      [attr.data-test]="'approve-' + row.id"
+                      class="px-3 py-1 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+                      [disabled]="busy || !row.lizenzstufe"
+                      (click)="approve(row)"
+                    >
+                      {{ "refereeCourseAdmin.licensing.approve" | transloco }}
+                    </button>
+                    <button
+                      type="button"
+                      class="ml-2 text-sm text-red-700 hover:underline"
+                      [disabled]="busy"
+                      (click)="reject(row)"
+                    >
+                      {{ "refereeCourseAdmin.licensing.reject" | transloco }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>
