@@ -490,12 +490,13 @@ export class ErrorInterceptor implements HttpInterceptor {
         // Vereinen planmäßig mit 403; mit der Umleitung auf die Startseite lag
         // der lokale Schusspuffer danach still und verloren. Ein 404 ist beim
         // Löschen erwartet (der Schuss ist schon weg). Für beide schweigt der
-        // Interceptor, die Erfassung zeigt den Zustand selbst an.
+        // Interceptor, die Erfassung zeigt den Zustand selbst an. Ebenso für
+        // die Rückmeldung zur Beta (fe#560), die ihren Fehler selbst meldet.
         //
         // Als Regex auf das Pfadende, kein offener Teilstring: `shots` allein
         // träfe auch fremde Pfade.
         const tabletShotRequest =
-          /\/games\/\d+\/(shots(\.json|\/[^/]+(\.json|\/link\.json))|tablet_capture\.json)$/.test(
+          /\/games\/\d+\/(shots(\.json|\/[^/]+(\.json|\/link\.json))|tablet_(capture|feedback)\.json)$/.test(
             request.url.split('?')[0]
           );
 
