@@ -15,6 +15,10 @@ import {
   looksLikeYouthLeague,
   renderResultTile,
 } from 'src/app/_helpers/_utils/result-tile';
+import {
+  missingSignatureLabels,
+  missingSignatures,
+} from 'src/app/_helpers/_utils/missing-signatures';
 
 @Component({
   selector: 'fb-match-report-step-three',
@@ -31,6 +35,12 @@ export class MatchReportStepThreeComponent {
 
   @Input()
   nextStatusOption!: GameStatusOption;
+
+  // Darf die SBK des Spielbetriebs (oder ein Admin) den Bericht abschließen?
+  // Dann übergeht die API die fehlenden Unterschriften, und der Knopf warnt
+  // nur, statt zu sperren (MatchReportComponent#canCheckGame).
+  @Input()
+  canOverrideSignatures = false;
 
   @Output()
   handleReload = new EventEmitter<void>();
@@ -85,8 +95,36 @@ export class MatchReportStepThreeComponent {
   }
 
   handleFinalize() {
+    if (!this.signaturesComplete && !this.canOverrideSignatures) return;
     this.closeMatchRecord.emit();
   }
+
+  // ── Unterschriften als Pflicht ───────────────────────────────────────────
+  //
+  // Welche Haken fehlen, sagt die API (siehe `missing-signatures.ts`). Der
+  // Verein kann ohne sie nicht abschließen, die SBK wird nur gewarnt und
+  // bestätigt den Abschluss ausdrücklich.
+
+  public isSignatureMissing(field: string): boolean {
+    return missingSignatures(this.additionalFields).includes(field);
+  }
+
+  public get signaturesComplete(): boolean {
+    return missingSignatures(this.additionalFields).length === 0;
+  }
+
+  public get missingSignatureLabels(): string[] {
+    return missingSignatureLabels(this.additionalFields);
+  }
+
+  public get overrideConfirmationContent(): string {
+    return (
+      `Auf dem Spielbericht fehlen Unterschriften: ${this.missingSignatureLabels.join(', ')}. ` +
+      'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
+      'dabei leer. Möchtest du wirklich fortfahren?'
+    );
+  }
+
   public get youthLeagueWarning(): boolean {
     return looksLikeYouthLeague(this.game?.league_name);
   }

@@ -3,10 +3,15 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { RefereeHistoryGame, RefereeHistorySeason } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+import {
+  TabDirective,
+  TabsComponent,
+} from 'src/app/_modules/_uikit/_common/components/molecules';
 import { RefereeHistoryComponent } from './referee-history.component';
 
 function game(overrides: Partial<RefereeHistoryGame> = {}) {
@@ -87,7 +92,7 @@ describe('RefereeHistoryComponent (Template)', () => {
         HttpClientTestingModule,
         RouterTestingModule,
       ],
-      declarations: [RefereeHistoryComponent],
+      declarations: [RefereeHistoryComponent, TabsComponent, TabDirective],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RefereeHistoryComponent);
@@ -96,7 +101,7 @@ describe('RefereeHistoryComponent (Template)', () => {
 
   afterEach(() => httpMock.verify());
 
-  function render(games: RefereeHistoryGame[]): void {
+  function render(games: RefereeHistoryGame[], tests: unknown[] = []): void {
     fixture.detectChanges();
     const season: RefereeHistorySeason = {
       season_id: 18,
@@ -106,9 +111,14 @@ describe('RefereeHistoryComponent (Template)', () => {
     httpMock
       .expectOne(environment.apiURL + 'referee/history/games')
       .flush([season]);
-    httpMock.expectOne(environment.apiURL + 'referee/history/tests').flush([]);
+    httpMock
+      .expectOne(environment.apiURL + 'referee/history/tests')
+      .flush(tests);
     fixture.detectChanges();
   }
+
+  const panel = (id: string): HTMLElement | null =>
+    fixture.nativeElement.querySelector(`[data-testid="tabpanel-${id}"]`);
 
   function cellLinks(): HTMLAnchorElement[] {
     return Array.from(
@@ -133,5 +143,31 @@ describe('RefereeHistoryComponent (Template)', () => {
     expect(cellLinks().length).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('Heim');
     expect(fixture.nativeElement.textContent).toContain('Gast');
+  });
+
+  it('oeffnet die gepfiffenen Spiele als Standardreiter', () => {
+    render([game()]);
+
+    expect(panel('spiele')).not.toBeNull();
+    expect(panel('tests')).toBeNull();
+  });
+
+  it('wechselt per Klick zu den Pruefungsergebnissen', async () => {
+    render([game()], [{ id: 1, status: 'applied', lizenzstufe: 'J1' }]);
+
+    fixture.nativeElement.querySelector('[data-testid="tab-tests"]').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(panel('spiele')).toBeNull();
+    expect(panel('tests')?.textContent).toContain('J1');
+  });
+
+  it('oeffnet den Reiter aus der Adresse', async () => {
+    await TestBed.inject(Router).navigateByUrl('/?reiter=tests');
+    render([game()]);
+
+    expect(panel('tests')).not.toBeNull();
+    expect(panel('spiele')).toBeNull();
   });
 });

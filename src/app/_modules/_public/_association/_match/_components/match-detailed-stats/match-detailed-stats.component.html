@@ -1,0 +1,348 @@
+<div class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8 pb-16">
+  <h2 class="font-bold text-xl lg:text-2xl mb-4 lg:mb-8">
+    {{ "match.detailedStats.title" | transloco }}
+  </h2>
+
+  @if (loading && !stats) {
+    <p class="text-fb-gray-400 my-8" data-test="stats-loading">
+      {{ "match.detailedStats.loading" | transloco }}
+    </p>
+  }
+  @if (failed && !stats) {
+    <p class="text-fb-gray-400 my-8" data-test="stats-failed">
+      {{ "match.detailedStats.failed" | transloco }}
+    </p>
+  }
+
+  @if (stats) {
+    @if (incomplete) {
+      <div
+        class="border border-amber-300 bg-amber-50 text-amber-900 rounded-[5px] px-4 py-3 mb-6 text-sm"
+        role="note"
+        data-test="stats-incomplete"
+      >
+        {{ "match.detailedStats.incomplete" | transloco }}
+      </div>
+    }
+
+    <!-- Torszenen aus der Stream-Aufzeichnung (fe#555), nur mit Video und Szenen -->
+    @if (showHighlights && highlights) {
+      <fb-match-highlights
+        [highlights]="highlights"
+        [homeName]="teamShortName('home')"
+        [guestName]="teamShortName('guest')"
+        (unavailable)="onHighlightsUnavailable()"
+      ></fb-match-highlights>
+    }
+
+    <!-- Schussgrafik -->
+    <section class="mb-10">
+      <h3 class="font-bold text-lg lg:text-xl mb-3">
+        {{ "match.detailedStats.chart.title" | transloco }}
+      </h3>
+
+      <div
+        class="flex flex-wrap gap-2 mb-4"
+        role="group"
+        [attr.aria-label]="'match.detailedStats.filter.label' | transloco"
+      >
+        <button
+          type="button"
+          class="px-3 py-1 rounded-full border text-sm font-bold transition"
+          [class.bg-black]="selectedPeriod === null"
+          [class.text-white]="selectedPeriod === null"
+          [class.border-black]="selectedPeriod === null"
+          [class.border-fb-gray-600]="selectedPeriod !== null"
+          [attr.aria-pressed]="selectedPeriod === null"
+          (click)="selectPeriod(null)"
+          data-test="period-filter"
+        >
+          {{ "match.detailedStats.filter.all" | transloco }}
+        </button>
+        @for (period of periods; track period) {
+          <button
+            type="button"
+            class="px-3 py-1 rounded-full border text-sm font-bold transition"
+            [class.bg-black]="selectedPeriod === period"
+            [class.text-white]="selectedPeriod === period"
+            [class.border-black]="selectedPeriod === period"
+            [class.border-fb-gray-600]="selectedPeriod !== period"
+            [attr.aria-pressed]="selectedPeriod === period"
+            (click)="selectPeriod(period)"
+            data-test="period-filter"
+          >
+            {{
+              periodTitle(period) ??
+                ("match.detailedStats.periodN" | transloco: { n: period })
+            }}
+          </button>
+        }
+      </div>
+
+      <ul class="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-sm list-none p-0">
+        @for (result of results; track result) {
+          <li class="flex items-center gap-1.5">
+            <span
+              class="inline-block w-3 h-3 rounded-full"
+              [style.background-color]="colors[result]"
+              aria-hidden="true"
+            ></span>
+            {{ "match.detailedStats.result." + result | transloco }}
+          </li>
+        }
+      </ul>
+      @if (linkedShots.size) {
+        <p class="text-xs text-fb-gray-500 -mt-2 mb-4" data-test="jump-hint">
+          {{ "match.highlights.jumpHint" | transloco }}
+        </p>
+      }
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        @for (team of teams; track team) {
+          <div [attr.data-test]="'chart-' + team">
+            <h4
+              class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
+            >
+              {{ teamName(team) }}
+            </h4>
+            <fb-shot-chart
+              [shots]="shotsFor(team)"
+              [team]="team"
+              [teamName]="teamName(team)"
+              [periodTitles]="game.period_titles"
+              [linkedShots]="linkedShots"
+              (goalSelected)="onGoalSelected($event)"
+            ></fb-shot-chart>
+            <p class="text-xs text-fb-gray-500 mt-2">
+              @for (result of results; track result; let last = $last) {
+                {{ "match.detailedStats.result." + result | transloco }}:
+                {{ countFor(team, result) }}{{ last ? "" : " · " }}
+              }
+            </p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Schüsse je Team und Abschnitt -->
+    <section class="mb-10">
+      <h3 class="font-bold text-lg lg:text-xl mb-3">
+        {{ "match.detailedStats.shots.title" | transloco }}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        @for (team of teams; track team) {
+          <div class="min-w-0">
+            <h4
+              class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
+            >
+              {{ teamName(team) }}
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm" [attr.data-test]="'shots-' + team">
+                <thead>
+                  <tr class="border-b border-fb-gray-200">
+                    <th class="text-left font-bold py-2 pr-3">
+                      {{ "match.detailedStats.shots.period" | transloco }}
+                    </th>
+                    <th class="text-right font-bold py-2 px-2">
+                      {{ "match.detailedStats.shots.shots" | transloco }}
+                    </th>
+                    <th class="text-right font-bold py-2 px-2">
+                      {{ "match.detailedStats.shots.onGoal" | transloco }}
+                    </th>
+                    <th class="text-right font-bold py-2 px-2">
+                      {{ "match.detailedStats.shots.goals" | transloco }}
+                    </th>
+                    <th class="text-right font-bold py-2 px-2">
+                      {{ "match.detailedStats.shots.blocked" | transloco }}
+                    </th>
+                    <th class="text-right font-bold py-2 pl-2">
+                      {{ "match.detailedStats.shots.missed" | transloco }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of rowsFor(team); track row.period) {
+                    <tr
+                      class="border-b border-fb-gray-200"
+                      [class.font-bold]="row.period === null"
+                    >
+                      <td class="py-2 pr-3 whitespace-nowrap">
+                        @if (row.period === null) {
+                          {{ "match.detailedStats.shots.total" | transloco }}
+                        } @else {
+                          {{
+                            periodTitle(row.period) ??
+                              ("match.detailedStats.periodN"
+                                | transloco: { n: row.period })
+                          }}
+                        }
+                      </td>
+                      <td class="text-right tabular-nums py-2 px-2">
+                        {{ row.stats.shots }}
+                      </td>
+                      <td class="text-right tabular-nums py-2 px-2">
+                        {{ row.stats.on_goal }}
+                      </td>
+                      <td class="text-right tabular-nums py-2 px-2">
+                        {{ row.stats.goals }}
+                      </td>
+                      <td class="text-right tabular-nums py-2 px-2">
+                        {{ row.stats.blocked }}
+                      </td>
+                      <td class="text-right tabular-nums py-2 pl-2">
+                        {{ row.stats.missed }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Torhüter -->
+    @if (hasGoalkeepers) {
+      <section class="mb-10" data-test="goalkeepers">
+        <h3 class="font-bold text-lg lg:text-xl mb-3">
+          {{ "match.detailedStats.goalkeepers.title" | transloco }}
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          @for (team of teams; track team) {
+            @if (goalkeepersFor(team).length) {
+              <div class="min-w-0">
+                <h4
+                  class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
+                >
+                  {{ teamName(team) }}
+                </h4>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="border-b border-fb-gray-200">
+                        <th class="text-left font-bold py-2 pr-2">#</th>
+                        <th class="text-left font-bold py-2 pr-3">
+                          {{ "match.detailedStats.name" | transloco }}
+                        </th>
+                        <th class="text-right font-bold py-2 px-2">
+                          {{
+                            "match.detailedStats.goalkeepers.saves" | transloco
+                          }}
+                        </th>
+                        <th class="text-right font-bold py-2 px-2">
+                          {{
+                            "match.detailedStats.goalkeepers.shotsAgainst"
+                              | transloco
+                          }}
+                        </th>
+                        <th class="text-right font-bold py-2 pl-2">
+                          {{
+                            "match.detailedStats.goalkeepers.savePct"
+                              | transloco
+                          }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (gk of goalkeepersFor(team); track $index) {
+                        <tr class="border-b border-fb-gray-200">
+                          <td class="py-2 pr-2 tabular-nums">
+                            {{ gk.trikot_number ?? "" }}
+                          </td>
+                          <td class="py-2 pr-3">{{ gk.name }}</td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ gk.saves }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ gk.shots_against }}
+                          </td>
+                          <td
+                            class="text-right tabular-nums py-2 pl-2 whitespace-nowrap"
+                            data-test="save-pct"
+                          >
+                            @if (savePercentage(gk) !== null) {
+                              {{ savePercentage(gk) | number: "1.1-1" }} %
+                            } @else {
+                              –
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Spieler -->
+    @if (hasPlayers) {
+      <section class="mb-10" data-test="players">
+        <h3 class="font-bold text-lg lg:text-xl mb-3">
+          {{ "match.detailedStats.players.title" | transloco }}
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          @for (team of teams; track team) {
+            @if (playersFor(team).length) {
+              <div class="min-w-0">
+                <h4
+                  class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
+                >
+                  {{ teamName(team) }}
+                </h4>
+                <div class="overflow-x-auto">
+                  <table
+                    class="w-full text-sm"
+                    [attr.data-test]="'players-' + team"
+                  >
+                    <thead>
+                      <tr class="border-b border-fb-gray-200">
+                        <th class="text-left font-bold py-2 pr-2">#</th>
+                        <th class="text-left font-bold py-2 pr-3">
+                          {{ "match.detailedStats.name" | transloco }}
+                        </th>
+                        <th class="text-right font-bold py-2 px-2">
+                          {{ "match.detailedStats.shots.shots" | transloco }}
+                        </th>
+                        <th class="text-right font-bold py-2 px-2">
+                          {{ "match.detailedStats.shots.onGoal" | transloco }}
+                        </th>
+                        <th class="text-right font-bold py-2 pl-2">
+                          {{ "match.detailedStats.shots.goals" | transloco }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (player of playersFor(team); track $index) {
+                        <tr class="border-b border-fb-gray-200">
+                          <td class="py-2 pr-2 tabular-nums">
+                            {{ player.trikot_number ?? "" }}
+                          </td>
+                          <td class="py-2 pr-3">{{ player.name }}</td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ player.shots }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ player.on_goal }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 pl-2">
+                            {{ player.goals }}
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
+    }
+  }
+</div>
