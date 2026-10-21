@@ -2,7 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
-import { ServerTimeResponse, ShotInput, ShotsResponse } from '@floorball/types';
+import {
+  ServerTimeResponse,
+  ShotInput,
+  ShotsResponse,
+  TabletFeedbackInput,
+} from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import { refreshContext } from '../_http/silent-refresh';
 
@@ -82,6 +87,14 @@ export class GameShotService {
     return this.http.put<{ tablet_shots_complete: boolean }>(
       environment.apiURL + 'games/' + gameId + '/tablet_capture.json',
       { complete }
+    );
+  }
+
+  /** Rückmeldung zur Beta, geht per Mail an die Administration (fe#560). */
+  public sendTabletFeedback(gameId: number, feedback: TabletFeedbackInput) {
+    return this.http.post<void>(
+      environment.apiURL + 'games/' + gameId + '/tablet_feedback.json',
+      feedback
     );
   }
 
