@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { RefereeCourseService } from '@floorball/core';
-import { RefereeCourseSummary } from '@floorball/types';
+import { RefereeCourseOptions, RefereeCourseSummary } from '@floorball/types';
 
 /** Kursplanung: Liste der Kurse, die das Konto verwalten darf. */
 @Component({
@@ -23,6 +23,8 @@ export class CourseIndexComponent implements OnInit, OnDestroy {
   // Vergangene Kurse sind standardmäßig ausgeblendet, die Arbeit steckt in den
   // kommenden.
   showPast = false;
+  options: RefereeCourseOptions | null = null;
+  readonly origin = typeof window === 'undefined' ? '' : window.location.origin;
 
   private _destroy$ = new Subject<void>();
 
@@ -33,6 +35,37 @@ export class CourseIndexComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
+    this._service
+      .options()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((options) => {
+        this.options = options;
+        this._cdr.markForCheck();
+      });
+  }
+
+  /** Öffentliche Kursseite eines LV, zum Verlinken. */
+  publicUrl(stateAssociationId: number): string {
+    return `${this.origin}/schiri-kurse?verband=${stateAssociationId}`;
+  }
+
+  /**
+   * iframe-Code für die Verbandsseite (statische Seite ohne Seitenleiste). Das
+   * kleine Skript lässt das iframe mitwachsen: Die Seite meldet ihre Höhe per
+   * postMessage. Angenommen wird nur unsere Herkunft und nur die Meldung des
+   * eigenen iframes, damit sich zwei Einbettungen auf einer Seite nicht
+   * gegenseitig die Höhe setzen. Das iframe findet das Skript über seinen
+   * Platz direkt davor, nicht über eine ID, die doppelt vorkommen könnte.
+   */
+  embedCode(stateAssociationId: number): string {
+    return (
+      `<iframe src="${this.origin}/kurse-einbettung/?verband=${stateAssociationId}" ` +
+      `style="width:100%;min-height:400px;border:0" title="Schiedsrichterkurse"></iframe>\n` +
+      `<script>(function(f){if(!f||f.tagName!=="IFRAME")return;` +
+      `window.addEventListener("message",function(e){` +
+      `if(e.origin!=="${this.origin}"||e.source!==f.contentWindow||!e.data||e.data.type!=="saisonmanager-kurse-hoehe")return;` +
+      `f.style.height=e.data.height+"px";});})(document.currentScript&&document.currentScript.previousElementSibling);</script>`
+    );
   }
 
   ngOnDestroy(): void {

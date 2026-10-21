@@ -35,8 +35,20 @@ function course(
 
 describe('CourseIndexComponent', () => {
   function render(courses: RefereeCourseSummary[]) {
-    const service = jasmine.createSpyObj('RefereeCourseService', ['list']);
+    const service = jasmine.createSpyObj('RefereeCourseService', [
+      'list',
+      'options',
+    ]);
     service.list.and.returnValue(of(courses));
+    service.options.and.returnValue(
+      of({
+        state_associations: [{ id: 3, name: 'Hessen' }],
+        partner_state_associations: [],
+        national_allowed: false,
+        license_levels: [],
+        course_types: [],
+      })
+    );
     TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule()],
       declarations: [CourseIndexComponent],
@@ -69,5 +81,50 @@ describe('CourseIndexComponent', () => {
       fixture.nativeElement.querySelectorAll('[data-test="below-minimum"]')
         .length
     ).toBe(1);
+  });
+
+  it('zeigt Link und iframe-Code fuer die Verbandsseite', () => {
+    const { fixture } = render([]);
+    const c = fixture.componentInstance;
+    expect(c.publicUrl(3)).toMatch(/\/schiri-kurse\?verband=3$/);
+    expect(c.embedCode(3)).toContain('/kurse-einbettung/?verband=3');
+    expect(c.embedCode(3)).toContain('saisonmanager-kurse-hoehe');
+    expect(c.embedCode(3)).toContain('e.source!==f.contentWindow');
+    expect(c.embedCode(3)).not.toContain(' id=');
+    expect(
+      fixture.nativeElement.querySelector('[data-test="embed"]')
+    ).not.toBeNull();
+  });
+
+  it('iframe-Code setzt nur die Hoehe des eigenen iframes', () => {
+    const { fixture } = render([]);
+    const c = fixture.componentInstance;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const frames: HTMLIFrameElement[] = [];
+    for (const sa of [3, 4]) {
+      const code = c.embedCode(sa);
+      const tpl = document.createElement('template');
+      tpl.innerHTML = code;
+      const frame = tpl.content.querySelector('iframe') as HTMLIFrameElement;
+      frame.removeAttribute('src');
+      host.appendChild(frame);
+      const script = document.createElement('script');
+      script.textContent = (
+        tpl.content.querySelector('script') as HTMLScriptElement
+      ).textContent;
+      host.appendChild(script);
+      frames.push(frame);
+    }
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: c.origin,
+        source: frames[1].contentWindow,
+        data: { type: 'saisonmanager-kurse-hoehe', height: 777 },
+      })
+    );
+    expect(frames[1].style.height).toBe('777px');
+    expect(frames[0].style.height).toBe('');
+    host.remove();
   });
 });
