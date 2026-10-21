@@ -6,13 +6,17 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import {
   RefereeAssignableGame,
   RefereeAssignment,
   RefereeAssignmentAvailable,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
+import {
+  TabDirective,
+  TabsComponent,
+} from 'src/app/_modules/_uikit/_common/components/molecules';
 import { AssignmentIndexComponent } from './assignment-index.component';
 
 describe('AssignmentIndexComponent – Zusätzliche Spielinformationen', () => {
@@ -728,7 +732,9 @@ describe('AssignmentIndexComponent – Anzeige der Telefonnummer', () => {
         }),
         HttpClientTestingModule,
       ],
-      declarations: [AssignmentIndexComponent],
+      // Die Zeilen stehen im Reiter "offen"; ohne echte Reiterleiste
+      // rendert ihr ng-template gar nicht.
+      declarations: [AssignmentIndexComponent, TabsComponent, TabDirective],
       providers: [provideRouter([])],
       // Das Template zieht fb-select-search und fb-assignment-club-index nach.
       // Beide sind fuer die Telefon-Anzeige ohne Belang.
@@ -781,7 +787,7 @@ describe('AssignmentIndexComponent – Anzeige der Telefonnummer', () => {
   ) {
     component.clubMode = false;
     component.loading = false;
-    component.activeTab = 'open';
+    component.activeTab = 'offen';
     const row = {
       game: { id: GAME_ID, date: '2026-08-01' },
       assignment: null,
@@ -970,5 +976,96 @@ describe('AssignmentIndexComponent – Gastschiedsrichter', () => {
       .flush({ partners: [] });
 
     expect(state.referee1Query).toBe('Gastner, Vorname (N2, Gast)');
+  });
+});
+
+describe('AssignmentIndexComponent – Reiter', () => {
+  let fixture: ComponentFixture<AssignmentIndexComponent>;
+  let component: AssignmentIndexComponent;
+  let httpMock: HttpTestingController;
+
+  const today = new Date().toLocaleDateString('sv-SE');
+  const GAMES = environment.apiURL + 'admin/referee_assignments/games';
+  const ASSIGNMENTS = environment.apiURL + 'admin/referee_assignments';
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        FormsModule,
+        getTranslocoTestingModule(),
+        HttpClientTestingModule,
+      ],
+      declarations: [AssignmentIndexComponent, TabsComponent, TabDirective],
+      providers: [provideRouter([])],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  // Erzeugt die Ansicht und raeumt Saisons und Vereine ab. Zurueck kommen die
+  // Pfade der Ladeanfragen fuer Spiele und Ansetzungen, offen gelassen.
+  function create(): string[] {
+    fixture = TestBed.createComponent(AssignmentIndexComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    httpMock
+      .expectOne((r) => r.url.includes('settings/seasons'))
+      .flush({ seasons: [], current_season_id: 18 });
+    httpMock
+      .match((r) => r.url === ASSIGNMENTS + '/clubs')
+      .forEach((r) => r.flush([]));
+    return flushLoads();
+  }
+
+  function flushLoads(): string[] {
+    const loads = httpMock.match((r) => r.url.startsWith(ASSIGNMENTS));
+    loads.forEach((r) => r.flush([]));
+    fixture.detectChanges();
+    return loads.map((r) => r.request.url.split('?')[0]);
+  }
+
+  const panel = (id: string): HTMLElement | null =>
+    fixture.nativeElement.querySelector(`[data-testid="tabpanel-${id}"]`);
+
+  it('startet im Reiter "offen" und laedt die ansetzbaren Spiele', () => {
+    const loaded = create();
+
+    expect(component.activeTab).toBe('offen');
+    expect(loaded).toContain(GAMES);
+    expect(panel('offen')).not.toBeNull();
+    expect(panel('verlauf')).toBeNull();
+  });
+
+  // Filterleiste und Export haengen ueber der Reiterleiste am Reiter. Kaeme
+  // der Wert erst ueber activeChange, schluege die Pruefung mit NG0100 an.
+  it('oeffnet den Verlauf aus der Adresse samt Rueckblick-Zeitraum', async () => {
+    await TestBed.inject(Router).navigateByUrl('/?reiter=verlauf');
+    const loaded = create();
+
+    expect(component.activeTab).toBe('verlauf');
+    expect(component.filterDateFrom).toBe('');
+    expect(component.filterDateTo).toBe(today);
+    expect(loaded).toEqual([ASSIGNMENTS]);
+    expect(panel('verlauf')).not.toBeNull();
+  });
+
+  it('tauscht beim Wechsel die Datumsgrenzen und laedt nur die Ansetzungen', async () => {
+    create();
+    component.filterDateFrom = '2026-09-01';
+
+    fixture.nativeElement.querySelector('[data-testid="tab-verlauf"]').click();
+    expect(component.activeTab).toBe('verlauf');
+    expect(component.filterDateFrom).toBe('');
+    expect(component.filterDateTo).toBe(today);
+    expect(flushLoads()).toEqual([ASSIGNMENTS]);
+    await fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/?reiter=verlauf');
+
+    // Zurueck zu "offen": die dort gewaehlte Grenze ist noch da.
+    fixture.nativeElement.querySelector('[data-testid="tab-offen"]').click();
+    expect(component.filterDateFrom).toBe('2026-09-01');
+    expect(flushLoads()).toContain(GAMES);
   });
 });

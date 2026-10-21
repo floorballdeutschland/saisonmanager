@@ -6,3 +6,4 @@ export * from './license-user-league-detail/license-user-league-detail.component
 export * from './license-club-index/license-club-index.component';
 export * from './license-team-detail/license-team-detail.component';
 export * from './license-admin-team-entry/license-admin-team-entry.component';
+export * from './license-club-summary/license-club-summary.component';

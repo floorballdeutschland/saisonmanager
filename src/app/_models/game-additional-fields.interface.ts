@@ -5,6 +5,9 @@ export interface GameAdditionalFields {
   referee2_signed: boolean;
   home_captain_signed: boolean;
   guest_captain_signed: boolean;
+  // Die Unterschriften, ohne die die API den Abschluss des Berichts ablehnt
+  // (Spaltennamen wie oben). Fehlt bei einer API vor dieser Regel.
+  missing_signatures?: string[];
   protest: boolean;
   special_event: boolean;
   playoff: boolean;

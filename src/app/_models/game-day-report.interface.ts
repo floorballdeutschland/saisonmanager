@@ -74,8 +74,47 @@ export interface GameDayReportRow {
   checklist_veto_submitted_at: string | null;
   checklist_veto_negative_count: number;
   checklist_veto_negative_items?: ChecklistNegativeItem[];
+  /**
+   * Widersprüche von Gastmannschaften und Schiedsrichtern gegen den
+   * Spieltagsbericht. Sie gelten für den ganzen Spieltag und stehen deshalb an
+   * jedem seiner Spiele. Optional, damit die Ansicht auch gegen eine ältere API
+   * läuft.
+   */
+  checklist_objection_count?: number;
+  checklist_objections?: ChecklistObjection[];
+  /**
+   * Erledigt-Vermerk der SBK. Alles optional, damit die Ansicht auch gegen
+   * eine ältere API läuft: Ohne `can_review` erscheint kein Knopf.
+   * `report_changed_since_review` meldet, dass nach dem Vermerk der Bericht
+   * geändert wurde oder ein neuer Einspruch einging.
+   */
+  can_review?: boolean;
+  report_reviewed_at?: string | null;
+  report_reviewed_by_name?: string | null;
+  report_review_comment?: string | null;
+  report_changed_since_review?: boolean;
+  /**
+   * Jüngster Zeitpunkt, an dem sich für die SBK etwas ergeben hat. Geht beim
+   * Abhaken als `seen_until` zurück, damit die API einen Vermerk auf einer
+   * veralteten Ansicht mit 409 abweisen kann.
+   */
+  last_change_at?: string | null;
 
   flags: GameReportFlags;
+}
+
+/**
+ * Ein Spieltag, den eine Gastmannschaft oder ein Schiedsrichter als nicht
+ * ordnungsgemäß durchgeführt gemeldet hat. `negative_items` kann leer sein:
+ * Die Meldung selbst ist der Widerspruch, auch wenn kein Punkt verneint wurde.
+ */
+export interface ChecklistObjection {
+  kind: 'team' | 'referee';
+  name: string | null;
+  confirmed_at: string | null;
+  negative_items: ChecklistNegativeItem[];
+  /** Freiwillige Anmerkung der meldenden Seite. Fehlt bei älterer API. */
+  comment?: string | null;
 }
 
 /**
@@ -110,4 +149,14 @@ export interface GameDayReportFilter {
   league_id?: string;
   date_from?: string;
   date_to?: string;
+}
+
+/** Antwort von `POST`/`DELETE admin/games/:id/report_review`. */
+export interface GameReportReview {
+  id: number;
+  report_reviewed_at: string | null;
+  report_reviewed_by_name: string | null;
+  report_review_comment: string | null;
+  report_changed_since_review: boolean;
+  last_change_at?: string | null;
 }

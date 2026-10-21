@@ -1,0 +1,124 @@
+<section class="mb-10 scroll-mt-4" data-test="highlights">
+  <h3 class="font-bold text-lg lg:text-xl mb-3">
+    {{ "match.highlights.title" | transloco }}
+  </h3>
+
+  <div
+    class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4"
+  >
+    <div class="min-w-0">
+      <div
+        class="relative w-full aspect-video bg-black rounded-[5px] overflow-hidden"
+      >
+        <!-- Hierhin setzt die YouTube-API ihr iframe, erst nach der Zustimmung. -->
+        <div
+          #playerHost
+          class="absolute inset-0 [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:w-full [&_iframe]:h-full"
+        ></div>
+
+        @if (!consented) {
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center text-white"
+            data-test="highlights-consent"
+          >
+            <p class="text-sm max-w-md">
+              {{ "match.highlights.consent.notice" | transloco }}
+            </p>
+            <button
+              type="button"
+              class="px-4 py-2 bg-white text-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-200"
+              (click)="consent()"
+              data-test="highlights-consent-button"
+            >
+              {{
+                (pendingIndex > 0
+                  ? "match.highlights.consent.buttonScene"
+                  : "match.highlights.consent.button"
+                ) | transloco: { n: pendingIndex + 1 }
+              }}
+            </button>
+            @if (loadFailed) {
+              <p class="text-xs text-amber-300" role="alert">
+                {{ "match.highlights.consent.failed" | transloco }}
+              </p>
+            }
+          </div>
+        }
+        @if (consented && loading) {
+          <div
+            class="absolute inset-0 flex items-center justify-center text-sm text-white"
+          >
+            {{ "match.highlights.loading" | transloco }}
+          </div>
+        }
+      </div>
+
+      <div
+        class="flex flex-wrap items-center justify-between gap-2 mt-2 text-sm"
+      >
+        <p class="text-fb-gray-500 m-0" aria-live="polite">
+          @if (currentScene; as scene) {
+            {{
+              "match.highlights.nowPlaying"
+                | transloco
+                  : { n: (currentIndex ?? 0) + 1, total: scenes.length }
+            }}
+            @if (finished) {
+              · {{ "match.highlights.finished" | transloco }}
+            }
+          }
+        </p>
+        @if (consented && !loading) {
+          <button
+            type="button"
+            class="px-3 py-1 rounded-full border border-black text-sm font-bold hover:bg-black hover:text-white transition"
+            (click)="playAll()"
+            data-test="highlights-play-all"
+          >
+            {{ "match.highlights.playAll" | transloco }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <ol class="list-none p-0 m-0 min-w-0" data-test="highlights-scenes">
+      @for (scene of scenes; track scene.event_id; let i = $index) {
+        <li>
+          <button
+            type="button"
+            class="w-full text-left flex items-start gap-3 py-2 px-2 border-b border-fb-gray-200 hover:bg-fb-gray-800"
+            [class.bg-fb-gray-700]="i === currentIndex"
+            [attr.aria-current]="i === currentIndex ? 'true' : null"
+            (click)="selectScene(i)"
+            data-test="highlights-scene"
+          >
+            <span class="font-bold tabular-nums whitespace-nowrap min-w-[3rem]">
+              {{ scene.home_goals }}:{{ scene.guest_goals }}
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block font-bold truncate">
+                {{
+                  personLabel(scene.scorer) ||
+                    (scene.team === "home" ? homeName : guestName)
+                }}
+              </span>
+              @if (scene.assist) {
+                <span class="block text-xs text-fb-gray-500 truncate">
+                  {{ "match.highlights.assist" | transloco }}:
+                  {{ personLabel(scene.assist) }}
+                </span>
+              }
+              <span class="block text-xs text-fb-gray-500">
+                {{ scene.team === "home" ? homeName : guestName }} ·
+                {{
+                  "match.detailedStats.periodN" | transloco: { n: scene.period }
+                }}
+                · {{ scene.game_time }}
+              </span>
+            </span>
+          </button>
+        </li>
+      }
+    </ol>
+  </div>
+</section>

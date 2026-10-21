@@ -53,7 +53,19 @@
     "colUpdatedBy": "Edited by",
     "colClosedAt": "Closed",
     "colComment": "Note for the committee",
-    "colScanUploadedAt": "Paper sheet uploaded"
+    "colScanUploadedAt": "Paper sheet uploaded",
+    "filterStatusWithObjection": "With objection to the game day report",
+    "objectionBadge": "Objection",
+    "colObjections": "Objections to the game day report",
+    "filterReview": "Processing",
+    "filterReviewAll": "All",
+    "filterReviewOpen": "Not done yet",
+    "filterReviewDone": "Done",
+    "reviewedBadge": "Done",
+    "reviewChangedBadge": "Done, changed since",
+    "colReviewedAt": "Done on",
+    "colReviewedBy": "Done by",
+    "colReviewComment": "Comment on done mark"
   },
   "status": {
     "notStarted": "Not started",
@@ -79,7 +91,13 @@
     "openProposals": "Go to overview",
     "checklistNegative": "{{count}} item(s) answered with no in the game day report",
     "checklistVeto": "Host objection from {{date}} with {{count}} item(s) answered with no",
-    "checklistItemRemoved": "Item was removed by the state association"
+    "checklistItemRemoved": "Item was removed by the state association",
+    "objectionTeam": "Objection by team {{name}} to the game day report",
+    "objectionReferee": "Objection by referee {{name}} to the game day report",
+    "objectionAt": "from {{date}}",
+    "objectionHost": "Host objection",
+    "objectionUnknown": "unknown",
+    "objectionComment": "Note: {{comment}}"
   },
   "proposalStatus": {
     "pending": "open",
@@ -97,6 +115,25 @@
     "loadError": "The match reports could not be loaded.",
     "finalized": "The match report has been closed.",
     "scanMissing": "There is no paper match report sheet for this game.",
-    "scanError": "The paper match report sheet could not be opened."
+    "scanError": "The paper match report sheet could not be opened.",
+    "reviewed": "The match report is marked as done.",
+    "reviewCleared": "The done mark was withdrawn."
+  },
+  "review": {
+    "button": "Mark as done",
+    "commentLabel": "Comment",
+    "commentOptional": "(optional)",
+    "commentPlaceholder": "What was done?",
+    "save": "Save as done",
+    "saving": "Saving …",
+    "cancel": "Cancel",
+    "reviewedAt": "Done on {{date}} by {{name}}",
+    "reviewedAtNoName": "Done on {{date}}",
+    "changedSince": "The report was changed or a new objection came in after it was marked as done.",
+    "comment": "Comment: {{comment}}",
+    "reopen": "Reopen",
+    "reopenTitle": "Withdraw done mark",
+    "reopenContent": "Withdraw the done mark? The comment will be lost.",
+    "reopenSubmit": "Withdraw"
   }
 }

@@ -1,0 +1,83 @@
+{
+  "refereeReport": {
+    "title": "Berichtsformular hochladen",
+    "hint": "Für dieses Spiel ist ein Berichtsformular der Schiedsrichter verlangt. Schiedsrichter können hier das ausgefüllte Berichtsformular hochladen.",
+    "pdfOnly": "Nur PDF-Dateien bis {{ maxMb }} MB. Fotos werden nicht mehr angenommen.",
+    "pdfHelp": "Ein PDF erstellst du mit dem Handy über eine Scan-App (z. B. „Dokument scannen“ in der Dateien- oder Notizen-App) oder am Rechner über „Drucken“ und „Als PDF speichern“.",
+    "forwardedTo": {
+      "vsk": "Es wird automatisch an die zuständige VSK weitergeleitet.",
+      "sbk": "Es wird automatisch an die zuständige SBK weitergeleitet.",
+      "vsk_and_sbk": "Es wird automatisch an die zuständige VSK und die zuständige SBK weitergeleitet."
+    },
+    "uploaded": {
+      "vsk": "{{ filename }} wurde hochgeladen und an die VSK weitergeleitet.",
+      "sbk": "{{ filename }} wurde hochgeladen und an die SBK weitergeleitet.",
+      "vsk_and_sbk": "{{ filename }} wurde hochgeladen und an die VSK und die SBK weitergeleitet."
+    },
+    "choose": "Datei wählen und hochladen",
+    "uploading": "Hochladen…",
+    "rejected": "Nur PDF-Dateien bis {{ maxMb }} MB sind zulässig, Fotos werden nicht angenommen."
+  },
+  "tabs": {
+    "overview": "Übersicht",
+    "detailedStats": "Ausführliche Statistik"
+  },
+  "detailedStats": {
+    "title": "Ausführliche Statistik",
+    "loading": "Statistik wird geladen …",
+    "failed": "Die Statistik konnte nicht geladen werden.",
+    "incomplete": "Schüsse nicht vollständig erfasst. Die Zahlen zeigen nur die erfassten Schüsse.",
+    "periodN": "{{ n }}. Abschnitt",
+    "name": "Name",
+    "result": {
+      "goal": "Tor",
+      "saved": "Gehalten",
+      "blocked": "Geblockt",
+      "missed": "Vorbei"
+    },
+    "filter": {
+      "label": "Abschnitt auswählen",
+      "all": "Alle"
+    },
+    "chart": {
+      "title": "Schussgrafik",
+      "direction": "Angriffsrichtung",
+      "ariaLabel": "Schussgrafik {{ team }}: {{ count }} Schüsse"
+    },
+    "shots": {
+      "title": "Schüsse je Abschnitt",
+      "period": "Abschnitt",
+      "total": "Gesamt",
+      "shots": "Schüsse",
+      "onGoal": "Aufs Tor",
+      "goals": "Tore",
+      "blocked": "Geblockt",
+      "missed": "Vorbei"
+    },
+    "goalkeepers": {
+      "title": "Torhüter",
+      "saves": "Paraden",
+      "shotsAgainst": "Schüsse aufs Tor",
+      "savePct": "Fangquote"
+    },
+    "players": {
+      "title": "Schüsse je Spieler"
+    }
+  },
+  "highlights": {
+    "title": "Torszenen",
+    "consent": {
+      "notice": "Die Szenen stammen aus der Aufzeichnung des Livestreams bei YouTube. Erst mit dem Klick werden Inhalte von YouTube (Google) geladen; dabei werden Daten wie deine IP-Adresse an YouTube übertragen.",
+      "button": "Szenen von YouTube laden",
+      "buttonScene": "Szene {{ n }} von YouTube laden",
+      "failed": "YouTube konnte nicht geladen werden. Bitte später erneut versuchen."
+    },
+    "loading": "Video wird geladen …",
+    "nowPlaying": "Szene {{ n }} von {{ total }}",
+    "finished": "alle Szenen gezeigt",
+    "playAll": "Alle Szenen abspielen",
+    "assist": "Vorlage",
+    "jumpHint": "Tipp auf ein Tor in der Schussgrafik springt zur Szene.",
+    "goalAria": "Tor {{ time }}, zur Szene springen"
+  }
+}

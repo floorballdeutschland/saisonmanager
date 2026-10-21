@@ -92,8 +92,15 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     club_id: null,
     reason: '',
   };
+  exclusionsFailed = false;
   showExclusionForm = false;
   exclusionBusy = false;
+
+  // Reiter, die schon einmal offen waren. Kurse, Feedback, Beobachtungen und
+  // Ausschluesse haben je einen eigenen Abruf, den ohne Blick in den Reiter
+  // niemand braucht. Einmal geladen bleiben die Daten beim Reiterwechsel
+  // erhalten; der Reiterinhalt wird zwar neu gerendert, liest aber nur Felder.
+  private _openedTabs = new Set<string>();
 
   private _destroy$ = new Subject<void>();
 
@@ -191,6 +198,14 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     this._destroy$.complete();
   }
 
+  onTab(id: string): void {
+    this._openedTabs.add(id);
+    this._maybeLoadCourses();
+    this._maybeLoadFeedback();
+    this._maybeLoadObservations();
+    this._maybeLoadExclusions();
+  }
+
   // Direktlink zur (öffentlichen) Spielseite: /:association/:leagueId/spiel/:matchId.
   // Gleiches Muster wie in "Meine Historie" (referee-history.component.ts), damit
   // die RSK-Sicht auf einen Schiedsrichter dieselben Wege anbietet wie seine eigene.
@@ -219,16 +234,21 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Lädt die Kurshistorie, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  // Lädt die Kurshistorie, sobald Berechtigung und Schiri-Datensatz vorliegen
+  // und der Reiter offen war.
   private _maybeLoadCourses(): void {
     if (
       !this.canViewCourses ||
+      !this._openedTabs.has('kurse') ||
       !this.referee ||
       this.coursesLoaded ||
       this.coursesLoading
     )
       return;
 
+    // Ein frueherer Fehlschlag darf nach erfolgreichem Neuversuch nicht stehen
+    // bleiben.
+    this.coursesFailed = false;
     this.coursesLoading = true;
     this._refereeService
       .adminGetCourses(this.referee.id)
@@ -272,10 +292,12 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     return parts.length ? parts.join(', ') : null;
   }
 
-  // Lädt das Schiri-Feedback, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  // Lädt das Schiri-Feedback, sobald Berechtigung und Schiri-Datensatz vorliegen
+  // und der Reiter offen war.
   private _maybeLoadFeedback(): void {
     if (
       !this.canViewFeedback ||
+      !this._openedTabs.has('bewertungen') ||
       !this.referee ||
       this.feedback ||
       this.feedbackLoading
@@ -299,16 +321,19 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Lädt die Beobachtungen, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  // Lädt die Beobachtungen, sobald Berechtigung und Schiri-Datensatz vorliegen
+  // und der Reiter offen war.
   private _maybeLoadObservations(): void {
     if (
       !this.canViewObservations ||
+      !this._openedTabs.has('bewertungen') ||
       !this.referee ||
       this.observations ||
       this.observationsLoading
     )
       return;
 
+    this.observationsFailed = false;
     this.observationsLoading = true;
     this._observationService
       .adminGetForReferee(this.referee.id)
@@ -356,17 +381,36 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
     return value === null || value === undefined ? '–' : String(value);
   }
 
-  // Lädt die Ausschlussliste, sobald Berechtigung und Schiri-Datensatz vorliegen.
+  // Lädt die Ausschlussliste, sobald Berechtigung und Schiri-Datensatz vorliegen
+  // und der Reiter offen war. Nur einmal: Danach halten Anlegen und Entfernen
+  // die Liste selbst aktuell (_applyExclusionPayload).
   private _maybeLoadExclusions(): void {
-    if (!this.canManageExclusions || !this.referee) return;
+    if (
+      !this.canManageExclusions ||
+      !this._openedTabs.has('ausschluesse') ||
+      !this.referee ||
+      this._exclusionsRequested
+    )
+      return;
 
+    this._exclusionsRequested = true;
+    this.exclusionsFailed = false;
     this._refereeService
       .adminGetRefereeClubExclusions(this.referee.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (payload) => this._applyExclusionPayload(payload),
+        // Ohne Meldung laese die Ansetzung eine leere Liste als „keine
+        // Ausschluesse". Beim naechsten Reiteroeffnen erneut versuchen.
+        error: () => {
+          this._exclusionsRequested = false;
+          this.exclusionsFailed = true;
+          this._cdr.markForCheck();
+        },
       });
   }
+
+  private _exclusionsRequested = false;
 
   get openExclusionRequests(): RefereeClubExclusionRequest[] {
     return this.exclusionRequests.filter((r) => r.status === 'pending');
@@ -451,6 +495,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   }
 
   private _applyExclusionPayload(payload: RefereeClubExclusionPayload): void {
+    this.exclusionsFailed = false;
     this.exclusions = payload.club_exclusions;
     this.exclusionRequests = payload.club_exclusion_requests;
     this._cdr.markForCheck();

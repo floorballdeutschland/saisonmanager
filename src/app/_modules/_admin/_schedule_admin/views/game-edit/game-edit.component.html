@@ -102,8 +102,10 @@
     >
       @if (!processing) {
         @if (!existingGame) {
+          <!-- Nur submit, kein (click): sonst lief createGame zweimal (Klick und
+               ngSubmit) und legte das Spiel doppelt an (#577). Enter im
+               Formular legt weiter an. -->
           <button
-            (click)="createGame()"
             class="px-3 md:px-1 text-green-700 hover:text-green-900"
             [title]="'scheduleAdmin.gameEdit.titleCreateGame' | transloco"
             type="submit"
@@ -150,6 +152,7 @@
         }
         @if (existingGame && !existingGame.started && hasChanges()) {
           <button
+            type="button"
             (click)="resetGame()"
             class="px-3 md:px-1"
             [title]="'scheduleAdmin.gameEdit.titleDiscardChanges' | transloco"
@@ -171,31 +174,9 @@
             </svg>
           </button>
         }
-        @if (existingGame && !existingGame.started && !hasChanges()) {
-          <button
-            (click)="deleteGame()"
-            class="px-3 md:px-1"
-            [title]="'scheduleAdmin.gameEdit.titleDeleteGame' | transloco"
-          >
-            <!-- Heroicon name: check -->
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-        }
         @if (!existingGame?.started || false) {
           <button
+            type="button"
             (click)="toggleNotice()"
             class="relative px-3 md:px-1"
             [ngClass]="{ 'megaphone-stroke': hasNotice }"
@@ -218,8 +199,11 @@
             </svg>
           </button>
         }
-        @if (!existingGame?.started || false) {
+        <!-- Neue Spiele haben noch kein Menue, die Playoff-Angaben muessen aber
+             schon beim Anlegen setzbar sein. -->
+        @if (!existingGame) {
           <button
+            type="button"
             (click)="toggleGameDependencies()"
             class="relative px-3 md:px-1"
             [ngClass]="{ 'calculator-stroke': hasGameDependencies }"
@@ -238,35 +222,6 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"
-              />
-            </svg>
-          </button>
-        }
-        @if (
-          existingGame &&
-          !existingGame.started &&
-          allGameDays &&
-          allGameDays.length > 1
-        ) {
-          <button
-            (click)="toggleMoveGameDay()"
-            class="relative px-3 md:px-1"
-            [ngClass]="{ 'text-primary': hasMoveGameDay }"
-            [title]="'scheduleAdmin.gameEdit.titleMoveGameDay' | transloco"
-          >
-            <!-- Heroicon name: arrows-right-left -->
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
               />
             </svg>
           </button>
@@ -296,11 +251,26 @@
     </div>
     <div
       class="absolute bottom-0 right-0 md:bottom-auto md:right-auto md:relative flex items-center justify-end"
+      (keydown.escape)="closeMenuByEscape()"
     >
+      <!-- Seltene Aktionen stehen hier statt als Symbol in der Zeile: Loeschen
+           liegt so nicht direkt neben Speichern, und die Zeile bleibt bei vielen
+           Spielen ruhig. Der Hintergrund liegt ueber allen Zeilen (z-20), damit
+           ein Klick auf das Menue einer anderen Zeile zuerst dieses schliesst
+           und nie zwei Menues gleichzeitig offen sind. -->
       @if (existingGame) {
-        <label
-          [for]="'context-' + existingGame.id"
+        <button
+          #menuToggle
+          type="button"
+          (click)="toggleMenu()"
           class="relative cursor-pointer"
+          [title]="'scheduleAdmin.gameEdit.titleMoreActions' | transloco"
+          [attr.aria-label]="
+            'scheduleAdmin.gameEdit.titleMoreActions' | transloco
+          "
+          aria-haspopup="menu"
+          [attr.aria-expanded]="menuOpen"
+          data-testid="game-menu-toggle"
         >
           <!-- Heroicon name: menu -->
           <svg
@@ -317,58 +287,118 @@
               stroke-linejoin="round"
             />
           </svg>
-        </label>
-        <input
-          [id]="'context-' + existingGame.id"
-          class="context hidden"
-          type="checkbox"
-        />
-        <div class="absolute w-[300px] top-[32px] right-[10px] hidden">
-          <label
-            [for]="'context-' + existingGame.id"
-            class="fixed top-0 left-0 w-screen h-screen"
-          ></label>
+        </button>
+        @if (menuOpen) {
+          <button
+            type="button"
+            tabindex="-1"
+            aria-hidden="true"
+            class="fixed top-0 left-0 w-screen h-screen z-20 cursor-default"
+            (click)="closeMenu()"
+            data-testid="game-menu-backdrop"
+          ></button>
           <ul
-            class="relative bg-white rounded bg-fb-gray-300 border border-gray-300 divide-y divide-gray-300 shadow-xl text-sm z-30"
+            role="menu"
+            class="absolute w-[300px] top-[32px] right-[10px] bg-white rounded bg-fb-gray-300 border border-gray-300 divide-y divide-gray-300 shadow-xl text-sm z-30"
+            data-testid="game-menu"
           >
+            @if (!processing && !existingGame.started) {
+              @if (allGameDays && allGameDays.length > 1) {
+                <li>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    (click)="closeMenu(); toggleMoveGameDay()"
+                    [ngClass]="{ 'bg-fb-gray-700': hasMoveGameDay }"
+                    class="block w-full text-left px-3 py-1.5 hover:bg-fb-gray-700"
+                    data-testid="game-menu-move"
+                  >
+                    {{
+                      (hasMoveGameDay
+                        ? "scheduleAdmin.gameEdit.cancelMoveGameDay"
+                        : "scheduleAdmin.gameEdit.titleMoveGameDay"
+                      ) | transloco
+                    }}
+                  </button>
+                </li>
+              }
+              <li>
+                <button
+                  type="button"
+                  role="menuitem"
+                  (click)="closeMenu(); toggleGameDependencies()"
+                  [ngClass]="{ 'bg-fb-gray-700': hasGameDependencies }"
+                  class="block w-full text-left px-3 py-1.5 hover:bg-fb-gray-700"
+                  data-testid="game-menu-playoff"
+                >
+                  {{
+                    (hasGameDependencies
+                      ? "scheduleAdmin.gameEdit.removePlayoff"
+                      : "scheduleAdmin.gameEdit.titleEditPlayoff"
+                    ) | transloco
+                  }}
+                </button>
+              </li>
+              @if (!hasChanges()) {
+                <li>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    (click)="closeMenu(); deleteGame()"
+                    class="block w-full text-left px-3 py-1.5 text-red-700 hover:bg-fb-gray-700"
+                    data-testid="game-menu-delete"
+                  >
+                    {{ "scheduleAdmin.gameEdit.titleDeleteGame" | transloco }}
+                  </button>
+                </li>
+              }
+            }
             <li>
-              <label
-                (click)="setRatingMode('regular')"
-                [for]="'context-' + existingGame.id"
+              <button
+                type="button"
+                role="menuitem"
+                (click)="closeMenu(); setRatingMode('regular')"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 0 }"
-                class="block px-3 py-1.5 hover:bg-fb-gray-700 cursor-pointer"
-                >{{ "scheduleAdmin.gameEdit.ratingRegular" | transloco }}</label
+                class="block w-full text-left px-3 py-1.5 hover:bg-fb-gray-700"
               >
+                {{ "scheduleAdmin.gameEdit.ratingRegular" | transloco }}
+              </button>
             </li>
             <li>
-              <label
-                (click)="setRatingMode('forfait-home')"
-                [for]="'context-' + existingGame.id"
+              <button
+                type="button"
+                role="menuitem"
+                (click)="closeMenu(); setRatingMode('forfait-home')"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 1 }"
-                class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
-                >{{ "scheduleAdmin.gameEdit.forfaitHome" | transloco }}</label
+                class="block w-full text-left px-3 py-1.5 hover:bg-fb-gray-200"
               >
+                {{ "scheduleAdmin.gameEdit.forfaitHome" | transloco }}
+              </button>
             </li>
             <li>
-              <label
-                (click)="setRatingMode('forfait-guest')"
-                [for]="'context-' + existingGame.id"
+              <button
+                type="button"
+                role="menuitem"
+                (click)="closeMenu(); setRatingMode('forfait-guest')"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 2 }"
-                class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
-                >{{ "scheduleAdmin.gameEdit.forfaitGuest" | transloco }}</label
+                class="block w-full text-left px-3 py-1.5 hover:bg-fb-gray-200"
               >
+                {{ "scheduleAdmin.gameEdit.forfaitGuest" | transloco }}
+              </button>
             </li>
             <li>
-              <label
-                (click)="setRatingMode('forfait-both')"
-                [for]="'context-' + existingGame.id"
+              <button
+                type="button"
+                role="menuitem"
+                (click)="closeMenu(); setRatingMode('forfait-both')"
                 [ngClass]="{ 'bg-fb-gray-700': existingGame.forfait === 3 }"
-                class="block px-3 py-1.5 hover:bg-fb-gray-200 cursor-pointer"
-                >{{ "scheduleAdmin.gameEdit.forfaitBoth" | transloco }}</label
+                class="block w-full text-left px-3 py-1.5 hover:bg-fb-gray-200"
               >
+                {{ "scheduleAdmin.gameEdit.forfaitBoth" | transloco }}
+              </button>
             </li>
           </ul>
-        </div>
+        }
       }
     </div>
     <!-- Ergebnis der kampflosen Wertung. Ohne Eintrag greift die Liga-Vorgabe,

@@ -1,9 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import {
   NotificationService,
   RefereeObservationService,
@@ -19,6 +19,9 @@ import {
   RefereeObservationAdminResponse,
   User,
 } from '@floorball/types';
+
+import { TabDirective } from 'src/app/_modules/_uikit/_common/components/molecules/tabs/tab.directive';
+import { TabsComponent } from 'src/app/_modules/_uikit/_common/components/molecules/tabs/tabs.component';
 
 import { RefereeDetailComponent } from './referee-detail.component';
 
@@ -91,6 +94,9 @@ const courseResult: RefereeCourseResultSummary = {
 describe('RefereeDetailComponent', () => {
   let fixture: ComponentFixture<RefereeDetailComponent>;
   let adminGetCourses: jasmine.Spy;
+  let adminGetFeedbacks: jasmine.Spy;
+  let adminGetForReferee: jasmine.Spy;
+  let adminGetRefereeClubExclusions: jasmine.Spy;
   let coursesResponse: Observable<RefereeCourseResultSummary[]>;
 
   beforeEach(() => {
@@ -100,12 +106,30 @@ describe('RefereeDetailComponent', () => {
   async function setUp(
     games: RefereeAdminGame[],
     permissions: Record<string, boolean> = { menu_item_referee_admin: true },
-    refereeOverrides: Partial<RefereeAdmin> = {}
+    refereeOverrides: Partial<RefereeAdmin> = {},
+    reiter: string | null = null
   ) {
     const shown = { ...referee, ...refereeOverrides } as RefereeAdmin;
     adminGetCourses = jasmine
       .createSpy('adminGetCourses')
       .and.callFake(() => coursesResponse);
+    adminGetFeedbacks = jasmine.createSpy('adminGetFeedbacks').and.returnValue(
+      of({
+        summary: {
+          count: 0,
+          avg_line_rating: null,
+          avg_communication_rating: null,
+        },
+      })
+    );
+    adminGetForReferee = jasmine
+      .createSpy('adminGetForReferee')
+      .and.returnValue(of(observationResponse));
+    adminGetRefereeClubExclusions = jasmine
+      .createSpy('adminGetRefereeClubExclusions')
+      .and.returnValue(
+        of({ club_exclusions: [], club_exclusion_requests: [] })
+      );
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -121,7 +145,9 @@ describe('RefereeDetailComponent', () => {
                 courseHistory: 'Kurshistorie',
                 noCourses: 'Keine eingereichten Kursergebnisse.',
                 coursesLoadFailed: 'Kurshistorie nicht verfügbar.',
+                exclusionsLoadFailed: 'Ausschlussliste nicht verfügbar.',
                 exclusionsHeading: 'Vereins-Ausschlüsse',
+                feedbackHeading: 'Schiri-Feedback der Vereine',
                 coursePoints: '{{points}} Punkte',
                 courseTestVersion: 'Testversion {{version}}',
                 openMatch: 'Zum Spiel / Spielbericht',
@@ -133,7 +159,12 @@ describe('RefereeDetailComponent', () => {
           },
         }),
       ],
-      declarations: [RefereeDetailComponent, ObservationDetailStubComponent],
+      declarations: [
+        RefereeDetailComponent,
+        ObservationDetailStubComponent,
+        TabsComponent,
+        TabDirective,
+      ],
       providers: [
         {
           provide: RefereeService,
@@ -142,8 +173,8 @@ describe('RefereeDetailComponent', () => {
             adminGetById: () => of(shown),
             adminGetGames: () => of(games),
             adminGetCourses,
-            adminGetRefereeClubExclusions: () =>
-              of({ club_exclusions: [], club_exclusion_requests: [] }),
+            adminGetFeedbacks,
+            adminGetRefereeClubExclusions,
           },
         },
         {
@@ -160,19 +191,44 @@ describe('RefereeDetailComponent', () => {
         {
           provide: RefereeObservationService,
           useValue: {
-            adminGetForReferee: () => of(observationResponse),
+            adminGetForReferee,
             adminSetStatus: () => of(null),
           },
         },
         { provide: NotificationService, useValue: { error: () => undefined } },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { params: { lizenznummer: '4711' } } },
+          useValue: {
+            snapshot: { params: { lizenznummer: '4711' } },
+            // Die Reiterleiste liest den aktiven Reiter aus ?reiter=.
+            queryParamMap: new BehaviorSubject(
+              convertToParamMap(reiter ? { reiter } : {})
+            ),
+          },
         },
       ],
     }).compileComponents();
 
+    // Der Reiterwechsel schreibt ?reiter= in die URL; die Route hier ist ein
+    // Stub ohne Platz im Routenbaum, also die Navigation selbst abfangen.
+    spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture = TestBed.createComponent(RefereeDetailComponent);
+    fixture.detectChanges();
+  }
+
+  const tabIds = (): string[] =>
+    Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '[role="tab"]'
+      ) as NodeListOf<HTMLElement>
+    ).map((el) => (el.getAttribute('data-testid') ?? '').replace('tab-', ''));
+
+  function openTab(id: string): void {
+    (
+      fixture.nativeElement.querySelector(
+        `[data-testid="tab-${id}"]`
+      ) as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
   }
 
@@ -205,6 +261,7 @@ describe('RefereeDetailComponent', () => {
   // die Tabelle den Link gar nicht setzt oder Heim und Gast vertauscht.
   it('verlinkt Heim- und Gastname der Spielhistorie auf die Spielseite', async () => {
     await setUp([game()]);
+    openTab('spiele');
 
     const links = gameLinks();
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
@@ -216,6 +273,7 @@ describe('RefereeDetailComponent', () => {
 
   it('zeigt Mannschaften ohne Link, wenn die Liga-Angaben fehlen', async () => {
     await setUp([game({ league_id: null, game_operation_slug: null })]);
+    openTab('spiele');
 
     expect(gameLinks().length).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('Heim');
@@ -238,6 +296,7 @@ describe('RefereeDetailComponent', () => {
       referee_observation_view: true,
       referee_observation_moderate: true,
     });
+    openTab('bewertungen');
 
     expect(moderationButtons().filter(Boolean).length).toBe(1);
   });
@@ -247,6 +306,7 @@ describe('RefereeDetailComponent', () => {
       menu_item_referee_admin: true,
       referee_observation_view: true,
     });
+    openTab('bewertungen');
 
     expect(
       fixture.nativeElement.querySelectorAll('fb-referee-observation-detail')
@@ -344,28 +404,28 @@ describe('RefereeDetailComponent', () => {
       fixture.nativeElement.querySelectorAll('h2') as NodeListOf<HTMLElement>
     ).map((h) => h.textContent?.trim() ?? '');
 
-  it('zeigt die Kurshistorie zwischen Spielhistorie und Vereins-Ausschlüssen', async () => {
+  it('zeigt die Kurshistorie im eigenen Reiter und laedt sie erst dort', async () => {
     await setUp([], {
       menu_item_referee_admin: true,
       referee_course_history_view: true,
       menu_item_referee_exclusions: true,
     });
 
+    expect(adminGetCourses).not.toHaveBeenCalled();
+    openTab('kurse');
+
     expect(adminGetCourses).toHaveBeenCalledWith(referee.id);
-    expect(headings()).toEqual([
-      'Spielhistorie',
-      'Kurshistorie',
-      'Vereins-Ausschlüsse',
-    ]);
+    expect(headings()).toEqual(['Kurshistorie']);
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('L2, 15.08.2026, Testversion B, 27 Punkte');
     expect(text).toContain('Max Lehrer');
   });
 
   it('laedt die Kurshistorie ohne das Recht gar nicht erst', async () => {
-    await setUp([]);
+    await setUp([], { menu_item_referee_admin: true }, {}, 'kurse');
 
     expect(adminGetCourses).not.toHaveBeenCalled();
+    expect(tabIds()).not.toContain('kurse');
     expect(headings()).not.toContain('Kurshistorie');
   });
 
@@ -377,9 +437,177 @@ describe('RefereeDetailComponent', () => {
       menu_item_referee_admin: true,
       referee_course_history_view: true,
     });
+    openTab('kurse');
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Kurshistorie nicht verfügbar.');
     expect(text).not.toContain('Keine eingereichten Kursergebnisse.');
+  });
+
+  // Reiter: Übersicht ist der Standard, die übrigen hängen an denselben
+  // Rechten wie vorher die Abschnitte.
+  describe('Reiter', () => {
+    const allRights = {
+      menu_item_referee_admin: true,
+      referee_course_history_view: true,
+      referee_feedback_view: true,
+      referee_observation_view: true,
+      menu_item_referee_exclusions: true,
+    };
+
+    it('oeffnet die Uebersicht als Standard und rendert die Spiele nicht', async () => {
+      await setUp([game()], allRights, { strasse: 'Musterweg 1' });
+
+      expect(tabIds()).toEqual([
+        'uebersicht',
+        'spiele',
+        'kurse',
+        'bewertungen',
+        'ausschluesse',
+      ]);
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).toContain('Musterweg 1');
+      expect(headings()).not.toContain('Spielhistorie');
+    });
+
+    it('oeffnet den Reiter aus der URL', async () => {
+      await setUp([game()], allRights, {}, 'spiele');
+
+      expect(headings()).toEqual(['Spielhistorie']);
+      expect(gameLinks().length).toBe(2);
+    });
+
+    it('zeigt die Anzahl der Spiele am Reiter', async () => {
+      await setUp([game(), game({ id: 8 })]);
+
+      const badge = fixture.nativeElement.querySelector(
+        '[data-testid="tab-spiele"] span'
+      ) as HTMLElement;
+      expect(badge.textContent?.trim()).toBe('2');
+    });
+
+    it('laesst die gegateten Reiter ohne Rechte weg', async () => {
+      await setUp([]);
+
+      expect(tabIds()).toEqual(['uebersicht', 'spiele']);
+      expect(adminGetFeedbacks).not.toHaveBeenCalled();
+      expect(adminGetForReferee).not.toHaveBeenCalled();
+      expect(adminGetRefereeClubExclusions).not.toHaveBeenCalled();
+    });
+
+    it('laedt Feedback und Beobachtungen erst beim Oeffnen ihres Reiters', async () => {
+      await setUp([], allRights);
+
+      expect(adminGetFeedbacks).not.toHaveBeenCalled();
+      expect(adminGetForReferee).not.toHaveBeenCalled();
+      openTab('bewertungen');
+
+      expect(adminGetFeedbacks).toHaveBeenCalledOnceWith(referee.id);
+      expect(adminGetForReferee).toHaveBeenCalledOnceWith(referee.id);
+      expect(headings()[0]).toBe('Schiri-Feedback der Vereine');
+
+      // Zurück und wieder hin lädt nicht erneut.
+      openTab('uebersicht');
+      openTab('bewertungen');
+      expect(adminGetFeedbacks).toHaveBeenCalledTimes(1);
+      expect(adminGetForReferee).toHaveBeenCalledTimes(1);
+    });
+
+    it('zeigt im Bewertungsreiter nur die Beobachtungen, wenn das Feedback-Recht fehlt', async () => {
+      await setUp(
+        [],
+        { menu_item_referee_admin: true, referee_observation_view: true },
+        {},
+        'bewertungen'
+      );
+
+      expect(adminGetFeedbacks).not.toHaveBeenCalled();
+      expect(headings()).not.toContain('Schiri-Feedback der Vereine');
+      expect(
+        fixture.nativeElement.querySelectorAll('fb-referee-observation-detail')
+          .length
+      ).toBe(1);
+    });
+
+    it('laedt die Ausschlussliste einmal beim ersten Oeffnen', async () => {
+      await setUp([], allRights);
+
+      expect(adminGetRefereeClubExclusions).not.toHaveBeenCalled();
+      openTab('ausschluesse');
+      openTab('uebersicht');
+      openTab('ausschluesse');
+
+      expect(adminGetRefereeClubExclusions).toHaveBeenCalledOnceWith(
+        referee.id
+      );
+      expect(headings()).toEqual(['Vereins-Ausschlüsse']);
+    });
+
+    // Nach einem Fehlschlag laedt der naechste Reiterwechsel neu. Gelingt das,
+    // darf die alte Fehlermeldung nicht stehen bleiben.
+    it('nimmt die Fehlermeldung der Kurse nach erfolgreichem Neuversuch zurueck', async () => {
+      await setUp([], allRights);
+      adminGetCourses.and.returnValues(
+        throwError(() => ({ status: 500 })),
+        of([courseResult])
+      );
+
+      openTab('kurse');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Kurshistorie nicht verfügbar.'
+      );
+      openTab('uebersicht');
+      openTab('kurse');
+
+      expect(fixture.nativeElement.textContent).not.toContain(
+        'Kurshistorie nicht verfügbar.'
+      );
+      expect(fixture.nativeElement.textContent).toContain('Max Lehrer');
+    });
+
+    it('nimmt die Fehlermeldung der Beobachtungen nach erfolgreichem Neuversuch zurueck', async () => {
+      await setUp([], allRights);
+      adminGetForReferee.and.returnValues(
+        throwError(() => ({ status: 500 })),
+        of(observationResponse)
+      );
+
+      openTab('bewertungen');
+      expect(fixture.componentInstance.observationsFailed).toBeTrue();
+      openTab('uebersicht');
+      openTab('bewertungen');
+
+      expect(fixture.componentInstance.observationsFailed).toBeFalse();
+      expect(
+        fixture.nativeElement.querySelectorAll('fb-referee-observation-detail')
+          .length
+      ).toBe(1);
+    });
+
+    // Eine still leere Liste laese die Ansetzung als „keine Ausschluesse".
+    it('meldet einen gescheiterten Abruf der Ausschlussliste und versucht es erneut', async () => {
+      await setUp([], allRights);
+      adminGetRefereeClubExclusions.and.returnValues(
+        throwError(() => ({ status: 500 })),
+        of({
+          club_exclusions: [
+            { id: 1, club_id: 9, club_name: 'TV Beispiel', reason: 'x' },
+          ],
+          club_exclusion_requests: [],
+        })
+      );
+
+      openTab('ausschluesse');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Ausschlussliste nicht verfügbar.'
+      );
+      openTab('uebersicht');
+      openTab('ausschluesse');
+
+      expect(adminGetRefereeClubExclusions).toHaveBeenCalledTimes(2);
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).not.toContain('Ausschlussliste nicht verfügbar.');
+      expect(text).toContain('TV Beispiel');
+    });
   });
 });
