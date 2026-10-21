@@ -191,6 +191,7 @@
     showItem("menu_item_referee_course_import") ||
     showItem("menu_item_referee_course_review") ||
     showItem("menu_item_referee_courses") ||
+    showItem("menu_item_referee_courses_lead") ||
     showItem("menu_item_referee_profile") ||
     showItem("show_page_referee_observations") ||
     showItem("menu_item_referee_vm") ||
@@ -306,6 +307,16 @@
               [routerLink]="['/', 'schiedsrichter', 'historie']"
               (click)="closeMenu()"
               >{{ "nav.myHistory" | transloco }}</a
+            >
+          </li>
+        }
+        @if (showItem("menu_item_referee_courses_lead")) {
+          <li class="mt-4 mb-4">
+            <a
+              class="font-bold text-fb-gray-500 hover:text-black text-base"
+              [routerLink]="['/', 'verwaltung', 'meine-kurse']"
+              (click)="closeMenu()"
+              >{{ "nav.myCourses" | transloco }}</a
             >
           </li>
         }
