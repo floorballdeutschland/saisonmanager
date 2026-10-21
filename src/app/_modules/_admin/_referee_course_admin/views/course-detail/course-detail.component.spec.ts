@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import {
@@ -245,9 +246,7 @@ describe('CourseDetailComponent', () => {
   });
 
   it('zeigt nach einer Ablehnung wieder den gespeicherten Wert an', async () => {
-    const { fixture, service } = render([
-      reg(1, 'registered', { points: 10 }),
-    ]);
+    const { fixture, service } = render([reg(1, 'registered', { points: 10 })]);
     await fixture.whenStable();
     fixture.detectChanges();
     service.updateRegistration.and.returnValue(
@@ -278,5 +277,28 @@ describe('CourseDetailComponent', () => {
     expect(
       fixture.nativeElement.querySelector('[data-test="status-1"]')
     ).toBeNull();
+  });
+
+  it('behandelt eine Ablehnung des Vereins wie eine Abmeldung', () => {
+    const { fixture } = render([
+      reg(1, 'declined_by_club', { referee_id: 40 }),
+      reg(2, 'registered'),
+    ]);
+    const c = fixture.componentInstance;
+    expect(c.visibleRegistrations.map((r) => r.id)).toEqual([2]);
+    expect(c.cancelledCount).toBe(1);
+    expect(c.alreadyRegistered(40)).toBeFalse();
+    c.showCancelled = true;
+    fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="points-1"]')
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="status-1"]')
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-test="points-1"]').disabled
+    ).toBeTrue();
   });
 });

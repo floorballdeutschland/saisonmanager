@@ -85,4 +85,18 @@ describe('CourseGuardianConsentComponent', () => {
     expect(el(fixture.nativeElement, 'maybe-done')).not.toBeNull();
     expect(el(fixture.nativeElement, 'invalid')).toBeNull();
   });
+
+  it('sagt bei pending_club, dass der Verein noch bestaetigen muss', () => {
+    const { fixture, service } = render(
+      of({ name: 'Kim', club: null, course: { title: 'J', sessions: [] } })
+    );
+    service.confirmGuardianConsent.and.returnValue(
+      of({ status: 'pending_club' })
+    );
+    (el(fixture.nativeElement, 'confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(
+      (el(fixture.nativeElement, 'done') as HTMLElement).textContent
+    ).toContain('doneClub');
+  });
 });

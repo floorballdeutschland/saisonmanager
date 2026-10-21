@@ -33,6 +33,8 @@ import {
   RefereeCourseRegistration,
   RefereeCourseRegistrationInput,
   RefereeCourseStatus,
+  isClosedCourseRegistration,
+  REFEREE_COURSE_SEAT_STATUSES,
 } from '@floorball/types';
 import { TranslocoService } from '@jsverse/transloco';
 import { CourseFieldChange } from '../../components/course-field-editor/course-field-editor.component';
@@ -189,18 +191,17 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   get visibleRegistrations(): RefereeCourseRegistration[] {
     return this.registrations.filter(
-      (r) => this.showCancelled || !r.status.startsWith('cancelled')
+      (r) => this.showCancelled || !this.isClosed(r)
     );
   }
 
   get cancelledCount(): number {
-    return this.registrations.filter((r) => r.status.startsWith('cancelled'))
-      .length;
+    return this.registrations.filter((r) => this.isClosed(r)).length;
   }
 
   get seated(): number {
     return this.registrations.filter((r) =>
-      ['registered', 'attended', 'no_show'].includes(r.status)
+      REFEREE_COURSE_SEAT_STATUSES.includes(r.status)
     ).length;
   }
 
@@ -334,7 +335,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   alreadyRegistered(refereeId: number): boolean {
     return this.registrations.some(
-      (r) => r.referee_id === refereeId && !r.status.startsWith('cancelled')
+      (r) => r.referee_id === refereeId && !this.isClosed(r)
     );
   }
 
@@ -499,7 +500,12 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Wartende Anmeldungen (E-Mail/Eltern) stellt die Verwaltung nicht um. */
+  /** Abgemeldet, abgesagt oder vom Verein abgelehnt: nur noch lesbar. */
+  isClosed(registration: RefereeCourseRegistration): boolean {
+    return isClosedCourseRegistration(registration.status);
+  }
+
+  /** Wartende Anmeldungen (E-Mail/Eltern/Verein) stellt die Verwaltung nicht um. */
   isPending(registration: RefereeCourseRegistration): boolean {
     return registration.status.startsWith('pending');
   }

@@ -185,12 +185,30 @@ export interface RefereeCourseOptions {
 export type RefereeCourseRegistrationStatus =
   | 'pending_email'
   | 'pending_guardian'
+  | 'pending_club'
+  | 'declined_by_club'
   | 'registered'
   | 'waitlisted'
   | 'cancelled_by_participant'
   | 'cancelled_by_organizer'
   | 'attended'
   | 'no_show';
+
+/** Belegen einen Kursplatz (`SEAT_STATUSES` der API). */
+export const REFEREE_COURSE_SEAT_STATUSES: readonly string[] = [
+  'registered',
+  'attended',
+  'no_show',
+];
+
+/**
+ * Beendete Anmeldung: abgemeldet, abgesagt oder vom Verein abgelehnt
+ * (`CANCELLED_STATUSES` der API). Sie hält keinen Platz und sperrt keine neue
+ * Anmeldung derselben Person.
+ */
+export function isClosedCourseRegistration(status: string): boolean {
+  return status.startsWith('cancelled') || status === 'declined_by_club';
+}
 
 export interface RefereeCourseRegistration {
   id: number;
@@ -329,6 +347,9 @@ export interface OwnCourseRegistration {
   fee_cents: number | null;
   source: 'admin' | 'portal' | 'club' | 'public';
   cancellable: boolean;
+  /** Zahlender Verein; bei `pending_club` muss er bestätigen. */
+  billing_club?: { id: number; name: string } | null;
+  club_decline_reason?: string | null;
 }
 
 export interface CourseSignupAnswers {

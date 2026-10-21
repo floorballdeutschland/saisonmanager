@@ -84,4 +84,16 @@ describe('RegistrationLinkComponent', () => {
     expect(el(root, 'maybe-done')).not.toBeNull();
     expect(el(root, 'invalid')).toBeNull();
   });
+
+  it('sagt bei pending_club, dass der Verein noch bestaetigen muss', () => {
+    const { fixture, service } = render('confirm');
+    service.submitRegistrationLink.and.returnValue(
+      of({ status: 'pending_club' })
+    );
+    (el(fixture.nativeElement, 'submit') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(
+      (el(fixture.nativeElement, 'done') as HTMLElement).textContent
+    ).toContain('doneClub');
+  });
 });

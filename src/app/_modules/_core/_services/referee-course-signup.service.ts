@@ -84,6 +84,20 @@ export class RefereeCourseSignupService {
     );
   }
 
+  clubConfirm(registrationId: number) {
+    return this.http.post<OwnCourseRegistration>(
+      `${API}club/referee_courses/registrations/${registrationId}/confirm`,
+      {}
+    );
+  }
+
+  clubDecline(registrationId: number, reason: string) {
+    return this.http.post<OwnCourseRegistration>(
+      `${API}club/referee_courses/registrations/${registrationId}/decline`,
+      { reason }
+    );
+  }
+
   clubCancel(registrationId: number) {
     return this.http.delete<OwnCourseRegistration>(
       `${API}club/referee_courses/registrations/${registrationId}`

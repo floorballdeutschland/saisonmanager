@@ -378,6 +378,40 @@
                 }}</span>
               </span>
             </label>
+            <!-- Nur wenn Kurse im System fuer diesen Verband freigeschaltet sind;
+                 ohne Kurse bewirkt die Einstellung nichts. -->
+            @if (stateAssociation.referee_courses_enabled) {
+              <label
+                class="flex items-start gap-3"
+                [class.cursor-not-allowed]="hasParent"
+                [class.cursor-pointer]="!hasParent"
+              >
+                <input
+                  type="checkbox"
+                  data-test="course-club-confirmation"
+                  [ngModel]="setting('course_club_confirmation_required')"
+                  (ngModelChange)="
+                    setSetting('course_club_confirmation_required', $event)
+                  "
+                  name="course_club_confirmation_required"
+                  [disabled]="hasParent"
+                  class="mt-0.5 h-4 w-4 rounded border-fb-gray-600 accent-black"
+                />
+                <span
+                  class="flex flex-col gap-0.5"
+                  [class.opacity-40]="hasParent"
+                >
+                  <span class="text-sm font-bold">{{
+                    "stateAssociationAdmin.edit.courseClubConfirmationLabel"
+                      | transloco
+                  }}</span>
+                  <span class="text-xs text-fb-gray-400">{{
+                    "stateAssociationAdmin.edit.courseClubConfirmationHint"
+                      | transloco
+                  }}</span>
+                </span>
+              </label>
+            }
             <label
               class="flex items-start gap-3"
               [class.cursor-not-allowed]="hasParent"
