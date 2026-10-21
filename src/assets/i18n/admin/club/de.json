@@ -49,7 +49,6 @@
     "teamManagersManagePlayers": "Teammanager*innen dürfen Spieler*innen anlegen, deaktivieren und reaktivieren",
     "teamManagersManagePlayersHint": "Ohne diesen Haken bleiben diese drei Vorgänge beim Vereinsmanager. Sie ordnen den Bestand des Vereins: Das Anlegen nimmt eine Person in den Verein auf, das Deaktivieren hält ihr Profil aus der Vereinsspielerliste und aus der Auswahl beim Lizenzantrag. Aufstellen und Lizenzen beantragen können Teammanager*innen unabhängig davon. Bei einer Spielgemeinschaft gilt der Haken für die Mannschaften aller beteiligten Vereine.",
     "logo": "Vereinslogo",
-    "logoUploadAfterSave": "Logo kann erst nach dem Speichern hochgeladen werden",
     "currentLogo": "Aktuelles Logo",
     "logoAlt": "Vereinslogo",
     "noLogo": "kein Logo hinterlegt",
@@ -84,7 +83,14 @@
     "teamShortNameHint": "Höchstens 8 Zeichen, zum Beispiel „BW96 III“.",
     "saveTeamInfo": "Speichern",
     "savingTeamInfo": "Wird gespeichert …",
-    "teamInfoLocked": "Der Verband hat das Ändern von Name, Kürzel und Logo für die laufende Saison gesperrt. Wende dich an deinen Spielbetrieb."
+    "teamInfoLocked": "Der Verband hat das Ändern von Name, Kürzel und Logo für die laufende Saison gesperrt. Wende dich an deinen Spielbetrieb.",
+    "tabsLabel": "Bereiche des Vereins",
+    "tabGeneral": "Allgemein",
+    "tabAddress": "Anschrift & Register",
+    "tabTeams": "Logo & Mannschaften",
+    "tabStatus": "Status",
+    "tabStatusDeactivated": "deaktiviert",
+    "addressAndRegister": "Anschrift und Vereinsregister"
   },
   "notifications": {
     "deleteSuccess": "Verein wurde dauerhaft gelöscht.",

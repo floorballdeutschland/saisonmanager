@@ -55,122 +55,367 @@
 
 <ng-container>
   <div class="bg-fb-gray-800 pt-4 lg:pt-8 pb-16">
-    <div class="container mx-auto px-4 lg:px-8">
-      <div
-        class="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-[25px] mt-4 lg:mt-9"
-      >
-        @if (player) {
-          <div class="xl:col-span-2">
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "playerAdmin.edit.playerData" | transloco }}
-              </div>
-              <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                <label for="first_name" class="font-bold">{{
-                  "playerAdmin.edit.playerId" | transloco
+    <div class="container mx-auto px-4 lg:px-8 pt-4 lg:pt-9">
+      <!--
+        Reiter statt einer langen Seite: Spielerdaten und Lizenzen werden
+        taeglich gebraucht, Sperren, Deaktivierung und Zusammenfuehren selten.
+        Die Bedingungen der einzelnen Karten stehen unveraendert in den
+        Vorlagen unten; die Reiter selbst gibt es nur im Bearbeiten-Modus.
+        Beim Anlegen bliebe genau ein Reiter uebrig, eine Leiste mit einem
+        einzigen Eintrag waere nur Rauschen, deshalb steht die Maske dort
+        ohne Leiste.
+      -->
+      @if (player) {
+        @if (editMode) {
+          <fb-tabs [label]="'playerAdmin.edit.tabsLabel' | transloco">
+            <ng-template
+              fbTab="daten"
+              [fbTabLabel]="'playerAdmin.edit.tabData' | transloco"
+            >
+              <ng-container *ngTemplateOutlet="dataTab" />
+            </ng-template>
+            <ng-template
+              fbTab="lizenzen"
+              [fbTabLabel]="'playerAdmin.edit.licenses' | transloco"
+            >
+              <ng-container *ngTemplateOutlet="licensesTab" />
+            </ng-template>
+            <ng-template
+              fbTab="freigaben"
+              [fbTabLabel]="'playerAdmin.edit.tabReleases' | transloco"
+            >
+              <ng-container *ngTemplateOutlet="releasesTab" />
+            </ng-template>
+            @if (can("player_suspend")) {
+              <ng-template
+                fbTab="sperren"
+                [fbTabLabel]="'playerAdmin.edit.suspensions' | transloco"
+                [fbTabBadge]="activeSuspensions.length || null"
+              >
+                <ng-container *ngTemplateOutlet="suspensionsTab" />
+              </ng-template>
+            }
+            <!-- Immer da: Die Karte Deaktivierung steht im Bearbeiten-Modus
+                 fuer jede Rolle (die Knoepfe darin sind einzeln gegatet). -->
+            <ng-template
+              fbTab="verwaltung"
+              [fbTabLabel]="'playerAdmin.edit.tabManagement' | transloco"
+            >
+              <ng-container *ngTemplateOutlet="managementTab" />
+            </ng-template>
+          </fb-tabs>
+        } @else {
+          <ng-container *ngTemplateOutlet="dataTab" />
+        }
+      } @else if (!loadDenied) {
+        <!--
+          Nicht bei loadDenied: Ohne diese Bedingung drehte sich unter dem
+          Hinweis „kein Zugriff" ein Ladekreisel weiter, der nie ankommt.
+        -->
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            <svg
+              class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            {{ "playerAdmin.common.loading" | transloco }}
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>
+
+<!-- Reiter „Daten" -->
+<ng-template #dataTab>
+  <!-- Das @if wiederholt nur die Bedingung um die Reiter: Eine Vorlage
+       kennt die Eingrenzung des aeusseren @if nicht, ohne sie waere
+       `player` hier wieder als moeglicherweise leer typisiert. -->
+  @if (player) {
+    <div class="bg-white my-[5px] py-[15px] px-[30px]">
+      <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+        {{ "playerAdmin.edit.playerData" | transloco }}
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        <label for="first_name" class="font-bold">{{
+          "playerAdmin.edit.playerId" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3 flex items-center gap-2">
+          {{
+            editMode
+              ? player.id
+              : ("playerAdmin.edit.idAfterCreate" | transloco)
+          }}
+          @if (isDeactivated) {
+            <span
+              class="text-xs font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700"
+            >
+              {{ "playerAdmin.edit.deactivated" | transloco }}
+            </span>
+          }
+        </div>
+        <label for="first_name" class="font-bold">{{
+          "playerAdmin.edit.firstName" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3">
+          @if (can("player_create_update")) {
+            <input
+              [(ngModel)]="player.first_name"
+              type="text"
+              id="first_name"
+              required
+              class="w-full xl:w-1/3"
+            />
+          }
+          @if (!can("player_create_update")) {
+            {{ player.first_name }}
+          }
+        </div>
+        <label for="last_name" class="font-bold">{{
+          "playerAdmin.edit.lastName" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3">
+          @if (can("player_create_update")) {
+            <input
+              [(ngModel)]="player.last_name"
+              type="text"
+              id="last_name"
+              class="w-full xl:w-1/3"
+              required
+            />
+          }
+          @if (!can("player_create_update")) {
+            {{ player.last_name }}
+          }
+        </div>
+        <label for="birthdate" class="font-bold">{{
+          "playerAdmin.edit.birthdate" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3">
+          @if (can("player_create_update")) {
+            <input
+              [(ngModel)]="player.birthdate"
+              type="date"
+              id="birthdate"
+              class="w-full xl:w-1/3"
+              required
+            />
+          }
+          @if (!can("player_create_update")) {
+            {{ player.birthdate | date: "dd.MM.yyyy" }}
+          }
+        </div>
+        <label for="gender" class="font-bold">{{
+          "playerAdmin.edit.gender" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3">
+          @if (can("player_create_update")) {
+            <select
+              [(ngModel)]="player.gender"
+              id="gender"
+              class="w-full xl:w-1/3"
+              required
+            >
+              @for (genderKey of genderKeys; track genderKey) {
+                <option [value]="genderKey">
+                  {{ genderKey | gender }}
+                </option>
+              }
+            </select>
+          }
+          @if (!can("player_create_update")) {
+            {{ player.gender | gender }}
+          }
+        </div>
+        <label for="nation_id" class="font-bold">{{
+          "playerAdmin.edit.nationality" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3">
+          @if (can("player_create_update")) {
+            <select
+              [(ngModel)]="player.nation_id"
+              id="nation_id"
+              class="w-full xl:w-1/3"
+              required
+            >
+              <option [value]="0">
+                {{ "playerAdmin.edit.pleaseSelect" | transloco }}
+              </option>
+              @for (nation of nations; track nation) {
+                <option [value]="nation.id">
+                  {{ nation.name }}
+                </option>
+              }
+            </select>
+          }
+          @if (!can("player_create_update")) {
+            {{ getPlayersNationString() }}
+          }
+        </div>
+        <label for="email" class="font-bold">{{
+          "playerAdmin.edit.email" | transloco
+        }}</label>
+        <div class="md:col-span-2 xl:col-span-3">
+          @if (canEnterEmail) {
+            <input
+              [(ngModel)]="player.email"
+              type="email"
+              id="email"
+              class="w-full xl:w-1/3"
+              [placeholder]="'playerAdmin.edit.emailOptional' | transloco"
+            />
+          }
+          @if (!canEnterEmail) {
+            {{ player.email || "–" }}
+          }
+          <p class="text-sm text-gray-500 mt-1">
+            {{ "playerAdmin.edit.emailHint" | transloco }}
+          </p>
+          @if (canSaveEmailOnly) {
+            <div class="mt-2">
+              <a
+                class="font-bold text-black leading-[17px] text-sm px-4 py-2 border bg-white border-fb-gray-600 rounded-[5px]"
+                [class.opacity-40]="!player?.email"
+                [class.cursor-not-allowed]="!player?.email"
+                [class.hover:bg-fb-gray-200]="!!player?.email"
+                [class.cursor-pointer]="!!player?.email"
+                (click)="saveEmail()"
+              >
+                {{ "playerAdmin.edit.saveEmail" | transloco }}
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+    @if (can("player_create_update")) {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <div class="flex flex-col gap-2">
+          @if (error(player)) {
+            <div class="mb-4">
+              <h3 class="text-lg leading-6 font-medium text-red-600">
+                {{ "playerAdmin.edit.saveNotPossible" | transloco }}
+              </h3>
+              @for (msg of errorMsg(player); track msg) {
+                <p>{{ msg }}</p>
+              }
+            </div>
+          }
+          @if (!error(player)) {
+            <div class="flex items-center mb-4">
+              <a
+                class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                (click)="submit(player)"
+              >
+                {{ "playerAdmin.edit.saveChanges" | transloco }}
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+    <!-- Korrekturantrag für VM. Eingeklappt: Er ist der Ausnahmefall
+         neben der Ansicht der Daten, die der Reiter vor allem zeigt. -->
+    @if (editMode && can("create_player_change_request")) {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <fb-collapsible
+          data-testid="change-request"
+          [label]="'playerAdmin.edit.requestCorrection' | transloco"
+        >
+          <p class="text-sm text-gray-500 mb-4">
+            {{ "playerAdmin.edit.correctionHint" | transloco }}
+          </p>
+          @if (changeRequestSent) {
+            <div class="text-green-600 text-sm mb-4">
+              {{ "playerAdmin.edit.correctionSent" | transloco }}
+            </div>
+          }
+          @if (!changeRequestSent) {
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div>
+                <label class="block text-sm font-bold mb-1">{{
+                  "playerAdmin.edit.fieldToCorrect" | transloco
                 }}</label>
-                <div
-                  class="md:col-span-2 xl:col-span-3 flex items-center gap-2"
+                <select
+                  [(ngModel)]="changeRequestType"
+                  class="w-full"
+                  (change)="onChangeRequestTypeChange()"
                 >
-                  {{
-                    editMode
-                      ? player.id
-                      : ("playerAdmin.edit.idAfterCreate" | transloco)
-                  }}
-                  @if (isDeactivated) {
-                    <span
-                      class="text-xs font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700"
-                    >
-                      {{ "playerAdmin.edit.deactivated" | transloco }}
-                    </span>
-                  }
-                </div>
-                <label for="first_name" class="font-bold">{{
-                  "playerAdmin.edit.firstName" | transloco
-                }}</label>
-                <div class="md:col-span-2 xl:col-span-3">
-                  @if (can("player_create_update")) {
-                    <input
-                      [(ngModel)]="player.first_name"
-                      type="text"
-                      id="first_name"
-                      required
-                      class="w-full xl:w-1/3"
+                  <option value="">
+                    {{ "playerAdmin.edit.pleaseSelectEllipsis" | transloco }}
+                  </option>
+                  <option value="first_name">
+                    {{ "playerAdmin.edit.firstName" | transloco }}
+                  </option>
+                  <option value="last_name">
+                    {{ "playerAdmin.edit.lastName" | transloco }}
+                  </option>
+                  <option value="names_swapped">
+                    {{ "playerAdmin.edit.namesSwapped" | transloco }}
+                  </option>
+                  <option value="birthdate">
+                    {{ "playerAdmin.edit.birthdate" | transloco }}
+                  </option>
+                  <option value="nationality">
+                    {{ "playerAdmin.edit.nationality" | transloco }}
+                  </option>
+                  <option value="gender">
+                    {{ "playerAdmin.edit.gender" | transloco }}
+                  </option>
+                  <option value="merge">
+                    {{ "playerAdmin.edit.mergeDuplicate" | transloco }}
+                  </option>
+                </select>
+              </div>
+              @if (changeRequestType && changeRequestType !== "names_swapped") {
+                <div>
+                  <label class="block text-sm font-bold mb-1">{{
+                    (changeRequestType === "merge"
+                      ? "playerAdmin.edit.mergeSelect"
+                      : "playerAdmin.edit.correctValue"
+                    ) | transloco
+                  }}</label>
+                  @if (changeRequestType === "merge") {
+                    <fb-select-search
+                      [(ngModel)]="mergeSecondaryId"
+                      [disabled]="mergeLoadingPlayers"
+                      [items]="mergePlayerOptions"
+                      labelKey="label"
+                      [placeholder]="
+                        (mergeLoadingPlayers
+                          ? 'playerAdmin.edit.mergeLoading'
+                          : 'playerAdmin.edit.pleaseSelectEllipsis'
+                        ) | transloco
+                      "
+                      [resetLabel]="
+                        'playerAdmin.edit.pleaseSelectEllipsis' | transloco
+                      "
                     />
                   }
-                  @if (!can("player_create_update")) {
-                    {{ player.first_name }}
-                  }
-                </div>
-                <label for="last_name" class="font-bold">{{
-                  "playerAdmin.edit.lastName" | transloco
-                }}</label>
-                <div class="md:col-span-2 xl:col-span-3">
-                  @if (can("player_create_update")) {
+                  @if (changeRequestType === "birthdate") {
                     <input
-                      [(ngModel)]="player.last_name"
-                      type="text"
-                      id="last_name"
-                      class="w-full xl:w-1/3"
-                      required
-                    />
-                  }
-                  @if (!can("player_create_update")) {
-                    {{ player.last_name }}
-                  }
-                </div>
-                <label for="birthdate" class="font-bold">{{
-                  "playerAdmin.edit.birthdate" | transloco
-                }}</label>
-                <div class="md:col-span-2 xl:col-span-3">
-                  @if (can("player_create_update")) {
-                    <input
-                      [(ngModel)]="player.birthdate"
+                      [(ngModel)]="changeRequestValue"
                       type="date"
-                      id="birthdate"
-                      class="w-full xl:w-1/3"
-                      required
+                      class="w-full"
                     />
                   }
-                  @if (!can("player_create_update")) {
-                    {{ player.birthdate | date: "dd.MM.yyyy" }}
-                  }
-                </div>
-                <label for="gender" class="font-bold">{{
-                  "playerAdmin.edit.gender" | transloco
-                }}</label>
-                <div class="md:col-span-2 xl:col-span-3">
-                  @if (can("player_create_update")) {
-                    <select
-                      [(ngModel)]="player.gender"
-                      id="gender"
-                      class="w-full xl:w-1/3"
-                      required
-                    >
-                      @for (genderKey of genderKeys; track genderKey) {
-                        <option [value]="genderKey">
-                          {{ genderKey | gender }}
-                        </option>
-                      }
-                    </select>
-                  }
-                  @if (!can("player_create_update")) {
-                    {{ player.gender | gender }}
-                  }
-                </div>
-                <label for="nation_id" class="font-bold">{{
-                  "playerAdmin.edit.nationality" | transloco
-                }}</label>
-                <div class="md:col-span-2 xl:col-span-3">
-                  @if (can("player_create_update")) {
-                    <select
-                      [(ngModel)]="player.nation_id"
-                      id="nation_id"
-                      class="w-full xl:w-1/3"
-                      required
-                    >
-                      <option [value]="0">
-                        {{ "playerAdmin.edit.pleaseSelect" | transloco }}
+                  @if (changeRequestType === "nationality") {
+                    <select [(ngModel)]="changeRequestValue" class="w-full">
+                      <option value="">
+                        {{
+                          "playerAdmin.edit.pleaseSelectEllipsis" | transloco
+                        }}
                       </option>
                       @for (nation of nations; track nation) {
                         <option [value]="nation.id">
@@ -179,1352 +424,1047 @@
                       }
                     </select>
                   }
-                  @if (!can("player_create_update")) {
-                    {{ getPlayersNationString() }}
-                  }
-                </div>
-                <label for="email" class="font-bold">{{
-                  "playerAdmin.edit.email" | transloco
-                }}</label>
-                <div class="md:col-span-2 xl:col-span-3">
-                  @if (canEnterEmail) {
+                  @if (
+                    changeRequestType === "first_name" ||
+                    changeRequestType === "last_name"
+                  ) {
                     <input
-                      [(ngModel)]="player.email"
-                      type="email"
-                      id="email"
-                      class="w-full xl:w-1/3"
-                      [placeholder]="
-                        'playerAdmin.edit.emailOptional' | transloco
-                      "
+                      [(ngModel)]="changeRequestValue"
+                      type="text"
+                      class="w-full"
+                      [placeholder]="'playerAdmin.edit.correctName' | transloco"
                     />
                   }
-                  @if (!canEnterEmail) {
-                    {{ player.email || "–" }}
-                  }
-                  <p class="text-sm text-gray-500 mt-1">
-                    {{ "playerAdmin.edit.emailHint" | transloco }}
-                  </p>
-                  @if (canSaveEmailOnly) {
-                    <div class="mt-2">
-                      <a
-                        class="font-bold text-black leading-[17px] text-sm px-4 py-2 border bg-white border-fb-gray-600 rounded-[5px]"
-                        [class.opacity-40]="!player?.email"
-                        [class.cursor-not-allowed]="!player?.email"
-                        [class.hover:bg-fb-gray-200]="!!player?.email"
-                        [class.cursor-pointer]="!!player?.email"
-                        (click)="saveEmail()"
-                      >
-                        {{ "playerAdmin.edit.saveEmail" | transloco }}
-                      </a>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-            @if (can("player_create_update")) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div class="flex flex-col gap-2">
-                  @if (error(player)) {
-                    <div class="mb-4">
-                      <h3 class="text-lg leading-6 font-medium text-red-600">
-                        {{ "playerAdmin.edit.saveNotPossible" | transloco }}
-                      </h3>
-                      @for (msg of errorMsg(player); track msg) {
-                        <p>{{ msg }}</p>
-                      }
-                    </div>
-                  }
-                  @if (!error(player)) {
-                    <div class="flex items-center mb-4">
-                      <a
-                        class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                        (click)="submit(player)"
-                      >
-                        {{ "playerAdmin.edit.saveChanges" | transloco }}
-                      </a>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-            <!-- Korrekturantrag für VM -->
-            @if (editMode && can("create_player_change_request")) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <h2 class="text-lg font-bold mb-4">
-                  {{ "playerAdmin.edit.requestCorrection" | transloco }}
-                </h2>
-                <p class="text-sm text-gray-500 mb-4">
-                  {{ "playerAdmin.edit.correctionHint" | transloco }}
-                </p>
-                @if (changeRequestSent) {
-                  <div class="text-green-600 text-sm mb-4">
-                    {{ "playerAdmin.edit.correctionSent" | transloco }}
-                  </div>
-                }
-                @if (!changeRequestSent) {
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div>
-                      <label class="block text-sm font-bold mb-1">{{
-                        "playerAdmin.edit.fieldToCorrect" | transloco
-                      }}</label>
-                      <select
-                        [(ngModel)]="changeRequestType"
-                        class="w-full"
-                        (change)="onChangeRequestTypeChange()"
-                      >
-                        <option value="">
-                          {{
-                            "playerAdmin.edit.pleaseSelectEllipsis" | transloco
-                          }}
-                        </option>
-                        <option value="first_name">
-                          {{ "playerAdmin.edit.firstName" | transloco }}
-                        </option>
-                        <option value="last_name">
-                          {{ "playerAdmin.edit.lastName" | transloco }}
-                        </option>
-                        <option value="names_swapped">
-                          {{ "playerAdmin.edit.namesSwapped" | transloco }}
-                        </option>
-                        <option value="birthdate">
-                          {{ "playerAdmin.edit.birthdate" | transloco }}
-                        </option>
-                        <option value="nationality">
-                          {{ "playerAdmin.edit.nationality" | transloco }}
-                        </option>
-                        <option value="gender">
-                          {{ "playerAdmin.edit.gender" | transloco }}
-                        </option>
-                        <option value="merge">
-                          {{ "playerAdmin.edit.mergeDuplicate" | transloco }}
-                        </option>
-                      </select>
-                    </div>
-                    @if (
-                      changeRequestType && changeRequestType !== "names_swapped"
-                    ) {
-                      <div>
-                        <label class="block text-sm font-bold mb-1">{{
-                          (changeRequestType === "merge"
-                            ? "playerAdmin.edit.mergeSelect"
-                            : "playerAdmin.edit.correctValue"
-                          ) | transloco
-                        }}</label>
-                        @if (changeRequestType === "merge") {
-                          <fb-select-search
-                            [(ngModel)]="mergeSecondaryId"
-                            [disabled]="mergeLoadingPlayers"
-                            [items]="mergePlayerOptions"
-                            labelKey="label"
-                            [placeholder]="
-                              (mergeLoadingPlayers
-                                ? 'playerAdmin.edit.mergeLoading'
-                                : 'playerAdmin.edit.pleaseSelectEllipsis'
-                              ) | transloco
-                            "
-                            [resetLabel]="
-                              'playerAdmin.edit.pleaseSelectEllipsis'
-                                | transloco
-                            "
-                          />
-                        }
-                        @if (changeRequestType === "birthdate") {
-                          <input
-                            [(ngModel)]="changeRequestValue"
-                            type="date"
-                            class="w-full"
-                          />
-                        }
-                        @if (changeRequestType === "nationality") {
-                          <select
-                            [(ngModel)]="changeRequestValue"
-                            class="w-full"
-                          >
-                            <option value="">
-                              {{
-                                "playerAdmin.edit.pleaseSelectEllipsis"
-                                  | transloco
-                              }}
-                            </option>
-                            @for (nation of nations; track nation) {
-                              <option [value]="nation.id">
-                                {{ nation.name }}
-                              </option>
-                            }
-                          </select>
-                        }
-                        @if (
-                          changeRequestType === "first_name" ||
-                          changeRequestType === "last_name"
-                        ) {
-                          <input
-                            [(ngModel)]="changeRequestValue"
-                            type="text"
-                            class="w-full"
-                            [placeholder]="
-                              'playerAdmin.edit.correctName' | transloco
-                            "
-                          />
-                        }
-                        @if (changeRequestType === "gender") {
-                          <select
-                            [(ngModel)]="changeRequestValue"
-                            class="w-full"
-                          >
-                            <option value="">
-                              {{
-                                "playerAdmin.edit.pleaseSelectEllipsis"
-                                  | transloco
-                              }}
-                            </option>
-                            <option value="M">
-                              {{ "playerAdmin.edit.genderMale" | transloco }}
-                            </option>
-                            <option value="W">
-                              {{ "playerAdmin.edit.genderFemale" | transloco }}
-                            </option>
-                            <option value="D">
-                              {{ "playerAdmin.edit.genderDiverse" | transloco }}
-                            </option>
-                          </select>
-                        }
-                      </div>
-                    }
-                    <div>
-                      <fb-button
-                        [disabled]="
-                          changeRequestSubmitting ||
-                          !changeRequestType ||
-                          (changeRequestType === 'merge'
-                            ? !mergeSecondaryId
-                            : changeRequestType !== 'names_swapped' &&
-                              !changeRequestValue)
-                        "
-                        (click)="submitChangeRequest(player)"
-                      >
-                        {{ "playerAdmin.edit.submitRequest" | transloco }}
-                      </fb-button>
-                    </div>
-                  </div>
-                  @if (changeRequestType === "merge") {
-                    <p class="text-sm text-gray-500 mt-3">
-                      {{ "playerAdmin.edit.mergeHint" | transloco }}
-                    </p>
-                    @if (selectedMergePlayer; as duplicate) {
-                      <div
-                        class="border border-gray-300 rounded p-3 mt-3 text-sm"
-                      >
-                        <span class="font-bold"
-                          >{{ duplicate.last_name }},
-                          {{ duplicate.first_name }}</span
-                        >
-                        <span class="text-gray-500 ml-2">{{
-                          duplicate.birthdate | date: "dd.MM.yyyy"
-                        }}</span>
-                        <p class="text-gray-500 mt-1">
-                          {{ "playerAdmin.edit.mergeSelectedHint" | transloco }}
-                        </p>
-                      </div>
-                    }
-                  }
-                }
-              </div>
-            }
-          </div>
-        } @else if (!loadDenied) {
-          <!--
-            Nicht bei loadDenied: Ohne diese Bedingung drehte sich unter dem
-            Hinweis „kein Zugriff" ein Ladekreisel weiter, der nie ankommt.
-          -->
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              <svg
-                class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
-                viewBox="0 0 100 101"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                  fill="currentFill"
-                />
-              </svg>
-              {{ "playerAdmin.common.loading" | transloco }}
-            </div>
-          </div>
-        }
-
-        @if (player) {
-          <div class="xl:col-span-2">
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "playerAdmin.edit.licenses" | transloco }}
-              </div>
-              @for (group of licenseSeasonGroups(); track group.seasonId) {
-                <div class="mb-6">
-                  <div class="flex items-center gap-2 mb-3">
-                    <span class="font-bold text-sm text-gray-700">
-                      @if (group.name) {
-                        {{ group.name }}
-                      } @else {
-                        {{ "playerAdmin.edit.licensesNoSeason" | transloco }}
-                      }
-                    </span>
-                    @if (group.current) {
-                      <span
-                        class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-600 text-white"
-                      >
-                        {{ "playerAdmin.edit.currentSeason" | transloco }}
-                      </span>
-                    }
-                  </div>
-                  @for (license of group.licenses; track license) {
-                    <div class="mb-3">
-                      <b>{{ license.team?.name }}</b> ({{ license.team?.id }}) -
-                      {{ license?.league?.name }} ({{
-                        license?.league?.game_operation_name
-                      }})
-                      @if (isLicenseSuspended(license)) {
-                        <span
-                          class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800"
-                        >
-                          {{ "playerAdmin.edit.suspended" | transloco }}
-                        </span>
-                      }
-                      @if (license.gf_role === "erstlizenz") {
-                        <span
-                          class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white"
-                          [title]="
-                            'playerAdmin.edit.gfRoleErstTitle' | transloco
-                          "
-                        >
-                          {{ "playerAdmin.edit.gfRoleErstlizenz" | transloco }}
-                        </span>
-                      }
-                      @if (license.gf_role === "zweitlizenz") {
-                        <span
-                          class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500 text-white"
-                          [title]="
-                            'playerAdmin.edit.gfRoleZweitTitle' | transloco
-                          "
-                        >
-                          {{ "playerAdmin.edit.gfRoleZweitlizenz" | transloco }}
-                        </span>
-                      }
-                      @if (isCurrentSeasonLicense(license)) {
-                        @if (
-                          can("player_suspend") &&
-                          !isLicenseSuspended(license) &&
-                          suspendLicenseId !== license.id
-                        ) {
-                          <a
-                            class="font-bold text-amber-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
-                            data-testid="open-license-suspend"
-                            (click)="openLicenseSuspend(license)"
-                          >
-                            {{ "playerAdmin.edit.suspendLicense" | transloco }}
-                          </a>
-                        }
-                        @if (
-                          canDeleteLicense(license) &&
-                          deleteLicenseId !== license.id
-                        ) {
-                          <a
-                            class="font-bold text-red-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
-                            (click)="openLicenseDelete(license)"
-                          >
-                            {{ "playerAdmin.edit.deleteLicense" | transloco }}
-                          </a>
-                        }
-                        @if (
-                          canResetLicense(license) &&
-                          resetLicenseId !== license.id
-                        ) {
-                          <a
-                            class="font-bold text-sky-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-sky-50 border-sky-400 rounded-[5px] cursor-pointer"
-                            data-testid="open-license-reset"
-                            (click)="openLicenseReset(license)"
-                          >
-                            {{ "playerAdmin.edit.resetLicense" | transloco }}
-                          </a>
-                        }
-                        @if (gfRoleEditable(license)) {
-                          <div
-                            class="border border-indigo-200 rounded p-3 bg-indigo-50 my-2"
-                          >
-                            <p
-                              class="text-sm font-semibold text-indigo-900 mb-2"
-                            >
-                              {{ "playerAdmin.edit.gfRoleHeading" | transloco }}
-                            </p>
-                            <div class="flex flex-wrap gap-3 items-center">
-                              @if (license.gf_role !== "erstlizenz") {
-                                <button
-                                  class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
-                                  (click)="setGfRole(license, 'erstlizenz')"
-                                >
-                                  {{
-                                    "playerAdmin.edit.gfRoleMakeErst"
-                                      | transloco
-                                  }}
-                                </button>
-                              }
-                              @if (license.gf_role !== "zweitlizenz") {
-                                <button
-                                  class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
-                                  (click)="setGfRole(license, 'zweitlizenz')"
-                                >
-                                  {{
-                                    "playerAdmin.edit.gfRoleMakeZweit"
-                                      | transloco
-                                  }}
-                                </button>
-                              }
-                              @if (license.gf_role) {
-                                <button
-                                  class="font-bold text-gray-600 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                                  (click)="setGfRole(license, null)"
-                                >
-                                  {{
-                                    "playerAdmin.edit.gfRoleClear" | transloco
-                                  }}
-                                </button>
-                              }
-                            </div>
-                            <p class="text-[11px] text-indigo-900 mt-2">
-                              {{
-                                "playerAdmin.edit.gfRoleSwapCount"
-                                  | transloco: { count: gfSwapCount(license) }
-                              }}
-                              {{
-                                "playerAdmin.edit.gfRoleSwapHint" | transloco
-                              }}
-                            </p>
-                          </div>
-                        }
-                        @if (suspendLicenseId === license.id) {
-                          <!-- Dieselbe Vorlage wie im Abschnitt „Sperren":
-                               ein Sperrvorgang, eine Maske, zwei Wege
-                               hinein. Von hier aus ist die Lizenz gesetzt,
-                               dort wird sie gewaehlt. -->
-                          <ng-container
-                            *ngTemplateOutlet="
-                              suspendForm;
-                              context: { license: license, showPicker: false }
-                            "
-                          ></ng-container>
-                        }
-                        @if (deleteLicenseId === license.id) {
-                          <div
-                            class="border border-red-300 rounded p-3 bg-red-50 my-2"
-                          >
-                            <p class="text-sm font-semibold text-red-800 mb-2">
-                              {{
-                                "playerAdmin.edit.deleteThisLicense" | transloco
-                              }}
-                            </p>
-                            <p class="text-[11px] text-red-900 mb-2">
-                              {{
-                                "playerAdmin.edit.deleteLicenseHint" | transloco
-                              }}
-                            </p>
-                            <div class="mb-2">
-                              <label
-                                class="block text-xs font-semibold text-red-800 mb-1"
-                                >{{
-                                  "playerAdmin.edit.reason" | transloco
-                                }}</label
-                              >
-                              <input
-                                type="text"
-                                [(ngModel)]="licenseDeleteReason"
-                                [placeholder]="
-                                  'playerAdmin.edit.licenseDeleteReasonPlaceholder'
-                                    | transloco
-                                "
-                                class="w-full xl:w-2/3 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
-                              />
-                            </div>
-                            <div class="flex gap-3">
-                              <button
-                                (click)="submitLicenseDelete(license)"
-                                [disabled]="!licenseDeleteReason.trim()"
-                                class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-red-700 hover:bg-red-800 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {{ "playerAdmin.edit.delete" | transloco }}
-                              </button>
-                              <button
-                                (click)="cancelLicenseDelete()"
-                                class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                              >
-                                {{ "playerAdmin.edit.cancel" | transloco }}
-                              </button>
-                            </div>
-                          </div>
-                        }
-                        @if (resetLicenseId === license.id) {
-                          <div
-                            class="border border-sky-300 rounded p-3 bg-sky-50 my-2"
-                          >
-                            <p class="text-sm font-semibold text-sky-800 mb-2">
-                              {{
-                                "playerAdmin.edit.resetThisLicense" | transloco
-                              }}
-                            </p>
-                            <p class="text-[11px] text-sky-900 mb-2">
-                              {{
-                                "playerAdmin.edit.resetLicenseHint" | transloco
-                              }}
-                            </p>
-                            <div class="mb-2">
-                              <label
-                                class="block text-xs font-semibold text-sky-800 mb-1"
-                                >{{
-                                  "playerAdmin.edit.reason" | transloco
-                                }}</label
-                              >
-                              <input
-                                type="text"
-                                [(ngModel)]="licenseResetReason"
-                                [placeholder]="
-                                  'playerAdmin.edit.licenseResetReasonPlaceholder'
-                                    | transloco
-                                "
-                                class="w-full xl:w-2/3 border border-sky-300 rounded-[5px] px-3 py-2 text-sm"
-                              />
-                            </div>
-                            <div class="flex gap-3">
-                              <button
-                                (click)="submitLicenseReset(license)"
-                                [disabled]="!licenseResetReason.trim()"
-                                data-testid="submit-license-reset"
-                                class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-sky-700 hover:bg-sky-800 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {{ "playerAdmin.edit.reset" | transloco }}
-                              </button>
-                              <button
-                                (click)="cancelLicenseReset()"
-                                class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                              >
-                                {{ "playerAdmin.edit.cancel" | transloco }}
-                              </button>
-                            </div>
-                          </div>
-                        }
-                      }
-                      <br />
-                      {{ "playerAdmin.edit.history" | transloco }}<br />
-                      @for (hist of licenseHistory(license); track hist) {
-                        <div>
-                          {{
-                            hist.created_at | safeDate: "dd.MM.yyyy HH:mm:ss"
-                          }}, <b>{{ hist.license_status }}</b
-                          >, {{ "playerAdmin.edit.by" | transloco }}
-                          {{ hist.created_by_name }}
-                          @if (hist.reason) {
-                            <span>{{
-                              "playerAdmin.edit.historyReason"
-                                | transloco: { reason: hist.reason }
-                            }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-        } @else if (!loadDenied) {
-          <!--
-            Nicht bei loadDenied: Ohne diese Bedingung drehte sich unter dem
-            Hinweis „kein Zugriff" ein Ladekreisel weiter, der nie ankommt.
-          -->
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              <svg
-                class="inline mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
-                viewBox="0 0 100 101"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                  fill="currentFill"
-                />
-              </svg>
-              {{ "playerAdmin.common.loading" | transloco }}
-            </div>
-          </div>
-        }
-
-        <!--
-          `player` gehoert zur Bedingung: `editMode` ist mit true vorbelegt und
-          wird auf dem Profil-Pfad nie zurueckgesetzt. Ohne das Profil stand die
-          Karte deshalb auch dann da, wenn der Abruf abgelehnt wurde, samt
-          „Freigabe erteilen" -- ein Knopf, der ohne Spieler-id ins Leere greift.
-        -->
-        @if (editMode && player) {
-          <div>
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "playerAdmin.edit.releases" | transloco }}
-              </div>
-              @if (!additionalClubs().length) {
-                <p
-                  class="block text-base truncate text-fb-gray-500 hover:text-black"
-                >
-                  {{ "playerAdmin.edit.noReleases" | transloco }}
-                </p>
-              }
-              <div class="grid grid-cols-1 gap-4">
-                @for (
-                  additionalClub of additionalClubs();
-                  track additionalClub
-                ) {
-                  <div class="grid grid-cols-4">
-                    <div class="col-span-3">
-                      <p class="font-bold">
-                        {{ getClubNameById(additionalClub.club_id) }}
-                        ({{ additionalClub.club_id }})
-                      </p>
-                      <p>
-                        @if (additionalClub.created_at) {
-                          {{ "playerAdmin.edit.from" | transloco }}
-                          {{ additionalClub.created_at | safeDate }}
-                        }
-                        {{ "playerAdmin.edit.until" | transloco }}
-                        {{ additionalClub.valid_until | safeDate }}
-                      </p>
-                      <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
-                           oder ohne hinterlegten Namen), bleibt die Konto-ID
-                           als belastbare Angabe stehen. -->
-                      @if (
-                        additionalClub.created_by_name ||
-                        additionalClub.created_by
-                      ) {
-                        <p class="text-sm text-fb-gray-500">
-                          {{ "playerAdmin.edit.releaseGrantedBy" | transloco }}
-                          {{
-                            additionalClub.created_by_name ||
-                              ("playerAdmin.edit.unknownActor"
-                                | transloco: { id: additionalClub.created_by })
-                          }}
-                        </p>
-                      }
-                      @if (
-                        additionalClub.valid_set_by_name ||
-                        additionalClub.valid_set_by
-                      ) {
-                        <p class="text-sm text-fb-gray-500">
-                          {{ "playerAdmin.edit.releaseEndedBy" | transloco }}
-                          {{
-                            additionalClub.valid_set_by_name ||
-                              ("playerAdmin.edit.unknownActor"
-                                | transloco
-                                  : { id: additionalClub.valid_set_by })
-                          }}
-                        </p>
-                      }
-                    </div>
-                    <div class="flex flex-row items-center">
-                      @if (
-                        can("player_add_additional_clubs") &&
-                        !isAdditionalClubActive(additionalClub.club_id) &&
-                        !isClubDeactivated(additionalClub.club_id)
-                      ) {
-                        <a
-                          class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                          (click)="
-                            addAdditionalClub(
-                              player,
-                              additionalClub.club_id.toString()
-                            )
-                          "
-                        >
-                          {{ "playerAdmin.edit.releaseAgain" | transloco }}
-                        </a>
-                      }
-                      @if (
-                        can("player_remove_additional_clubs") &&
-                        isAdditionalClubActive(additionalClub.club_id)
-                      ) {
-                        <a
-                          class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                          (click)="
-                            removeAdditionalClub(
-                              player,
-                              additionalClub.club_id.toString(),
-                              additionalClub.valid_until
-                            )
-                          "
-                        >
-                          {{ "playerAdmin.edit.endRelease" | transloco }}
-                        </a>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-            @if (can("player_add_additional_clubs")) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  {{ "playerAdmin.edit.newRelease" | transloco }}
-                </div>
-                <div class="grid grid-cols-1 gap-4">
-                  <fb-select-search
-                    [(ngModel)]="additionalClubId"
-                    [items]="assignableClubs"
-                    [placeholder]="'playerAdmin.edit.selectClub' | transloco"
-                    [resetLabel]="'playerAdmin.edit.selectClub' | transloco"
-                  />
-                  <div>
-                    <a
-                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                      (click)="addAdditionalClub(player, additionalClubId)"
-                    >
-                      {{ "playerAdmin.edit.releasePlayer" | transloco }}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-          <div>
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "playerAdmin.edit.homeClub" | transloco }}
-              </div>
-              <div class="grid grid-cols-1 gap-4">
-                @for (club of homeClubs(); track club) {
-                  <div>
-                    <p class="font-bold">
-                      {{ getClubNameById(club.club_id) }} ({{ club.club_id }})
-                    </p>
-                    <p>
-                      @if (club.created_at) {
-                        {{ "playerAdmin.edit.from" | transloco }}
-                        {{ club.created_at | safeDate }}
-                      }
-                      @if (club.valid_until) {
-                        {{ "playerAdmin.edit.until" | transloco }}
-                        {{ club.valid_until | safeDate }}
-                      }
-                      @if (!club.valid_until) {
-                        {{ "playerAdmin.edit.untilToday" | transloco }}
-                      }
-                    </p>
-                    <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
-                         oder ohne hinterlegten Namen), bleibt die Konto-ID als
-                         belastbare Angabe stehen. -->
-                    @if (club.created_by_name || club.created_by) {
-                      <p class="text-sm text-fb-gray-500">
-                        {{ "playerAdmin.edit.homeClubSetBy" | transloco }}
-                        {{
-                          club.created_by_name ||
-                            ("playerAdmin.edit.unknownActor"
-                              | transloco: { id: club.created_by })
-                        }}
-                      </p>
-                    }
-                    @if (club.valid_set_by_name || club.valid_set_by) {
-                      <p class="text-sm text-fb-gray-500">
-                        {{ "playerAdmin.edit.homeClubEndedBy" | transloco }}
-                        {{
-                          club.valid_set_by_name ||
-                            ("playerAdmin.edit.unknownActor"
-                              | transloco: { id: club.valid_set_by })
-                        }}
-                      </p>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-            <!-- Vereinswechsel laufen ausschließlich über die
-                 Transferanträge, ein Wechsel ohne Antrag dort über die
-                 Schaltfläche Direktzuweisung. Der Verweis ist deshalb nur
-                 für SBK und Admin sichtbar, die diese Schaltfläche haben. -->
-            @if (can("menu_item_transfer_requests_sbk")) {
-              <div class="bg-white my-[5px] py-[15px] px-[30px]">
-                <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                  {{ "playerAdmin.edit.clubChange" | transloco }}
-                </div>
-                <div class="grid grid-cols-1 gap-4">
-                  <p class="block text-base text-fb-gray-500">
-                    {{ "playerAdmin.edit.clubChangeHint" | transloco }}
-                  </p>
-                  <div>
-                    <a
-                      [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
-                      class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    >
-                      {{ "playerAdmin.edit.toTransferRequests" | transloco }}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Dokumente section -->
-        @if (editMode && player) {
-          <div class="xl:col-span-2">
-            <div class="bg-white my-[5px] py-[15px] px-[30px]">
-              <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-                {{ "playerAdmin.edit.documents" | transloco }}
-              </div>
-              @if (documentsFailed) {
-                <p class="block text-base text-red-600">
-                  {{ "playerAdmin.edit.documentsLoadError" | transloco }}
-                </p>
-              } @else if (!licenseDocuments.length) {
-                <p class="block text-base text-fb-gray-500">
-                  {{ "playerAdmin.edit.noDocuments" | transloco }}
-                </p>
-              }
-              @for (group of documentGroups; track group.gameOperationId) {
-                <div class="mb-5">
-                  <p class="font-bold mb-2">
-                    @if (group.gameOperationId === null) {
-                      {{ "playerAdmin.edit.documentsNationwide" | transloco }}
-                    } @else {
-                      {{ group.gameOperationName }}
-                    }
-                  </p>
-                  <div class="grid grid-cols-1 gap-2">
-                    @for (doc of group.documents; track doc.id) {
-                      <div class="grid grid-cols-4 items-center">
-                        <div class="col-span-3">
-                          <p class="font-semibold">{{ documentLabel(doc) }}</p>
-                          <p class="text-sm text-fb-gray-500">
-                            {{ doc.filename }} ·
-                            {{ doc.created_at | safeDate }}
-                          </p>
-                        </div>
-                        <div class="flex flex-row items-center">
-                          <a
-                            [href]="doc.url"
-                            target="_blank"
-                            rel="noopener"
-                            class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                          >
-                            {{ "playerAdmin.edit.viewDocument" | transloco }}
-                          </a>
-                          @if (confirmDeleteDocumentId === doc.id) {
-                            <button
-                              type="button"
-                              (click)="deleteDocument(doc.id)"
-                              class="font-bold text-white leading-[17px] text-xs px-3 py-1.5 mr-2 border bg-red-600 hover:bg-red-700 border-red-700 rounded-[5px] cursor-pointer"
-                            >
-                              {{
-                                "playerAdmin.edit.confirmDeleteDocument"
-                                  | transloco
-                              }}
-                            </button>
-                            <button
-                              type="button"
-                              (click)="confirmDeleteDocumentId = null"
-                              class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                            >
-                              {{ "playerAdmin.edit.cancel" | transloco }}
-                            </button>
-                          } @else {
-                            <button
-                              type="button"
-                              (click)="confirmDeleteDocumentId = doc.id"
-                              class="font-bold text-red-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                            >
-                              {{
-                                "playerAdmin.edit.deleteDocument" | transloco
-                              }}
-                            </button>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Upload: Dokumentart wählen, dann Datei. Ein neuer Upload
-                   ersetzt serverseitig das vorhandene Dokument derselben Art. -->
-              <div class="border-t border-fb-gray-300 pt-4 mt-2">
-                <p class="font-bold mb-2">
-                  {{ "playerAdmin.edit.addDocument" | transloco }}
-                </p>
-                @if (documentTypesFailed) {
-                  <p class="block text-base text-red-600">
-                    {{ "playerAdmin.edit.documentTypesLoadError" | transloco }}
-                  </p>
-                } @else if (!availableDocumentTypes.length) {
-                  <p class="block text-base text-fb-gray-500">
-                    {{ "playerAdmin.edit.noDocumentTypes" | transloco }}
-                  </p>
-                } @else {
-                  <div class="flex flex-col gap-2 max-w-xl">
-                    <select
-                      [(ngModel)]="uploadDocumentType"
-                      [disabled]="uploading"
-                      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-white"
-                    >
+                  @if (changeRequestType === "gender") {
+                    <select [(ngModel)]="changeRequestValue" class="w-full">
                       <option value="">
                         {{
                           "playerAdmin.edit.pleaseSelectEllipsis" | transloco
                         }}
                       </option>
-                      @for (type of availableDocumentTypes; track type.key) {
-                        <option [value]="type.key">
-                          {{ type.name }}
-                          @if (type.game_operation_name) {
-                            ({{ type.game_operation_name }})
-                          }
-                        </option>
-                      }
+                      <option value="M">
+                        {{ "playerAdmin.edit.genderMale" | transloco }}
+                      </option>
+                      <option value="W">
+                        {{ "playerAdmin.edit.genderFemale" | transloco }}
+                      </option>
+                      <option value="D">
+                        {{ "playerAdmin.edit.genderDiverse" | transloco }}
+                      </option>
                     </select>
-                    @if (documentToBeReplaced) {
-                      <p class="text-sm text-amber-700">
-                        {{ "playerAdmin.edit.documentReplaceHint" | transloco }}
-                        {{ documentToBeReplaced.filename }}
-                      </p>
+                  }
+                </div>
+              }
+              <div>
+                <fb-button
+                  [disabled]="
+                    changeRequestSubmitting ||
+                    !changeRequestType ||
+                    (changeRequestType === 'merge'
+                      ? !mergeSecondaryId
+                      : changeRequestType !== 'names_swapped' &&
+                        !changeRequestValue)
+                  "
+                  (click)="submitChangeRequest(player)"
+                >
+                  {{ "playerAdmin.edit.submitRequest" | transloco }}
+                </fb-button>
+              </div>
+            </div>
+            @if (changeRequestType === "merge") {
+              <p class="text-sm text-gray-500 mt-3">
+                {{ "playerAdmin.edit.mergeHint" | transloco }}
+              </p>
+              @if (selectedMergePlayer; as duplicate) {
+                <div class="border border-gray-300 rounded p-3 mt-3 text-sm">
+                  <span class="font-bold"
+                    >{{ duplicate.last_name }}, {{ duplicate.first_name }}</span
+                  >
+                  <span class="text-gray-500 ml-2">{{
+                    duplicate.birthdate | date: "dd.MM.yyyy"
+                  }}</span>
+                  <p class="text-gray-500 mt-1">
+                    {{ "playerAdmin.edit.mergeSelectedHint" | transloco }}
+                  </p>
+                </div>
+              }
+            }
+          }
+        </fb-collapsible>
+      </div>
+    }
+  }
+</ng-template>
+
+<!-- Reiter „Lizenzen" -->
+<ng-template #licensesTab>
+  @if (player) {
+    <div class="bg-white my-[5px] py-[15px] px-[30px]">
+      <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+        {{ "playerAdmin.edit.licenses" | transloco }}
+      </div>
+      <!-- Die laufende Saison steht offen, fruehere Saisons sind
+           eingeklappt: Nur an Lizenzen der laufenden Saison haengen Knoepfe,
+           der Rest ist Archiv. Ist die laufende Saison (noch) nicht bekannt,
+           bleibt die neueste Gruppe offen, damit der Reiter nicht leer wirkt. -->
+      @for (
+        group of licenseSeasonGroups();
+        track group.seasonId;
+        let first = $first
+      ) {
+        @if (group.current) {
+          <div class="mb-6" data-testid="license-group-current">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="font-bold text-sm text-gray-700">{{
+                group.name
+              }}</span>
+              <span
+                class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-600 text-white"
+              >
+                {{ "playerAdmin.edit.currentSeason" | transloco }}
+              </span>
+            </div>
+            <ng-container
+              *ngTemplateOutlet="licenseList; context: { $implicit: group }"
+            />
+          </div>
+        } @else {
+          <fb-collapsible
+            class="block mb-6"
+            [attr.data-testid]="'license-group-' + (group.seasonId ?? 'none')"
+            [label]="
+              group.name || ('playerAdmin.edit.licensesNoSeason' | transloco)
+            "
+            [count]="group.licenses.length"
+            [open]="first && (currentSeasonId ?? null) === null"
+          >
+            <ng-container
+              *ngTemplateOutlet="licenseList; context: { $implicit: group }"
+            />
+          </fb-collapsible>
+        }
+      }
+    </div>
+  }
+</ng-template>
+
+<!-- Lizenzen einer Saisongruppe, fuer die offene und die eingeklappten
+     Gruppen gleich. `licensesOf` gibt der Schleife ihren Typ zurueck, den
+     die Vorlagenvariable nicht traegt. -->
+<ng-template #licenseList let-group>
+  @for (license of licensesOf(group); track license) {
+    <div class="mb-3">
+      <b>{{ license.team?.name }}</b> ({{ license.team?.id }}) -
+      {{ license?.league?.name }} ({{ license?.league?.game_operation_name }})
+      @if (isLicenseSuspended(license)) {
+        <span
+          class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800"
+        >
+          {{ "playerAdmin.edit.suspended" | transloco }}
+        </span>
+      }
+      @if (license.gf_role === "erstlizenz") {
+        <span
+          class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white"
+          [title]="'playerAdmin.edit.gfRoleErstTitle' | transloco"
+        >
+          {{ "playerAdmin.edit.gfRoleErstlizenz" | transloco }}
+        </span>
+      }
+      @if (license.gf_role === "zweitlizenz") {
+        <span
+          class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500 text-white"
+          [title]="'playerAdmin.edit.gfRoleZweitTitle' | transloco"
+        >
+          {{ "playerAdmin.edit.gfRoleZweitlizenz" | transloco }}
+        </span>
+      }
+      @if (isCurrentSeasonLicense(license)) {
+        @if (
+          can("player_suspend") &&
+          !isLicenseSuspended(license) &&
+          suspendLicenseId !== license.id
+        ) {
+          <a
+            class="font-bold text-amber-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+            data-testid="open-license-suspend"
+            (click)="openLicenseSuspend(license)"
+          >
+            {{ "playerAdmin.edit.suspendLicense" | transloco }}
+          </a>
+        }
+        @if (canDeleteLicense(license) && deleteLicenseId !== license.id) {
+          <a
+            class="font-bold text-red-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
+            (click)="openLicenseDelete(license)"
+          >
+            {{ "playerAdmin.edit.deleteLicense" | transloco }}
+          </a>
+        }
+        @if (canResetLicense(license) && resetLicenseId !== license.id) {
+          <a
+            class="font-bold text-sky-700 leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-sky-50 border-sky-400 rounded-[5px] cursor-pointer"
+            data-testid="open-license-reset"
+            (click)="openLicenseReset(license)"
+          >
+            {{ "playerAdmin.edit.resetLicense" | transloco }}
+          </a>
+        }
+        @if (gfRoleEditable(license)) {
+          <div class="border border-indigo-200 rounded p-3 bg-indigo-50 my-2">
+            <p class="text-sm font-semibold text-indigo-900 mb-2">
+              {{ "playerAdmin.edit.gfRoleHeading" | transloco }}
+            </p>
+            <div class="flex flex-wrap gap-3 items-center">
+              @if (license.gf_role !== "erstlizenz") {
+                <button
+                  class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
+                  (click)="setGfRole(license, 'erstlizenz')"
+                >
+                  {{ "playerAdmin.edit.gfRoleMakeErst" | transloco }}
+                </button>
+              }
+              @if (license.gf_role !== "zweitlizenz") {
+                <button
+                  class="font-bold text-indigo-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-indigo-100 border-indigo-400 rounded-[5px] cursor-pointer"
+                  (click)="setGfRole(license, 'zweitlizenz')"
+                >
+                  {{ "playerAdmin.edit.gfRoleMakeZweit" | transloco }}
+                </button>
+              }
+              @if (license.gf_role) {
+                <button
+                  class="font-bold text-gray-600 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  (click)="setGfRole(license, null)"
+                >
+                  {{ "playerAdmin.edit.gfRoleClear" | transloco }}
+                </button>
+              }
+            </div>
+            <p class="text-[11px] text-indigo-900 mt-2">
+              {{
+                "playerAdmin.edit.gfRoleSwapCount"
+                  | transloco: { count: gfSwapCount(license) }
+              }}
+              {{ "playerAdmin.edit.gfRoleSwapHint" | transloco }}
+            </p>
+          </div>
+        }
+        @if (suspendLicenseId === license.id) {
+          <!-- Dieselbe Vorlage wie im Reiter „Sperren":
+               ein Sperrvorgang, eine Maske, zwei Wege
+               hinein. Von hier aus ist die Lizenz gesetzt,
+               dort wird sie gewaehlt. -->
+          <ng-container
+            *ngTemplateOutlet="
+              suspendForm;
+              context: { license: license, showPicker: false }
+            "
+          ></ng-container>
+        }
+        @if (deleteLicenseId === license.id) {
+          <div class="border border-red-300 rounded p-3 bg-red-50 my-2">
+            <p class="text-sm font-semibold text-red-800 mb-2">
+              {{ "playerAdmin.edit.deleteThisLicense" | transloco }}
+            </p>
+            <p class="text-[11px] text-red-900 mb-2">
+              {{ "playerAdmin.edit.deleteLicenseHint" | transloco }}
+            </p>
+            <div class="mb-2">
+              <label class="block text-xs font-semibold text-red-800 mb-1">{{
+                "playerAdmin.edit.reason" | transloco
+              }}</label>
+              <input
+                type="text"
+                [(ngModel)]="licenseDeleteReason"
+                [placeholder]="
+                  'playerAdmin.edit.licenseDeleteReasonPlaceholder' | transloco
+                "
+                class="w-full xl:w-2/3 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
+              />
+            </div>
+            <div class="flex gap-3">
+              <button
+                (click)="submitLicenseDelete(license)"
+                [disabled]="!licenseDeleteReason.trim()"
+                class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-red-700 hover:bg-red-800 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ "playerAdmin.edit.delete" | transloco }}
+              </button>
+              <button
+                (click)="cancelLicenseDelete()"
+                class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.cancel" | transloco }}
+              </button>
+            </div>
+          </div>
+        }
+        @if (resetLicenseId === license.id) {
+          <div class="border border-sky-300 rounded p-3 bg-sky-50 my-2">
+            <p class="text-sm font-semibold text-sky-800 mb-2">
+              {{ "playerAdmin.edit.resetThisLicense" | transloco }}
+            </p>
+            <p class="text-[11px] text-sky-900 mb-2">
+              {{ "playerAdmin.edit.resetLicenseHint" | transloco }}
+            </p>
+            <div class="mb-2">
+              <label class="block text-xs font-semibold text-sky-800 mb-1">{{
+                "playerAdmin.edit.reason" | transloco
+              }}</label>
+              <input
+                type="text"
+                [(ngModel)]="licenseResetReason"
+                [placeholder]="
+                  'playerAdmin.edit.licenseResetReasonPlaceholder' | transloco
+                "
+                class="w-full xl:w-2/3 border border-sky-300 rounded-[5px] px-3 py-2 text-sm"
+              />
+            </div>
+            <div class="flex gap-3">
+              <button
+                (click)="submitLicenseReset(license)"
+                [disabled]="!licenseResetReason.trim()"
+                data-testid="submit-license-reset"
+                class="font-bold text-white leading-[17px] text-sm px-4 py-2 bg-sky-700 hover:bg-sky-800 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ "playerAdmin.edit.reset" | transloco }}
+              </button>
+              <button
+                (click)="cancelLicenseReset()"
+                class="font-bold text-gray-600 leading-[17px] text-sm px-4 py-2 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.cancel" | transloco }}
+              </button>
+            </div>
+          </div>
+        }
+      }
+      <!-- Der Verlauf ist Nachschlagestoff fuer Rueckfragen und stand
+           frueher an jeder Lizenz offen; das machte den Reiter lang. -->
+      <fb-collapsible
+        class="block mt-2"
+        [label]="'playerAdmin.edit.historyLabel' | transloco"
+        [count]="licenseHistory(license).length"
+      >
+        @for (hist of licenseHistory(license); track hist) {
+          <div>
+            {{ hist.created_at | safeDate: "dd.MM.yyyy HH:mm:ss" }},
+            <b>{{ hist.license_status }}</b
+            >, {{ "playerAdmin.edit.by" | transloco }}
+            {{ hist.created_by_name }}
+            @if (hist.reason) {
+              <span>{{
+                "playerAdmin.edit.historyReason"
+                  | transloco: { reason: hist.reason }
+              }}</span>
+            }
+          </div>
+        }
+      </fb-collapsible>
+    </div>
+  }
+</ng-template>
+
+<!-- Reiter „Freigaben & Dokumente" -->
+<ng-template #releasesTab>
+  @if (player) {
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-x-[25px]">
+      <div>
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            {{ "playerAdmin.edit.releases" | transloco }}
+          </div>
+          @if (!additionalClubs().length) {
+            <p
+              class="block text-base truncate text-fb-gray-500 hover:text-black"
+            >
+              {{ "playerAdmin.edit.noReleases" | transloco }}
+            </p>
+          }
+          <div class="grid grid-cols-1 gap-4">
+            @for (additionalClub of additionalClubs(); track additionalClub) {
+              <div class="grid grid-cols-4">
+                <div class="col-span-3">
+                  <p class="font-bold">
+                    {{ getClubNameById(additionalClub.club_id) }}
+                    ({{ additionalClub.club_id }})
+                  </p>
+                  <p>
+                    @if (additionalClub.created_at) {
+                      {{ "playerAdmin.edit.from" | transloco }}
+                      {{ additionalClub.created_at | safeDate }}
                     }
-                    <input
-                      type="file"
-                      accept="application/pdf,image/png,image/jpeg"
-                      [disabled]="!uploadDocumentType || uploading"
-                      (change)="onDocumentFileSelected($event)"
-                      class="text-sm"
-                    />
+                    {{ "playerAdmin.edit.until" | transloco }}
+                    {{ additionalClub.valid_until | safeDate }}
+                  </p>
+                  <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
+                       oder ohne hinterlegten Namen), bleibt die Konto-ID
+                       als belastbare Angabe stehen. -->
+                  @if (
+                    additionalClub.created_by_name || additionalClub.created_by
+                  ) {
                     <p class="text-sm text-fb-gray-500">
-                      {{ "playerAdmin.edit.documentUploadHint" | transloco }}
+                      {{ "playerAdmin.edit.releaseGrantedBy" | transloco }}
+                      {{
+                        additionalClub.created_by_name ||
+                          ("playerAdmin.edit.unknownActor"
+                            | transloco: { id: additionalClub.created_by })
+                      }}
                     </p>
-                    @if (uploading) {
-                      <p class="text-sm text-fb-gray-500">
-                        {{ "playerAdmin.edit.documentUploading" | transloco }}
-                      </p>
-                    }
-                  </div>
-                }
-                @if (uploadErrors.length) {
-                  <p class="block text-base text-red-600 mt-2">
-                    {{ uploadErrors.join(", ") }}
-                  </p>
-                } @else if (uploadErrorKey) {
-                  <p class="block text-base text-red-600 mt-2">
-                    {{ uploadErrorKey | transloco }}
-                  </p>
-                }
+                  }
+                  @if (
+                    additionalClub.valid_set_by_name ||
+                    additionalClub.valid_set_by
+                  ) {
+                    <p class="text-sm text-fb-gray-500">
+                      {{ "playerAdmin.edit.releaseEndedBy" | transloco }}
+                      {{
+                        additionalClub.valid_set_by_name ||
+                          ("playerAdmin.edit.unknownActor"
+                            | transloco: { id: additionalClub.valid_set_by })
+                      }}
+                    </p>
+                  }
+                </div>
+                <div class="flex flex-row items-center">
+                  @if (
+                    can("player_add_additional_clubs") &&
+                    !isAdditionalClubActive(additionalClub.club_id) &&
+                    !isClubDeactivated(additionalClub.club_id)
+                  ) {
+                    <a
+                      class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      (click)="
+                        addAdditionalClub(
+                          player,
+                          additionalClub.club_id.toString()
+                        )
+                      "
+                    >
+                      {{ "playerAdmin.edit.releaseAgain" | transloco }}
+                    </a>
+                  }
+                  @if (
+                    can("player_remove_additional_clubs") &&
+                    isAdditionalClubActive(additionalClub.club_id)
+                  ) {
+                    <a
+                      class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                      (click)="
+                        removeAdditionalClub(
+                          player,
+                          additionalClub.club_id.toString(),
+                          additionalClub.valid_until
+                        )
+                      "
+                    >
+                      {{ "playerAdmin.edit.endRelease" | transloco }}
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        @if (can("player_add_additional_clubs")) {
+          <div class="bg-white my-[5px] py-[15px] px-[30px]">
+            <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+              {{ "playerAdmin.edit.newRelease" | transloco }}
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+              <fb-select-search
+                [(ngModel)]="additionalClubId"
+                [items]="assignableClubs"
+                [placeholder]="'playerAdmin.edit.selectClub' | transloco"
+                [resetLabel]="'playerAdmin.edit.selectClub' | transloco"
+              />
+              <div>
+                <a
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  (click)="addAdditionalClub(player, additionalClubId)"
+                >
+                  {{ "playerAdmin.edit.releasePlayer" | transloco }}
+                </a>
               </div>
             </div>
           </div>
         }
-
-        <!-- Deactivation section -->
-        @if (editMode && player) {
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div
-              class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
-            >
-              {{ "playerAdmin.edit.clubLeave" | transloco }}
-              @if (isDeactivated) {
-                <span
-                  class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
-                >
-                  {{ "playerAdmin.edit.deactivatedOn" | transloco }}
-                  {{ player.deactivated_at | date: "dd.MM.yyyy" }}
-                </span>
-              }
-            </div>
-            @if (isDeactivated) {
-              <p class="text-sm text-gray-500 mb-4">
-                {{ "playerAdmin.edit.deactivatedHint" | transloco }}
-              </p>
+      </div>
+      <div>
+        <div class="bg-white my-[5px] py-[15px] px-[30px]">
+          <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+            {{ "playerAdmin.edit.homeClub" | transloco }}
+          </div>
+          <div class="grid grid-cols-1 gap-4">
+            @for (club of currentHomeClubs(); track club) {
+              <ng-container
+                *ngTemplateOutlet="homeClubEntry; context: { $implicit: club }"
+              />
             }
-            @if (canReactivate) {
-              <div class="mb-2">
-                <fb-button
-                  size="small"
-                  variant="success"
-                  (click)="reactivatePlayer()"
-                >
-                  {{ "playerAdmin.edit.reactivate" | transloco }}
-                </fb-button>
-              </div>
-            }
-            @if (canDeactivate && !confirmDeactivate) {
-              <div>
-                <button
-                  (click)="confirmDeactivate = true"
-                  class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
-                >
-                  {{ "playerAdmin.edit.deactivatePlayer" | transloco }}
-                </button>
-              </div>
-            }
-            @if (confirmDeactivate) {
-              <div class="border border-red-300 rounded p-4 bg-red-50">
-                <p class="text-sm font-semibold text-red-800 mb-1">
-                  {{ "playerAdmin.edit.deactivateConfirm" | transloco }}
-                </p>
-                <p class="text-sm text-red-700 mb-4">
-                  {{ "playerAdmin.edit.deactivateWarning" | transloco }}
-                </p>
-                <div class="mb-4">
-                  <label
-                    class="block text-sm font-semibold text-red-800 mb-1"
-                    >{{ "playerAdmin.edit.reasonRequired" | transloco }}</label
-                  >
-                  <select
-                    [(ngModel)]="deactivateReason"
-                    class="w-full xl:w-1/2 border border-red-300 rounded-[5px] px-3 py-2 text-sm bg-white"
-                  >
-                    <option value="">
-                      {{ "playerAdmin.edit.pleaseSelectEllipsis" | transloco }}
-                    </option>
-                    <option value="Vereinsaustritt">
-                      {{ "playerAdmin.edit.reasonClubLeave" | transloco }}
-                    </option>
-                    <option value="Karriereende">
-                      {{ "playerAdmin.edit.reasonCareerEnd" | transloco }}
-                    </option>
-                    <option value="Temporäre Pause">
-                      {{ "playerAdmin.edit.reasonTemporaryBreak" | transloco }}
-                    </option>
-                    <option value="Wechsel ins Ausland">
-                      {{ "playerAdmin.edit.reasonMoveAbroad" | transloco }}
-                    </option>
-                    <option value="Sonstiges">
-                      {{ "playerAdmin.edit.reasonOther" | transloco }}
-                    </option>
-                  </select>
-                  @if (deactivateReason === "Sonstiges") {
-                    <input
-                      [(ngModel)]="deactivateReasonOther"
-                      type="text"
-                      [placeholder]="
-                        'playerAdmin.edit.reasonOtherPlaceholder' | transloco
+            @if (pastHomeClubs().length) {
+              <fb-collapsible
+                data-testid="home-club-history"
+                [label]="'playerAdmin.edit.homeClubHistory' | transloco"
+                [count]="pastHomeClubs().length"
+              >
+                <div class="grid grid-cols-1 gap-4">
+                  @for (club of pastHomeClubs(); track club) {
+                    <ng-container
+                      *ngTemplateOutlet="
+                        homeClubEntry;
+                        context: { $implicit: club }
                       "
-                      class="mt-2 w-full xl:w-1/2 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
                     />
                   }
                 </div>
-                <div class="flex gap-3">
-                  <button
-                    (click)="deactivatePlayer()"
-                    [disabled]="
-                      !deactivateReason ||
-                      (deactivateReason === 'Sonstiges' &&
-                        !deactivateReasonOther)
-                    "
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {{ "playerAdmin.edit.yesDeactivate" | transloco }}
-                  </button>
-                  <button
-                    (click)="cancelDeactivate()"
-                    class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  >
-                    {{ "playerAdmin.edit.cancel" | transloco }}
-                  </button>
-                </div>
-              </div>
+              </fb-collapsible>
             }
           </div>
-        }
-
-        <!-- Nachname in der oeffentlichen Anzeige (DSGVO Art. 17/21) -->
-        @if (
-          editMode && player && (canHidePublicLastName || canShowPublicLastName)
-        ) {
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div
-              class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
-            >
-              {{ "playerAdmin.edit.publicLastName" | transloco }}
-              @if (isPublicLastNameHidden) {
-                <span
-                  class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 normal-case"
-                >
-                  {{ "playerAdmin.edit.publicLastNameHiddenSince" | transloco }}
-                  {{ player.public_last_name_hidden_at | date: "dd.MM.yyyy" }}
-                </span>
-              }
-            </div>
-            @if (isPublicLastNameHidden) {
-              <p class="text-sm text-gray-500 mb-4">
-                {{ "playerAdmin.edit.publicLastNameHiddenHint" | transloco }}
-              </p>
-              @if (player.public_last_name_hidden_reason) {
-                <p class="text-sm text-gray-500 mb-4">
-                  {{
-                    "playerAdmin.edit.publicLastNameReasonLabel" | transloco
-                  }}:
-                  {{ player.public_last_name_hidden_reason }}
-                </p>
-              }
-            } @else {
-              <p class="text-sm text-gray-500 mb-4">
-                {{ "playerAdmin.edit.publicLastNameVisibleHint" | transloco }}
-              </p>
-            }
-            @if (canShowPublicLastName && !confirmShowPublicLastName) {
-              <div class="mb-2">
-                <button
-                  (click)="confirmShowPublicLastName = true"
-                  class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
-                >
-                  {{ "playerAdmin.edit.publicLastNameShow" | transloco }}
-                </button>
-              </div>
-            }
-            @if (confirmShowPublicLastName) {
-              <div class="border border-amber-300 rounded p-4 bg-amber-50 mb-2">
-                <p class="text-sm font-semibold text-amber-900 mb-1">
-                  {{ "playerAdmin.edit.publicLastNameShowConfirm" | transloco }}
-                </p>
-                <p class="text-sm text-amber-800 mb-4">
-                  {{ "playerAdmin.edit.publicLastNameShowWarning" | transloco }}
-                </p>
-                <div class="flex gap-3">
-                  <button
-                    (click)="showPublicLastName()"
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
-                  >
-                    {{ "playerAdmin.edit.publicLastNameShowYes" | transloco }}
-                  </button>
-                  <button
-                    (click)="cancelShowPublicLastName()"
-                    class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  >
-                    {{ "playerAdmin.edit.cancel" | transloco }}
-                  </button>
-                </div>
-              </div>
-            }
-            @if (canHidePublicLastName && !confirmHidePublicLastName) {
-              <div>
-                <button
-                  (click)="confirmHidePublicLastName = true"
-                  class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
-                >
-                  {{ "playerAdmin.edit.publicLastNameHide" | transloco }}
-                </button>
-              </div>
-            }
-            @if (confirmHidePublicLastName) {
-              <div class="border border-amber-300 rounded p-4 bg-amber-50">
-                <p class="text-sm font-semibold text-amber-900 mb-1">
-                  {{ "playerAdmin.edit.publicLastNameHideConfirm" | transloco }}
-                </p>
-                <p class="text-sm text-amber-800 mb-4">
-                  {{ "playerAdmin.edit.publicLastNameHideWarning" | transloco }}
-                </p>
-                <div class="mb-4">
-                  <label
-                    class="block text-sm font-semibold text-amber-900 mb-1"
-                    >{{
-                      "playerAdmin.edit.publicLastNameReasonOptional"
-                        | transloco
-                    }}</label
-                  >
-                  <input
-                    [(ngModel)]="hidePublicLastNameReason"
-                    type="text"
-                    maxlength="255"
-                    [placeholder]="
-                      'playerAdmin.edit.publicLastNameReasonPlaceholder'
-                        | transloco
-                    "
-                    class="w-full xl:w-1/2 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
-                  />
-                </div>
-                <div class="flex gap-3">
-                  <button
-                    (click)="hidePublicLastName()"
-                    class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
-                  >
-                    {{ "playerAdmin.edit.publicLastNameHideYes" | transloco }}
-                  </button>
-                  <button
-                    (click)="cancelHidePublicLastName()"
-                    class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                  >
-                    {{ "playerAdmin.edit.cancel" | transloco }}
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Sperren (Issue #508) -->
-        @if (editMode && can("player_suspend") && player) {
-          <div class="bg-white my-[5px] py-[15px] px-[30px]">
-            <div
-              class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
-            >
-              Sperren
-              @if (hasApplicationBlock) {
-                <span
-                  class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
-                >
-                  Beantragungssperre aktiv
-                </span>
-              }
-            </div>
-            <p class="text-sm text-gray-500 mb-4">
-              Eine Sperre gilt für eine Mannschaft, einen Wettbewerb, eine Liga
-              oder alle Wettbewerbe. „Alle Wettbewerbe" setzt zusätzlich jede
-              aktive Lizenz aus und verhindert neue Lizenzanträge – das ist die
-              frühere Beantragungssperre. Dieselbe Maske steht oben an jeder
-              Lizenz der laufenden Saison.
-            </p>
-            <!-- Aktive Sperren -->
-            @if (activeSuspensions.length) {
-              <div class="mb-4">
-                <div class="text-xs font-semibold text-gray-500 mb-2">
-                  Aktive Sperren
-                </div>
-                @for (s of activeSuspensions; track s) {
-                  <div
-                    class="flex flex-wrap items-center justify-between gap-2 border border-gray-200 rounded px-3 py-2 mb-2"
-                  >
-                    <div class="text-sm">
-                      <b>{{
-                        s.kind === "application_block"
-                          ? "Beantragungssperre"
-                          : "Lizenzaussetzung"
-                      }}</b>
-                      @if (s.team_name) {
-                        <span> – {{ s.team_name }}</span>
-                      }
-                      <br />
-                      <!-- Der Geltungsbereich kommt als Klartext von der API,
-                           damit Formular und Anzeige nicht zwei Fassungen
-                           derselben Regel bilden. -->
-                      <span class="text-gray-600">{{ s.scope_summary }}</span>
-                      <br />
-                      @if (s.games_total) {
-                        <!-- Der Reststand zählt Spiele und keine Termine:
-                             Erst- und Zweitlizenz im selben Wettbewerb sitzen
-                             zwei Spiele an einem Wochenende ab. -->
-                        <span>{{
-                          "playerAdmin.edit.gamesRemaining"
-                            | transloco
-                              : {
-                                  remaining: s.remaining_games,
-                                  total: s.games_total,
-                                }
-                        }}</span>
-                        @if (s.valid_until) {
-                          <span>
-                            ·
-                            {{ "playerAdmin.edit.atTheLatest" | transloco }}
-                            {{ s.valid_until | date: "dd.MM.yyyy" }}</span
-                          >
-                        }
-                      } @else {
-                        <span
-                          >{{ s.valid_from | date: "dd.MM.yyyy" }} –
-                          {{ s.valid_until | date: "dd.MM.yyyy" }}</span
-                        >
-                      }
-                      @if (s.reason) {
-                        <span>· {{ s.reason }}</span>
-                      }
-                    </div>
-                    <button
-                      (click)="liftSuspension(s)"
-                      class="font-bold text-gray-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
-                    >
-                      Aufheben
-                    </button>
-                  </div>
-                }
-              </div>
-            }
-            <!-- Sperre einrichten. Erreichbar auch ohne Lizenz der
-                 laufenden Saison: Die spielerweite Sperre verhindert neue
-                 Lizenzantraege, und gerade dann gibt es keine Lizenz. Die
-                 engeren Geltungsbereiche brauchen eine und sind ohne
-                 Auswahl nicht waehlbar.
-
-                 `!hasApplicationBlock` ist kein Schoenheitsriegel: Laeuft
-                 schon eine Sperre auf alle Wettbewerbe, tragen alle Lizenzen
-                 den Status gesperrt, `suspendableLicenses` ist leer und der
-                 Geltungsbereich stuende zwingend auf „alle Wettbewerbe" --
-                 dieser Knopf koennte dort ausschliesslich ein Duplikat
-                 anlegen. Und das Duplikat waere nicht bloss doppelt:
-                 `Player#write_suspended_status!` ueberspringt Lizenzen, die
-                 schon auf gesperrt stehen, die zweite Sperre bekaeme also
-                 eine leere Liste betroffener Lizenzen. Das Aufheben der
-                 ersten stellte danach alle Lizenzen wieder her, waehrend die
-                 zweite weiterlaeuft und jeden Antrag blockiert -- ohne eine
-                 Lizenz, an der die Sperre noch sichtbar waere. Erst
-                 aufheben, dann neu setzen. -->
-            @if (!showSuspendForm && !hasApplicationBlock) {
-              <div>
-                <button
-                  (click)="openSuspendForm()"
-                  data-testid="open-suspend-form"
-                  class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
-                >
-                  {{ "playerAdmin.edit.setupSuspension" | transloco }}
-                </button>
-              </div>
-            }
-            @if (showSuspendForm) {
-              <ng-container
-                *ngTemplateOutlet="
-                  suspendForm;
-                  context: { license: suspendFormLicense, showPicker: true }
-                "
-              ></ng-container>
-            }
-          </div>
-        }
-
-        @if (editMode && can("player_merge") && player) {
+        </div>
+        <!-- Vereinswechsel laufen ausschließlich über die
+             Transferanträge, ein Wechsel ohne Antrag dort über die
+             Schaltfläche Direktzuweisung. Der Verweis ist deshalb nur
+             für SBK und Admin sichtbar, die diese Schaltfläche haben. -->
+        @if (can("menu_item_transfer_requests_sbk")) {
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
-              Duplikat zusammenführen
+              {{ "playerAdmin.edit.clubChange" | transloco }}
             </div>
-            <p class="text-sm text-gray-500 mb-4">
-              Diesen Spieler als Master-Datensatz verwenden und einen
-              Duplikat-Datensatz damit zusammenführen.
-            </p>
-            <a
-              [routerLink]="[
-                '/',
-                'verwaltung',
-                'spieler',
-                player.id,
-                'duplikat',
-              ]"
-              class="font-bold text-orange-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-orange-50 border-orange-400 rounded-[5px]"
-            >
-              Duplikat zusammenführen
-            </a>
+            <div class="grid grid-cols-1 gap-4">
+              <p class="block text-base text-fb-gray-500">
+                {{ "playerAdmin.edit.clubChangeHint" | transloco }}
+              </p>
+              <div>
+                <a
+                  [routerLink]="['/', 'verwaltung', 'transfer-anfragen']"
+                  class="font-bold text-black leading-[17px] text-sm px-5 py-2.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                >
+                  {{ "playerAdmin.edit.toTransferRequests" | transloco }}
+                </a>
+              </div>
+            </div>
           </div>
         }
       </div>
     </div>
-  </div>
-</ng-container>
+    <div class="bg-white my-[5px] py-[15px] px-[30px]">
+      <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+        {{ "playerAdmin.edit.documents" | transloco }}
+      </div>
+      @if (documentsFailed) {
+        <p class="block text-base text-red-600">
+          {{ "playerAdmin.edit.documentsLoadError" | transloco }}
+        </p>
+      } @else if (!licenseDocuments.length) {
+        <p class="block text-base text-fb-gray-500">
+          {{ "playerAdmin.edit.noDocuments" | transloco }}
+        </p>
+      }
+      @for (group of documentGroups; track group.gameOperationId) {
+        <div class="mb-5">
+          <p class="font-bold mb-2">
+            @if (group.gameOperationId === null) {
+              {{ "playerAdmin.edit.documentsNationwide" | transloco }}
+            } @else {
+              {{ group.gameOperationName }}
+            }
+          </p>
+          <div class="grid grid-cols-1 gap-2">
+            @for (doc of group.documents; track doc.id) {
+              <div class="grid grid-cols-4 items-center">
+                <div class="col-span-3">
+                  <p class="font-semibold">{{ documentLabel(doc) }}</p>
+                  <p class="text-sm text-fb-gray-500">
+                    {{ doc.filename }} ·
+                    {{ doc.created_at | safeDate }}
+                  </p>
+                </div>
+                <div class="flex flex-row items-center">
+                  <a
+                    [href]="doc.url"
+                    target="_blank"
+                    rel="noopener"
+                    class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 mr-4 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                  >
+                    {{ "playerAdmin.edit.viewDocument" | transloco }}
+                  </a>
+                  @if (confirmDeleteDocumentId === doc.id) {
+                    <button
+                      type="button"
+                      (click)="deleteDocument(doc.id)"
+                      class="font-bold text-white leading-[17px] text-xs px-3 py-1.5 mr-2 border bg-red-600 hover:bg-red-700 border-red-700 rounded-[5px] cursor-pointer"
+                    >
+                      {{ "playerAdmin.edit.confirmDeleteDocument" | transloco }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="confirmDeleteDocumentId = null"
+                      class="font-bold text-black leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    >
+                      {{ "playerAdmin.edit.cancel" | transloco }}
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="confirmDeleteDocumentId = doc.id"
+                      class="font-bold text-red-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+                    >
+                      {{ "playerAdmin.edit.deleteDocument" | transloco }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Upload: Dokumentart wählen, dann Datei. Ein neuer Upload
+           ersetzt serverseitig das vorhandene Dokument derselben Art. -->
+      <div class="border-t border-fb-gray-300 pt-4 mt-2">
+        <p class="font-bold mb-2">
+          {{ "playerAdmin.edit.addDocument" | transloco }}
+        </p>
+        @if (documentTypesFailed) {
+          <p class="block text-base text-red-600">
+            {{ "playerAdmin.edit.documentTypesLoadError" | transloco }}
+          </p>
+        } @else if (!availableDocumentTypes.length) {
+          <p class="block text-base text-fb-gray-500">
+            {{ "playerAdmin.edit.noDocumentTypes" | transloco }}
+          </p>
+        } @else {
+          <div class="flex flex-col gap-2 max-w-xl">
+            <select
+              [(ngModel)]="uploadDocumentType"
+              [disabled]="uploading"
+              class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm bg-white"
+            >
+              <option value="">
+                {{ "playerAdmin.edit.pleaseSelectEllipsis" | transloco }}
+              </option>
+              @for (type of availableDocumentTypes; track type.key) {
+                <option [value]="type.key">
+                  {{ type.name }}
+                  @if (type.game_operation_name) {
+                    ({{ type.game_operation_name }})
+                  }
+                </option>
+              }
+            </select>
+            @if (documentToBeReplaced) {
+              <p class="text-sm text-amber-700">
+                {{ "playerAdmin.edit.documentReplaceHint" | transloco }}
+                {{ documentToBeReplaced.filename }}
+              </p>
+            }
+            <input
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              [disabled]="!uploadDocumentType || uploading"
+              (change)="onDocumentFileSelected($event)"
+              class="text-sm"
+            />
+            <p class="text-sm text-fb-gray-500">
+              {{ "playerAdmin.edit.documentUploadHint" | transloco }}
+            </p>
+            @if (uploading) {
+              <p class="text-sm text-fb-gray-500">
+                {{ "playerAdmin.edit.documentUploading" | transloco }}
+              </p>
+            }
+          </div>
+        }
+        @if (uploadErrors.length) {
+          <p class="block text-base text-red-600 mt-2">
+            {{ uploadErrors.join(", ") }}
+          </p>
+        } @else if (uploadErrorKey) {
+          <p class="block text-base text-red-600 mt-2">
+            {{ uploadErrorKey | transloco }}
+          </p>
+        }
+      </div>
+    </div>
+  }
+</ng-template>
+
+<!-- Reiter „Sperren" (Issue #508) -->
+<ng-template #suspensionsTab>
+  @if (player) {
+    <div class="bg-white my-[5px] py-[15px] px-[30px]">
+      <div
+        class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+      >
+        {{ "playerAdmin.edit.suspensions" | transloco }}
+        @if (hasApplicationBlock) {
+          <span
+            class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
+          >
+            {{ "playerAdmin.edit.applicationBlockActive" | transloco }}
+          </span>
+        }
+      </div>
+      <p class="text-sm text-gray-500 mb-4">
+        {{ "playerAdmin.edit.suspensionsHint" | transloco }}
+      </p>
+      <!-- Aktive Sperren -->
+      @if (activeSuspensions.length) {
+        <div class="mb-4">
+          <div class="text-xs font-semibold text-gray-500 mb-2">
+            {{ "playerAdmin.edit.activeSuspensions" | transloco }}
+          </div>
+          @for (s of activeSuspensions; track s) {
+            <div
+              class="flex flex-wrap items-center justify-between gap-2 border border-gray-200 rounded px-3 py-2 mb-2"
+            >
+              <div class="text-sm">
+                <b>{{
+                  (s.kind === "application_block"
+                    ? "playerAdmin.edit.kindApplicationBlock"
+                    : "playerAdmin.edit.licenseSuspension"
+                  ) | transloco
+                }}</b>
+                @if (s.team_name) {
+                  <span> – {{ s.team_name }}</span>
+                }
+                <br />
+                <!-- Der Geltungsbereich kommt als Klartext von der API,
+                     damit Formular und Anzeige nicht zwei Fassungen
+                     derselben Regel bilden. -->
+                <span class="text-gray-600">{{ s.scope_summary }}</span>
+                <br />
+                @if (s.games_total) {
+                  <!-- Der Reststand zählt Spiele und keine Termine:
+                       Erst- und Zweitlizenz im selben Wettbewerb sitzen
+                       zwei Spiele an einem Wochenende ab. -->
+                  <span>{{
+                    "playerAdmin.edit.gamesRemaining"
+                      | transloco
+                        : {
+                            remaining: s.remaining_games,
+                            total: s.games_total,
+                          }
+                  }}</span>
+                  @if (s.valid_until) {
+                    <span>
+                      ·
+                      {{ "playerAdmin.edit.atTheLatest" | transloco }}
+                      {{ s.valid_until | date: "dd.MM.yyyy" }}</span
+                    >
+                  }
+                } @else {
+                  <span
+                    >{{ s.valid_from | date: "dd.MM.yyyy" }} –
+                    {{ s.valid_until | date: "dd.MM.yyyy" }}</span
+                  >
+                }
+                @if (s.reason) {
+                  <span>· {{ s.reason }}</span>
+                }
+              </div>
+              <button
+                (click)="liftSuspension(s)"
+                class="font-bold text-gray-700 leading-[17px] text-xs px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.lift" | transloco }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+      <!-- Sperre einrichten. Erreichbar auch ohne Lizenz der
+           laufenden Saison: Die spielerweite Sperre verhindert neue
+           Lizenzantraege, und gerade dann gibt es keine Lizenz. Die
+           engeren Geltungsbereiche brauchen eine und sind ohne
+           Auswahl nicht waehlbar.
+
+           `!hasApplicationBlock` ist kein Schoenheitsriegel: Laeuft
+           schon eine Sperre auf alle Wettbewerbe, tragen alle Lizenzen
+           den Status gesperrt, `suspendableLicenses` ist leer und der
+           Geltungsbereich stuende zwingend auf „alle Wettbewerbe" --
+           dieser Knopf koennte dort ausschliesslich ein Duplikat
+           anlegen. Und das Duplikat waere nicht bloss doppelt:
+           `Player#write_suspended_status!` ueberspringt Lizenzen, die
+           schon auf gesperrt stehen, die zweite Sperre bekaeme also
+           eine leere Liste betroffener Lizenzen. Das Aufheben der
+           ersten stellte danach alle Lizenzen wieder her, waehrend die
+           zweite weiterlaeuft und jeden Antrag blockiert -- ohne eine
+           Lizenz, an der die Sperre noch sichtbar waere. Erst
+           aufheben, dann neu setzen. -->
+      @if (!showSuspendForm && !hasApplicationBlock) {
+        <div>
+          <button
+            (click)="openSuspendForm()"
+            data-testid="open-suspend-form"
+            class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+          >
+            {{ "playerAdmin.edit.setupSuspension" | transloco }}
+          </button>
+        </div>
+      }
+      @if (showSuspendForm) {
+        <ng-container
+          *ngTemplateOutlet="
+            suspendForm;
+            context: { license: suspendFormLicense, showPicker: true }
+          "
+        ></ng-container>
+      }
+    </div>
+  }
+</ng-template>
+
+<!-- Reiter „Verwaltung" -->
+<ng-template #managementTab>
+  @if (player) {
+    <div class="bg-white my-[5px] py-[15px] px-[30px]">
+      <div
+        class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+      >
+        {{ "playerAdmin.edit.clubLeave" | transloco }}
+        @if (isDeactivated) {
+          <span
+            class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 normal-case"
+          >
+            {{ "playerAdmin.edit.deactivatedOn" | transloco }}
+            {{ player.deactivated_at | date: "dd.MM.yyyy" }}
+          </span>
+        }
+      </div>
+      @if (isDeactivated) {
+        <p class="text-sm text-gray-500 mb-4">
+          {{ "playerAdmin.edit.deactivatedHint" | transloco }}
+        </p>
+      }
+      @if (canReactivate) {
+        <div class="mb-2">
+          <fb-button
+            size="small"
+            variant="success"
+            (click)="reactivatePlayer()"
+          >
+            {{ "playerAdmin.edit.reactivate" | transloco }}
+          </fb-button>
+        </div>
+      }
+      @if (canDeactivate && !confirmDeactivate) {
+        <div>
+          <button
+            (click)="confirmDeactivate = true"
+            class="font-bold text-red-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-red-50 border-red-400 rounded-[5px] cursor-pointer"
+          >
+            {{ "playerAdmin.edit.deactivatePlayer" | transloco }}
+          </button>
+        </div>
+      }
+      @if (confirmDeactivate) {
+        <div class="border border-red-300 rounded p-4 bg-red-50">
+          <p class="text-sm font-semibold text-red-800 mb-1">
+            {{ "playerAdmin.edit.deactivateConfirm" | transloco }}
+          </p>
+          <p class="text-sm text-red-700 mb-4">
+            {{ "playerAdmin.edit.deactivateWarning" | transloco }}
+          </p>
+          <div class="mb-4">
+            <label class="block text-sm font-semibold text-red-800 mb-1">{{
+              "playerAdmin.edit.reasonRequired" | transloco
+            }}</label>
+            <select
+              [(ngModel)]="deactivateReason"
+              class="w-full xl:w-1/2 border border-red-300 rounded-[5px] px-3 py-2 text-sm bg-white"
+            >
+              <option value="">
+                {{ "playerAdmin.edit.pleaseSelectEllipsis" | transloco }}
+              </option>
+              <option value="Vereinsaustritt">
+                {{ "playerAdmin.edit.reasonClubLeave" | transloco }}
+              </option>
+              <option value="Karriereende">
+                {{ "playerAdmin.edit.reasonCareerEnd" | transloco }}
+              </option>
+              <option value="Temporäre Pause">
+                {{ "playerAdmin.edit.reasonTemporaryBreak" | transloco }}
+              </option>
+              <option value="Wechsel ins Ausland">
+                {{ "playerAdmin.edit.reasonMoveAbroad" | transloco }}
+              </option>
+              <option value="Sonstiges">
+                {{ "playerAdmin.edit.reasonOther" | transloco }}
+              </option>
+            </select>
+            @if (deactivateReason === "Sonstiges") {
+              <input
+                [(ngModel)]="deactivateReasonOther"
+                type="text"
+                [placeholder]="
+                  'playerAdmin.edit.reasonOtherPlaceholder' | transloco
+                "
+                class="mt-2 w-full xl:w-1/2 border border-red-300 rounded-[5px] px-3 py-2 text-sm"
+              />
+            }
+          </div>
+          <div class="flex gap-3">
+            <button
+              (click)="deactivatePlayer()"
+              [disabled]="
+                !deactivateReason ||
+                (deactivateReason === 'Sonstiges' && !deactivateReasonOther)
+              "
+              class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-[5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ "playerAdmin.edit.yesDeactivate" | transloco }}
+            </button>
+            <button
+              (click)="cancelDeactivate()"
+              class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+            >
+              {{ "playerAdmin.edit.cancel" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Nachname in der oeffentlichen Anzeige (DSGVO Art. 17/21) -->
+    @if (canHidePublicLastName || canShowPublicLastName) {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <div
+          class="uppercase font-bold text-gray-400 text-sm mb-5 flex items-center gap-3"
+        >
+          {{ "playerAdmin.edit.publicLastName" | transloco }}
+          @if (isPublicLastNameHidden) {
+            <span
+              class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 normal-case"
+            >
+              {{ "playerAdmin.edit.publicLastNameHiddenSince" | transloco }}
+              {{ player.public_last_name_hidden_at | date: "dd.MM.yyyy" }}
+            </span>
+          }
+        </div>
+        @if (isPublicLastNameHidden) {
+          <p class="text-sm text-gray-500 mb-4">
+            {{ "playerAdmin.edit.publicLastNameHiddenHint" | transloco }}
+          </p>
+          @if (player.public_last_name_hidden_reason) {
+            <p class="text-sm text-gray-500 mb-4">
+              {{ "playerAdmin.edit.publicLastNameReasonLabel" | transloco }}:
+              {{ player.public_last_name_hidden_reason }}
+            </p>
+          }
+        } @else {
+          <p class="text-sm text-gray-500 mb-4">
+            {{ "playerAdmin.edit.publicLastNameVisibleHint" | transloco }}
+          </p>
+        }
+        @if (canShowPublicLastName && !confirmShowPublicLastName) {
+          <div class="mb-2">
+            <button
+              (click)="confirmShowPublicLastName = true"
+              class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+            >
+              {{ "playerAdmin.edit.publicLastNameShow" | transloco }}
+            </button>
+          </div>
+        }
+        @if (confirmShowPublicLastName) {
+          <div class="border border-amber-300 rounded p-4 bg-amber-50 mb-2">
+            <p class="text-sm font-semibold text-amber-900 mb-1">
+              {{ "playerAdmin.edit.publicLastNameShowConfirm" | transloco }}
+            </p>
+            <p class="text-sm text-amber-800 mb-4">
+              {{ "playerAdmin.edit.publicLastNameShowWarning" | transloco }}
+            </p>
+            <div class="flex gap-3">
+              <button
+                (click)="showPublicLastName()"
+                class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.publicLastNameShowYes" | transloco }}
+              </button>
+              <button
+                (click)="cancelShowPublicLastName()"
+                class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.cancel" | transloco }}
+              </button>
+            </div>
+          </div>
+        }
+        @if (canHidePublicLastName && !confirmHidePublicLastName) {
+          <div>
+            <button
+              (click)="confirmHidePublicLastName = true"
+              class="font-bold text-amber-700 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-amber-50 border-amber-400 rounded-[5px] cursor-pointer"
+            >
+              {{ "playerAdmin.edit.publicLastNameHide" | transloco }}
+            </button>
+          </div>
+        }
+        @if (confirmHidePublicLastName) {
+          <div class="border border-amber-300 rounded p-4 bg-amber-50">
+            <p class="text-sm font-semibold text-amber-900 mb-1">
+              {{ "playerAdmin.edit.publicLastNameHideConfirm" | transloco }}
+            </p>
+            <p class="text-sm text-amber-800 mb-4">
+              {{ "playerAdmin.edit.publicLastNameHideWarning" | transloco }}
+            </p>
+            <div class="mb-4">
+              <label class="block text-sm font-semibold text-amber-900 mb-1">{{
+                "playerAdmin.edit.publicLastNameReasonOptional" | transloco
+              }}</label>
+              <input
+                [(ngModel)]="hidePublicLastNameReason"
+                type="text"
+                maxlength="255"
+                [placeholder]="
+                  'playerAdmin.edit.publicLastNameReasonPlaceholder' | transloco
+                "
+                class="w-full xl:w-1/2 border border-amber-300 rounded-[5px] px-3 py-2 text-sm"
+              />
+            </div>
+            <div class="flex gap-3">
+              <button
+                (click)="hidePublicLastName()"
+                class="font-bold text-white leading-[17px] text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.publicLastNameHideYes" | transloco }}
+              </button>
+              <button
+                (click)="cancelHidePublicLastName()"
+                class="font-bold text-gray-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px] cursor-pointer"
+              >
+                {{ "playerAdmin.edit.cancel" | transloco }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (can("player_merge")) {
+      <div class="bg-white my-[5px] py-[15px] px-[30px]">
+        <div class="uppercase font-bold text-gray-400 text-sm mb-5">
+          {{ "playerAdmin.edit.mergeDuplicate" | transloco }}
+        </div>
+        <p class="text-sm text-gray-500 mb-4">
+          {{ "playerAdmin.edit.mergeDuplicateHint" | transloco }}
+        </p>
+        <a
+          [routerLink]="['/', 'verwaltung', 'spieler', player.id, 'duplikat']"
+          class="font-bold text-orange-600 leading-[17px] text-sm px-5 py-2.5 border bg-white hover:bg-orange-50 border-orange-400 rounded-[5px]"
+        >
+          {{ "playerAdmin.edit.mergeDuplicate" | transloco }}
+        </a>
+      </div>
+    }
+  }
+</ng-template>
 
 <!-- Sperrformular, einmal beschrieben. Aufgerufen an einer Lizenz (dort
-       ist sie gesetzt) und im Abschnitt „Sperren" (dort wird sie gewaehlt
-       oder weggelassen). -->
+     ist sie gesetzt) und im Reiter „Sperren" (dort wird sie gewaehlt
+     oder weggelassen). -->
 <ng-template #suspendForm let-license="license" let-showPicker="showPicker">
   <div class="border border-amber-300 rounded p-3 bg-amber-50 my-2">
     @if (showPicker) {
@@ -1532,8 +1472,8 @@
         {{ "playerAdmin.edit.setupSuspension" | transloco }}
       </p>
       <!-- Die Lizenz bestimmt Mannschaft und Liga der Sperre. Ohne eine
-             bleibt nur „alle Wettbewerbe" -- genau die Sperre, die keine
-             Lizenz voraussetzt. -->
+           bleibt nur „alle Wettbewerbe" -- genau die Sperre, die keine
+           Lizenz voraussetzt. -->
       <div class="mb-2">
         <label class="block text-xs font-semibold text-amber-800 mb-1">{{
           "playerAdmin.edit.suspendLicenseChoice" | transloco
@@ -1711,5 +1651,51 @@
         {{ "playerAdmin.edit.cancel" | transloco }}
       </button>
     </div>
+  </div>
+</ng-template>
+
+<!-- Ein Eintrag der Hauptvereinsliste, fuer den laufenden und die
+     eingeklappten frueheren gleich. -->
+<ng-template #homeClubEntry let-club>
+  <div>
+    <p class="font-bold">
+      {{ getClubNameById(club.club_id) }} ({{ club.club_id }})
+    </p>
+    <p>
+      @if (club.created_at) {
+        {{ "playerAdmin.edit.from" | transloco }}
+        {{ club.created_at | safeDate }}
+      }
+      @if (club.valid_until) {
+        {{ "playerAdmin.edit.until" | transloco }}
+        {{ club.valid_until | safeDate }}
+      }
+      @if (!club.valid_until) {
+        {{ "playerAdmin.edit.untilToday" | transloco }}
+      }
+    </p>
+    <!-- Handelnde Konten. Fehlt der Name (Konto gelöscht
+         oder ohne hinterlegten Namen), bleibt die Konto-ID als
+         belastbare Angabe stehen. -->
+    @if (club.created_by_name || club.created_by) {
+      <p class="text-sm text-fb-gray-500">
+        {{ "playerAdmin.edit.homeClubSetBy" | transloco }}
+        {{
+          club.created_by_name ||
+            ("playerAdmin.edit.unknownActor"
+              | transloco: { id: club.created_by })
+        }}
+      </p>
+    }
+    @if (club.valid_set_by_name || club.valid_set_by) {
+      <p class="text-sm text-fb-gray-500">
+        {{ "playerAdmin.edit.homeClubEndedBy" | transloco }}
+        {{
+          club.valid_set_by_name ||
+            ("playerAdmin.edit.unknownActor"
+              | transloco: { id: club.valid_set_by })
+        }}
+      </p>
+    }
   </div>
 </ng-template>

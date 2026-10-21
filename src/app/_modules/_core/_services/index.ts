@@ -2,6 +2,7 @@ export { LeagueService } from './league.service';
 export { ClubService } from './club.service';
 export { MetaService } from './meta.service';
 export { GameService } from './game.service';
+export { GameShotService } from './game-shot.service';
 export type {
   GameSchedulingConflict,
   SecretaryLicenseList,
@@ -44,3 +45,5 @@ export * from './proceeding-proposal.service';
 export * from './live-stream.service';
 export * from './streaming.service';
 export * from './youtube.service';
+export * from './game-stats.service';
+export * from './youtube-iframe-api.service';

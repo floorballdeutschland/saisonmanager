@@ -29,7 +29,9 @@
         >
           <div>
             <div class="text-sm font-bold flex flex-wrap items-center gap-2">
-              <span>{{ candidate.home_team }} – {{ candidate.guest_team }}</span>
+              <span
+                >{{ candidate.home_team }} – {{ candidate.guest_team }}</span
+              >
               @if (candidate.assigned_as_coach) {
                 <span
                   class="text-xs font-bold uppercase px-2 py-0.5 rounded-[5px] border border-black"
@@ -56,6 +58,20 @@
                 ) {
                   {{ referee.name }}{{ last ? "" : " / " }}
                 }
+                @if (candidate.unrated_referee_names?.length) {
+                  ·
+                  {{
+                    "refereeObservation.coach.unrated"
+                      | transloco
+                        : { names: candidate.unrated_referee_names!.join(", ") }
+                  }}
+                }
+              } @else if (candidate.unrated_referee_names?.length) {
+                {{
+                  "refereeObservation.coach.onlyUnrated"
+                    | transloco
+                      : { names: candidate.unrated_referee_names!.join(", ") }
+                }}
               } @else {
                 {{ "refereeObservation.coach.noReferees" | transloco }}
               }

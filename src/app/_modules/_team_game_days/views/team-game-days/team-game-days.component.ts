@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { NotificationService, TeamService } from '@floorball/core';
-import { TeamGameDay, TeamGameDayTeam } from '@floorball/types';
+import {
+  CONFIRMATION_COMMENT_MAX_LENGTH,
+  TeamGameDay,
+  TeamGameDayTeam,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './team-game-days.component.html',
@@ -25,6 +29,9 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
   confirmingKey: string | null = null;
   rejectingKey: string | null = null;
   rejectAnswers: Record<number, boolean | null> = {};
+  // Freiwillige Anmerkung zum Einspruch, geht mit der Meldung an die SBK.
+  rejectComment = '';
+  readonly commentMaxLength = CONFIRMATION_COMMENT_MAX_LENGTH;
 
   private _destroy$ = new Subject<void>();
 
@@ -72,12 +79,14 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
   startReject(gd: TeamGameDay, team: TeamGameDayTeam): void {
     this.rejectingKey = this.key(gd, team);
     this.rejectAnswers = {};
+    this.rejectComment = '';
     gd.checklist_items.forEach((i) => (this.rejectAnswers[i.id] = null));
   }
 
   cancelReject(): void {
     this.rejectingKey = null;
     this.rejectAnswers = {};
+    this.rejectComment = '';
   }
 
   setAnswer(itemId: number, value: boolean): void {
@@ -101,7 +110,7 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
       item_id: i.id,
       answer: this.rejectAnswers[i.id] as boolean,
     }));
-    this._submit(gd, team, false, answers);
+    this._submit(gd, team, false, answers, this.rejectComment.trim() || null);
   }
 
   formatDate(iso: string): string {
@@ -128,13 +137,15 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
     gd: TeamGameDay,
     team: TeamGameDayTeam,
     properly: boolean,
-    answers?: { item_id: number; answer: boolean }[]
+    answers?: { item_id: number; answer: boolean }[],
+    comment: string | null = null
   ): void {
     this.confirmingKey = this.key(gd, team);
     this._teamService
       .confirmTeamGameDay(gd.id, team.team_id, {
         properly_conducted: properly,
         answers,
+        comment,
       })
       .pipe(takeUntil(this._destroy$))
       .subscribe({
@@ -150,6 +161,7 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
                           confirmed_at: res.confirmed_at,
                           properly_conducted: res.properly_conducted,
                           checklist_answers: res.checklist_answers,
+                          comment: res.comment,
                         }
                       : t
                   ),
@@ -159,6 +171,7 @@ export class TeamGameDaysComponent implements OnInit, OnDestroy {
           this.confirmingKey = null;
           this.rejectingKey = null;
           this.rejectAnswers = {};
+          this.rejectComment = '';
           this._cdr.markForCheck();
           this._notificationService.success(
             properly ? 'Spieltag bestätigt.' : 'Meldung gespeichert.',

@@ -11865,6 +11865,12 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             weiteres Projekt stell einfach einen weiteren Antrag.
           </div>
           <div class="note">
+            Alle Endpunkte antworten mit JSON, auch ohne
+            <code>Accept</code>-Header. Kalender- und Tabellenexporte wählst du
+            über die Endung (<code>.ics</code>, <code>.xlsx</code>,
+            <code>.csv</code>).
+          </div>
+          <div class="note">
             <strong>Was ein neuer Zugang mitbringt.</strong> Die Daten kommen
             mit zehn Minuten Verzögerung zum Echtbestand, Ergebnisse laufender
             Spiele bleiben in dieser Zeit ausgeblendet. Der Schlüssel startet
@@ -11971,7 +11977,10 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
                     /api/v2/game_operations/by_shortname/:name
                   </td>
                   <td>
-                    Spielbetriebsstelle nach Kurznamen (z. B. <code>fvd</code>)
+                    Spielbetriebsstelle nach ihrem Pfad, also dem Feld
+                    <code>path</code> aus <code>init</code> (z. B.
+                    <code>fd</code>, <code>ost</code>), nicht nach
+                    <code>short_name</code>. Unbekannt: <code>404</code>
                   </td>
                 </tr>
               </tbody>
@@ -12114,7 +12123,12 @@ curl -H "X-Api-Key: DEIN_SCHLUESSEL" \
                 <tr>
                   <td><span class="method get">GET</span></td>
                   <td class="path">/api/v2/referees/:lizenznummer/games</td>
-                  <td>Gepfiffene Spiele (optional <code>?season_id=</code>)</td>
+                  <td>
+                    Gepfiffene Spiele, neueste zuerst (optional
+                    <code>?season_id=</code>): Spielnummer, Datum, Teams, Liga
+                    mit <code>league_id</code>, Saison und Ergebnis. Unbekannte
+                    Lizenznummer: <code>404</code>
+                  </td>
                 </tr>
               </tbody>
             </table>
