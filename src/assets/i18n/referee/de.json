@@ -32,7 +32,7 @@
     "emailReadOnlyLink": "Zu „Mein Konto“",
     "emailDiverged": "Hinweis: Dein Login läuft aktuell über {{accountEmail}}. Sobald du die Adresse unter „Mein Konto“ änderst und bestätigst, werden beide Adressen zusammengeführt.",
     "sectionExclusions": "Vereins-Ausschlüsse",
-    "exclusionsHint": "Vereine, für deren Spiele du nicht angesetzt werden möchtest. Dein eigener Verein steht immer auf der Liste. Weitere Vereine kannst du mit einer kurzen Begründung bei der Ansetzung beantragen, ebenso die Streichung eines beantragten Vereins. Die Liste ist ein Hinweis für die Ansetzung, keine technische Sperre.",
+    "exclusionsHint": "Vereine, für deren Spiele du nicht angesetzt werden möchtest. Dein eigener Verein steht immer auf der Liste. Weitere Vereine kannst du mit einer kurzen Begründung bei der RSK von Floorball Deutschland beantragen, ebenso die Streichung eines beantragten Vereins. Die Liste ist ein Hinweis für die Ansetzung, keine technische Sperre.",
     "exclusionOwnClub": "Eigener Verein",
     "exclusionAdd": "Verein beantragen",
     "exclusionRequestRemoval": "Streichung beantragen",
@@ -206,7 +206,7 @@
     "gameDayConfirmed": "Spieltag bestätigt.",
     "gameDayReportSaved": "Meldung gespeichert.",
     "gameDaySaveError": "Speichern fehlgeschlagen.",
-    "exclusionRequested": "Antrag an die Ansetzung übermittelt.",
+    "exclusionRequested": "Antrag an die RSK von Floorball Deutschland übermittelt.",
     "correctionRequested": "Korrekturantrag an deinen Landesverband übermittelt.",
     "shareContactSaveError": "Die Einstellung konnte nicht gespeichert werden."
   }
