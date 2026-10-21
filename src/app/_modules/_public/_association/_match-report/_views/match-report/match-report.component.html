@@ -132,9 +132,9 @@
                       isGameStatusActive(index, 'game') > 0;
                     else listButton
                   "
-                  (handleSubmit)="handleGameStatusChange(statusOption.key)"
+                  (handleSubmit)="requestGameStatusChange(statusOption.key)"
                   [title]="statusOption.confirmationTitle"
-                  [content]="statusOption.confirmationContent"
+                  [content]="statusConfirmationContent(statusOption)"
                   [submitButtonTitle]="statusOption.confirmationButton"
                 >
                   <ng-container *ngIf="false; else listButton"> </ng-container>
@@ -221,6 +221,7 @@
           [game]="game"
           [additionalFields]="additionalFields"
           [nextStatusOption]="gameStatusOptions[3]"
+          [canOverrideSignatures]="!!canCheckGame()"
           (handleReload)="reloadGame()"
           (closeMatchRecord)="closeMatchRecord()"
           (handleSbbScroll)="scrollToSbbNavigation()"
@@ -366,15 +367,26 @@
 
         <ng-template #uploadForm>
           <p class="text-sm text-gray-600 mb-4">
-            Bitte lade einen Scan oder ein Foto des physischen
-            Spielberichtsbogens hoch (PDF, PNG oder JPEG, max. 5 MB).
+            Bitte lade einen Scan des physischen Spielberichtsbogens hoch.
           </p>
         </ng-template>
+
+        <p class="text-sm mb-1">
+          <strong
+            >Nur PDF-Dateien bis {{ pdfUploadMaxMb }} MB. Fotos werden nicht
+            mehr angenommen.</strong
+          >
+        </p>
+        <p class="text-sm text-gray-600 mb-4">
+          Ein PDF erstellst du mit dem Handy über eine Scan-App (z. B. „Dokument
+          scannen“ in der Dateien- oder Notizen-App) oder am Rechner über
+          „Drucken“ und „Als PDF speichern“.
+        </p>
 
         <div class="flex flex-col gap-3 max-w-md">
           <input
             type="file"
-            accept="application/pdf,image/png,image/jpeg"
+            [accept]="pdfUploadAccept"
             (change)="onScanFileSelected($event)"
             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
           />
@@ -506,3 +518,81 @@
     </div>
   </div>
 </div>
+
+<!--
+  Tabletmodus (fe#344): Frage vor dem Abschließen, nur wenn für das Spiel
+  Schüsse am Tablet erfasst wurden. Gleiches Rahmenmuster wie das Fenster des
+  Spieltagsberichts oben.
+-->
+@if (tabletCompleteVisible) {
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tablet-complete-title"
+    data-testid="tablet-complete-dialog"
+    class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
+  >
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="bg-white rounded-[5px] max-w-lg w-full shadow-xl p-6">
+        <h2 id="tablet-complete-title" class="text-xl font-bold mb-2">
+          {{ "tablet.complete.title" | transloco }}
+        </h2>
+        <p class="text-sm text-fb-gray-400 mb-5">
+          {{ "tablet.complete.content" | transloco }}
+        </p>
+        @if (tabletChecking) {
+          <p class="text-sm mb-5" data-testid="tablet-complete-checking">
+            {{ "tablet.complete.checking" | transloco }}
+          </p>
+        } @else if (tabletUnsent > 0) {
+          <div
+            class="rounded-md border border-red-300 bg-red-50 p-4 text-red-800 mb-5"
+            role="alert"
+            data-testid="tablet-complete-unsent"
+          >
+            <p class="text-sm font-bold">
+              {{
+                "tablet.complete.unsent" | transloco: { count: tabletUnsent }
+              }}
+            </p>
+            <button
+              type="button"
+              class="mt-2 px-4 py-2 text-sm font-bold border border-red-700 rounded-[5px]"
+              (click)="sendPendingShots()"
+            >
+              {{ "tablet.complete.retry" | transloco }}
+            </button>
+          </div>
+        }
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            data-testid="tablet-complete-yes"
+            [disabled]="tabletCompleteSaving || tabletChecking"
+            (click)="answerTabletComplete(true)"
+            class="px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] hover:bg-fb-gray-500 disabled:opacity-50"
+          >
+            {{ "tablet.complete.yes" | transloco }}
+          </button>
+          <button
+            type="button"
+            data-testid="tablet-complete-no"
+            [disabled]="tabletCompleteSaving || tabletChecking"
+            (click)="answerTabletComplete(false)"
+            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          >
+            {{ "tablet.complete.no" | transloco }}
+          </button>
+          <button
+            type="button"
+            [disabled]="tabletCompleteSaving"
+            (click)="cancelTabletComplete()"
+            class="px-5 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-50"
+          >
+            {{ "tablet.complete.cancel" | transloco }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

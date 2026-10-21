@@ -62,6 +62,7 @@
       "
       [events]="game.events || []"
       [requestedLicensePlayable]="game.requested_license_playable === true"
+      [maxPlayers]="game.max_lineup_players ?? null"
     ></fb-team-squad>
   }
 

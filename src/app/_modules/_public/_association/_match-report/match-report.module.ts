@@ -9,6 +9,7 @@ import { OverlayLinksModule } from '@floorball/overlay-links';
 import * as Views from './_views';
 import * as Components from './_components';
 import { MatchEventFormModule } from './_components/match-event-form/match-event-form.module';
+import { TabletCaptureModule } from './_components/tablet-capture/tablet-capture.module';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { MatchEventFormModule } from './_components/match-event-form/match-event
     UikitPlayerModule,
     FormsModule,
     MatchEventFormModule,
+    TabletCaptureModule,
     OverlayLinksModule,
   ],
 })

@@ -21,11 +21,20 @@ import {
 } from '@floorball/types';
 import {
   GameService,
+  GameShotService,
   LeagueService,
   NotificationService,
   SessionService,
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
+import { missingSignatureLabels } from 'src/app/_helpers/_utils/missing-signatures';
+import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
+import {
+  checkPdfUpload,
+  PDF_UPLOAD_MAX_MB,
+  PDF_UPLOAD_REJECTED_MESSAGE,
+  PDF_UPLOAD_ACCEPT,
+} from 'src/app/_helpers/_utils/pdf-upload';
 
 @Component({
   selector: 'fb-match-report',
@@ -117,18 +126,35 @@ export class MatchReportComponent implements OnInit, OnChanges {
   // nicht, sonst verdeckte die Zusammenfassung eine gerade getroffene Auswahl.
   public checklistConfirmOnly = false;
 
+  // Tabletmodus (fe#344): Frage „Schüsse vollständig erfasst?" vor dem
+  // Abschließen, nur bei Spielen mit Tablet-Daten. `tabletCompleteAnswered`
+  // gilt für genau einen Abschlussversuch und wird danach zurückgesetzt.
+  public tabletCompleteVisible = false;
+  public tabletCompleteSaving = false;
+  // Vor der Frage wird übertragen, was dieses Gerät noch puffert. Bleibt dabei
+  // etwas liegen, warnt das Fenster: Nach dem Abschluss nimmt der Server es
+  // nicht mehr an.
+  public tabletChecking = false;
+  public tabletUnsent = 0;
+  private _tabletCompleteAnswered = false;
+
   // scan upload
   public existingScan: GameScan | null = null;
   public selectedScanFile: File | null = null;
+  public readonly pdfUploadAccept = PDF_UPLOAD_ACCEPT;
+  public readonly pdfUploadMaxMb = PDF_UPLOAD_MAX_MB;
   public scanUploading = false;
   public scanUploadError = '';
+  private _scanSelection = 0;
 
   constructor(
     private _leagueService: LeagueService,
     private _sessionService: SessionService,
     private _gameService: GameService,
     private _notificationService: NotificationService,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private _gameShotService: GameShotService,
+    private _shotSync: TabletShotSyncService
   ) {}
 
   ngOnInit() {
@@ -147,6 +173,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
   handleGameChange(game: SimpleChange) {
     if (game.currentValue.id !== game.previousValue?.id) {
       this.appGameStatus = this.game.game_status;
+      // Die Abschlussfrage gehört zum vorigen Spiel.
+      this.tabletCompleteVisible = false;
+      this.tabletCompleteSaving = false;
+      this.tabletChecking = false;
+      this.tabletUnsent = 0;
+      this._tabletCompleteAnswered = false;
     }
 
     // Vor dem ersten Abschnitt gibt es noch keinen current_period_title. Die
@@ -172,6 +204,24 @@ export class MatchReportComponent implements OnInit, OnChanges {
     const maxStatusIndex = this.gameStatusOptions.findIndex(
       (item) => item.key === this.game?.game_status
     );
+
+    if (
+      statusIndex > maxStatusIndex &&
+      newStatus === this.MATCH_RECORD_CLOSED &&
+      !this._tabletCompleteAnswered &&
+      (this.game.tablet_capture ||
+        this._shotSync.pendingCount(this.game.id) > 0)
+    ) {
+      this.tabletCompleteSaving = false;
+      this.tabletCompleteVisible = true;
+      this.tabletUnsent = 0;
+      if (this._shotSync.pendingCount(this.game.id) > 0) {
+        this.sendPendingShots();
+      }
+      this._cdr.markForCheck();
+      return;
+    }
+    this._tabletCompleteAnswered = false;
 
     if (statusIndex > maxStatusIndex) {
       this._gameService.setGameStatus(this.game.id, newStatus).subscribe({
@@ -263,7 +313,72 @@ export class MatchReportComponent implements OnInit, OnChanges {
     );
   }
 
+  /**
+   * Statuswechsel aus der Statusnavigation oben.
+   *
+   * Der Schritt „Kontrolle durch SBK“ geht dort denselben Weg wie der Knopf
+   * „Spiel abschließen“ in Schritt 3: erst die Unterschriften, dann die
+   * Checkliste, dann (im Tabletmodus) die Frage nach den Schüssen. Vorher rief
+   * die Navigation den Statuswechsel direkt auf und übersprang beides; die
+   * Checkliste fing dann erst die API mit ihrer Absage ab.
+   */
+  public requestGameStatusChange(newStatus: string): void {
+    if (newStatus === this.MATCH_RECORD_CLOSED && this._advancesTo(newStatus)) {
+      this.closeMatchRecord();
+      return;
+    }
+    this.handleGameStatusChange(newStatus);
+  }
+
+  /**
+   * Text der Rückfrage in der Statusnavigation. Fehlen Unterschriften, sagt sie
+   * das schon hier: dem Verein, dass der Abschluss so nicht geht, der SBK, dass
+   * sie ohne die Haken abschließt.
+   */
+  public statusConfirmationContent(option: {
+    key: string;
+    confirmationContent?: string;
+  }): string {
+    const missing = missingSignatureLabels(this.additionalFields);
+    if (option.key !== this.MATCH_RECORD_CLOSED || missing.length === 0) {
+      return option.confirmationContent ?? '';
+    }
+    if (this.canCheckGame()) {
+      return (
+        `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
+        'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
+        'dabei leer. Möchtest du wirklich fortfahren?'
+      );
+    }
+    return (
+      `Es fehlen noch Unterschriften: ${missing.join(', ')}. Hake sie unter ` +
+      '„Spiel nachbereiten“ ab, erst dann kann der Spielbericht abgeschlossen werden.'
+    );
+  }
+
+  private _advancesTo(newStatus: string): boolean {
+    const index = (key: string | null | undefined) =>
+      this.gameStatusOptions.findIndex((item) => item.key === key);
+    return index(newStatus) > index(this.game?.game_status);
+  }
+
   public closeMatchRecord() {
+    // Zuerst die Unterschriften, vor Checkliste und Tablet-Frage: Wer den
+    // Bericht so nicht abschließen darf, soll nicht erst sechzehn Fragen
+    // beantworten, um dann abgewiesen zu werden. Die SBK hat den Abschluss
+    // ohne die Haken an beiden Einstiegen schon ausdrücklich bestätigt, für sie
+    // geht es hier weiter. Verbindlich bleibt die Prüfung der API.
+    const missing = missingSignatureLabels(this.additionalFields);
+    if (missing.length > 0 && !this.canCheckGame()) {
+      this._notificationService.error(
+        `Es fehlen noch Unterschriften: ${missing.join(', ')}. ` +
+          'Erst wenn alle Unterschriften abgehakt sind, kann der Spielbericht abgeschlossen werden.'
+      );
+      this.appGameStatus = this.AFTERGAME;
+      this._cdr.markForCheck();
+      return;
+    }
+
     if (
       this.game.checklist_active &&
       (this.game.checklist_items?.length ?? 0) > 0
@@ -371,6 +486,55 @@ export class MatchReportComponent implements OnInit, OnChanges {
     }
   }
 
+  /**
+   * Antwort auf „Schüsse vollständig erfasst?". Der Abschluss läuft auch dann
+   * weiter, wenn das Speichern der Antwort scheitert: Die Schussdaten sind
+   * eine Beta-Zugabe und dürfen den Spielbericht nicht aufhalten. Den Fehler
+   * meldet der ErrorInterceptor, ein 5xx geht zusätzlich an Sentry.
+   */
+  public answerTabletComplete(complete: boolean): void {
+    if (this.tabletCompleteSaving || this.tabletChecking) return;
+    this.tabletCompleteSaving = true;
+    const gameId = this.game.id;
+    const proceed = () => {
+      if (this.game?.id !== gameId) return;
+      this.tabletCompleteVisible = false;
+      this.tabletCompleteSaving = false;
+      this._tabletCompleteAnswered = true;
+      this._cdr.markForCheck();
+      this.handleGameStatusChange(this.MATCH_RECORD_CLOSED);
+    };
+    this._gameShotService.setTabletShotsComplete(gameId, complete).subscribe({
+      next: (response) => {
+        this.game.tablet_shots_complete = response.tablet_shots_complete;
+        proceed();
+      },
+      error: (err) => {
+        if (err?.status >= 500) Sentry.captureException(err);
+        proceed();
+      },
+    });
+  }
+
+  /** Ausdrücklich angestoßen, also auch nach einer früheren Absage. */
+  public sendPendingShots(): void {
+    const gameId = this.game.id;
+    this.tabletChecking = true;
+    this._shotSync.retry(gameId).then(() => {
+      if (this.game?.id !== gameId) return;
+      this.tabletChecking = false;
+      this.tabletUnsent = this._shotSync.pendingCount(gameId);
+      this._cdr.markForCheck();
+    });
+  }
+
+  public cancelTabletComplete(): void {
+    this.tabletCompleteVisible = false;
+    this.tabletCompleteSaving = false;
+    this.appGameStatus = this.game.game_status;
+    this._cdr.markForCheck();
+  }
+
   public finalizeGame() {
     this.handleGameStatusChange(this.FINALIZED);
   }
@@ -398,20 +562,31 @@ export class MatchReportComponent implements OnInit, OnChanges {
     });
   }
 
-  public onScanFileSelected(event: Event) {
+  public async onScanFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    this.selectedScanFile = input.files?.[0] ?? null;
+    const file = input.files?.[0] ?? null;
     this.scanUploadError = '';
+    this.selectedScanFile = null;
+    if (!file) return;
+
+    // Die Kennung wird asynchron gelesen. Wählt jemand in der Zwischenzeit
+    // eine andere Datei, gilt nur die letzte Auswahl.
+    const selection = ++this._scanSelection;
+    const acceptable = await checkPdfUpload(file);
+    if (selection !== this._scanSelection) return;
+
+    if (!acceptable) {
+      this.scanUploadError = PDF_UPLOAD_REJECTED_MESSAGE;
+      // Sonst löst dieselbe Datei beim erneuten Auswählen kein change aus.
+      input.value = '';
+    } else {
+      this.selectedScanFile = file;
+    }
+    this._cdr.markForCheck();
   }
 
   public uploadScan() {
     if (!this.selectedScanFile) return;
-
-    const maxSize = 5 * 1024 * 1024;
-    if (this.selectedScanFile.size > maxSize) {
-      this.scanUploadError = 'Die Datei ist zu groß (max. 5 MB).';
-      return;
-    }
 
     this.scanUploading = true;
     this.scanUploadError = '';
@@ -425,9 +600,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
           this.scanUploading = false;
           this._cdr.markForCheck();
         },
-        error: (err) => {
-          this.scanUploadError =
-            err?.error?.errors?.join(', ') ?? 'Upload fehlgeschlagen.';
+        // Bewusst ohne eigene Meldung, wie beim Berichtsformular: Der
+        // ErrorInterceptor zeigt die Absage der API (`errors`) bereits an, eine
+        // Zeile am Feld wiederholte sie nur. Inline steht allein die
+        // Vorprüfung aus onScanFileSelected, die keine Anfrage auslöst.
+        error: () => {
           this.scanUploading = false;
           this._cdr.markForCheck();
         },

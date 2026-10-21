@@ -66,80 +66,6 @@
 
         <select
           class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterFieldSize"
-          (ngModelChange)="applyFilters()"
-        >
-          @for (opt of fieldSizeOptions; track opt) {
-            <option [ngValue]="opt.value">
-              {{ opt.label }}
-            </option>
-          }
-        </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterFemale"
-          (ngModelChange)="applyFilters()"
-        >
-          <option [ngValue]="null">
-            {{ "licenseAdmin.globalList.genderBoth" | transloco }}
-          </option>
-          <option [ngValue]="false">
-            {{ "licenseAdmin.globalList.genderMale" | transloco }}
-          </option>
-          <option [ngValue]="true">
-            {{ "licenseAdmin.globalList.genderFemale" | transloco }}
-          </option>
-        </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterAgeGroup"
-          (ngModelChange)="applyFilters()"
-        >
-          @for (opt of ageGroupOptions; track opt) {
-            <option [ngValue]="opt.value">
-              {{ opt.label }}
-            </option>
-          }
-        </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterLeagueClassId"
-          (ngModelChange)="applyFilters()"
-        >
-          @for (opt of leagueClassOptions; track opt) {
-            <option [ngValue]="opt.value">
-              {{ opt.label }}
-            </option>
-          }
-        </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterLeagueType"
-          (ngModelChange)="applyFilters()"
-        >
-          <option [ngValue]="null">
-            {{ "licenseAdmin.globalList.allLeagueModes" | transloco }}
-          </option>
-          <option value="league">
-            {{ "licenseAdmin.globalList.league" | transloco }}
-          </option>
-          <option value="cup">
-            {{ "licenseAdmin.globalList.cup" | transloco }}
-          </option>
-          <option value="playoff">
-            {{ "licenseAdmin.globalList.playoff" | transloco }}
-          </option>
-          <option value="champ">
-            {{ "licenseAdmin.globalList.champ" | transloco }}
-          </option>
-        </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
           [(ngModel)]="filterStatusId"
           (ngModelChange)="applyFilters()"
         >
@@ -149,54 +75,140 @@
             </option>
           }
         </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterLicenseType"
-          (ngModelChange)="applyFilters()"
-        >
-          <option [ngValue]="null">
-            {{ "licenseAdmin.globalList.primaryAndSecondary" | transloco }}
-          </option>
-          <option value="primary">
-            {{ "licenseAdmin.globalList.onlyPrimary" | transloco }}
-          </option>
-          <option value="secondary">
-            {{ "licenseAdmin.globalList.onlySecondary" | transloco }}
-          </option>
-        </select>
-
-        <select
-          class="rounded border-gray-300 text-sm"
-          [(ngModel)]="filterGfRole"
-          (ngModelChange)="applyFilters()"
-        >
-          <option [ngValue]="null">
-            {{ "licenseAdmin.globalList.filterAllGfRoles" | transloco }}
-          </option>
-          <option value="erstlizenz">
-            {{ "licenseAdmin.globalList.onlyErstlizenz" | transloco }}
-          </option>
-          <option value="zweitlizenz">
-            {{ "licenseAdmin.globalList.onlyZweitlizenz" | transloco }}
-          </option>
-          <option value="none">
-            {{ "licenseAdmin.globalList.onlyWithoutGfRole" | transloco }}
-          </option>
-        </select>
-
-        <label
-          class="flex items-center gap-2 text-sm cursor-pointer col-span-2 md:col-span-1"
-        >
-          <input
-            type="checkbox"
-            class="rounded border-gray-300"
-            [(ngModel)]="filterExpressOnly"
-            (ngModelChange)="applyFilters()"
-          />
-          {{ "licenseAdmin.globalList.onlyExpress" | transloco }}
-        </label>
       </div>
+
+      <!-- Seltene Filter. Startet offen, wenn eine gemerkte Auswahl hier etwas
+           setzt (moreFiltersOpen), der Zaehler zeigt es auch zugeklappt. -->
+      <fb-collapsible
+        class="block mb-3"
+        [label]="'licenseAdmin.globalList.moreFilters' | transloco"
+        [count]="moreFiltersCount"
+        [(open)]="moreFiltersOpen"
+        data-testid="more-filters"
+      >
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterFieldSize"
+            (ngModelChange)="applyFilters()"
+          >
+            @for (opt of fieldSizeOptions; track opt) {
+              <option [ngValue]="opt.value">
+                {{ opt.label }}
+              </option>
+            }
+          </select>
+
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterFemale"
+            (ngModelChange)="applyFilters()"
+          >
+            <option [ngValue]="null">
+              {{ "licenseAdmin.globalList.genderBoth" | transloco }}
+            </option>
+            <option [ngValue]="false">
+              {{ "licenseAdmin.globalList.genderMale" | transloco }}
+            </option>
+            <option [ngValue]="true">
+              {{ "licenseAdmin.globalList.genderFemale" | transloco }}
+            </option>
+          </select>
+
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterAgeGroup"
+            (ngModelChange)="applyFilters()"
+          >
+            @for (opt of ageGroupOptions; track opt) {
+              <option [ngValue]="opt.value">
+                {{ opt.label }}
+              </option>
+            }
+          </select>
+
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterLeagueClassId"
+            (ngModelChange)="applyFilters()"
+          >
+            @for (opt of leagueClassOptions; track opt) {
+              <option [ngValue]="opt.value">
+                {{ opt.label }}
+              </option>
+            }
+          </select>
+
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterLeagueType"
+            (ngModelChange)="applyFilters()"
+          >
+            <option [ngValue]="null">
+              {{ "licenseAdmin.globalList.allLeagueModes" | transloco }}
+            </option>
+            <option value="league">
+              {{ "licenseAdmin.globalList.league" | transloco }}
+            </option>
+            <option value="cup">
+              {{ "licenseAdmin.globalList.cup" | transloco }}
+            </option>
+            <option value="playoff">
+              {{ "licenseAdmin.globalList.playoff" | transloco }}
+            </option>
+            <option value="champ">
+              {{ "licenseAdmin.globalList.champ" | transloco }}
+            </option>
+          </select>
+
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterLicenseType"
+            (ngModelChange)="applyFilters()"
+          >
+            <option [ngValue]="null">
+              {{ "licenseAdmin.globalList.primaryAndSecondary" | transloco }}
+            </option>
+            <option value="primary">
+              {{ "licenseAdmin.globalList.onlyPrimary" | transloco }}
+            </option>
+            <option value="secondary">
+              {{ "licenseAdmin.globalList.onlySecondary" | transloco }}
+            </option>
+          </select>
+
+          <select
+            class="rounded border-gray-300 text-sm"
+            [(ngModel)]="filterGfRole"
+            (ngModelChange)="applyFilters()"
+          >
+            <option [ngValue]="null">
+              {{ "licenseAdmin.globalList.filterAllGfRoles" | transloco }}
+            </option>
+            <option value="erstlizenz">
+              {{ "licenseAdmin.globalList.onlyErstlizenz" | transloco }}
+            </option>
+            <option value="zweitlizenz">
+              {{ "licenseAdmin.globalList.onlyZweitlizenz" | transloco }}
+            </option>
+            <option value="none">
+              {{ "licenseAdmin.globalList.onlyWithoutGfRole" | transloco }}
+            </option>
+          </select>
+
+          <label
+            class="flex items-center gap-2 text-sm cursor-pointer col-span-2 md:col-span-1"
+          >
+            <input
+              type="checkbox"
+              class="rounded border-gray-300"
+              [(ngModel)]="filterExpressOnly"
+              (ngModelChange)="applyFilters()"
+            />
+            {{ "licenseAdmin.globalList.onlyExpress" | transloco }}
+          </label>
+        </div>
+      </fb-collapsible>
 
       <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
         <span class="text-sm text-gray-500">
@@ -522,6 +534,27 @@
                     [ngClass]="statusBadgeClass(e.license_status_id)"
                     >{{ e.license_status }}</span
                   >
+                  @if (
+                    isInvalid(e) && (e.status_reason || e.status_changed_at)
+                  ) {
+                    <!-- Warum die Lizenz nicht mehr gilt (api#787). -->
+                    <span
+                      data-testid="invalid-reason"
+                      class="mt-1 block text-[11px] text-fb-gray-500"
+                      [title]="e.status_changed_by_name || ''"
+                    >
+                      {{ e.status_reason }}
+                      @if (e.status_reason && e.status_changed_at) {
+                        ·
+                      }
+                      @if (e.status_changed_at) {
+                        {{
+                          e.status_changed_at
+                            | date: "dd.MM.yyyy" : "Europe/Berlin"
+                        }}
+                      }
+                    </span>
+                  }
                   @if (e.suspension; as sperre) {
                     <!-- Die Sperre steht am Status, nicht in einer eigenen
                          Spalte: Sie IST der Status dieser Zeile, und der
@@ -701,7 +734,9 @@
                     <span class="text-gray-300">–</span>
                   }
                 </td>
-                <!-- Dokumentenstatus -->
+                <!-- Dokumentenstatus. Bei einer ungueltigen Lizenz (geloescht,
+                     Transfer, ignoriert) ist ein fehlendes Dokument kein
+                     Handlungsbedarf mehr; der Marker bleibt dann grau. -->
                 <td class="px-4 py-3 whitespace-nowrap">
                   <div class="flex gap-1.5 items-center">
                     <!-- Elternzustimmung (nur wenn die Liga sie verlangt) -->
@@ -750,6 +785,7 @@
                         <span
                           class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
                           [ngClass]="
+                            !isInvalid(e) &&
                             e.documents?.parental_consent === false
                               ? 'bg-red-100 text-red-600'
                               : 'bg-gray-100 text-gray-400'
@@ -827,7 +863,7 @@
                         <span
                           class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px]"
                           [ngClass]="
-                            e.documents?.[docType] === false
+                            !isInvalid(e) && e.documents?.[docType] === false
                               ? 'bg-red-100 text-red-600'
                               : 'bg-gray-100 text-gray-400'
                           "

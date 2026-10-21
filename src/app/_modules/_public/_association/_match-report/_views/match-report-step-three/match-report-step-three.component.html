@@ -173,8 +173,21 @@
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Unterschriften</h2>
       @if (additionalFields) {
+        <p class="mt-2">
+          <strong
+            >Pflichtfelder: Der Spielbericht kann erst abgeschlossen werden,
+            wenn alle Unterschriften abgehakt sind.</strong
+          >
+          Nach dem Abschluss lassen sie sich nicht mehr nachtragen.
+        </p>
         <div class="grid md:grid-cols-2 gap-4 mt-4 lg:mt-8">
-          <div>
+          <div
+            [ngClass]="{
+              'rounded ring-2 ring-red-400 p-2':
+                isSignatureMissing('time_keeper_signed'),
+            }"
+            [attr.data-signature]="'time_keeper_signed'"
+          >
             <fb-match-event-form
               type="timekeepersigned"
               team="both"
@@ -183,8 +196,20 @@
               (updatePeriod)="(null)"
               [match]="game"
             ></fb-match-event-form>
+            @if (isSignatureMissing("time_keeper_signed")) {
+              <p class="text-sm font-bold text-red-600 mt-1">
+                Pflichtfeld: Unterschrift fehlt noch
+              </p>
+            }
           </div>
-          <div>
+          <div
+            [ngClass]="{
+              'rounded ring-2 ring-red-400 p-2': isSignatureMissing(
+                'record_keeper_signed'
+              ),
+            }"
+            [attr.data-signature]="'record_keeper_signed'"
+          >
             <fb-match-event-form
               type="recordkeepersigned"
               team="both"
@@ -193,8 +218,20 @@
               (updatePeriod)="(null)"
               [match]="game"
             ></fb-match-event-form>
+            @if (isSignatureMissing("record_keeper_signed")) {
+              <p class="text-sm font-bold text-red-600 mt-1">
+                Pflichtfeld: Unterschrift fehlt noch
+              </p>
+            }
           </div>
-          <div>
+          <div
+            [ngClass]="{
+              'rounded ring-2 ring-red-400 p-2': isSignatureMissing(
+                'home_captain_signed'
+              ),
+            }"
+            [attr.data-signature]="'home_captain_signed'"
+          >
             <fb-match-event-form
               type="captainsigned"
               team="home"
@@ -203,8 +240,20 @@
               (updatePeriod)="(null)"
               [match]="game"
             ></fb-match-event-form>
+            @if (isSignatureMissing("home_captain_signed")) {
+              <p class="text-sm font-bold text-red-600 mt-1">
+                Pflichtfeld: Unterschrift fehlt noch
+              </p>
+            }
           </div>
-          <div>
+          <div
+            [ngClass]="{
+              'rounded ring-2 ring-red-400 p-2': isSignatureMissing(
+                'guest_captain_signed'
+              ),
+            }"
+            [attr.data-signature]="'guest_captain_signed'"
+          >
             <fb-match-event-form
               type="captainsigned"
               team="guest"
@@ -213,8 +262,19 @@
               (updatePeriod)="(null)"
               [match]="game"
             ></fb-match-event-form>
+            @if (isSignatureMissing("guest_captain_signed")) {
+              <p class="text-sm font-bold text-red-600 mt-1">
+                Pflichtfeld: Unterschrift fehlt noch
+              </p>
+            }
           </div>
-          <div>
+          <div
+            [ngClass]="{
+              'rounded ring-2 ring-red-400 p-2':
+                isSignatureMissing('referee1_signed'),
+            }"
+            [attr.data-signature]="'referee1_signed'"
+          >
             <fb-match-event-form
               type="referee1signed"
               team="both"
@@ -223,8 +283,19 @@
               (updatePeriod)="(null)"
               [match]="game"
             ></fb-match-event-form>
+            @if (isSignatureMissing("referee1_signed")) {
+              <p class="text-sm font-bold text-red-600 mt-1">
+                Pflichtfeld: Unterschrift fehlt noch
+              </p>
+            }
           </div>
-          <div>
+          <div
+            [ngClass]="{
+              'rounded ring-2 ring-red-400 p-2':
+                isSignatureMissing('referee2_signed'),
+            }"
+            [attr.data-signature]="'referee2_signed'"
+          >
             <fb-match-event-form
               type="referee2signed"
               team="both"
@@ -233,6 +304,11 @@
               (updatePeriod)="(null)"
               [match]="game"
             ></fb-match-event-form>
+            @if (isSignatureMissing("referee2_signed")) {
+              <p class="text-sm font-bold text-red-600 mt-1">
+                Pflichtfeld: Unterschrift fehlt noch
+              </p>
+            }
           </div>
         </div>
       } @else {
@@ -350,16 +426,52 @@
   <div class="border-b-4 border-fb-gray-200">
     <div class="container mx-auto px-4 pb-16 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl mb-6">Eingabe abschließen</h2>
-      <fb-confirmation
-        (handleSubmit)="handleFinalize()"
-        [title]="nextStatusOption.confirmationTitle"
-        [content]="nextStatusOption.confirmationContent"
-        [submitButtonTitle]="nextStatusOption.confirmationButton"
-      >
-        <fb-button [fullWidth]="true" [variant]="'success'" [size]="'large'"
+      @if (signaturesComplete) {
+        <fb-confirmation
+          (handleSubmit)="handleFinalize()"
+          [title]="nextStatusOption.confirmationTitle"
+          [content]="nextStatusOption.confirmationContent"
+          [submitButtonTitle]="nextStatusOption.confirmationButton"
+        >
+          <fb-button [fullWidth]="true" [variant]="'success'" [size]="'large'"
+            >Spiel abschließen</fb-button
+          >
+        </fb-confirmation>
+      } @else if (canOverrideSignatures) {
+        <p
+          class="mb-4 rounded border border-yellow-400 bg-yellow-50 p-3"
+          data-testid="signatures-missing-sbk"
+        >
+          <strong
+            >Unterschriften fehlen: {{ missingSignatureLabels.join(", ") }}. Als
+            SBK kannst du trotzdem abschließen.</strong
+          >
+          Die Haken bleiben dabei leer.
+        </p>
+        <fb-confirmation
+          (handleSubmit)="handleFinalize()"
+          [title]="nextStatusOption.confirmationTitle"
+          [content]="overrideConfirmationContent"
+          submitButtonTitle="Trotzdem abschließen"
+        >
+          <fb-button [fullWidth]="true" [variant]="'warning'" [size]="'large'"
+            >Spiel ohne alle Unterschriften abschließen</fb-button
+          >
+        </fb-confirmation>
+      } @else {
+        <p class="mb-4 text-red-600" data-testid="signatures-missing">
+          <strong>Es fehlen noch Unterschriften:</strong>
+          {{ missingSignatureLabels.join(", ") }}. Hake sie oben unter
+          „Unterschriften“ ab, dann kannst du das Spiel abschließen.
+        </p>
+        <fb-button
+          [fullWidth]="true"
+          [variant]="'success'"
+          [size]="'large'"
+          [disabled]="true"
           >Spiel abschließen</fb-button
         >
-      </fb-confirmation>
+      }
     </div>
   </div>
 }

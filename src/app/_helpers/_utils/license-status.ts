@@ -17,11 +17,35 @@ export const LICENSE_STATUS_SUSPENDED = 9;
 export const LICENSE_STATUS_APPROVED = 1;
 
 /**
+ * Ungültige Lizenzen: gelöscht (4), ungültig wg. Transfer (6) und ignoriert
+ * (7). Die Verbandsübersicht fasst sie im Statusfilter zu „ungültig“
+ * zusammen (api#787).
+ */
+export const LICENSE_STATUS_DELETED = 4;
+export const LICENSE_STATUS_TRANSFER = 6;
+export const LICENSE_STATUS_IGNORED = 7;
+export const INVALID_LICENSE_STATUSES: readonly number[] = [
+  LICENSE_STATUS_DELETED,
+  LICENSE_STATUS_TRANSFER,
+  LICENSE_STATUS_IGNORED,
+];
+
+/** Ist die Lizenz gelöscht, wegen Transfer ungültig oder ignoriert? */
+export function isInvalidLicenseStatus(statusId?: number | null): boolean {
+  return INVALID_LICENSE_STATUSES.includes(Number(statusId));
+}
+
+/**
  * Farbklassen für das Statusabzeichen.
  *
  * `gesperrt` bekommt Rot wie die Ablehnung: Beides heißt, dass der Spieler
  * nicht spielberechtigt ist, und beides muss in einer langen Liste ins Auge
  * fallen.
+ *
+ * Die ungültigen bleiben in der grauen Familie (keine Spielberechtigung aus
+ * einem Grund, der niemanden mehr betrifft), aber dunkler als
+ * `zurückgezogen`: Seit die Verbandsübersicht sie zeigt (api#787), stehen
+ * beide nebeneinander und sollen sich auf einen Blick trennen lassen.
  */
 export function licenseStatusBadgeClass(statusId?: number | null): string {
   switch (Number(statusId)) {
@@ -33,6 +57,10 @@ export function licenseStatusBadgeClass(statusId?: number | null): string {
       return 'bg-red-100 text-red-800';
     case LICENSE_STATUS_SUSPENDED:
       return 'bg-red-100 text-red-800';
+    case LICENSE_STATUS_DELETED:
+    case LICENSE_STATUS_TRANSFER:
+    case LICENSE_STATUS_IGNORED:
+      return 'bg-stone-200 text-stone-700';
     default:
       return 'bg-gray-100 text-gray-800';
   }

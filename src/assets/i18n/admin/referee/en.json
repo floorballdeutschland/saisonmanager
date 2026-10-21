@@ -108,6 +108,7 @@
     "notFound": "Referee not found.",
     "exclusionsHeading": "Club exclusions",
     "exclusionsHint": "Clubs this person does not want to be assigned to. Their own club is always on the list. The list is a hint for the assigners, not a technical block.",
+    "exclusionsLoadFailed": "Exclusion list not available.",
     "exclusionOwnClub": "Own club",
     "exclusionRemove": "Remove",
     "exclusionAdd": "Add club",
@@ -121,7 +122,15 @@
     "feedbackAvgLine": "Avg. consistency:",
     "feedbackAvgCommunication": "Avg. communication:",
     "feedbackCount": "Responses:",
-    "feedbackBelowThreshold": "Ratings are shown from {{ min }} responses onwards (currently {{ count }})."
+    "feedbackBelowThreshold": "Ratings are shown from {{ min }} responses onwards (currently {{ count }}).",
+    "tabs": {
+      "label": "Referee profile sections",
+      "overview": "Overview",
+      "games": "Games",
+      "courses": "Courses",
+      "ratings": "Feedback & observations",
+      "exclusions": "Exclusions"
+    }
   },
   "edit": {
     "back": "← Back",
