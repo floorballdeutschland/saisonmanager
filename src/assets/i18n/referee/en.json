@@ -32,7 +32,7 @@
     "emailReadOnlyLink": "Go to “My account”",
     "emailDiverged": "Note: your login currently uses {{accountEmail}}. Once you change and confirm the address under “My account”, both addresses are merged.",
     "sectionExclusions": "Club exclusions",
-    "exclusionsHint": "Clubs whose games you do not want to be assigned to. Your own club is always on the list. You can request further clubs with a short reason, as well as the removal of a requested club. The list is a hint for the assigners, not a technical block.",
+    "exclusionsHint": "Clubs whose games you do not want to be assigned to. Your own club is always on the list. You can request further clubs from the Floorball Deutschland referee committee with a short reason, as well as the removal of a requested club. The list is a hint for the assigners, not a technical block.",
     "exclusionOwnClub": "Own club",
     "exclusionAdd": "Request a club",
     "exclusionRequestRemoval": "Request removal",
@@ -206,7 +206,7 @@
     "gameDayConfirmed": "Match day confirmed.",
     "gameDayReportSaved": "Report saved.",
     "gameDaySaveError": "Saving failed.",
-    "exclusionRequested": "Request sent to the assigners.",
+    "exclusionRequested": "Request sent to the Floorball Deutschland referee committee.",
     "correctionRequested": "Correction request sent to your state association.",
     "shareContactSaveError": "The setting could not be saved."
   }

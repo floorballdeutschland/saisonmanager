@@ -83,7 +83,7 @@ export class RefereeDetailComponent implements OnInit, OnDestroy {
   observationsFailed = false;
   observationDimensions = OBSERVATION_DIMENSIONS;
 
-  // Vereins-Ausschlussliste: nur für die Ansetzung sichtbar und pflegbar.
+  // Vereins-Ausschlussliste: nur für Admin und die RSK von FD sichtbar und pflegbar.
   canManageExclusions = false;
   exclusions: RefereeClubExclusion[] = [];
   exclusionRequests: RefereeClubExclusionRequest[] = [];
