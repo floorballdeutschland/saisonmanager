@@ -4,29 +4,39 @@
       {{ "refereeCourseAdmin.import.title" | transloco }}
     </h1>
 
-    <label
-      class="inline-flex items-center px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500 disabled:opacity-50"
-    >
-      <input
-        type="file"
-        [attr.aria-label]="'refereeCourseAdmin.import.uploadLabel' | transloco"
-        accept=".csv,text/csv"
-        class="hidden"
-        (change)="onFileSelected($event)"
-        [disabled]="uploading"
-      />
-      {{
-        (uploading
-          ? "refereeCourseAdmin.import.uploading"
-          : "refereeCourseAdmin.import.upload"
-        ) | transloco
-      }}
-    </label>
+    @if (canUpload) {
+      <label
+        class="inline-flex items-center px-5 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500 disabled:opacity-50"
+      >
+        <input
+          type="file"
+          [attr.aria-label]="
+            'refereeCourseAdmin.import.uploadLabel' | transloco
+          "
+          accept=".csv,text/csv"
+          class="hidden"
+          (change)="onFileSelected($event)"
+          [disabled]="uploading"
+        />
+        {{
+          (uploading
+            ? "refereeCourseAdmin.import.uploading"
+            : "refereeCourseAdmin.import.upload"
+          ) | transloco
+        }}
+      </label>
+    }
   </div>
 
-  <p class="text-fb-gray-600 mb-6">
-    {{ "refereeCourseAdmin.import.intro" | transloco }}
-  </p>
+  @if (canUpload) {
+    <p class="text-fb-gray-600 mb-6">
+      {{ "refereeCourseAdmin.import.intro" | transloco }}
+    </p>
+  } @else {
+    <p class="text-fb-gray-600 mb-6" data-test="import-disabled">
+      {{ "refereeCourseAdmin.import.disabled" | transloco }}
+    </p>
+  }
 
   @if (loading) {
     <div class="text-fb-gray-500">

@@ -5,6 +5,7 @@
     "uploading": "Uploading...",
     "upload": "Upload CSV",
     "intro": "Upload a CSV file with referee course results. Each import then goes through a review step — the license level is set per row and any deviating master data is corrected.",
+    "disabled": "CSV import is switched off. Courses and results are recorded in Saisonmanager. Open imports below can still be edited and submitted.",
     "loading": "Loading...",
     "tableLabel": "Imports",
     "colFile": "File",

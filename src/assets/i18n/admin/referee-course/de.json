@@ -5,6 +5,7 @@
     "uploading": "Lade hoch...",
     "upload": "CSV hochladen",
     "intro": "Lade eine CSV-Datei mit Schiedsrichter-Kursergebnissen hoch. Jeder Import durchläuft anschließend einen Review-Schritt — pro Zeile wird die Lizenzstufe festgelegt und ggf. abweichende Stammdaten korrigiert.",
+    "disabled": "Der CSV-Import ist abgeschaltet. Kurse und Ergebnisse werden im Saisonmanager erfasst. Offene Importe unten lassen sich noch bearbeiten und einreichen.",
     "loading": "Lade...",
     "tableLabel": "Imports",
     "colFile": "Datei",
