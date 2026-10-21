@@ -203,7 +203,8 @@
       "cancelled": "Abgesagt"
     },
     "embedTitle": "Kurse auf der Verbandsseite zeigen",
-    "embedIntro": "Die öffentliche Kursseite lässt sich verlinken oder per iframe auf der Verbandsseite einbinden. Angemeldet wird im Saisonmanager. Online-Links erscheinen dort nie."
+    "embedIntro": "Die öffentliche Kursseite lässt sich verlinken oder per iframe auf der Verbandsseite einbinden. Angemeldet wird im Saisonmanager. Online-Links erscheinen dort nie.",
+    "billing": "Abrechnung"
   },
   "edit": {
     "titleNew": "Neuer Kurs",
@@ -356,7 +357,8 @@
     "submitIntro": "Die Lizenz legt FD fest. Eingereicht werden alle bestandenen Teilnahmen; danach lässt sich der Kurs nicht mehr ändern.",
     "submitButton": "An FD einreichen",
     "confirmSubmit": "Ergebnisse jetzt an FD einreichen? Danach lässt sich der Kurs nicht mehr ändern.",
-    "submitted": "{{count}} Ergebnisse an FD übermittelt."
+    "submitted": "{{count}} Ergebnisse an FD übermittelt.",
+    "participantsCsv": "Teilnehmerliste (CSV)"
   },
   "leads": {
     "title": "Kursleitung",
@@ -408,5 +410,20 @@
     "rejectPrompt": "Grund für die Ablehnung bei {{name}}:",
     "approvedMany": "{{count}} Lizenzen erteilt.",
     "accountCreated": "{{name}} hat ein Benutzerkonto bekommen."
+  },
+  "billing": {
+    "title": "Abrechnung der Kurse",
+    "intro": "CSV fürs Rechnungswesen: eine Zeile pro abzurechnender Teilnahme (Teilnahme, Nichterscheinen falls berechnet, Abmeldung nach der Frist). Erzeugte Zeilen gelten als abgerechnet und erscheinen im nächsten Export nicht wieder.",
+    "from": "Kursende ab",
+    "to": "Kursende bis",
+    "includeBilled": "Bereits abgerechnete mitnehmen",
+    "summary": "{{count}} Zeilen, {{total}} €",
+    "warnings": "{{count}} mit fehlenden Vereinsangaben",
+    "create": "CSV erzeugen und als abgerechnet markieren",
+    "confirm": "{{count}} Zeilen exportieren und als abgerechnet markieren?",
+    "waitingForLicense": "Warten noch auf die Lizenz (Gebühr nur bei Lizenzerteilung): {{names}}",
+    "previous": "Frühere Exporte",
+    "noExports": "Noch keine Exporte.",
+    "download": "Herunterladen"
   }
 }
