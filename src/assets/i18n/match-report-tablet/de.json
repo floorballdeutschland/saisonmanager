@@ -76,5 +76,18 @@
     "unsent": "{{ count }} Änderung(en) an Schüssen von diesem Gerät sind noch nicht übertragen. Nach dem Abschließen nimmt der Server sie nicht mehr an. Bitte die Verbindung prüfen und erneut versuchen.",
     "checking": "Schüsse werden übertragen…",
     "retry": "Erneut senden"
+  },
+  "feedback": {
+    "toggle": "Feedback zur Beta",
+    "hint": "Was klappt, was stört? Deine Rückmeldung geht direkt an das IT-Team.",
+    "message": "Deine Rückmeldung",
+    "placeholder": "Was ist dir bei der Schusserfassung aufgefallen? Was fehlt, was war umständlich?",
+    "replyTo": "E-Mail für Rückfragen (freiwillig)",
+    "replyToHint": "Ohne Angabe antworten wir an die Adresse deines Kontos, falls du angemeldet bist.",
+    "replyToInvalid": "Bitte eine gültige E-Mail-Adresse eingeben oder das Feld leer lassen.",
+    "send": "Absenden",
+    "sending": "Wird gesendet…",
+    "sent": "Danke für deine Rückmeldung!",
+    "error": "Die Rückmeldung konnte nicht gesendet werden. Bitte später erneut versuchen."
   }
 }

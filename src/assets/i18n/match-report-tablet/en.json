@@ -76,5 +76,18 @@
     "unsent": "{{ count }} shot change(s) from this device have not been uploaded yet. Once the report is closed, the server will no longer accept them. Please check the connection and try again.",
     "checking": "Uploading shots…",
     "retry": "Send again"
+  },
+  "feedback": {
+    "toggle": "Beta feedback",
+    "hint": "What works, what doesn't? Your feedback goes straight to the IT team.",
+    "message": "Your feedback",
+    "placeholder": "What did you notice while recording shots? What is missing, what was awkward?",
+    "replyTo": "E-mail for follow-up questions (optional)",
+    "replyToHint": "If left empty, we reply to your account's address if you are logged in.",
+    "replyToInvalid": "Please enter a valid e-mail address or leave the field empty.",
+    "send": "Send",
+    "sending": "Sending…",
+    "sent": "Thank you for your feedback!",
+    "error": "The feedback could not be sent. Please try again later."
   }
 }

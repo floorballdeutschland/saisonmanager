@@ -41,3 +41,10 @@ export interface ShotsResponse {
 export interface ServerTimeResponse {
   now: string;
 }
+
+/** Rückmeldung zur Beta des Tabletmodus (fe#560), geht per Mail an die Administration. */
+export interface TabletFeedbackInput {
+  message: string;
+  reply_to: string | null;
+  device: string;
+}

@@ -1266,6 +1266,7 @@ describe('ErrorInterceptor', () => {
       `${environment.apiURL}games/4711/shots/0b6c-uuid.json`,
       `${environment.apiURL}games/4711/shots/0b6c-uuid/link.json`,
       `${environment.apiURL}games/4711/tablet_capture.json`,
+      `${environment.apiURL}games/4711/tablet_feedback.json`,
     ];
 
     for (const url of tabletUrls) {
@@ -1297,6 +1298,20 @@ describe('ErrorInterceptor', () => {
       );
 
       expect(errorSpy).toHaveBeenCalled();
+    });
+
+    // Die Rückmeldung zur Beta (fe#560) zeigt nur 403/404 selbst an, alles
+    // andere meldet wie überall der Interceptor (sonst stünde es doppelt da).
+    it('meldet 422 und 429 der Rückmeldung zur Beta', () => {
+      const url = `${environment.apiURL}games/4711/tablet_feedback.json`;
+      failWith(
+        { message: 'Die Antwortadresse ist keine gültige E-Mail-Adresse.' },
+        422,
+        url
+      );
+      failWith({ error: 'Rate limit überschritten' }, 429, url);
+
+      expect(errorSpy).toHaveBeenCalledTimes(2);
     });
 
     // Kein offener Teilstring: Ähnliche Pfade fallen nicht unter die Ausnahme.

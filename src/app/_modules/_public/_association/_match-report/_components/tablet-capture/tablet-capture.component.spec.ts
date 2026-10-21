@@ -10,6 +10,7 @@ import { Game, Shot, ShotInput } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 import { TabletCaptureComponent } from './tablet-capture.component';
+import { TabletFeedbackComponent } from './tablet-feedback.component';
 
 const API = environment.apiURL;
 
@@ -70,7 +71,7 @@ describe('TabletCaptureComponent', () => {
         FormsModule,
         getTranslocoTestingModule(),
       ],
-      declarations: [TabletCaptureComponent],
+      declarations: [TabletCaptureComponent, TabletFeedbackComponent],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);

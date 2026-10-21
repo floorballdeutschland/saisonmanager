@@ -5,6 +5,7 @@ import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { UikitCommonModule } from '@floorball/uikit/common';
 
 import { TabletCaptureComponent } from './tablet-capture.component';
+import { TabletFeedbackComponent } from './tablet-feedback.component';
 
 /**
  * Tabletmodus der Spielberichtseingabe (Beta, fe#344).
@@ -16,7 +17,7 @@ import { TabletCaptureComponent } from './tablet-capture.component';
  */
 @NgModule({
   imports: [CommonModule, FormsModule, UikitCommonModule],
-  declarations: [TabletCaptureComponent],
+  declarations: [TabletCaptureComponent, TabletFeedbackComponent],
   exports: [TabletCaptureComponent],
   providers: [
     {

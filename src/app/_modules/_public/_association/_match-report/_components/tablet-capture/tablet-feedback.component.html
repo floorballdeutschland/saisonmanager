@@ -1,0 +1,100 @@
+<div
+  class="mt-4 rounded-[5px] border border-fb-gray-600 bg-fb-gray-300 p-3"
+  data-testid="tablet-feedback"
+>
+  <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <button
+      type="button"
+      class="min-h-[48px] rounded-[5px] border border-black bg-white px-4 font-bold"
+      data-testid="tablet-feedback-toggle"
+      [attr.aria-expanded]="open"
+      (click)="toggle()"
+    >
+      {{ "tablet.feedback.toggle" | transloco }}
+    </button>
+    @if (sent) {
+      <span
+        class="text-sm font-bold text-green-800"
+        role="status"
+        data-testid="tablet-feedback-sent"
+      >
+        {{ "tablet.feedback.sent" | transloco }}
+      </span>
+    } @else if (!open) {
+      <span class="text-sm text-fb-gray-500">
+        {{ "tablet.feedback.hint" | transloco }}
+      </span>
+    }
+  </div>
+
+  @if (open) {
+    <form class="mt-3 flex flex-col gap-3" (ngSubmit)="send()">
+      <label class="flex flex-col gap-1 text-sm font-bold">
+        {{ "tablet.feedback.message" | transloco }}
+        <textarea
+          name="message"
+          rows="5"
+          class="rounded-[5px] border border-fb-gray-600 p-2 text-base font-normal"
+          data-testid="tablet-feedback-message"
+          [maxlength]="maxLength"
+          [placeholder]="'tablet.feedback.placeholder' | transloco"
+          [(ngModel)]="message"
+        ></textarea>
+      </label>
+      <div class="flex flex-col gap-1 text-sm">
+        <label for="tablet-feedback-reply-to" class="font-bold">
+          {{ "tablet.feedback.replyTo" | transloco }}
+        </label>
+        <input
+          id="tablet-feedback-reply-to"
+          type="email"
+          name="replyTo"
+          autocomplete="email"
+          class="min-h-[48px] rounded-[5px] border border-fb-gray-600 px-2 text-base"
+          data-testid="tablet-feedback-reply-to"
+          aria-describedby="tablet-feedback-reply-to-hint"
+          [attr.aria-invalid]="!replyToValid"
+          [(ngModel)]="replyTo"
+        />
+        <span
+          id="tablet-feedback-reply-to-hint"
+          class="text-fb-gray-500"
+          aria-live="polite"
+        >
+          @if (replyToValid) {
+            {{ "tablet.feedback.replyToHint" | transloco }}
+          } @else {
+            <span
+              class="text-red-700"
+              data-testid="tablet-feedback-reply-to-invalid"
+            >
+              {{ "tablet.feedback.replyToInvalid" | transloco }}
+            </span>
+          }
+        </span>
+      </div>
+      @if (error) {
+        <p
+          class="rounded-[5px] border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-800"
+          role="alert"
+          data-testid="tablet-feedback-error"
+        >
+          {{ "tablet.feedback.error" | transloco }}
+        </p>
+      }
+      <div>
+        <button
+          type="submit"
+          class="min-h-[48px] rounded-[5px] bg-black px-5 text-sm font-bold text-white hover:bg-fb-gray-500 disabled:opacity-50"
+          data-testid="tablet-feedback-send"
+          [disabled]="!canSend"
+        >
+          {{
+            (sending ? "tablet.feedback.sending" : "tablet.feedback.send")
+              | transloco
+          }}
+        </button>
+      </div>
+    </form>
+  }
+</div>
