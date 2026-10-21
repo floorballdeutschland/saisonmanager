@@ -26,6 +26,22 @@ const routes: Routes = [
     canActivate: [permissionGuard],
     data: { scrollTop: true, permission: 'menu_item_referee_course_review' },
   },
+  // Kurse im System. Die festen Pfade (neu, vorlagen) stehen vor :id.
+  ...[
+    { path: '', component: Views.CourseIndexComponent },
+    { path: 'neu', component: Views.CourseEditComponent },
+    { path: 'vorlagen', component: Views.CourseFieldTemplatesComponent },
+    { path: ':id', component: Views.CourseDetailComponent },
+    { path: ':id/bearbeiten', component: Views.CourseEditComponent },
+  ].map((route) => ({
+    ...route,
+    path: route.path
+      ? `verwaltung/schiri-kurse-planung/${route.path}`
+      : 'verwaltung/schiri-kurse-planung',
+    pathMatch: 'full' as const,
+    canActivate: [permissionGuard],
+    data: { scrollTop: true, permission: 'menu_item_referee_courses' },
+  })),
 ];
 
 @NgModule({
