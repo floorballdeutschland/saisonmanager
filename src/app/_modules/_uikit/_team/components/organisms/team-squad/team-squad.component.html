@@ -47,9 +47,24 @@
               <p class="mb-2 text-sm text-gray-500">
                 Füge Spielerinnen und Spieler zu deiner Kaderliste hinzu.
               </p>
-              <p class="text-sm font-bold text-gray-500">
+              <p
+                class="text-sm font-bold text-gray-500"
+                data-testid="squad-count"
+              >
                 Spieler/innen im Kader: {{ players ? players.length : 0 }}
+                @if (maxPlayers !== null) {
+                  / {{ maxPlayers }}
+                }
               </p>
+              @if (lineupFull) {
+                <p
+                  class="mt-1 text-sm text-yellow-700"
+                  data-testid="squad-full"
+                >
+                  Der Kader ist voll: höchstens {{ maxPlayers }} Spieler/innen.
+                  Austragen und Nummern ändern geht weiterhin.
+                </p>
+              }
             </div>
 
             @if (gameId && !players?.length) {
@@ -175,6 +190,7 @@
                         [gamePlayerEntry]="player.gamePlayerEntry"
                         [captainPlayerId]="captainPlayerId"
                         [events]="events"
+                        [lineupFull]="lineupFull"
                       ></fb-team-squad-player>
                     </li>
                   }

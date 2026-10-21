@@ -15,9 +15,11 @@ import {
 } from '@floorball/core';
 import {
   ChecklistNegativeItem,
+  ChecklistObjection,
   GameDayReportOverview,
   GameDayReportRow,
   GameOperation,
+  GameReportReview,
   GameReportStatus,
 } from '@floorball/types';
 import { downloadCsv } from 'src/app/_helpers/_utils/csv-export';
@@ -42,6 +44,7 @@ interface GameDayGroup {
   scanCount: number;
   commentCount: number;
   flaggedCount: number;
+  objectionCount: number;
 }
 
 const CLOSED_STATUSES: GameReportStatus[] = [
@@ -102,6 +105,9 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   filterDateFrom = '';
   filterDateTo = '';
   filterStatus = '';
+  // Erledigt-Vermerk der SBK, neben dem Status ein eigener Filter. Vorgabe ist
+  // „alle", damit die Ansicht nach dem Update nichts ausblendet.
+  filterReview: '' | 'open' | 'done' = '';
 
   // Die Ligen der geladenen Antwort, für den Filter. Bewusst aus den Zeilen
   // statt aus einem eigenen Abruf: Die Übersicht hat die Liste ohnehin schon
@@ -114,6 +120,11 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
 
   // Läuft gerade ein Abschluss bzw. ein Scan-Abruf für dieses Spiel?
   finalizingGameId: number | null = null;
+  // Erledigt-Vermerk: Spiel mit geöffnetem Formular, laufende Anfrage.
+  reviewFormGameId: number | null = null;
+  reviewComment = '';
+  reviewSavingGameId: number | null = null;
+  readonly reviewCommentMaxLength = 2000;
   scanLoadingGameId: number | null = null;
 
   readonly pageSize = 25;
@@ -277,13 +288,153 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Ist der Bericht erledigt und seitdem nichts Neues dazugekommen? Nur dann
+   * treten Auffälligkeiten und Einsprüche in den Hintergrund. Ein Vermerk mit
+   * späterer Änderung zählt als offen, sonst ginge genau der neue Einspruch
+   * unter, den die SBK sehen muss.
+   */
+  isReviewed(row: GameDayReportRow): boolean {
+    return !!row.report_reviewed_at && !row.report_changed_since_review;
+  }
+
+  openReviewForm(row: GameDayReportRow): void {
+    this.reviewFormGameId = row.id;
+    this.reviewComment = '';
+  }
+
+  cancelReviewForm(): void {
+    this.reviewFormGameId = null;
+    this.reviewComment = '';
+  }
+
+  saveReview(row: GameDayReportRow): void {
+    if (this.reviewSavingGameId !== null) return;
+    this.reviewSavingGameId = row.id;
+    this._gameService
+      .setReportReview(
+        row.id,
+        this.reviewComment.trim() || null,
+        row.last_change_at ?? null
+      )
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (review) => {
+          this._applyReview(row, review);
+          this.reviewFormGameId = null;
+          this.reviewComment = '';
+          this._notificationService.success(
+            this._transloco.translate('matchReportAdmin.notifications.reviewed')
+          );
+        },
+        // Die Absage des Servers (Rechte, zu langer Kommentar, veraltete
+        // Ansicht) zeigt der ErrorInterceptor, auch die 409. Das Formular
+        // bleibt offen, der Text geht nicht verloren.
+        //
+        // Bei 409 ist seit dem Laden etwas Neues eingegangen. Die Übersicht
+        // wird neu geholt, damit die SBK es sieht, bevor sie erneut abhakt;
+        // das offene Formular und der Entwurf bleiben dabei stehen.
+        error: (err) => {
+          this.reviewSavingGameId = null;
+          if (err?.status === 409) this._load();
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  clearReview(row: GameDayReportRow): void {
+    if (this.reviewSavingGameId !== null) return;
+    this.reviewSavingGameId = row.id;
+    this._gameService
+      .clearReportReview(row.id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (review) => {
+          this._applyReview(row, review);
+          this._notificationService.success(
+            this._transloco.translate(
+              'matchReportAdmin.notifications.reviewCleared'
+            )
+          );
+        },
+        error: () => {
+          this.reviewSavingGameId = null;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Lokal übernehmen statt neu zu laden, wie beim Abschluss: Filter, Seite und
+  // aufgeklappte Zeilen bleiben erhalten.
+  private _applyReview(row: GameDayReportRow, review: GameReportReview): void {
+    row.report_reviewed_at = review.report_reviewed_at;
+    row.report_reviewed_by_name = review.report_reviewed_by_name;
+    row.report_review_comment = review.report_review_comment;
+    row.report_changed_since_review = review.report_changed_since_review;
+    if (review.last_change_at !== undefined) {
+      row.last_change_at = review.last_change_at;
+    }
+    this.reviewSavingGameId = null;
+    this._applyFilterAndGroup();
+    this._cdr.markForCheck();
+  }
+
   hasLinkedRecords(row: GameDayReportRow): boolean {
     return (
       !!row.referee_report ||
       !!row.proceeding_proposal ||
       row.checklist_negative_count > 0 ||
-      !!row.checklist_veto_submitted_at
+      this.hasObjection(row)
     );
+  }
+
+  /**
+   * Hat jemand dem Spieltagsbericht widersprochen? Der Ausrichter über den
+   * Einspruchslink, eine Gastmannschaft oder ein Schiedsrichter über die
+   * Bestätigung des Spieltags. Bisher kamen die beiden letzten nur als Mail bei
+   * der SBK an und gingen dort zwischen gleich aussehenden Mails unter.
+   */
+  hasObjection(row: GameDayReportRow): boolean {
+    return (
+      !!row.checklist_veto_submitted_at ||
+      (row.checklist_objection_count ?? 0) > 0
+    );
+  }
+
+  objectionLabel(objection: ChecklistObjection): string {
+    const name =
+      objection.name?.trim() ||
+      this._transloco.translate('matchReportAdmin.linked.objectionUnknown');
+    return this._transloco.translate(
+      objection.kind === 'referee'
+        ? 'matchReportAdmin.linked.objectionReferee'
+        : 'matchReportAdmin.linked.objectionTeam',
+      { name }
+    );
+  }
+
+  // Für die CSV eine Zelle je Spiel: wer widersprochen hat, ohne die Punkte.
+  // Die stehen in der Ansicht, eine Zelle mit allen Fragetexten wäre in der
+  // Tabellenkalkulation nicht mehr lesbar. Die Anmerkung kommt mit, weil sie
+  // anders als die Punkte sagt, was eigentlich passiert ist; Zeilenumbrüche
+  // darin werden zu Leerzeichen, damit die Zelle einzeilig bleibt.
+  private _objectionSummary(row: GameDayReportRow): string {
+    const parts = (row.checklist_objections ?? []).map((o) => {
+      const label = this.objectionLabel(o);
+      const comment = o.comment?.replace(/\s+/g, ' ').trim();
+      return comment
+        ? `${label} (${this._transloco.translate(
+            'matchReportAdmin.linked.objectionComment',
+            { comment }
+          )})`
+        : label;
+    });
+    if (row.checklist_veto_submitted_at) {
+      parts.unshift(
+        this._transloco.translate('matchReportAdmin.linked.objectionHost')
+      );
+    }
+    return parts.join('; ');
   }
 
   /**
@@ -421,6 +572,10 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       t('matchReportAdmin.index.colUpdatedBy'),
       t('matchReportAdmin.index.colComment'),
       t('matchReportAdmin.index.colScanUploadedAt'),
+      t('matchReportAdmin.index.colObjections'),
+      t('matchReportAdmin.index.colReviewedAt'),
+      t('matchReportAdmin.index.colReviewedBy'),
+      t('matchReportAdmin.index.colReviewComment'),
     ];
     const rows = this.rows.map((r) => [
       r.date ?? '',
@@ -435,6 +590,10 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       r.record_updated_by_name ?? '',
       r.record_comment ?? '',
       r.scan?.uploaded_at ?? '',
+      this._objectionSummary(r),
+      r.report_reviewed_at ?? '',
+      r.report_reviewed_by_name ?? '',
+      r.report_review_comment ?? '',
     ]);
     downloadCsv('spieltage', headers, rows);
   }
@@ -559,7 +718,18 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       );
     }
     if (this.filterStatus === 'withComment') return !!row.record_comment;
+    if (this.filterStatus === 'withObjection') return this.hasObjection(row);
     return row.game_status === this.filterStatus;
+  }
+
+  private _matchesReview(row: GameDayReportRow): boolean {
+    if (this.filterReview === 'done') return this.isReviewed(row);
+    if (this.filterReview === 'open') return !this.isReviewed(row);
+    return true;
+  }
+
+  private _matchesFilters(row: GameDayReportRow): boolean {
+    return this._matchesStatus(row) && this._matchesReview(row);
   }
 
   // Der Statusfilter wirkt auf die angezeigten Zeilen, NICHT auf die Kennzahlen
@@ -568,7 +738,10 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   // Filter „Noch nicht abgeschlossen" stets „0/n abgeschlossen".
   private _applyFilterAndGroup(): void {
     const inScope = this._allRows.filter((row) => this._matchesLeague(row));
-    this.rows = inScope.filter((row) => this._matchesStatus(row));
+    this.rows = inScope.filter((row) => this._matchesFilters(row));
+    // Nach dem Abhaken unter „noch nicht erledigt" kann die letzte Seite leer
+    // werden. Dann auf die neue letzte Seite statt auf eine leere Liste.
+    this.currentPage = Math.min(this.currentPage, this.numberOfPages);
 
     const byGameDay = new Map<number, GameDayReportRow[]>();
     for (const row of inScope) {
@@ -591,7 +764,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
           arenaName: first.arena_name,
           hostingClubName: first.hosting_club_name,
           // Aufgelistet werden nur die zum Filter passenden Spiele …
-          games: all.filter((row) => this._matchesStatus(row)),
+          games: all.filter((row) => this._matchesFilters(row)),
           // … gezählt wird über den vollständigen Spieltag.
           totalCount: all.length,
           closedCount: all.filter((g) => this.isClosed(g)).length,
@@ -599,6 +772,11 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
           scanCount: all.filter((g) => !!g.scan).length,
           commentCount: all.filter((g) => !!g.record_comment).length,
           flaggedCount: all.filter((g) => this.hasFlags(g)).length,
+          // Erledigte Einsprüche zählen nicht mehr: Das rote Badge am Spieltag
+          // soll nur stehen, solange noch etwas zu tun ist.
+          objectionCount: all.filter(
+            (g) => this.hasObjection(g) && !this.isReviewed(g)
+          ).length,
         };
       })
       .filter((group) => group.games.length > 0);

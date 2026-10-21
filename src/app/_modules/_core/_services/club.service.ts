@@ -4,6 +4,7 @@ import { environment } from 'src/environments/environment';
 import {
   Club,
   ClubManagerList,
+  ClubLicenseSummary,
   ClubWithTeams,
   LicenseHash,
   StateAssociationWithClubs,
@@ -160,6 +161,15 @@ export class ClubService {
   public vmGetClubAndTeams() {
     const path = environment.apiURL + 'vm/clubs_and_teams.json';
     return this.http.get<ClubWithTeams[]>(path);
+  }
+
+  // Lizenzen je Mannschaft und Status fuer eine Saison; ohne Angabe die
+  // laufende. Nur fuer den VM des Vereins, alle anderen bekommen 403.
+  public vmGetLicenseSummary(clubId: number, seasonId?: number | null) {
+    const path = `${environment.apiURL}vm/clubs/${clubId}/license_summary.json`;
+    return this.http.get<ClubLicenseSummary>(path, {
+      params: seasonId ? { season_id: String(seasonId) } : {},
+    });
   }
 
   public userGetTeamLicenses(teamId: number) {

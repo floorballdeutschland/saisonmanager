@@ -263,6 +263,26 @@
                   </div>
                 }
               </div>
+              <label class="block mb-3 text-sm">
+                <span class="font-bold">{{
+                  "refereeSelf.gameDays.commentLabel" | transloco
+                }}</span>
+                <span class="text-fb-gray-500">
+                  {{ "refereeSelf.gameDays.commentOptional" | transloco }}</span
+                >
+                <textarea
+                  [(ngModel)]="rejectComment"
+                  [maxlength]="commentMaxLength"
+                  rows="3"
+                  [placeholder]="
+                    'refereeSelf.gameDays.commentPlaceholder' | transloco
+                  "
+                  class="mt-1 block w-full border border-fb-gray-600 rounded-[5px] p-2 text-sm"
+                ></textarea>
+                <span class="block text-xs text-fb-gray-500 text-right">
+                  {{ rejectComment.length }} / {{ commentMaxLength }}
+                </span>
+              </label>
               <div class="flex items-center gap-2">
                 <button
                   type="button"
@@ -348,6 +368,12 @@
                     </li>
                   }
                 </ul>
+              }
+              @if (confirmationStatus(gd) === "not_ok" && gd.my_comment) {
+                <p class="ml-32 text-fb-gray-500 whitespace-pre-line">
+                  {{ "refereeSelf.gameDays.myComment" | transloco }}
+                  {{ gd.my_comment }}
+                </p>
               }
               <!-- Partner status -->
               <div class="flex items-center gap-2">

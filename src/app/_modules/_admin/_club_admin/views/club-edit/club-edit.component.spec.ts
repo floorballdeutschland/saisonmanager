@@ -9,12 +9,15 @@ import {
   getTranslocoTestingModule,
   NotificationService,
 } from '@floorball/core';
-import { RouterTestingModule } from '@angular/router/testing';
-import { ActivatedRoute } from '@angular/router';
+import {
+  RouterTestingHarness,
+  RouterTestingModule,
+} from '@angular/router/testing';
+import { provideRouter, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Club, Team } from '@floorball/types';
+import { UikitCommonModule } from '@floorball/uikit/common';
 import { environment } from 'src/environments/environment';
-import { of } from 'rxjs';
 
 // Ein echter File-Input braucht DataTransfer; ein Stub mit den beiden Feldern,
 // die onLogoSelected liest und schreibt, genügt hier. PNG, damit die
@@ -50,6 +53,9 @@ describe('ClubEditComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
+        FormsModule,
+        // Fuer <fb-tabs>: Ohne die Reiterleiste stuende im Test kein Feld.
+        UikitCommonModule,
         getTranslocoTestingModule(),
       ],
       declarations: [ClubEditComponent],
@@ -462,9 +468,9 @@ describe('ClubEditComponent', () => {
     const notification = TestBed.inject(NotificationService);
     spyOn(notification, 'error');
     component.loadClubTeams(42);
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
-      { id: 7, name: 'Alpha', short_name: 'ALP', manage_info: true },
-    ]);
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/teams.json`)
+      .flush([{ id: 7, name: 'Alpha', short_name: 'ALP', manage_info: true }]);
     const team = component.clubTeams[0];
     component.teamInfoDraft(team).name = 'Zu spaet';
 
@@ -481,7 +487,9 @@ describe('ClubEditComponent', () => {
     expect(component.savingTeamInfoId).toBeUndefined();
     // Nachgeladen wird der geoeffnete Verein, nicht `team.club_id`: Bei einer
     // Verbundmannschaft steht dort der fuehrende Verein.
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([]);
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs/42/teams.json`)
+      .flush([]);
   });
 
   // Ein 422 bleibt beim ErrorInterceptor: Der Server nennt den Grund in
@@ -685,60 +693,126 @@ describe('ClubEditComponent', () => {
 // Eigener Block, weil hier ein Routen-Parameter nötig ist: Ohne clubId geht die
 // Maske in den Anlege-Modus, und `editMode` nachträglich umzuschalten wirft
 // NG0100 (die Überschrift hängt ebenfalls daran).
+//
+// Echter Router statt eines ActivatedRoute-Stubs: Die Reiterleiste liest den
+// aktiven Reiter aus `?reiter=` und schreibt ihn beim Wechsel dorthin zurueck,
+// das braucht eine Route, gegen die navigiert werden kann.
 describe('ClubEditComponent im Bearbeiten-Modus', () => {
   let httpMock: HttpTestingController;
+  let harness: RouterTestingHarness;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
-        RouterTestingModule,
+        // Fuer routerLink in der Fusszeile; die Routen kommen aus provideRouter.
+        RouterModule,
         // Das Vereinsformular bindet mit ngModel; ohne FormsModule bleibt die
         // Bindung wirkungslos und ein Haken stünde im Test immer leer da.
         FormsModule,
+        UikitCommonModule,
         getTranslocoTestingModule(),
       ],
       declarations: [ClubEditComponent],
       providers: [
-        {
-          provide: ActivatedRoute,
-          useValue: { params: of({ clubId: '42' }) },
-        },
+        provideRouter([
+          { path: 'verein/:clubId', component: ClubEditComponent },
+        ]),
       ],
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  it('zeigt die Freigabe fuer Teammanager als Haken', async () => {
-    const fixture = TestBed.createComponent(ClubEditComponent);
-    fixture.detectChanges();
-
+  // Oeffnet die Maske unter `url` und beantwortet die Abrufe. `teams` bleibt
+  // ohne Antwort, wenn es nicht angegeben ist: Die Liste steht im Reiter
+  // „Logo & Mannschaften", den die meisten Tests nicht oeffnen.
+  async function oeffne(
+    url: string,
+    club: Partial<Club>,
+    teams?: unknown
+  ): Promise<ClubEditComponent> {
+    harness = await RouterTestingHarness.create();
+    const component = await harness.navigateByUrl(url, ClubEditComponent);
     httpMock
       .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
       .flush({ notify_user_ids: [], managers: [] });
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush({
+    if (teams !== undefined) {
+      httpMock
+        .expectOne(`${environment.apiURL}admin/clubs/42/teams.json`)
+        .flush(teams as never);
+    }
+    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush(club);
+    await stabil();
+    return component;
+  }
+
+  async function stabil(): Promise<void> {
+    harness.detectChanges();
+    // ngModel schreibt den Wert erst in einer Mikrotask in das Feld; ohne das
+    // Warten stünde ein Haken oder Feld hier noch leer da.
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+  }
+
+  function el(): HTMLElement {
+    return harness.routeNativeElement as HTMLElement;
+  }
+
+  function reiter(id: string): HTMLButtonElement | null {
+    return el().querySelector(`[data-testid="tab-${id}"]`);
+  }
+
+  async function wechsleZu(id: string): Promise<void> {
+    reiter(id)!.click();
+    await stabil();
+  }
+
+  it('zeigt die Freigabe fuer Teammanager als Haken', async () => {
+    await oeffne('/verein/42', {
       id: 42,
       name: 'Verein',
       long_name: 'Verein e.V.',
       short_name: 'VER',
-      // Eingeschränkte Fassung, damit das Suchfeld für den Landesverband gar
-      // nicht gerendert wird: `fb-select-search` ist hier nicht deklariert.
-      // Auf den Haken hat das keinen Einfluss, er steht beiden offen.
       edit_restricted: true,
       team_managers_manage_players: true,
     });
-    fixture.detectChanges();
-    // ngModel schreibt den Wert erst in einer Mikrotask in das Feld; ohne das
-    // Warten stünde der Haken hier noch leer da.
-    await fixture.whenStable();
-    fixture.detectChanges();
 
-    const haken: HTMLInputElement = fixture.nativeElement.querySelector(
+    const haken: HTMLInputElement = el().querySelector(
       '[data-testid="team-managers-manage-players"]'
-    );
+    )!;
     expect(haken).not.toBeNull();
     expect(haken.checked).toBeTrue();
+  });
+
+  // Der haeufigste Anlass fuer die Maske sind Name, Kontaktadresse und
+  // Verteiler. Kuerzel und Anschrift stellt ein Verein praktisch einmal ein,
+  // sie stehen deshalb nicht im ersten Reiter.
+  it('oeffnet ohne Parameter den Reiter Allgemein', async () => {
+    await oeffne(
+      '/verein/42',
+      vollstaendigerVerein({ id: 42, edit_restricted: true })
+    );
+
+    expect(reiter('allgemein')!.getAttribute('aria-selected')).toBe('true');
+    expect(el().querySelector('input#name')).not.toBeNull();
+    expect(el().querySelector('input#contact_email')).not.toBeNull();
+    expect(el().querySelector('input#street')).toBeNull();
+    expect(el().querySelector('input#short_name')).toBeNull();
+  });
+
+  // Der Reiter steht in der URL, damit Neuladen und Links aus Handbuch oder
+  // Mail im selben Bereich landen.
+  it('oeffnet den Reiter aus der URL', async () => {
+    await oeffne(
+      '/verein/42?reiter=mannschaften',
+      vollstaendigerVerein({ id: 42, edit_restricted: true }),
+      [{ id: 7, name: 'Alpha', logo_url: '/club.png', manage_logo: true }]
+    );
+
+    expect(reiter('mannschaften')!.getAttribute('aria-selected')).toBe('true');
+    expect(el().textContent).toContain('Alpha');
+    expect(el().querySelector('input#name')).toBeNull();
   });
 
   // Der Verein pflegt seine Anschrift selbst -- auch mit dem eingeschraenkten
@@ -747,25 +821,16 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
   // Vereinsmanager dauerhaft ausgesperrt: `errorMsg()` verlangt die Felder
   // unabhaengig davon, ob die Maske sie ueberhaupt anbietet.
   it('laesst den eingeschraenkten VM die Anschrift eingeben', async () => {
-    const fixture = TestBed.createComponent(ClubEditComponent);
-    fixture.detectChanges();
-
-    httpMock
-      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
-      .flush({ notify_user_ids: [], managers: [] });
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush({
+    await oeffne('/verein/42?reiter=anschrift', {
       id: 42,
       name: 'Verein',
       long_name: 'Verein e.V.',
       short_name: 'VER',
       edit_restricted: true,
     });
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
 
     for (const feld of ['street', 'house_number', 'postcode', 'city']) {
-      expect(fixture.nativeElement.querySelector(`input#${feld}`))
+      expect(el().querySelector(`input#${feld}`))
         .withContext(feld)
         .not.toBeNull();
     }
@@ -776,58 +841,158 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
   // Maske bis zum Nachtragen ueberhaupt keinen Knopf mehr -- auch keinen
   // Abbrechen.
   it('nimmt nur den Speichern-Knopf weg, nicht die ganze Leiste', async () => {
-    const fixture = TestBed.createComponent(ClubEditComponent);
-    fixture.detectChanges();
-
-    httpMock
-      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
-      .flush({ notify_user_ids: [], managers: [] });
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42.json`).flush({
+    await oeffne('/verein/42', {
       id: 42,
       name: 'Verein',
       short_name: 'VER',
       edit_restricted: true,
     });
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
 
-    const text = fixture.nativeElement.textContent;
+    const text = el().textContent;
     expect(text).not.toContain('clubAdmin.edit.saveChanges');
     expect(text).toContain('clubAdmin.edit.cancel');
+  });
+
+  // Die Fusszeile speichert alle Vereinsfelder, auch die des verborgenen
+  // Reiters. Fehlt dort eine Angabe, verschwindet der Speichern-Knopf; die
+  // Markierung sagt, in welchem Reiter das Feld liegt.
+  it('markiert den Reiter, in dem eine Pflichtangabe fehlt', async () => {
+    await oeffne(
+      '/verein/42',
+      vollstaendigerVerein({ id: 42, edit_restricted: true, street: '' })
+    );
+
+    expect(reiter('anschrift')!.classList).toContain('!text-red-600');
+    expect(reiter('allgemein')!.classList).not.toContain('!text-red-600');
+    expect(el().textContent).not.toContain('clubAdmin.edit.saveChanges');
+  });
+
+  // Werte haengen per ngModel am club-Objekt, nicht an den Feldern. Der Inhalt
+  // eines verborgenen Reiters steht nicht im DOM; was dort eingegeben wurde,
+  // muss den Wechsel trotzdem ueberstehen und mitgespeichert werden.
+  it('behaelt Eingaben beim Reiterwechsel und speichert sie mit', async () => {
+    await oeffne(
+      '/verein/42',
+      vollstaendigerVerein({ id: 42, edit_restricted: true })
+    );
+
+    const tippe = (id: string, wert: string) => {
+      const input: HTMLInputElement = el().querySelector(`input#${id}`)!;
+      input.value = wert;
+      input.dispatchEvent(new Event('input'));
+    };
+
+    tippe('name', 'Neuer Name');
+    await wechsleZu('anschrift');
+    expect(el().querySelector('input#name')).toBeNull();
+    tippe('street', 'Neue Strasse');
+    await wechsleZu('allgemein');
+
+    expect((el().querySelector('input#name') as HTMLInputElement).value).toBe(
+      'Neuer Name'
+    );
+    await wechsleZu('anschrift');
+    expect((el().querySelector('input#street') as HTMLInputElement).value).toBe(
+      'Neue Strasse'
+    );
+
+    (
+      Array.from(el().querySelectorAll('a')).find((a) =>
+        a.textContent?.includes('clubAdmin.edit.saveChanges')
+      ) as HTMLAnchorElement
+    ).click();
+
+    const req = httpMock.expectOne(`${environment.apiURL}admin/clubs.json`);
+    expect((req.request.body as Club).name).toBe('Neuer Name');
+    expect((req.request.body as Club).street).toBe('Neue Strasse');
+  });
+
+  // Die Meldung zeigt der ErrorInterceptor; der Reiter mit dem beanstandeten
+  // Feld wird markiert, damit es auch im verborgenen Reiter zu finden ist.
+  it('markiert den Reiter des Feldes, das der Server beanstandet', async () => {
+    const component = await oeffne(
+      '/verein/42',
+      vollstaendigerVerein({ id: 42, edit_restricted: true })
+    );
+    const club = vollstaendigerVerein({ id: 42 });
+
+    component.submit(club);
+    httpMock
+      .expectOne(`${environment.apiURL}admin/clubs.json`)
+      .flush(
+        { short_name: ['ist zu lang'] },
+        { status: 422, statusText: 'Unprocessable Entity' }
+      );
+    expect(component.tabInvalid(club, 'anschrift')).toBeTrue();
+    expect(component.tabInvalid(club, 'allgemein')).toBeFalse();
+
+    // Korrigiert heisst: Die Markierung erlischt, sobald der Wert nicht mehr
+    // der beanstandete ist. Ob der neue gilt, entscheidet erst der Server.
+    club.short_name = 'VE';
+    expect(component.tabInvalid(club, 'anschrift')).toBeFalse();
+
+    // Der naechste Versuch beginnt ohne die alte Beanstandung.
+    club.short_name = 'VER';
+    component.submit(club);
+    expect(component.serverErrors).toEqual({});
+    httpMock.expectOne(`${environment.apiURL}admin/clubs.json`).flush(club);
+  });
+
+  // Deaktivieren duerfen nur Verband und Admin. Ohne das Recht gibt es nichts
+  // zu tun und nichts anzuzeigen, der Reiter fehlt dann ganz.
+  it('zeigt den Reiter Status nur mit dem Recht zum Deaktivieren', async () => {
+    const component = await oeffne(
+      '/verein/42',
+      vollstaendigerVerein({ id: 42, edit_restricted: true })
+    );
+    expect(reiter('status')).toBeNull();
+
+    component.permissions = { club_deactivate: true };
+    component['_cdr'].markForCheck();
+    await stabil();
+    expect(reiter('status')).not.toBeNull();
+  });
+
+  // Ein deaktivierter Verein bleibt auch ohne das Recht erkennbar: Der Reiter
+  // erscheint dann mit Kennzeichnung, damit der Zustand nicht hinter einem
+  // Reiter verschwindet, den niemand oeffnet.
+  it('kennzeichnet einen deaktivierten Verein am Reiter', async () => {
+    await oeffne(
+      '/verein/42',
+      vollstaendigerVerein({
+        id: 42,
+        edit_restricted: true,
+        deactivated_at: '2026-01-01',
+      })
+    );
+
+    expect(reiter('status')!.textContent).toContain(
+      'clubAdmin.edit.tabStatusDeactivated'
+    );
   });
 
   // Die Mannschaftsliste kommt aus einem eigenen Endpunkt; ohne den Abruf beim
   // Laden staende der Abschnitt dauerhaft leer da.
   it('laedt die Mannschaften des Vereins und zeigt sie mit ihrer Kennzeichnung', async () => {
-    const fixture = TestBed.createComponent(ClubEditComponent);
-    fixture.detectChanges();
-
-    httpMock
-      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
-      .flush({ notify_user_ids: [], managers: [] });
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
-      {
-        id: 7,
-        name: 'Alpha',
-        logo: '/t.png',
-        logo_url: '/t.png',
-        manage_logo: true,
-      },
-      { id: 8, name: 'Beta', logo_url: '/club.png', manage_logo: true },
-      { id: 9, name: 'Gamma', logo_url: '/club.png', manage_logo: false },
-    ]);
     // `edit_restricted` wie in den Nachbartests: Genau so sieht der
-    // Vereinsmanager die Maske, und das Suchfeld fuer den Landesverband (dessen
-    // Komponente in diesem TestBed fehlt) bleibt damit aussen vor.
-    httpMock
-      .expectOne(`${environment.apiURL}admin/clubs/42.json`)
-      .flush(vollstaendigerVerein({ id: 42, edit_restricted: true }));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    // Vereinsmanager die Maske.
+    await oeffne(
+      '/verein/42?reiter=mannschaften',
+      vollstaendigerVerein({ id: 42, edit_restricted: true }),
+      [
+        {
+          id: 7,
+          name: 'Alpha',
+          logo: '/t.png',
+          logo_url: '/t.png',
+          manage_logo: true,
+        },
+        { id: 8, name: 'Beta', logo_url: '/club.png', manage_logo: true },
+        { id: 9, name: 'Gamma', logo_url: '/club.png', manage_logo: false },
+      ]
+    );
 
-    const text = fixture.nativeElement.textContent;
+    const text = el().textContent;
     expect(text).toContain('Alpha');
     expect(text).toContain('Beta');
     // Eigenes Logo und Vereinslogo muessen unterscheidbar sein, sonst ist nicht
@@ -837,7 +1002,7 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
     // Ohne Recht kein Knopf, sondern die Begruendung: Das Logo folgt dem
     // Spielbetrieb der Liga.
     expect(text).toContain('clubAdmin.edit.teamLogoForeignLeague');
-    expect(fixture.nativeElement.querySelectorAll('input[type=file]').length)
+    expect(el().querySelectorAll('input[type=file]').length)
       .withContext('Vereinslogo plus zwei pflegbare Mannschaften')
       .toBe(3);
   });
@@ -846,9 +1011,11 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
   // fehlgeschlagenen Abruf hat sie niemand geprueft -- dann gehoert dort ein
   // Fehlerhinweis samt zweitem Versuch hin.
   it('meldet einen fehlgeschlagenen Abruf statt eine leere Liste zu zeigen', async () => {
-    const fixture = TestBed.createComponent(ClubEditComponent);
-    fixture.detectChanges();
-
+    harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/verein/42?reiter=mannschaften',
+      ClubEditComponent
+    );
     httpMock
       .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
       .flush({ notify_user_ids: [], managers: [] });
@@ -858,17 +1025,12 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
         { message: 'kaputt' },
         { status: 500, statusText: 'Server Error' }
       );
-    // `edit_restricted` wie in den Nachbartests: Genau so sieht der
-    // Vereinsmanager die Maske, und das Suchfeld fuer den Landesverband (dessen
-    // Komponente in diesem TestBed fehlt) bleibt damit aussen vor.
     httpMock
       .expectOne(`${environment.apiURL}admin/clubs/42.json`)
       .flush(vollstaendigerVerein({ id: 42, edit_restricted: true }));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    await stabil();
 
-    const text = fixture.nativeElement.textContent;
+    const text = el().textContent;
     expect(text).toContain('clubAdmin.edit.teamLogosLoadError');
     expect(text).not.toContain('clubAdmin.edit.teamLogosEmpty');
   });
@@ -878,57 +1040,147 @@ describe('ClubEditComponent im Bearbeiten-Modus', () => {
   // beiden letzten sehen in den Rechten gleich aus, deshalb nennt der Server
   // die Saison-Sperre eigens (`info_locked_by_season`).
   it('zeigt Eingabefelder nur fuer pflegbare Mannschaften und nennt sonst den Grund', async () => {
-    const fixture = TestBed.createComponent(ClubEditComponent);
-    fixture.detectChanges();
+    await oeffne(
+      '/verein/42?reiter=mannschaften',
+      vollstaendigerVerein({ id: 42, edit_restricted: true }),
+      [
+        {
+          id: 7,
+          name: 'Alpha',
+          short_name: 'ALP',
+          logo_url: '/club.png',
+          manage_logo: true,
+          manage_info: true,
+          info_locked_by_season: false,
+        },
+        {
+          id: 8,
+          name: 'Beta',
+          short_name: 'BET',
+          logo_url: '/club.png',
+          manage_logo: false,
+          manage_info: false,
+          info_locked_by_season: true,
+        },
+        {
+          id: 9,
+          name: 'Gamma',
+          short_name: 'GAM',
+          logo_url: '/club.png',
+          manage_logo: false,
+          manage_info: false,
+          info_locked_by_season: false,
+        },
+      ]
+    );
 
-    httpMock
-      .expectOne(`${environment.apiURL}admin/clubs/42/managers.json`)
-      .flush({ notify_user_ids: [], managers: [] });
-    httpMock.expectOne(`${environment.apiURL}admin/clubs/42/teams.json`).flush([
-      {
-        id: 7,
-        name: 'Alpha',
-        short_name: 'ALP',
-        logo_url: '/club.png',
-        manage_logo: true,
-        manage_info: true,
-        info_locked_by_season: false,
-      },
-      {
-        id: 8,
-        name: 'Beta',
-        short_name: 'BET',
-        logo_url: '/club.png',
-        manage_logo: false,
-        manage_info: false,
-        info_locked_by_season: true,
-      },
-      {
-        id: 9,
-        name: 'Gamma',
-        short_name: 'GAM',
-        logo_url: '/club.png',
-        manage_logo: false,
-        manage_info: false,
-        info_locked_by_season: false,
-      },
-    ]);
-    httpMock
-      .expectOne(`${environment.apiURL}admin/clubs/42.json`)
-      .flush(vollstaendigerVerein({ id: 42, edit_restricted: true }));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('#team_name_7')).not.toBeNull();
-    expect(el.querySelector('#team_short_name_7')).not.toBeNull();
+    expect(el().querySelector('#team_name_7')).not.toBeNull();
+    expect(el().querySelector('#team_short_name_7')).not.toBeNull();
     // Gesperrt heisst: kein Feld, sondern die Begruendung.
-    expect(el.querySelector('#team_name_8')).toBeNull();
-    const text = el.textContent ?? '';
+    expect(el().querySelector('#team_name_8')).toBeNull();
+    const text = el().textContent ?? '';
     expect(text).toContain('clubAdmin.edit.teamInfoLocked');
     // Die fremde Liga behaelt ihre eigene, andere Begruendung.
     expect(text).toContain('clubAdmin.edit.teamLogoForeignLeague');
     expect(text).toContain('Beta');
+  });
+});
+
+// Anlegen: Alle Pflichtangaben muessen erreichbar sein, auch die im zweiten
+// Reiter. Logo und Mannschaften gibt es erst am gespeicherten Verein.
+describe('ClubEditComponent im Anlege-Modus', () => {
+  let harness: RouterTestingHarness;
+  let httpMock: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterModule,
+        FormsModule,
+        UikitCommonModule,
+        getTranslocoTestingModule(),
+      ],
+      declarations: [ClubEditComponent],
+      providers: [
+        provideRouter([{ path: 'verein/neu', component: ClubEditComponent }]),
+      ],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  async function oeffne(url: string): Promise<HTMLElement> {
+    harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(url, ClubEditComponent);
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    return harness.routeNativeElement as HTMLElement;
+  }
+
+  it('bietet nur Allgemein und Anschrift an und markiert beide', async () => {
+    const el = await oeffne('/verein/neu');
+    const ids = Array.from(el.querySelectorAll('[role="tab"]')).map((t) =>
+      t.getAttribute('data-testid')
+    );
+
+    expect(ids).toEqual(['tab-allgemein', 'tab-anschrift']);
+    // Der leere Verein hat in beiden Reitern Luecken.
+    for (const id of ids) {
+      expect(el.querySelector(`[data-testid="${id}"]`)!.classList)
+        .withContext(id!)
+        .toContain('!text-red-600');
+    }
+  });
+
+  it('erreicht im Reiter Anschrift alle Pflichtfelder samt Landesverband', async () => {
+    const el = await oeffne('/verein/neu?reiter=anschrift');
+
+    for (const feld of [
+      'short_name',
+      'long_name',
+      'street',
+      'house_number',
+      'postcode',
+      'city',
+    ]) {
+      expect(el.querySelector(`input#${feld}`))
+        .withContext(feld)
+        .not.toBeNull();
+    }
+    expect(
+      el.querySelector('fb-select-search[name="state_association_id"]')
+    ).not.toBeNull();
+  });
+
+  // Die Landesverband-Absage beim Anlegen kommt als 422 mit Text, ohne
+  // Feldangabe (state_association_error_message). Die Maske prueft nur, dass
+  // ein Verband gewaehlt ist; ob er einen Spielbetrieb hat, weiss der Server.
+  // Beim Bearbeiten antwortet er mit 403, darauf leitet der ErrorInterceptor
+  // auf die Startseite um, deshalb gibt es diesen Fall nur hier.
+  it('markiert Anschrift bei der Landesverband-Absage und hebt sie bei Korrektur auf', async () => {
+    harness = await RouterTestingHarness.create();
+    const component = await harness.navigateByUrl(
+      '/verein/neu',
+      ClubEditComponent
+    );
+    const club = vollstaendigerVerein({ id: 0, state_association_id: 99 });
+    expect(component.tabInvalid(club, 'anschrift')).toBeFalse();
+
+    component.submit(club);
+    httpMock.expectOne(`${environment.apiURL}admin/clubs.json`).flush(
+      {
+        success: false,
+        message:
+          'Für diesen Landesverband gibt es keinen Spielbetrieb. Der Verein hätte keinen zuständigen Verband.',
+      },
+      { status: 422, statusText: 'Unprocessable Entity' }
+    );
+
+    expect(component.tabInvalid(club, 'anschrift')).toBeTrue();
+    expect(component.tabInvalid(club, 'allgemein')).toBeFalse();
+
+    club.state_association_id = 5;
+    expect(component.tabInvalid(club, 'anschrift')).toBeFalse();
   });
 });

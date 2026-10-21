@@ -49,6 +49,7 @@
   "globalList": {
     "title": "License management",
     "filter": "Filter",
+    "moreFilters": "More filters",
     "searchPlayer": "Search player...",
     "searchClub": "Search club...",
     "genderBoth": "male & female",
@@ -111,6 +112,8 @@
     "statusRequested": "Requested",
     "statusRejected": "Rejected",
     "statusWithdrawn": "Withdrawn",
+    "statusInvalid": "Invalid",
+    "statusSuspended": "Suspended",
     "filterAllFieldSizes": "All field sizes",
     "fieldSizeLarge": "Large field",
     "fieldSizeSmall": "Small field",
@@ -136,6 +139,9 @@
     "csvExpress": "Express",
     "csvRequested": "Requested",
     "csvApproved": "Granted",
+    "csvStatusChangedAt": "Status changed on",
+    "csvStatusChangedBy": "Status changed by",
+    "csvStatusReason": "Reason",
     "csvZweitlizenz": "Second license",
     "csvErstlizenz": "First license",
     "csvZusatzlizenz": "Additional license",
@@ -334,5 +340,21 @@
     "fileTooLarge": "The file may not exceed 5 MB.",
     "rejectionRevoked": "Rejection for player {{ firstName }} {{ lastName }} ({{ id }}) revoked, the request is pending again",
     "requestRejectedFreeOfCharge": "License request for player {{ firstName }} {{ lastName }} ({{ id }}) rejected free of charge"
+  },
+  "clubSummary": {
+    "show": "Show licenses per season",
+    "title": "Licenses per season",
+    "season": "Season",
+    "team": "Team",
+    "approved": "Granted",
+    "requested": "Requested",
+    "denied": "Rejected",
+    "withdrawn": "Withdrawn",
+    "other": "Other",
+    "total": "Total",
+    "noTeams": "The club had no teams in this season.",
+    "loadFailed": "The license numbers could not be loaded.",
+    "hint": "“Granted” also counts licenses that were later deleted or invalidated by a transfer. “Other” covers e.g. requests deleted before a decision. For joint teams, the licenses of all participating clubs count.",
+    "retry": "Try again"
   }
 }

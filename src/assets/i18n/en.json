@@ -12,6 +12,9 @@
     "no": "No",
     "noResults": "No matches"
   },
+  "tabs": {
+    "invalid": "contains errors"
+  },
   "language": {
     "label": "Language",
     "de": "German",
