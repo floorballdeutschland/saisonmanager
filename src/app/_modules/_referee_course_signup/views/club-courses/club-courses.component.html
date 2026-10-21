@@ -1,0 +1,302 @@
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-2">
+    {{ "courseSignup.clubTitle" | transloco }}
+  </h1>
+  <p class="text-fb-gray-500 text-sm mb-6">
+    {{ "courseSignup.clubIntro" | transloco }}
+  </p>
+
+  @if (loading) {
+    <div class="text-fb-gray-500">{{ "courseSignup.loading" | transloco }}</div>
+  } @else {
+    <section class="mb-10" data-test="club-registrations">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <h2 class="text-lg font-bold">
+          {{ "courseSignup.clubRegistrations" | transloco }}
+        </h2>
+        <label class="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            [checked]="showCancelled"
+            (change)="showCancelled = $any($event.target).checked"
+          />
+          {{ "courseSignup.showCancelled" | transloco }}
+        </label>
+      </div>
+      @if (visibleRegistrations.length === 0) {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "courseSignup.noClubRegistrations" | transloco }}
+        </p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700">
+                <th class="py-2 px-2">
+                  {{ "courseSignup.colName" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "courseSignup.colCourse" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "courseSignup.colStatus" | transloco }}
+                </th>
+                <th class="py-2 px-2">
+                  {{ "courseSignup.colFee" | transloco }}
+                </th>
+                <th class="py-2 px-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of visibleRegistrations; track r.id) {
+                <tr class="border-b border-fb-gray-800" data-test="club-row">
+                  <td class="py-2 px-2">
+                    {{ r.nachname }}, {{ r.vorname }}
+                    <span class="block text-xs text-fb-gray-500">{{
+                      r.club?.name
+                    }}</span>
+                  </td>
+                  <td class="py-2 px-2">
+                    {{ r.course_title }}
+                    <span class="block text-xs text-fb-gray-500">{{
+                      r.starts_on | date: "dd.MM.yyyy"
+                    }}</span>
+                  </td>
+                  <td class="py-2 px-2">
+                    {{ "courseSignup.status." + r.status | transloco }}
+                    @if (r.result) {
+                      · {{ "courseSignup.result." + r.result | transloco }}
+                    }
+                    @if (r.late_cancellation) {
+                      <span class="block text-xs text-red-700">{{
+                        "courseSignup.late" | transloco
+                      }}</span>
+                    }
+                  </td>
+                  <td class="py-2 px-2 whitespace-nowrap">
+                    {{ euro(r.fee_cents) }}
+                  </td>
+                  <td class="py-2 px-2">
+                    @if (r.cancellable) {
+                      <button
+                        type="button"
+                        class="text-red-700 hover:underline"
+                        [disabled]="busy"
+                        (click)="cancel(r)"
+                      >
+                        {{ "courseSignup.cancel" | transloco }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold mb-3">
+        {{ "courseSignup.offers" | transloco }}
+      </h2>
+      @if (courses.length === 0) {
+        <p class="text-fb-gray-500" data-test="no-offers">
+          {{ "courseSignup.noOffers" | transloco }}
+        </p>
+      }
+      <div class="flex flex-col gap-4">
+        @for (course of courses; track course.id) {
+          <fb-course-offer [offer]="course">
+            @if (registeredFor(course) > 0) {
+              <p class="text-sm font-bold">
+                {{
+                  "courseSignup.clubRegisteredCount"
+                    | transloco: { count: registeredFor(course) }
+                }}
+              </p>
+            }
+            @if (course.registration_mode === "none") {
+              <p class="text-sm text-fb-gray-500">
+                {{ "courseSignup.announcementOnly" | transloco }}
+              </p>
+            } @else if (course.registration_closed_reason) {
+              <p class="text-sm text-fb-gray-500">
+                {{ course.registration_closed_reason }}
+              </p>
+            } @else if (openId === course.id) {
+              <div
+                class="border-t border-fb-gray-700 pt-3 flex flex-col gap-3"
+                data-test="club-form"
+              >
+                <div class="flex gap-4 text-sm">
+                  <label class="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="mode"
+                      value="referee"
+                      [(ngModel)]="mode"
+                      [disabled]="referees.length === 0"
+                    />
+                    {{ "courseSignup.ownReferee" | transloco }}
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="mode"
+                      value="person"
+                      data-test="mode-person"
+                      [(ngModel)]="mode"
+                    />
+                    {{ "courseSignup.newPerson" | transloco }}
+                  </label>
+                </div>
+
+                @if (mode === "referee") {
+                  <select
+                    data-test="referee-select"
+                    class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                    [(ngModel)]="refereeId"
+                  >
+                    <option [ngValue]="null">
+                      {{ "courseSignup.chooseReferee" | transloco }}
+                    </option>
+                    @for (referee of referees; track referee.id) {
+                      <option
+                        [ngValue]="referee.id"
+                        [disabled]="alreadyRegistered(course, referee.id)"
+                      >
+                        {{ referee.nachname }}, {{ referee.vorname }} ({{
+                          referee.lizenzstufe || "–"
+                        }})
+                      </option>
+                    }
+                  </select>
+                } @else {
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      data-test="person-vorname"
+                      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                      [placeholder]="'courseSignup.vorname' | transloco"
+                      [(ngModel)]="person.vorname"
+                    />
+                    <input
+                      type="text"
+                      data-test="person-nachname"
+                      class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                      [placeholder]="'courseSignup.nachname' | transloco"
+                      [(ngModel)]="person.nachname"
+                    />
+                    <label class="flex flex-col gap-1 text-xs font-bold">
+                      {{ "courseSignup.geburtsdatum" | transloco }}
+                      <input
+                        type="date"
+                        data-test="person-geburtsdatum"
+                        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                        [(ngModel)]="person.geburtsdatum"
+                      />
+                    </label>
+                    <label class="flex flex-col gap-1 text-xs font-bold">
+                      {{ "courseSignup.emailOptional" | transloco }}
+                      <input
+                        type="email"
+                        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                        [(ngModel)]="person.email"
+                      />
+                    </label>
+                    @if (clubs.length > 1) {
+                      <select
+                        class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                        [(ngModel)]="person.club_id"
+                      >
+                        <option [ngValue]="null">
+                          {{ "courseSignup.chooseClub" | transloco }}
+                        </option>
+                        @for (club of clubs; track club.id) {
+                          <option [ngValue]="club.id">{{ club.name }}</option>
+                        }
+                      </select>
+                    }
+                  </div>
+                  @if (needsGuardian(course)) {
+                    <div
+                      class="p-3 border border-fb-gray-700 rounded-[5px] flex flex-col gap-2"
+                      data-test="guardian"
+                    >
+                      <p class="text-sm">
+                        {{ "courseSignup.guardianHint" | transloco }}
+                      </p>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          data-test="guardian-name"
+                          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                          [placeholder]="
+                            'courseSignup.guardianName' | transloco
+                          "
+                          [(ngModel)]="person.guardian_name"
+                        />
+                        <input
+                          type="email"
+                          data-test="guardian-email"
+                          class="border border-fb-gray-600 rounded-[5px] px-3 py-2 text-sm font-normal"
+                          [placeholder]="
+                            'courseSignup.guardianEmail' | transloco
+                          "
+                          [(ngModel)]="person.guardian_email"
+                        />
+                      </div>
+                    </div>
+                  }
+                }
+
+                <fb-course-signup-fields
+                  [offer]="course"
+                  [(answers)]="answers"
+                ></fb-course-signup-fields>
+                @if (missing(course).length) {
+                  <p class="text-xs text-fb-gray-500">
+                    {{
+                      "courseSignup.missing"
+                        | transloco: { fields: missing(course).join(", ") }
+                    }}
+                  </p>
+                }
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    data-test="submit"
+                    class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+                    [disabled]="busy || !canSubmit(course)"
+                    (click)="register(course)"
+                  >
+                    {{ "courseSignup.register" | transloco }}
+                  </button>
+                  <button
+                    type="button"
+                    class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px]"
+                    (click)="openId = null"
+                  >
+                    {{ "courseSignup.done" | transloco }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div>
+                <button
+                  type="button"
+                  [attr.data-test]="'open-' + course.id"
+                  class="px-4 py-2 text-sm font-bold bg-black text-white rounded-[5px]"
+                  (click)="open(course)"
+                >
+                  {{ "courseSignup.clubRegister" | transloco }}
+                </button>
+              </div>
+            }
+          </fb-course-offer>
+        }
+      </div>
+    </section>
+  }
+</div>
