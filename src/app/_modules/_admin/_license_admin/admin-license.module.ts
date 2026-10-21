@@ -24,6 +24,7 @@ import * as Views from './views';
   ],
   declarations: [
     Views.LicenseClubIndexComponent,
+    Views.LicenseClubSummaryComponent,
     Views.LicenseTeamDetailComponent,
     Views.LicenseAdminTeamEntryComponent,
     Views.LicenseAdminGlobalListComponent,

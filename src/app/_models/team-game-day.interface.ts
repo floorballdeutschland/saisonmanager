@@ -1,3 +1,9 @@
+// Obergrenze der Anmerkung zum Einspruch gegen den Spieltagsbericht, gilt für
+// Gastmannschaft und Schiedsrichter. Muss zu
+// GameDayConfirmationComment::COMMENT_MAX_LENGTH in der API passen, die API
+// weist längere Texte mit 422 ab.
+export const CONFIRMATION_COMMENT_MAX_LENGTH = 2000;
+
 export interface TeamGameDayChecklistItem {
   id: number;
   question: string;
@@ -25,6 +31,7 @@ export interface TeamGameDayTeam {
   confirmed_at?: string | null;
   properly_conducted?: boolean | null;
   checklist_answers: TeamGameDayChecklistAnswer[];
+  comment?: string | null;
 }
 
 export interface TeamGameDay {
@@ -46,4 +53,5 @@ export interface TeamGameDayConfirmResponse {
   confirmed_at: string;
   properly_conducted: boolean;
   checklist_answers: TeamGameDayChecklistAnswer[];
+  comment?: string | null;
 }

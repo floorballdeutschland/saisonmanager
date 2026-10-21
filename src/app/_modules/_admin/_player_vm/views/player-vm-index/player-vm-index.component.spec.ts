@@ -430,6 +430,11 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="missing-email-count"]')
     ).toBeNull();
+    // Der Import fuellt vor allem Adressen nach; ohne das Feld fehlt er
+    // samt seinem Bereich „Weitere Aktionen" je Verein.
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-toggle"]')
+    ).toBeNull();
   });
 
   // Ein Verein ohne Luecke soll das auch bestaetigt bekommen, statt gar nichts
@@ -456,6 +461,10 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     ) as HTMLElement;
     expect(zaehler.textContent).toContain('Alle mit E-Mail-Adresse');
     expect(zaehler.classList).not.toContain('text-red-600');
+    // Gegenprobe zum Test davor: Mit Feld steht der Import-Bereich da.
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-toggle"]')
+    ).not.toBeNull();
   });
 
   // Die Einleitung erklärt das Deaktivieren; ohne einen einzigen eigenen Verein
@@ -492,7 +501,8 @@ describe('PlayerVmIndexComponent (CSV)', () => {
               index: {
                 emailMissingCount: '{{ count }} ohne E-Mail-Adresse',
                 emailAllPresent: 'Alle mit E-Mail-Adresse',
-                importShow: 'Import',
+                moreActionsClub: 'Weitere Aktionen für {{ club }}',
+                exportSection: 'Export',
                 colEmail: 'E-Mail',
                 colBirthdate: 'Geburtsdatum',
                 skipAlreadySet: 'war schon gefüllt',
@@ -656,7 +666,7 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     fixture.detectChanges();
 
     const list = component.clubLists[0];
-    component.toggleImport(list);
+    component.setImportOpen(list, true);
     fixture.detectChanges();
 
     const file = new File(['ID;E-Mail\n1;neu@example.org\n'], 'spieler.csv', {
@@ -749,7 +759,7 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     fixture.detectChanges();
 
     const list = component.clubLists[0];
-    component.toggleImport(list);
+    component.setImportOpen(list, true);
     fixture.detectChanges();
 
     const file = new File(['kaputt'], 'spieler.csv', { type: 'text/csv' });
@@ -794,7 +804,7 @@ describe('PlayerVmIndexComponent (CSV)', () => {
       .flush([{ id: 2, first_name: 'B', last_name: 'Zwei', email: null }]);
     fixture.detectChanges();
 
-    component.toggleImport(component.clubLists[0]);
+    component.setImportOpen(component.clubLists[0], true);
     fixture.detectChanges();
 
     expect(
@@ -802,6 +812,56 @@ describe('PlayerVmIndexComponent (CSV)', () => {
         .length
     ).toBe(1);
     expect(component.clubLists[1].showImport).toBeFalse();
+  });
+
+  // Export und Import liegen eingeklappt („Export" im Kopf, „Weitere Aktionen
+  // fuer <Verein>" an der Liste). Der Export
+  // gilt fuer alle Vereine und steht im Kopf, der Import je Verein an dessen
+  // Liste; die Beschriftung des Imports nennt den Verein, damit beides nicht
+  // verwechselt wird.
+  it('legt den Export in den Kopf und den Import je Verein in einen eingeklappten Bereich', async () => {
+    await setup();
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
+      { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      { id: 114, name: 'SG Partner', teams: [], manage_players: true },
+    ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([{ id: 1, first_name: 'A', last_name: 'Eins', email: null }]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
+      .flush([{ id: 2, first_name: 'B', last_name: 'Zwei', email: null }]);
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const kopf = el.querySelector('[data-testid="export-section"]')!;
+    expect(kopf.querySelector('summary')!.textContent!.trim()).toBe('Export');
+    expect(kopf.querySelector('[data-testid="export-csv"]')).not.toBeNull();
+    expect(kopf.querySelector('details')!.open).toBeFalse();
+
+    const bereiche = Array.from(
+      el.querySelectorAll('[data-testid="import-toggle"]')
+    );
+    expect(bereiche.length).toBe(2);
+    expect(bereiche[1].querySelector('summary')!.textContent).toContain(
+      'Weitere Aktionen für SG Partner'
+    );
+    expect(el.querySelector('[data-testid="import-panel"]')).toBeNull();
+
+    // Aufklappen wie im Browser: details.open setzen, toggle feuern.
+    const details = bereiche[1].querySelector('details')!;
+    details.open = true;
+    details.dispatchEvent(new Event('toggle'));
+    fixture.detectChanges();
+
+    const panels = el.querySelectorAll('[data-testid="import-panel"]');
+    expect(panels.length).toBe(1);
+    expect(bereiche[1].contains(panels[0])).toBeTrue();
+    expect(fixture.componentInstance.clubLists[1].showImport).toBeTrue();
+    expect(fixture.componentInstance.clubLists[0].showImport).toBeFalse();
   });
 });
 

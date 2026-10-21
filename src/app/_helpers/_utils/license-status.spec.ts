@@ -2,6 +2,7 @@ import { PlayerLicenseHistory } from '@floorball/types';
 import {
   chronologicalLicenseHistory,
   isActiveLicenseHistory,
+  isInvalidLicenseStatus,
   isSuspendedStatus,
   latestLicenseHistory,
   licenseStatusBadgeClass,
@@ -21,6 +22,25 @@ describe('licenseStatusBadgeClass', () => {
     expect(licenseStatusBadgeClass(2)).toContain('yellow');
     expect(licenseStatusBadgeClass(8)).toContain('gray');
     expect(licenseStatusBadgeClass(undefined)).toContain('gray');
+  });
+
+  // api#787: Ungueltige und zurueckgezogene stehen jetzt nebeneinander in der
+  // Verbandsuebersicht und muessen sich trennen lassen.
+  it('faerbt geloescht, Transfer und ignoriert anders als zurueckgezogen', () => {
+    for (const id of [4, 6, 7]) {
+      expect(licenseStatusBadgeClass(id)).toContain('stone');
+      expect(licenseStatusBadgeClass(id)).not.toBe(licenseStatusBadgeClass(8));
+    }
+  });
+});
+
+describe('isInvalidLicenseStatus', () => {
+  it('erkennt 4, 6 und 7, auch als Zeichenkette aus JSONB', () => {
+    expect([4, 6, 7].every((id) => isInvalidLicenseStatus(id))).toBe(true);
+    expect(isInvalidLicenseStatus('6' as unknown as number)).toBe(true);
+    expect([1, 2, 3, 8, 9].some((id) => isInvalidLicenseStatus(id))).toBe(
+      false
+    );
   });
 });
 
