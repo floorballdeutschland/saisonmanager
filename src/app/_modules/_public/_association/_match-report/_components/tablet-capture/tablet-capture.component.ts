@@ -163,10 +163,12 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public draft: ShotDraft | null = null;
   public gameTimeInvalid = false;
 
-  // Der nächste Tipp aufs Feld ist ein Freischlag (fe#589). Gilt für genau
-  // einen Tipp: Wer das Zurückschalten vergisst, soll keine Schüsse als
-  // Freischläge erfassen.
-  public freeHitArmed = false;
+  // Der nächste Tipp aufs Feld ist ein Freischlag dieses Teams (fe#589). Gilt
+  // für genau einen Tipp: Wer das Zurückschalten vergisst, soll keine Schüsse
+  // als Freischläge erfassen. Das Team wird ausdrücklich gewählt, weil ein
+  // Freischlag oft in der eigenen Hälfte ausgeführt wird und die Feldhälfte
+  // dann das falsche Team ergäbe.
+  public freeHitArmed: ShotTeam | null = null;
   public lastFreeHit: LastFreeHit | null = null;
 
   public clockOffset: number | null = null;
@@ -262,7 +264,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.draft = null;
     this._pointerDown = null;
     this.gameTimeInvalid = false;
-    this.freeHitArmed = false;
+    this.freeHitArmed = null;
     this.lastFreeHit = null;
     this.linkError = false;
     this._goalkeeperChoice = {};
@@ -455,7 +457,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     const screenX = (down.clientX - rect.left) / rect.width;
     const screenY = (down.clientY - rect.top) / rect.height;
     if (this.freeHitArmed) {
-      this.recordFreeHit(screenX, screenY, down.deviceNow);
+      this.recordFreeHit(this.freeHitArmed, screenX, screenY, down.deviceNow);
     } else {
       this.startDraft(screenX, screenY, down.deviceNow);
     }
@@ -532,25 +534,25 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   // --- Freischläge (fe#589) ----------------------------------------------------
 
-  public toggleFreeHitArmed(): void {
-    this.freeHitArmed = !this.freeHitArmed;
+  /** Freischlag für dieses Team scharf schalten; derselbe Knopf bricht ab. */
+  public toggleFreeHitArmed(team: ShotTeam): void {
+    this.freeHitArmed = this.freeHitArmed === team ? null : team;
   }
 
   /**
-   * Ein Tipp im Freischlag-Modus speichert sofort, ohne Entwurf: Team ist das,
-   * das in dieser Hälfte angreift (dieselbe Regel wie beim Schuss). Stimmt es
-   * nicht, tauscht „Anderes Team“ es danach. Ein offener Schuss-Entwurf bleibt
-   * dabei unangetastet.
+   * Ein Tipp im Freischlag-Modus speichert sofort, ohne Entwurf, für das
+   * vorher gewählte Team. Ein offener Schuss-Entwurf bleibt dabei unangetastet;
+   * die Rückmeldung mit „Rückgängig“ steht dann über dem Entwurf.
    */
   public recordFreeHit(
+    team: ShotTeam,
     screenX: number,
     screenY: number,
     deviceNow = Date.now()
   ): void {
-    this.freeHitArmed = false;
+    this.freeHitArmed = null;
     if (!this.buffer) return;
 
-    const team = shootingTeamForTap(screenX, this.viewPeriod, this.sides);
     const entry: LastFreeHit = {
       client_uuid: newClientUuid(),
       team,
