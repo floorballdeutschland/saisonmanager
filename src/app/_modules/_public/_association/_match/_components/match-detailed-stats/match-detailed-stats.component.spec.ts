@@ -175,6 +175,43 @@ describe('MatchDetailedStatsComponent', () => {
     expect(el().textContent).toContain('A. Schütze');
   });
 
+  describe('Feldgröße (fe#591)', () => {
+    const svg = () =>
+      el().querySelector('[data-test="chart-home"] svg') as SVGSVGElement;
+    const goalDot = () =>
+      el().querySelector(
+        '[data-test="chart-home"] circle[data-result="goal"]'
+      ) as SVGCircleElement;
+
+    it('zeichnet ohne Feldgröße das Großfeld 40 x 20 m', () => {
+      load(stats());
+      expect(svg().getAttribute('data-field-size')).toBe('GF');
+      expect(svg().getAttribute('viewBox')).toBe('-0.5 -0.5 41 21');
+      // x = 0,9 vor dem gegnerischen Tor, auf 40 m
+      expect(Number(goalDot().getAttribute('cx'))).toBeCloseTo(36, 5);
+      expect(Number(goalDot().getAttribute('cy'))).toBeCloseTo(10, 5);
+    });
+
+    it('zeichnet ein Kleinfeld-Spiel auf 28 x 16 m', () => {
+      fixture.componentRef.setInput('fieldSize', 'KF');
+      load(stats());
+      expect(svg().getAttribute('data-field-size')).toBe('KF');
+      expect(svg().getAttribute('viewBox')).toBe('-0.5 -0.5 29 17');
+      expect(Number(goalDot().getAttribute('cx'))).toBeCloseTo(25.2, 5);
+      expect(Number(goalDot().getAttribute('cy'))).toBeCloseTo(8, 5);
+      // Mittelpunkt statt Mittelkreis, Torräume beidseitig
+      const center = el().querySelector(
+        '[data-test="chart-home"] [data-testid="field-center"]'
+      );
+      expect(center?.getAttribute('cx')).toBe('14');
+      expect(
+        el().querySelectorAll(
+          '[data-test="chart-home"] [data-testid="field-goal-area"]'
+        ).length
+      ).toBe(2);
+    });
+  });
+
   describe('Hinweis auf unvollständige Erfassung', () => {
     it('fehlt, wenn die Schüsse als vollständig bestätigt sind', () => {
       load(stats({ complete: true }));

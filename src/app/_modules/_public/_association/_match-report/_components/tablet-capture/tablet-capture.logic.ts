@@ -82,10 +82,12 @@ function round4(value: number): number {
  * Bildschirmposition (0..1 von links nach rechts und von oben nach unten) in
  * die Angriffsrichtung des schießenden Teams umrechnen.
  *
- * Beide Achsen laufen über das ganze Feld von Bande zu Bande (40 x 20 m):
- * x = 0 ist die Bande hinter dem eigenen Tor, x = 1 die Bande hinter dem
- * gegnerischen Tor, y = 0 die linke Seitenbande aus Sicht des Angreifers.
- * Das SVG der Erfassung bildet genau diese Fläche ab (viewBox 400 x 200).
+ * Beide Achsen laufen über das ganze Feld von Bande zu Bande, je nach
+ * Feldgröße 40 x 20 m (GF) oder 28 x 16 m (KF): x = 0 ist die Bande hinter
+ * dem eigenen Tor, x = 1 die Bande hinter dem gegnerischen Tor, y = 0 die
+ * linke Seitenbande aus Sicht des Angreifers. Das SVG der Erfassung bildet
+ * genau diese Fläche ab (viewBox in Metern, siehe field-geometry.ts), die
+ * Umrechnung braucht die Feldgröße deshalb nicht.
  *
  * Greift das Team nach rechts an, ist die linke Bande x = 0 und die obere
  * Seitenbande y = 0. Greift es nach links an, ist das Bild um 180 Grad

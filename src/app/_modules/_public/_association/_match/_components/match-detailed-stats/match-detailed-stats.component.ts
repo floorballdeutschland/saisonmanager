@@ -83,6 +83,8 @@ export const DETAILED_STATS_REFRESH_MS = 30000;
 })
 export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
   @Input() game!: Game;
+  /** `league.field_size` für das Schussbild; unbekannt zeichnet Großfeld. */
+  @Input() fieldSize: string | null | undefined = null;
 
   stats?: DetailedStats;
   loading = false;

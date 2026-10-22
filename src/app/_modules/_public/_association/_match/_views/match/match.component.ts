@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import {
   interval,
+  map,
   Observable,
   Subject,
   Subscription,
@@ -46,6 +47,8 @@ export class MatchComponent implements OnInit, OnDestroy {
   game?: Game;
   additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
+  // Feldgröße der Liga für das Schussbild (fe#591), Großfeld ohne Liga.
+  fieldSize$!: Observable<string | null>;
 
   intervalSub?: Subscription;
   // Das Spiel, das die Adresse gerade verlangt. Eine Antwort fuer ein anderes
@@ -93,6 +96,9 @@ export class MatchComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._associationService.displayAssociationHeader$.next(false);
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.fieldSize$ = this._leagueService.selectedLeague$.pipe(
+      map((league) => league?.field_size ?? null)
+    );
 
     const secretaryToken =
       this._route.snapshot.queryParamMap.get('secretary_token');

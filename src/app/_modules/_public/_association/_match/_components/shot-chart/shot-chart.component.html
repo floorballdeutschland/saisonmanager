@@ -1,72 +1,90 @@
 <figure class="m-0">
   <svg
     class="block w-full h-auto"
-    viewBox="-0.5 -0.5 41 21"
+    [attr.viewBox]="viewBox"
+    [attr.data-field-size]="field.size"
     [attr.role]="hasLinked ? 'group' : 'img'"
     [attr.aria-label]="
       'match.detailedStats.chart.ariaLabel'
         | transloco: { team: teamName, count: shots.length }
     "
   >
-    <!-- Bande, Mittellinie, Anstoßpunkte -->
+    <!-- Bande, Mittellinie, Mittelpunkt, Bullypunkte -->
     <rect
       x="0"
       y="0"
-      [attr.width]="rink.length"
-      [attr.height]="rink.width"
-      rx="2"
+      [attr.width]="field.length"
+      [attr.height]="field.width"
+      [attr.rx]="field.cornerRadius"
       fill="#f8fafc"
       stroke="#9ca3af"
       stroke-width="0.15"
     />
-    <line x1="20" y1="0" x2="20" y2="20" stroke="#d1d5db" stroke-width="0.12" />
-    <circle cx="20" cy="10" r="0.25" fill="#9ca3af" />
-    @for (x of [3.5, 20, 36.5]; track x) {
-      <circle [attr.cx]="x" cy="1.5" r="0.15" fill="#d1d5db" />
-      <circle [attr.cx]="x" cy="18.5" r="0.15" fill="#d1d5db" />
+    <line
+      [attr.x1]="markings.center.x"
+      y1="0"
+      [attr.x2]="markings.center.x"
+      [attr.y2]="field.width"
+      stroke="#d1d5db"
+      stroke-width="0.12"
+    />
+    <circle
+      [attr.cx]="markings.center.x"
+      [attr.cy]="markings.center.y"
+      r="0.25"
+      fill="#9ca3af"
+      data-testid="field-center"
+    />
+    @for (spot of markings.faceoffSpots; track $index) {
+      <circle [attr.cx]="spot.x" [attr.cy]="spot.y" r="0.15" fill="#d1d5db" />
     }
 
     <!-- Torraum, Torhüterraum und Tor, links und rechts -->
-    @for (side of [0, 1]; track side) {
-      <g [attr.transform]="side ? 'translate(40 20) rotate(180)' : null">
-        <rect
-          x="2.85"
-          y="7.5"
-          width="4"
-          height="5"
-          fill="none"
-          stroke="#d1d5db"
-          stroke-width="0.12"
-        />
-        <rect
-          x="3.5"
-          y="8.75"
-          width="1"
-          height="2.5"
-          fill="none"
-          stroke="#d1d5db"
-          stroke-width="0.12"
-        />
-        <rect
-          x="2.85"
-          y="9.2"
-          width="0.65"
-          height="1.6"
-          fill="#e5e7eb"
-          stroke="#6b7280"
-          stroke-width="0.1"
-        />
-      </g>
+    @for (area of markings.goalAreas; track $index) {
+      <rect
+        [attr.x]="area.x"
+        [attr.y]="area.y"
+        [attr.width]="area.width"
+        [attr.height]="area.height"
+        fill="none"
+        stroke="#d1d5db"
+        stroke-width="0.12"
+        data-testid="field-goal-area"
+      />
+    }
+    @for (area of markings.goalkeeperAreas; track $index) {
+      <rect
+        [attr.x]="area.x"
+        [attr.y]="area.y"
+        [attr.width]="area.width"
+        [attr.height]="area.height"
+        fill="none"
+        stroke="#d1d5db"
+        stroke-width="0.12"
+      />
+    }
+    @for (goal of markings.goals; track $index) {
+      <rect
+        [attr.x]="goal.x"
+        [attr.y]="goal.y"
+        [attr.width]="goal.width"
+        [attr.height]="goal.height"
+        fill="#e5e7eb"
+        stroke="#6b7280"
+        stroke-width="0.1"
+      />
     }
 
     @for (point of plotted; track $index) {
       <circle
         [attr.cx]="point.cx"
         [attr.cy]="point.cy"
-        [attr.r]="point.shot.result === 'goal' ? 0.65 : 0.5"
+        [attr.r]="(point.shot.result === 'goal' ? 0.65 : 0.5) * dotScale"
         [attr.fill]="colors[point.shot.result]"
         [attr.stroke]="point.shot.result === 'goal' ? '#14532d' : '#ffffff'"
-        [attr.stroke-width]="point.shot.result === 'goal' ? 0.15 : 0.1"
+        [attr.stroke-width]="
+          (point.shot.result === 'goal' ? 0.15 : 0.1) * dotScale
+        "
         [attr.data-result]="point.shot.result"
         [attr.data-linked]="point.linked || null"
         [attr.role]="point.linked ? 'button' : null"
