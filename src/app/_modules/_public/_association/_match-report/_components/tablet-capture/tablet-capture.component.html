@@ -119,27 +119,35 @@
       </div>
 
       <!--
-        Freischlag (fe#589): scharf für genau einen Tipp, danach wieder Schuss.
-        Der Tipp speichert sofort, das Team ergibt sich aus der Feldhälfte.
+        Freischlag (fe#589): Team wählen, dann Stelle antippen. Scharf für genau
+        einen Tipp, danach wieder Schuss. Das Team wird nicht aus der
+        Feldhälfte abgeleitet, weil ein Freischlag oft in der eigenen Hälfte
+        ausgeführt wird.
       -->
-      <button
-        type="button"
-        class="mt-2 min-h-[56px] w-full rounded-[5px] border-2 px-3 text-lg font-bold"
-        [class.bg-amber-500]="freeHitArmed"
-        [class.border-amber-600]="freeHitArmed"
-        [class.text-black]="freeHitArmed"
-        [class.border-amber-500]="!freeHitArmed"
-        [class.text-amber-800]="!freeHitArmed"
-        [attr.aria-pressed]="freeHitArmed"
-        data-testid="tablet-free-hit-arm"
-        (click)="toggleFreeHitArmed()"
-      >
-        @if (freeHitArmed) {
-          {{ "tablet.freeHit.armed" | transloco }}
-        } @else {
-          {{ "tablet.freeHit.arm" | transloco }}
+      <div class="mt-2 grid grid-cols-2 gap-2">
+        @for (team of ["home", "guest"]; track team) {
+          <button
+            type="button"
+            class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
+            [class.bg-amber-500]="freeHitArmed === team"
+            [class.border-amber-600]="freeHitArmed === team"
+            [class.text-black]="freeHitArmed === team"
+            [class.border-amber-500]="freeHitArmed !== team"
+            [class.text-amber-800]="freeHitArmed !== team"
+            [attr.aria-pressed]="freeHitArmed === team"
+            [attr.data-testid]="'tablet-free-hit-arm-' + team"
+            (click)="toggleFreeHitArmed($any(team))"
+          >
+            @if (freeHitArmed === team) {
+              {{ "tablet.freeHit.armed" | transloco }}
+            } @else {
+              {{
+                "tablet.freeHit.arm" | transloco: { team: teamName($any(team)) }
+              }}
+            }
+          </button>
         }
-      </button>
+      </div>
 
       <!--
         Szene vormerken (api#838): ein Tipp, gespeichert wird nur der Moment.
@@ -303,7 +311,9 @@
       </svg>
       @if (freeHitArmed) {
         <p class="mt-2 text-sm font-bold text-amber-800">
-          {{ "tablet.freeHit.hint" | transloco }}
+          {{
+            "tablet.freeHit.hint" | transloco: { team: teamName(freeHitArmed) }
+          }}
         </p>
       } @else if (!draft) {
         <p class="mt-2 text-sm text-fb-gray-500">
@@ -313,6 +323,71 @@
     </div>
 
     <div>
+      @if (lastMark) {
+        <div
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-violet-600 bg-violet-50 p-3"
+          data-testid="tablet-last-mark"
+        >
+          <span class="font-bold">
+            {{ "tablet.mark.saved" | transloco }}
+          </span>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+              data-testid="tablet-mark-undo"
+              (click)="undoLastMark()"
+            >
+              {{ "tablet.mark.undo" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+              (click)="dismissLastMark()"
+            >
+              {{ "tablet.mark.ok" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
+      @if (lastFreeHit) {
+        <div
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-amber-500 bg-amber-50 p-3"
+          data-testid="tablet-last-free-hit"
+        >
+          <span class="font-bold">
+            {{
+              "tablet.freeHit.saved"
+                | transloco: { team: teamName(lastFreeHit.team) }
+            }}
+          </span>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-black bg-white px-2 text-sm font-bold"
+              data-testid="tablet-free-hit-swap-team"
+              (click)="swapLastFreeHitTeam()"
+            >
+              {{ "tablet.freeHit.swapTeam" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+              data-testid="tablet-free-hit-undo"
+              (click)="undoLastFreeHit()"
+            >
+              {{ "tablet.freeHit.undo" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+              (click)="dismissLastFreeHit()"
+            >
+              {{ "tablet.freeHit.ok" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
       @if (draft) {
         <div class="flex flex-col gap-3" data-testid="tablet-draft">
           <div class="text-sm text-fb-gray-500">
@@ -519,71 +594,6 @@
         </div>
       } @else {
         <div data-testid="tablet-recent">
-          @if (lastMark) {
-            <div
-              class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-violet-600 bg-violet-50 p-3"
-              data-testid="tablet-last-mark"
-            >
-              <span class="font-bold">
-                {{ "tablet.mark.saved" | transloco }}
-              </span>
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
-                  data-testid="tablet-mark-undo"
-                  (click)="undoLastMark()"
-                >
-                  {{ "tablet.mark.undo" | transloco }}
-                </button>
-                <button
-                  type="button"
-                  class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
-                  (click)="dismissLastMark()"
-                >
-                  {{ "tablet.mark.ok" | transloco }}
-                </button>
-              </div>
-            </div>
-          }
-          @if (lastFreeHit) {
-            <div
-              class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-amber-500 bg-amber-50 p-3"
-              data-testid="tablet-last-free-hit"
-            >
-              <span class="font-bold">
-                {{
-                  "tablet.freeHit.saved"
-                    | transloco: { team: teamName(lastFreeHit.team) }
-                }}
-              </span>
-              <div class="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  class="min-h-[48px] rounded-[5px] border-2 border-black bg-white px-2 text-sm font-bold"
-                  data-testid="tablet-free-hit-swap-team"
-                  (click)="swapLastFreeHitTeam()"
-                >
-                  {{ "tablet.freeHit.swapTeam" | transloco }}
-                </button>
-                <button
-                  type="button"
-                  class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
-                  data-testid="tablet-free-hit-undo"
-                  (click)="undoLastFreeHit()"
-                >
-                  {{ "tablet.freeHit.undo" | transloco }}
-                </button>
-                <button
-                  type="button"
-                  class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
-                  (click)="dismissLastFreeHit()"
-                >
-                  {{ "tablet.freeHit.ok" | transloco }}
-                </button>
-              </div>
-            </div>
-          }
           <h4 class="mb-2 font-bold">
             {{ "tablet.recent.title" | transloco }}
           </h4>

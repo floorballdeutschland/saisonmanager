@@ -91,9 +91,9 @@
     "error": "Die Rückmeldung konnte nicht gesendet werden. Bitte später erneut versuchen."
   },
   "freeHit": {
-    "arm": "Freischlag: nächsten Tipp als Freischlag erfassen",
-    "armed": "Freischlag: Stelle auf dem Feld antippen (abbrechen)",
-    "hint": "Stelle des Freischlags antippen. Er wird sofort gespeichert, das Team ergibt sich aus der Feldhälfte.",
+    "arm": "Freischlag {{ team }}",
+    "armed": "Freischlag: Stelle antippen (abbrechen)",
+    "hint": "Stelle des Freischlags für {{ team }} antippen. Er wird sofort gespeichert.",
     "label": "Freischlag",
     "saved": "Freischlag {{ team }} gespeichert",
     "swapTeam": "Anderes Team",

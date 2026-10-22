@@ -10,6 +10,7 @@ import { Game, Shot, ShotInput } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 import { TabletCaptureComponent } from './tablet-capture.component';
+import { freeHitZone } from '../../../_match/_utils/detailed-stats';
 import { TabletFeedbackComponent } from './tablet-feedback.component';
 import { TabletHighlightRequestComponent } from './tablet-highlight-request.component';
 
@@ -749,21 +750,21 @@ describe('TabletCaptureComponent', () => {
   describe('Freischläge (fe#589)', () => {
     const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
 
-    function armFreeHit() {
+    function armFreeHit(team: 'home' | 'guest') {
       fixture.nativeElement
-        .querySelector('[data-testid="tablet-free-hit-arm"]')
+        .querySelector(`[data-testid="tablet-free-hit-arm-${team}"]`)
         .click();
       fixture.detectChanges();
-      expect(component.freeHitArmed).toBeTrue();
+      expect(component.freeHitArmed).toBe(team);
     }
 
     it('speichert einen Freischlag mit einem Tipp und schaltet danach zurück auf Schuss', async () => {
       await start();
-      armFreeHit();
-      // 1. Abschnitt: Heim greift nach rechts an, rechte Hälfte = Heim.
-      component.recordFreeHit(0.75, 0.25, T0);
+      armFreeHit('home');
+      // 1. Abschnitt: Heim greift nach rechts an.
+      component.recordFreeHit('home', 0.75, 0.25, T0);
 
-      expect(component.freeHitArmed).toBeFalse();
+      expect(component.freeHitArmed).toBeNull();
       expect(component.draft).toBeNull();
       const post = http.expectOne(API + 'games/4711/shots.json');
       const sent = post.request.body.shots as ShotInput[];
@@ -798,9 +799,11 @@ describe('TabletCaptureComponent', () => {
       expect(component.lastFreeHit!.team).toBe('home');
     });
 
-    it('legt einen Tipp im Freischlag-Modus über das Spielfeld als Freischlag an, nicht als Entwurf', async () => {
+    it('legt einen Tipp im Freischlag-Modus als Freischlag des gewählten Teams an, auch in dessen eigener Hälfte', async () => {
       await start();
-      armFreeHit();
+      // Heim greift im 1. Abschnitt nach rechts an; die linke Hälfte ist
+      // Heims Verteidigungszone. Die Feldhälfte ergäbe hier Gast.
+      armFreeHit('home');
       const field = fixture.nativeElement.querySelector(
         '[data-testid="tablet-field"]'
       ) as SVGElement;
@@ -819,17 +822,70 @@ describe('TabletCaptureComponent', () => {
       expect(component.draft).toBeNull();
       const sent = http.expectOne(API + 'games/4711/shots.json').request.body
         .shots as ShotInput[];
-      // Linke Hälfte im 1. Abschnitt: Gast greift dort an.
       expect(sent[0].kind).toBe('free_hit');
-      expect(sent[0].team).toBe('guest');
+      expect(sent[0].team).toBe('home');
+      expect(sent[0].x).toBeCloseTo(0.25, 2);
+      expect(freeHitZone({ x: sent[0].x!, y: sent[0].y! })).toBe('own_half');
+    });
+
+    it('bricht den Freischlag-Modus mit demselben Knopf ab', async () => {
+      await start();
+      armFreeHit('guest');
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-free-hit-arm-guest"]')
+        .click();
+      expect(component.freeHitArmed).toBeNull();
+    });
+
+    it('zeigt die Rückmeldung zum Freischlag auch bei offenem Schuss-Entwurf', async () => {
+      await start();
+      // Über die Oberfläche statt per Methodenaufruf, sonst ist die
+      // Komponente für die Änderungserkennung nicht als geändert markiert.
+      const tapField = (x: number, y: number) => {
+        const field = fixture.nativeElement.querySelector(
+          '[data-testid="tablet-field"]'
+        ) as SVGElement;
+        const rect = field.getBoundingClientRect();
+        const at = {
+          clientX: rect.left + rect.width * x,
+          clientY: rect.top + rect.height * y,
+          pointerId: 1,
+          isPrimary: true,
+          button: 0,
+          bubbles: true,
+        };
+        field.dispatchEvent(new PointerEvent('pointerdown', at));
+        field.dispatchEvent(new PointerEvent('pointerup', at));
+        fixture.detectChanges();
+      };
+      tapField(0.8, 0.5);
+      expect(component.draft).toBeTruthy();
+      armFreeHit('guest');
+      tapField(0.3, 0.3);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-draft"]')
+      ).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-last-free-hit"]'
+        )
+      ).toBeTruthy();
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-free-hit-undo"]')
+        .click();
+      expect(component.lastFreeHit).toBeNull();
+      expect(component.allShots.length).toBe(0);
+      expect(component.draft).toBeTruthy();
     });
 
     it('lässt einen offenen Schuss-Entwurf beim Freischlag unangetastet', async () => {
       await start();
       component.startDraft(0.8, 0.5, T0);
       const draft = component.draft;
-      component.toggleFreeHitArmed();
-      component.recordFreeHit(0.3, 0.3, T0 + 1000);
+      component.toggleFreeHitArmed('guest');
+      component.recordFreeHit('guest', 0.3, 0.3, T0 + 1000);
       http.expectOne(API + 'games/4711/shots.json');
 
       expect(component.draft).toBe(draft);
@@ -838,7 +894,7 @@ describe('TabletCaptureComponent', () => {
 
     it('schreibt den letzten Freischlag dem anderen Team zu und rechnet die Position um', async () => {
       await start();
-      component.recordFreeHit(0.75, 0.25, T0);
+      component.recordFreeHit('home', 0.75, 0.25, T0);
       const first = http.expectOne(API + 'games/4711/shots.json');
       first.flush({ shots: [asShot(first.request.body.shots[0])] });
       await settle();
@@ -859,7 +915,7 @@ describe('TabletCaptureComponent', () => {
 
     it('nimmt den letzten Freischlag zurück', async () => {
       await start();
-      component.recordFreeHit(0.75, 0.25, T0);
+      component.recordFreeHit('home', 0.75, 0.25, T0);
       http.expectOne(API + 'games/4711/shots.json');
 
       component.undoLastFreeHit();
@@ -870,7 +926,7 @@ describe('TabletCaptureComponent', () => {
 
     it('belegt „aus Freischlag“ vor, wenn derselbe Team-Freischlag höchstens 10 s zurückliegt', async () => {
       await start();
-      component.recordFreeHit(0.75, 0.25, T0);
+      component.recordFreeHit('home', 0.75, 0.25, T0);
       http.expectOne(API + 'games/4711/shots.json');
 
       component.startDraft(0.9, 0.5, T0 + 8000);
@@ -884,7 +940,7 @@ describe('TabletCaptureComponent', () => {
 
     it('belegt nicht vor, wenn der Freischlag länger als 10 s zurückliegt', async () => {
       await start();
-      component.recordFreeHit(0.75, 0.25, T0);
+      component.recordFreeHit('home', 0.75, 0.25, T0);
       http.expectOne(API + 'games/4711/shots.json');
 
       component.startDraft(0.9, 0.5, T0 + 11000);
@@ -893,7 +949,7 @@ describe('TabletCaptureComponent', () => {
 
     it('sendet den Schalter „aus Freischlag“ mit dem Schuss und behält eine Handauswahl', async () => {
       await start();
-      component.recordFreeHit(0.75, 0.25, T0);
+      component.recordFreeHit('home', 0.75, 0.25, T0);
       const first = http.expectOne(API + 'games/4711/shots.json');
       first.flush({ shots: [asShot(first.request.body.shots[0])] });
       await settle();
@@ -917,7 +973,7 @@ describe('TabletCaptureComponent', () => {
 
     it('korrigiert einen Freischlag ohne Ergebnis und ohne Personen', async () => {
       await start();
-      component.recordFreeHit(0.75, 0.25, T0);
+      component.recordFreeHit('home', 0.75, 0.25, T0);
       const first = http.expectOne(API + 'games/4711/shots.json');
       const sent = first.request.body.shots as ShotInput[];
       first.flush({ shots: [asShot(sent[0])] });
