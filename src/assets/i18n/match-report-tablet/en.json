@@ -89,5 +89,18 @@
     "sending": "Sending…",
     "sent": "Thank you for your feedback!",
     "error": "The feedback could not be sent. Please try again later."
+  },
+  "freeHit": {
+    "arm": "Free hit: record next tap as free hit",
+    "armed": "Free hit: tap the spot on the rink (cancel)",
+    "hint": "Tap where the free hit is taken. It is saved right away; the team follows from the half of the rink.",
+    "label": "Free hit",
+    "saved": "Free hit {{ team }} saved",
+    "swapTeam": "Other team",
+    "undo": "Undo",
+    "ok": "OK",
+    "fromFreeHit": "From free hit",
+    "fromFreeHitShort": "from free hit",
+    "delete": "Delete free hit"
   }
 }

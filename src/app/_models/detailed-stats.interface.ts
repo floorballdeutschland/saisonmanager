@@ -28,6 +28,20 @@ export interface DetailedStatsShot {
   shooter: PersonRef | null;
   /** Verknüpftes offizielles Tor (id in games.events), `null` ohne Verknüpfung. */
   event_id: number | null;
+  /** Schuss aus einem Freischlag heraus (fe#589). */
+  from_free_hit?: boolean;
+}
+
+/**
+ * Freischlag (fe#589, api#837), normiert auf die Angriffsrichtung des
+ * ausführenden Teams wie die Schüsse. Nur Statistik, keine Szenen.
+ */
+export interface DetailedStatsFreeHit {
+  team: ShotTeam;
+  period: number;
+  game_time: string;
+  x: number;
+  y: number;
 }
 
 /** `on_goal` = Tore + gehaltene Schüsse. */
@@ -37,6 +51,10 @@ export interface TeamShotStats {
   goals: number;
   blocked: number;
   missed: number;
+  /** Ab api#837; ältere Antworten haben die Felder nicht. */
+  free_hits?: number;
+  shots_from_free_hit?: number;
+  goals_from_free_hit?: number;
 }
 
 export interface TeamDetailedStats extends TeamShotStats {
@@ -65,7 +83,9 @@ export interface PlayerShotStats {
 export interface DetailedStats {
   /** `true` nur, wenn das Sekretariat die Schüsse als vollständig bestätigt hat. */
   complete: boolean | null;
+  /** Nur Schüsse, Freischläge stehen in `free_hits`. */
   shots: DetailedStatsShot[];
+  free_hits?: DetailedStatsFreeHit[];
   teams: Record<ShotTeam, TeamDetailedStats>;
   goalkeepers: GoalkeeperStats[];
   players: PlayerShotStats[];

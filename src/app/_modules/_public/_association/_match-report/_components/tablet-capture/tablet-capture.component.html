@@ -118,6 +118,29 @@
         </button>
       </div>
 
+      <!--
+        Freischlag (fe#589): scharf für genau einen Tipp, danach wieder Schuss.
+        Der Tipp speichert sofort, das Team ergibt sich aus der Feldhälfte.
+      -->
+      <button
+        type="button"
+        class="mt-2 min-h-[56px] w-full rounded-[5px] border-2 px-3 text-lg font-bold"
+        [class.bg-amber-500]="freeHitArmed"
+        [class.border-amber-600]="freeHitArmed"
+        [class.text-black]="freeHitArmed"
+        [class.border-amber-500]="!freeHitArmed"
+        [class.text-amber-800]="!freeHitArmed"
+        [attr.aria-pressed]="freeHitArmed"
+        data-testid="tablet-free-hit-arm"
+        (click)="toggleFreeHitArmed()"
+      >
+        @if (freeHitArmed) {
+          {{ "tablet.freeHit.armed" | transloco }}
+        } @else {
+          {{ "tablet.freeHit.arm" | transloco }}
+        }
+      </button>
+
       <div
         class="mt-2 flex justify-between text-sm font-bold"
         data-testid="tablet-directions"
@@ -135,6 +158,8 @@
       -->
       <svg
         class="mt-1 block w-full cursor-crosshair touch-none select-none"
+        [class.ring-4]="freeHitArmed"
+        [class.ring-amber-500]="freeHitArmed"
         [style.aspect-ratio]="field.length + ' / ' + field.width"
         [attr.viewBox]="'0 0 ' + field.length + ' ' + field.width"
         preserveAspectRatio="none"
@@ -217,16 +242,38 @@
         }
 
         @for (marker of fieldMarkers; track $index) {
-          <circle
-            [attr.cx]="marker.x * field.length"
-            [attr.cy]="marker.y * field.width"
-            [attr.r]="0.5 * markerScale"
-            [attr.opacity]="marker.pending ? 0.5 : 1"
-            [class.fill-green-600]="marker.result === 'goal'"
-            [class.fill-blue-600]="marker.result === 'saved'"
-            [class.fill-fb-gray-400]="marker.result === 'missed'"
-            [class.fill-orange-500]="marker.result === 'blocked'"
-          />
+          @if (marker.freeHit) {
+            <!-- Freischlag als Raute, Schüsse sind Kreise -->
+            <rect
+              [attr.x]="marker.x * field.length - 0.4 * markerScale"
+              [attr.y]="marker.y * field.width - 0.4 * markerScale"
+              [attr.width]="0.8 * markerScale"
+              [attr.height]="0.8 * markerScale"
+              [attr.transform]="
+                'rotate(45 ' +
+                marker.x * field.length +
+                ' ' +
+                marker.y * field.width +
+                ')'
+              "
+              [attr.opacity]="marker.pending ? 0.5 : 1"
+              class="fill-amber-500 stroke-black"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+              data-testid="tablet-free-hit-marker"
+            />
+          } @else {
+            <circle
+              [attr.cx]="marker.x * field.length"
+              [attr.cy]="marker.y * field.width"
+              [attr.r]="0.5 * markerScale"
+              [attr.opacity]="marker.pending ? 0.5 : 1"
+              [class.fill-green-600]="marker.result === 'goal'"
+              [class.fill-blue-600]="marker.result === 'saved'"
+              [class.fill-fb-gray-400]="marker.result === 'missed'"
+              [class.fill-orange-500]="marker.result === 'blocked'"
+            />
+          }
         }
         @if (draft && draft.period === viewPeriod) {
           <circle
@@ -240,7 +287,11 @@
           />
         }
       </svg>
-      @if (!draft) {
+      @if (freeHitArmed) {
+        <p class="mt-2 text-sm font-bold text-amber-800">
+          {{ "tablet.freeHit.hint" | transloco }}
+        </p>
+      } @else if (!draft) {
         <p class="mt-2 text-sm text-fb-gray-500">
           {{ "tablet.hint" | transloco }}
         </p>
@@ -251,6 +302,12 @@
       @if (draft) {
         <div class="flex flex-col gap-3" data-testid="tablet-draft">
           <div class="text-sm text-fb-gray-500">
+            @if (draft.kind === "free_hit") {
+              <span class="font-bold text-amber-800">{{
+                "tablet.freeHit.label" | transloco
+              }}</span>
+              ·
+            }
             {{
               "tablet.draft.tappedAt"
                 | transloco: { time: tappedClock(draft.tapped_at) }
@@ -274,106 +331,123 @@
             }
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            @for (result of results; track result) {
-              <button
-                type="button"
-                class="min-h-[64px] rounded-[5px] border-2 px-2 text-xl font-bold"
-                [class.bg-green-600]="
-                  draft.result === result && result === 'goal'
-                "
-                [class.bg-black]="draft.result === result && result !== 'goal'"
-                [class.text-white]="draft.result === result"
-                [class.border-black]="draft.result === result"
-                [class.border-fb-gray-600]="draft.result !== result"
-                [attr.aria-pressed]="draft.result === result"
-                [attr.data-testid]="'tablet-result-' + result"
-                (click)="setDraftResult(result)"
-              >
-                {{ "tablet.result." + result | transloco }}
-              </button>
-            }
-          </div>
-
-          <div>
-            <div class="mb-1 text-sm font-bold">
-              {{ "tablet.draft.shooter" | transloco }}
-            </div>
-            <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
-              @for (
-                player of fieldPlayers(draft.team);
-                track player.player_id
-              ) {
+          @if (draft.kind === "shot") {
+            <div class="grid grid-cols-2 gap-2">
+              @for (result of results; track result) {
                 <button
                   type="button"
-                  class="min-h-[48px] rounded-[5px] border text-lg font-bold"
+                  class="min-h-[64px] rounded-[5px] border-2 px-2 text-xl font-bold"
+                  [class.bg-green-600]="
+                    draft.result === result && result === 'goal'
+                  "
                   [class.bg-black]="
-                    draft.shooter_player_id === player.player_id
+                    draft.result === result && result !== 'goal'
                   "
-                  [class.text-white]="
-                    draft.shooter_player_id === player.player_id
-                  "
-                  [class.border-fb-gray-600]="
-                    draft.shooter_player_id !== player.player_id
-                  "
-                  [attr.aria-pressed]="
-                    draft.shooter_player_id === player.player_id
-                  "
-                  (click)="setDraftShooter(player.player_id)"
+                  [class.text-white]="draft.result === result"
+                  [class.border-black]="draft.result === result"
+                  [class.border-fb-gray-600]="draft.result !== result"
+                  [attr.aria-pressed]="draft.result === result"
+                  [attr.data-testid]="'tablet-result-' + result"
+                  (click)="setDraftResult(result)"
                 >
-                  {{ player.trikot_number }}
+                  {{ "tablet.result." + result | transloco }}
                 </button>
               }
             </div>
-          </div>
 
-          @if (goalkeepers(draft.team === "home" ? "guest" : "home").length) {
+            <button
+              type="button"
+              class="min-h-[56px] rounded-[5px] border-2 px-3 text-lg font-bold"
+              [class.bg-amber-500]="draft.from_free_hit"
+              [class.border-amber-600]="draft.from_free_hit"
+              [class.border-fb-gray-600]="!draft.from_free_hit"
+              [attr.aria-pressed]="draft.from_free_hit"
+              data-testid="tablet-from-free-hit"
+              (click)="toggleDraftFromFreeHit()"
+            >
+              {{ "tablet.freeHit.fromFreeHit" | transloco }}
+            </button>
+
             <div>
               <div class="mb-1 text-sm font-bold">
-                {{ "tablet.draft.goalkeeper" | transloco }}
+                {{ "tablet.draft.shooter" | transloco }}
               </div>
               <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
                 @for (
-                  player of goalkeepers(
-                    draft.team === "home" ? "guest" : "home"
-                  );
+                  player of fieldPlayers(draft.team);
                   track player.player_id
                 ) {
                   <button
                     type="button"
                     class="min-h-[48px] rounded-[5px] border text-lg font-bold"
-                    [class.bg-blue-700]="
-                      draft.goalkeeper_player_id === player.player_id
+                    [class.bg-black]="
+                      draft.shooter_player_id === player.player_id
                     "
                     [class.text-white]="
-                      draft.goalkeeper_player_id === player.player_id
+                      draft.shooter_player_id === player.player_id
                     "
                     [class.border-fb-gray-600]="
-                      draft.goalkeeper_player_id !== player.player_id
+                      draft.shooter_player_id !== player.player_id
                     "
                     [attr.aria-pressed]="
-                      draft.goalkeeper_player_id === player.player_id
+                      draft.shooter_player_id === player.player_id
                     "
-                    (click)="setDraftGoalkeeper(player.player_id)"
+                    (click)="setDraftShooter(player.player_id)"
                   >
                     {{ player.trikot_number }}
                   </button>
                 }
-                <button
-                  type="button"
-                  class="col-span-2 min-h-[48px] rounded-[5px] border text-sm font-bold"
-                  [class.bg-blue-700]="draft.goalkeeper_player_id === null"
-                  [class.text-white]="draft.goalkeeper_player_id === null"
-                  [class.border-fb-gray-600]="
-                    draft.goalkeeper_player_id !== null
-                  "
-                  [attr.aria-pressed]="draft.goalkeeper_player_id === null"
-                  (click)="setDraftGoalkeeper(null)"
-                >
-                  {{ "tablet.draft.emptyNet" | transloco }}
-                </button>
               </div>
             </div>
+
+            @if (goalkeepers(draft.team === "home" ? "guest" : "home").length) {
+              <div>
+                <div class="mb-1 text-sm font-bold">
+                  {{ "tablet.draft.goalkeeper" | transloco }}
+                </div>
+                <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
+                  @for (
+                    player of goalkeepers(
+                      draft.team === "home" ? "guest" : "home"
+                    );
+                    track player.player_id
+                  ) {
+                    <button
+                      type="button"
+                      class="min-h-[48px] rounded-[5px] border text-lg font-bold"
+                      [class.bg-blue-700]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      [class.text-white]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      [class.border-fb-gray-600]="
+                        draft.goalkeeper_player_id !== player.player_id
+                      "
+                      [attr.aria-pressed]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      (click)="setDraftGoalkeeper(player.player_id)"
+                    >
+                      {{ player.trikot_number }}
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="col-span-2 min-h-[48px] rounded-[5px] border text-sm font-bold"
+                    [class.bg-blue-700]="draft.goalkeeper_player_id === null"
+                    [class.text-white]="draft.goalkeeper_player_id === null"
+                    [class.border-fb-gray-600]="
+                      draft.goalkeeper_player_id !== null
+                    "
+                    [attr.aria-pressed]="draft.goalkeeper_player_id === null"
+                    (click)="setDraftGoalkeeper(null)"
+                  >
+                    {{ "tablet.draft.emptyNet" | transloco }}
+                  </button>
+                </div>
+              </div>
+            }
           }
 
           <label class="flex items-center gap-2 text-sm font-bold">
@@ -402,7 +476,7 @@
               type="button"
               class="min-h-[56px] rounded-[5px] bg-green-700 text-lg font-bold text-white disabled:opacity-40"
               data-testid="tablet-save"
-              [disabled]="!draft.result"
+              [disabled]="!canSaveDraft"
               (click)="saveDraft()"
             >
               {{ "tablet.draft.save" | transloco }}
@@ -421,12 +495,54 @@
               class="min-h-[48px] rounded-[5px] border-2 border-red-700 font-bold text-red-700"
               (click)="deleteShot(draft.client_uuid)"
             >
-              {{ "tablet.draft.delete" | transloco }}
+              @if (draft.kind === "free_hit") {
+                {{ "tablet.freeHit.delete" | transloco }}
+              } @else {
+                {{ "tablet.draft.delete" | transloco }}
+              }
             </button>
           }
         </div>
       } @else {
         <div data-testid="tablet-recent">
+          @if (lastFreeHit) {
+            <div
+              class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-amber-500 bg-amber-50 p-3"
+              data-testid="tablet-last-free-hit"
+            >
+              <span class="font-bold">
+                {{
+                  "tablet.freeHit.saved"
+                    | transloco: { team: teamName(lastFreeHit.team) }
+                }}
+              </span>
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  class="min-h-[48px] rounded-[5px] border-2 border-black bg-white px-2 text-sm font-bold"
+                  data-testid="tablet-free-hit-swap-team"
+                  (click)="swapLastFreeHitTeam()"
+                >
+                  {{ "tablet.freeHit.swapTeam" | transloco }}
+                </button>
+                <button
+                  type="button"
+                  class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+                  data-testid="tablet-free-hit-undo"
+                  (click)="undoLastFreeHit()"
+                >
+                  {{ "tablet.freeHit.undo" | transloco }}
+                </button>
+                <button
+                  type="button"
+                  class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+                  (click)="dismissLastFreeHit()"
+                >
+                  {{ "tablet.freeHit.ok" | transloco }}
+                </button>
+              </div>
+            </div>
+          }
           <h4 class="mb-2 font-bold">
             {{ "tablet.recent.title" | transloco }}
           </h4>
@@ -442,7 +558,17 @@
               >
                 <span class="flex-1">
                   <span class="font-bold">{{ teamName(shot.team) }}</span>
-                  · {{ "tablet.result." + shot.result | transloco }}
+                  @if (isFreeHit(shot)) {
+                    ·
+                    <span class="font-bold text-amber-800">{{
+                      "tablet.freeHit.label" | transloco
+                    }}</span>
+                  } @else {
+                    · {{ "tablet.result." + shot.result | transloco }}
+                    @if (shot.from_free_hit) {
+                      ({{ "tablet.freeHit.fromFreeHitShort" | transloco }})
+                    }
+                  }
                   @if (shot.shooter_player_id) {
                     {{ trikotNumber(shot.team, shot.shooter_player_id) }}
                   }

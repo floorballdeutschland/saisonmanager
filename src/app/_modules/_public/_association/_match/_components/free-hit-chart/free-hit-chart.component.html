@@ -1,0 +1,46 @@
+<figure class="m-0">
+  <svg
+    class="block w-full h-auto"
+    [attr.viewBox]="viewBox"
+    [attr.data-field-size]="field.size"
+    role="img"
+    [attr.aria-label]="
+      'match.detailedStats.freeHits.ariaLabel'
+        | transloco: { team: teamName, count: freeHits.length }
+    "
+  >
+    <g fbRinkMarkings [field]="field" [markings]="markings"></g>
+
+    @for (point of plotted; track $index) {
+      <polygon
+        [attr.points]="diamond(point)"
+        [attr.fill]="colors[point.zone]"
+        stroke="#ffffff"
+        [attr.stroke-width]="0.1 * dotScale"
+        [attr.data-zone]="point.zone"
+      >
+        <title>
+          {{
+            periodTitle(point.freeHit.period) ??
+              ("match.detailedStats.periodN"
+                | transloco: { n: point.freeHit.period })
+          }}
+          {{ point.freeHit.game_time }}:
+          {{ "match.detailedStats.freeHits.zone." + point.zone | transloco }}
+        </title>
+      </polygon>
+    }
+  </svg>
+  <figcaption
+    class="flex items-center gap-1 mt-1 text-xs text-fb-gray-500"
+    [class.justify-end]="attacksRight"
+  >
+    @if (!attacksRight) {
+      <span aria-hidden="true">&larr;</span>
+    }
+    {{ "match.detailedStats.chart.direction" | transloco }}
+    @if (attacksRight) {
+      <span aria-hidden="true">&rarr;</span>
+    }
+  </figcaption>
+</figure>

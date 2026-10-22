@@ -1,11 +1,15 @@
 import {
   DetailedStats,
+  DetailedStatsFreeHit,
   DetailedStatsShot,
   GoalkeeperStats,
   PlayerShotStats,
 } from '@floorball/types';
 import {
+  filterFreeHits,
   filterShots,
+  freeHitZone,
+  freeHitZoneCounts,
   periodsOf,
   savePercentage,
   sortPlayers,
@@ -188,5 +192,81 @@ describe('detailed-stats utils', () => {
       p(3, 2, 0),
     ]);
     expect(sorted.map((x) => x.trikot_number)).toEqual([null, 7, 3, 9]);
+  });
+});
+
+describe('Freischläge (fe#589)', () => {
+  const freeHit = (
+    overrides: Partial<DetailedStatsFreeHit> = {}
+  ): DetailedStatsFreeHit => ({
+    team: 'home',
+    period: 1,
+    game_time: '05:00',
+    x: 0.5,
+    y: 0.5,
+    ...overrides,
+  });
+
+  describe('freeHitZone', () => {
+    it('ordnet auf dem Großfeld eigene Hälfte, gegnerische Hälfte und Nähe Torraum zu', () => {
+      expect(freeHitZone(freeHit({ x: 0.3 }), FIELD_GEOMETRY.GF)).toBe(
+        'own_half'
+      );
+      // Die Mittellinie zählt zur gegnerischen Hälfte.
+      expect(freeHitZone(freeHit({ x: 0.5 }), FIELD_GEOMETRY.GF)).toBe(
+        'opponent_half'
+      );
+      // 28 m: 5,15 m vor dem Torraum (Vorderkante bei 33,15 m)
+      expect(freeHitZone(freeHit({ x: 0.7 }), FIELD_GEOMETRY.GF)).toBe(
+        'opponent_half'
+      );
+      // 28,8 m: 4,35 m vor dem Torraum
+      expect(freeHitZone(freeHit({ x: 0.72 }), FIELD_GEOMETRY.GF)).toBe(
+        'near_goal_area'
+      );
+    });
+
+    it('misst seitlich den Abstand zur Torraumkante, nicht zur Torlinie', () => {
+      // 36 m längs liegt neben dem Torraum, 1 m von der Bande: 6,5 m daneben
+      expect(freeHitZone(freeHit({ x: 0.9, y: 0.05 }), FIELD_GEOMETRY.GF)).toBe(
+        'opponent_half'
+      );
+      // 4 m von der Bande: 3,5 m daneben
+      expect(freeHitZone(freeHit({ x: 0.9, y: 0.2 }), FIELD_GEOMETRY.GF)).toBe(
+        'near_goal_area'
+      );
+    });
+
+    it('rechnet auf dem Kleinfeld in dessen Metern', () => {
+      // 0,65 sind auf dem KF 18,2 m (4,45 m vor dem Torraum bei 22,65 m),
+      // auf dem GF 26 m (7,15 m davor).
+      expect(freeHitZone(freeHit({ x: 0.65 }), FIELD_GEOMETRY.KF)).toBe(
+        'near_goal_area'
+      );
+      expect(freeHitZone(freeHit({ x: 0.65 }), FIELD_GEOMETRY.GF)).toBe(
+        'opponent_half'
+      );
+    });
+  });
+
+  it('zählt je Zone', () => {
+    expect(
+      freeHitZoneCounts(
+        [freeHit({ x: 0.1 }), freeHit({ x: 0.2 }), freeHit({ x: 0.8 })],
+        FIELD_GEOMETRY.GF
+      )
+    ).toEqual({ own_half: 2, opponent_half: 0, near_goal_area: 1 });
+  });
+
+  it('filtert nach Team und Abschnitt', () => {
+    const all = [freeHit(), freeHit({ team: 'guest' }), freeHit({ period: 2 })];
+    expect(filterFreeHits(all, 'home', null).length).toBe(2);
+    expect(filterFreeHits(all, 'home', 2).length).toBe(1);
+    expect(filterFreeHits(all, 'guest', 1).length).toBe(1);
+  });
+
+  it('nimmt Abschnitte mit nur Freischlägen in die Abschnittsliste auf', () => {
+    const data = stats({ free_hits: [freeHit({ period: 4 })] });
+    expect(periodsOf(data)).toContain(4);
   });
 });

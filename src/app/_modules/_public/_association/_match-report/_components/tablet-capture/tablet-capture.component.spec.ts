@@ -740,4 +740,241 @@ describe('TabletCaptureComponent', () => {
       expect(component.periodChangePending).toBeFalse();
     });
   });
+
+  describe('Freischläge (fe#589)', () => {
+    const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
+
+    function armFreeHit() {
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-free-hit-arm"]')
+        .click();
+      fixture.detectChanges();
+      expect(component.freeHitArmed).toBeTrue();
+    }
+
+    it('speichert einen Freischlag mit einem Tipp und schaltet danach zurück auf Schuss', async () => {
+      await start();
+      armFreeHit();
+      // 1. Abschnitt: Heim greift nach rechts an, rechte Hälfte = Heim.
+      component.recordFreeHit(0.75, 0.25, T0);
+
+      expect(component.freeHitArmed).toBeFalse();
+      expect(component.draft).toBeNull();
+      const post = http.expectOne(API + 'games/4711/shots.json');
+      const sent = post.request.body.shots as ShotInput[];
+      expect(sent).toEqual([
+        jasmine.objectContaining({
+          kind: 'free_hit',
+          team: 'home',
+          period: 1,
+          game_time: '',
+          x: 0.75,
+          y: 0.25,
+          result: null,
+          shooter_player_id: null,
+          goalkeeper_player_id: null,
+          from_free_hit: false,
+        }),
+      ]);
+      post.flush({ shots: [asShot(sent[0])] });
+      await settle();
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelectorAll(
+          '[data-testid="tablet-free-hit-marker"]'
+        ).length
+      ).toBe(1);
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-last-free-hit"]'
+        )
+      ).toBeTruthy();
+      expect(component.lastFreeHit!.team).toBe('home');
+    });
+
+    it('legt einen Tipp im Freischlag-Modus über das Spielfeld als Freischlag an, nicht als Entwurf', async () => {
+      await start();
+      armFreeHit();
+      const field = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGElement;
+      const rect = field.getBoundingClientRect();
+      const at = {
+        clientX: rect.left + rect.width * 0.25,
+        clientY: rect.top + rect.height * 0.5,
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        bubbles: true,
+      };
+      field.dispatchEvent(new PointerEvent('pointerdown', at));
+      field.dispatchEvent(new PointerEvent('pointerup', at));
+
+      expect(component.draft).toBeNull();
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      // Linke Hälfte im 1. Abschnitt: Gast greift dort an.
+      expect(sent[0].kind).toBe('free_hit');
+      expect(sent[0].team).toBe('guest');
+    });
+
+    it('lässt einen offenen Schuss-Entwurf beim Freischlag unangetastet', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      const draft = component.draft;
+      component.toggleFreeHitArmed();
+      component.recordFreeHit(0.3, 0.3, T0 + 1000);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      expect(component.draft).toBe(draft);
+      expect(component.draft!.screenX).toBe(0.8);
+    });
+
+    it('schreibt den letzten Freischlag dem anderen Team zu und rechnet die Position um', async () => {
+      await start();
+      component.recordFreeHit(0.75, 0.25, T0);
+      const first = http.expectOne(API + 'games/4711/shots.json');
+      first.flush({ shots: [asShot(first.request.body.shots[0])] });
+      await settle();
+      const uuid = component.lastFreeHit!.client_uuid;
+
+      component.swapLastFreeHitTeam();
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      const swapped = sent.find((shot) => shot.client_uuid === uuid)!;
+      // Gast greift im 1. Abschnitt nach links an: Position gedreht.
+      expect(swapped.team).toBe('guest');
+      expect(swapped.x).toBeCloseTo(0.25, 5);
+      expect(swapped.y).toBeCloseTo(0.75, 5);
+      expect(swapped.tapped_at).toBe(new Date(T0).toISOString());
+      expect(component.lastFreeHit!.team).toBe('guest');
+    });
+
+    it('nimmt den letzten Freischlag zurück', async () => {
+      await start();
+      component.recordFreeHit(0.75, 0.25, T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.undoLastFreeHit();
+
+      expect(component.lastFreeHit).toBeNull();
+      expect(component.allShots.length).toBe(0);
+    });
+
+    it('belegt „aus Freischlag“ vor, wenn derselbe Team-Freischlag höchstens 10 s zurückliegt', async () => {
+      await start();
+      component.recordFreeHit(0.75, 0.25, T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.startDraft(0.9, 0.5, T0 + 8000);
+      expect(component.draft!.team).toBe('home');
+      expect(component.draft!.from_free_hit).toBeTrue();
+
+      // Das andere Team hatte keinen Freischlag.
+      component.setDraftTeam('guest');
+      expect(component.draft!.from_free_hit).toBeFalse();
+    });
+
+    it('belegt nicht vor, wenn der Freischlag länger als 10 s zurückliegt', async () => {
+      await start();
+      component.recordFreeHit(0.75, 0.25, T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.startDraft(0.9, 0.5, T0 + 11000);
+      expect(component.draft!.from_free_hit).toBeFalse();
+    });
+
+    it('sendet den Schalter „aus Freischlag“ mit dem Schuss und behält eine Handauswahl', async () => {
+      await start();
+      component.recordFreeHit(0.75, 0.25, T0);
+      const first = http.expectOne(API + 'games/4711/shots.json');
+      first.flush({ shots: [asShot(first.request.body.shots[0])] });
+      await settle();
+
+      component.startDraft(0.9, 0.5, T0 + 3000);
+      component.toggleDraftFromFreeHit();
+      // Von Hand abgewählt: Teamwechsel hin und zurück belegt nicht neu vor.
+      component.setDraftTeam('guest');
+      component.setDraftTeam('home');
+      expect(component.draft!.from_free_hit).toBeFalse();
+      component.toggleDraftFromFreeHit();
+      component.setDraftResult('goal');
+      component.saveDraft();
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      const shot = sent.find((entry) => entry.kind === 'shot')!;
+      expect(shot.result).toBe('goal');
+      expect(shot.from_free_hit).toBeTrue();
+    });
+
+    it('korrigiert einen Freischlag ohne Ergebnis und ohne Personen', async () => {
+      await start();
+      component.recordFreeHit(0.75, 0.25, T0);
+      const first = http.expectOne(API + 'games/4711/shots.json');
+      const sent = first.request.body.shots as ShotInput[];
+      first.flush({ shots: [asShot(sent[0])] });
+      await settle();
+
+      component.editShot(component.allShots[0]);
+      fixture.detectChanges();
+      expect(component.draft!.kind).toBe('free_hit');
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-result-goal"]'
+        )
+      ).toBeNull();
+      expect(component.canSaveDraft).toBeTrue();
+
+      component.draft!.game_time = '5:00';
+      component.saveDraft();
+
+      const second = http.expectOne(API + 'games/4711/shots.json');
+      expect(second.request.body.shots[0]).toEqual(
+        jasmine.objectContaining({
+          client_uuid: sent[0].client_uuid,
+          kind: 'free_hit',
+          game_time: '5:00',
+          result: null,
+          shooter_player_id: null,
+          goalkeeper_player_id: null,
+          from_free_hit: false,
+        })
+      );
+    });
+
+    it('bietet einen Freischlag nicht zur Tor-Zuordnung an', async () => {
+      const goal = {
+        event_id: 900,
+        event_type: 'goal',
+        event_team: 'home',
+        period: 1,
+        time: '01:00',
+        home_goals: 1,
+        guest_goals: 0,
+      };
+      fixture.componentRef.setInput(
+        'game',
+        game(4711, { events: [goal] as unknown as Game['events'] })
+      );
+      fixture.detectChanges();
+      const freeHit: Shot = {
+        client_uuid: 'f1',
+        kind: 'free_hit',
+        team: 'home',
+        period: 1,
+        game_time: '',
+        tapped_at: new Date(T0).toISOString(),
+        x: 0.8,
+        y: 0.5,
+        result: null,
+        id: 1,
+        event_id: null,
+      };
+      http.expectOne(API + 'games/4711/shots.json').flush({ shots: [freeHit] });
+      expect(component.linkCandidates).toEqual([]);
+    });
+  });
 });
