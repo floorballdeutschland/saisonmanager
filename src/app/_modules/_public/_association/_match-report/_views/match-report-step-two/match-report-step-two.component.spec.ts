@@ -2,7 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 
-import { getTranslocoTestingModule } from '@floorball/core';
+import { getTranslocoTestingModule, LeagueService } from '@floorball/core';
+import { By } from '@angular/platform-browser';
+import { of } from 'rxjs';
 import { GameTimelineFilterPipe } from 'src/app/_helpers/_pipes/game-timeline-filter.pipe';
 
 import {
@@ -10,7 +12,7 @@ import {
   TABLET_MODE_STORAGE_KEY,
   TABLET_NORMAL_INPUT_STORAGE_KEY,
 } from './match-report-step-two.component';
-import { Game, GameAdditionalFields } from '@floorball/types';
+import { Game, GameAdditionalFields, League } from '@floorball/types';
 
 // Ein Spiel, das startbereit ist: Kader auf beiden Seiten, Schiedsrichter 1
 // gesetzt. Die Tests nehmen davon jeweils genau ein Teil weg.
@@ -217,6 +219,22 @@ describe('MatchReportStepTwoComponent', () => {
       expect(localStorage.getItem(TABLET_MODE_STORAGE_KEY)).toBe('1');
       // Die gewohnte Eingabe klappt dabei ein.
       expect(dom.querySelector('fb-match-event-button')).toBeNull();
+    });
+
+    // fe#592: Die Erfassung zeichnet das Feld der Liga. Eine Endrunde ohne
+    // eigenen Wert erbt die Feldgröße der Hauptrunde (api#839).
+    it('reicht die geerbte Feldgröße der Liga an die Erfassung weiter', () => {
+      TestBed.inject(LeagueService).selectedLeague$ = of({
+        id: 7,
+        field_size: null,
+        effective_field_size: 'KF',
+      } as unknown as League);
+      localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+      render(startableGame({ started: true }));
+
+      const capture = fixture.debugElement.query(By.css('fb-tablet-capture'));
+      expect(capture.properties['fieldSize']).toBe('KF');
+      localStorage.removeItem(TABLET_MODE_STORAGE_KEY);
     });
 
     it('liest den gemerkten Zustand beim Öffnen', () => {
