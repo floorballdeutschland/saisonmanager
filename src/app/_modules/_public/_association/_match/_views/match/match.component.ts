@@ -27,6 +27,7 @@ import {
   LeagueService,
   SessionService,
 } from '@floorball/core';
+import { leagueFieldSize } from 'src/app/_helpers/_utils/field-geometry';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
@@ -97,7 +98,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     this._associationService.displayAssociationHeader$.next(false);
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
     this.fieldSize$ = this._leagueService.selectedLeague$.pipe(
-      map((league) => league?.field_size ?? null)
+      map((league) => leagueFieldSize(league))
     );
 
     const secretaryToken =

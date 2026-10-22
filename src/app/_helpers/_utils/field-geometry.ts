@@ -73,6 +73,20 @@ export function fieldSizeOf(value: string | null | undefined): FieldSize {
   return value === 'KF' ? 'KF' : 'GF';
 }
 
+/**
+ * Feldgröße, nach der eine Liga gespielt wird: `effective_field_size` erbt bei
+ * Zwischen- und Endrunden ohne eigenen Wert den der Hauptrunde (api#839);
+ * ältere API-Antworten ohne das Feld fallen auf `field_size` zurück.
+ */
+export function leagueFieldSize(
+  league:
+    | { field_size?: string | null; effective_field_size?: string | null }
+    | null
+    | undefined
+): string | null {
+  return league?.effective_field_size ?? league?.field_size ?? null;
+}
+
 export function fieldGeometry(value: string | null | undefined): FieldGeometry {
   return FIELD_GEOMETRY[fieldSizeOf(value)];
 }

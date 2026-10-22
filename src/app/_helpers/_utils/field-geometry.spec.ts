@@ -3,9 +3,21 @@ import {
   fieldGeometry,
   fieldMarkings,
   fieldSizeOf,
+  leagueFieldSize,
 } from './field-geometry';
 
 describe('field-geometry', () => {
+  it('nimmt die geerbte Feldgröße vor der eigenen', () => {
+    expect(
+      leagueFieldSize({ field_size: null, effective_field_size: 'KF' })
+    ).toBe('KF');
+    expect(leagueFieldSize({ field_size: 'KF' })).toBe('KF');
+    expect(
+      leagueFieldSize({ field_size: '', effective_field_size: null })
+    ).toBe('');
+    expect(leagueFieldSize(null)).toBeNull();
+  });
+
   it('fällt ohne bekannte Feldgröße auf Großfeld zurück', () => {
     expect(fieldSizeOf('KF')).toBe('KF');
     expect(fieldSizeOf('GF')).toBe('GF');
