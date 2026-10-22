@@ -21,6 +21,7 @@ import {
   NotificationService,
   StorageService,
 } from '@floorball/core';
+import { leagueFieldSize } from 'src/app/_helpers/_utils/field-geometry';
 
 // Schalter je Gerät, nicht je Spiel oder Konto: Das Sekretariat bleibt in der
 // gewohnten Eingabe, ein zweites Tablet erfasst die Schüsse (fe#344).
@@ -103,7 +104,7 @@ export class MatchReportStepTwoComponent implements OnInit {
   ngOnInit(): void {
     this.tabletMode = this._storage.getItem(TABLET_MODE_STORAGE_KEY) === '1';
     this.fieldSize$ = this._leagueService.selectedLeague$.pipe(
-      map((league) => league?.field_size ?? null)
+      map((league) => leagueFieldSize(league))
     );
     this.normalInputExpanded =
       this._storage.getItem(TABLET_NORMAL_INPUT_STORAGE_KEY) === '1';
