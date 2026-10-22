@@ -3,7 +3,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 
 import {
   YoutubeIframeApiService,
@@ -14,7 +14,10 @@ import {
 import { HighlightEditorData } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
-import { HighlightEditorComponent } from './highlight-editor.component';
+import {
+  EDITOR_TOKEN_STORAGE_KEY,
+  HighlightEditorComponent,
+} from './highlight-editor.component';
 
 const API = environment.apiURL;
 const TOKEN_PATH = API + 'highlight_editor.json?token=abc';
@@ -72,9 +75,13 @@ describe('HighlightEditorComponent', () => {
   let query: Record<string, string>;
   let player: jasmine.SpyObj<YtPlayer>;
   let playerOptions: YtPlayerOptions | undefined;
+  let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
     query = { token: 'abc' };
+    sessionStorage.removeItem(EDITOR_TOKEN_STORAGE_KEY);
+    router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    router.navigate.and.resolveTo(true);
     playerOptions = undefined;
     player = jasmine.createSpyObj<YtPlayer>('YtPlayer', [
       'loadVideoById',
@@ -97,6 +104,7 @@ describe('HighlightEditorComponent', () => {
             },
           },
         },
+        { provide: Router, useValue: router },
         {
           provide: YoutubeIframeApiService,
           useValue: {
@@ -114,7 +122,10 @@ describe('HighlightEditorComponent', () => {
     component = fixture.componentInstance;
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => {
+    http.verify();
+    sessionStorage.removeItem(EDITOR_TOKEN_STORAGE_KEY);
+  });
 
   function el(test: string): HTMLElement | null {
     return fixture.nativeElement.querySelector(`[data-test="${test}"]`);
@@ -267,15 +278,12 @@ describe('HighlightEditorComponent', () => {
     load(data(), GAME_PATH);
     component.offset = 10;
     component.save();
-    http
-      .expectOne(GAME_PATH)
-      .flush(
-        {
-          message:
-            'Für dieses Spiel gibt es keine veröffentlichte Aufzeichnung.',
-        },
-        { status: 422, statusText: 'Unprocessable Entity' }
-      );
+    http.expectOne(GAME_PATH).flush(
+      {
+        message: 'Für dieses Spiel gibt es keine veröffentlichte Aufzeichnung.',
+      },
+      { status: 422, statusText: 'Unprocessable Entity' }
+    );
     fixture.detectChanges();
 
     expect(el('editor-save-failed')!.textContent).toContain(
@@ -294,5 +302,103 @@ describe('HighlightEditorComponent', () => {
     fixture.detectChanges();
 
     expect(el('editor-expired')).not.toBeNull();
+  });
+  // Review fe#594: Prod schickt die volle Adresse als Referer mit. Stünde der
+  // Token beim Laden des Players noch darin, ginge er an YouTube.
+  describe('Token in der Adresse', () => {
+    it('nimmt den Token sofort aus der Adresse, bevor YouTube geladen wird', () => {
+      load();
+
+      expect(router.navigate).toHaveBeenCalledWith(
+        [],
+        jasmine.objectContaining({
+          queryParams: { token: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        })
+      );
+      expect(playerOptions).toBeUndefined();
+      expect(sessionStorage.getItem(EDITOR_TOKEN_STORAGE_KEY)).toBe('abc');
+    });
+
+    it('lädt nach dem Neuladen mit dem abgelegten Token', () => {
+      sessionStorage.setItem(EDITOR_TOKEN_STORAGE_KEY, 'abc');
+      query = {};
+      load();
+
+      expect(component.state).toBe('ready');
+      expect(component.viaLink).toBeTrue();
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('vergisst einen ungültigen Token', () => {
+      fixture.detectChanges();
+      http
+        .expectOne(TOKEN_PATH)
+        .flush({ message: 'x' }, { status: 404, statusText: 'Not Found' });
+
+      expect(sessionStorage.getItem(EDITOR_TOKEN_STORAGE_KEY)).toBeNull();
+    });
+
+    it('nimmt beim Aufruf über die Spiel-ID keinen abgelegten Token', () => {
+      sessionStorage.setItem(EDITOR_TOKEN_STORAGE_KEY, 'abc');
+      query = { spiel: '4711' };
+      load(data({ expires_at: undefined }), GAME_PATH);
+
+      expect(component.viaLink).toBeFalse();
+    });
+  });
+
+  describe('Ungespeicherte Änderungen', () => {
+    it('fragt beim Verlassen nur nach, wenn etwas ungespeichert ist', () => {
+      load();
+      const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
+
+      expect(component.confirmLeave()).toBeTrue();
+      expect(confirmSpy).not.toHaveBeenCalled();
+
+      component.adjustOffset(1);
+      expect(component.confirmLeave()).toBeFalse();
+      expect(confirmSpy).toHaveBeenCalled();
+    });
+
+    it('hält das Schließen des Tabs mit ungespeicherten Änderungen auf', () => {
+      load();
+      const clean = new Event('beforeunload', { cancelable: true });
+      component.onBeforeUnload(clean as BeforeUnloadEvent);
+      expect(clean.defaultPrevented).toBeFalse();
+
+      component.adjustOffset(1);
+      const dirty = new Event('beforeunload', { cancelable: true });
+      component.onBeforeUnload(dirty as BeforeUnloadEvent);
+      expect(dirty.defaultPrevented).toBeTrue();
+    });
+
+    it('behält Änderungen, die während des Speicherns gemacht werden', () => {
+      load();
+      component.offset = 22;
+      component.save();
+      const req = http.expectOne(TOKEN_PATH);
+
+      // Während die Antwort noch aussteht:
+      component.adjustOffset(1);
+      component.toggleScene(component.scenes[0]);
+
+      req.flush(data({ offset_seconds: 22 }));
+
+      expect(component.offset).toBe(23);
+      expect(component.selection['tor']).toBeFalse();
+      expect(component.dirty).toBeTrue();
+      expect(component.saved).toBeFalse();
+    });
+  });
+
+  it('baut keinen Player mehr, wenn die Seite während des Ladens verlassen wird', async () => {
+    load();
+    const pending = component.consent();
+    fixture.destroy();
+    await pending;
+
+    expect(player.destroy).toHaveBeenCalled();
   });
 });

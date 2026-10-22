@@ -19,6 +19,9 @@ import { HighlightEditorComponent } from './highlight-editor.component';
         path: 'highlights/bearbeiten',
         pathMatch: 'full',
         component: HighlightEditorComponent,
+        canDeactivate: [
+          (component: HighlightEditorComponent) => component.confirmLeave(),
+        ],
         data: { scrollTop: true },
       },
     ]),

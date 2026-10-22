@@ -40,5 +40,6 @@
   "saving": "Wird gespeichert…",
   "saved": "Gespeichert. Die Highlights auf der Spielseite sind aktualisiert.",
   "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
-  "unsaved": "Nicht gespeicherte Änderungen"
+  "unsaved": "Nicht gespeicherte Änderungen",
+  "leaveConfirm": "Es gibt ungespeicherte Änderungen an Versatz oder Auswahl. Seite trotzdem verlassen?"
 }

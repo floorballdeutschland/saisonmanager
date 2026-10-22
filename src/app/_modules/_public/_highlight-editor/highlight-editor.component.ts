@@ -3,13 +3,15 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   NgZone,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { Observable, Subject, takeUntil } from 'rxjs';
 
 import {
@@ -38,6 +40,12 @@ import {
 /** So lange darf es vom Klick bis zum spielbereiten Player dauern. */
 export const EDITOR_PLAYER_TIMEOUT_MS = 15000;
 
+/**
+ * Ablage des Tokens für ein Neuladen im selben Tab, nachdem er aus der
+ * Adresse genommen wurde. sessionStorage endet mit dem Tab.
+ */
+export const EDITOR_TOKEN_STORAGE_KEY = 'highlight_editor_token';
+
 export type EditorState =
   | 'loading'
   | 'ready'
@@ -64,6 +72,12 @@ export type EditorState =
  *
  * Datenschutz wie im Szenen-Player der Spielseite: Bis zum Klick auf „Video
  * laden“ geht keine Anfrage an YouTube.
+ *
+ * DER TOKEN VERLÄSST DIE ADRESSLEISTE SOFORT. Prod liefert
+ * `Referrer-Policy: no-referrer-when-downgrade` aus; stünde er beim Laden des
+ * Players noch in der Adresse, ginge der Link samt Schreibrecht als Referer an
+ * YouTube. Er wird deshalb beim Öffnen übernommen, für ein Neuladen im
+ * sessionStorage abgelegt und per `replaceUrl` aus der Adresse entfernt.
  */
 @Component({
   templateUrl: './highlight-editor.component.html',
@@ -102,21 +116,37 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   private _playerReady = false;
   private _pendingPlay: (() => void) | null = null;
   private _readyTimer?: ReturnType<typeof setTimeout>;
+  private _destroyed = false;
   private _destroy$ = new Subject<void>();
 
   constructor(
     private _service: HighlightEditorService,
     private _youtube: YoutubeIframeApiService,
     private _route: ActivatedRoute,
+    private _router: Router,
+    private _transloco: TranslocoService,
     private _zone: NgZone,
     private _cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     const params = this._route.snapshot.queryParamMap;
-    this._token = params.get('token');
     const gameId = parseInt(params.get('spiel') ?? '', 10);
     this._gameId = isNaN(gameId) ? null : gameId;
+    const urlToken = params.get('token');
+    if (urlToken) {
+      this._token = urlToken;
+      storeToken(urlToken);
+      void this._router.navigate([], {
+        relativeTo: this._route,
+        queryParams: { token: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    } else if (this._gameId === null) {
+      // Neuladen nach dem Entfernen aus der Adresse.
+      this._token = readToken();
+    }
 
     if (!this._token && this._gameId === null) {
       this.state = 'invalid';
@@ -130,6 +160,7 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this._destroyed = true;
     this._destroy$.next();
     this._destroy$.complete();
     clearTimeout(this._readyTimer);
@@ -157,6 +188,23 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     return !!this.data && hasChanges(this._update());
   }
 
+  /** Rückfrage beim Verlassen per Navigation (CanDeactivate). */
+  public confirmLeave(): boolean {
+    if (!this.dirty) return true;
+    return window.confirm(
+      this._transloco.translate('highlightEditor.leaveConfirm')
+    );
+  }
+
+  /** Rückfrage beim Schließen oder Neuladen des Tabs. */
+  @HostListener('window:beforeunload', ['$event'])
+  public onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.dirty) return;
+    event.preventDefault();
+    // Ältere Browser zeigen die Rückfrage nur mit gesetztem returnValue.
+    event.returnValue = '';
+  }
+
   get selectedCount(): number {
     return this.scenes.filter((scene) => this.selection[scene.client_uuid])
       .length;
@@ -167,7 +215,8 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   /** Zustimmung: erst jetzt werden Skript und Video von YouTube geladen. */
   public async consent(): Promise<void> {
     const host = this.playerHost?.nativeElement;
-    if (this.consented || !this.data?.video_id || !host) return;
+    if (this._destroyed || this.consented || !this.data?.video_id || !host)
+      return;
 
     this.consented = true;
     this.playerLoading = true;
@@ -187,13 +236,14 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     const target = document.createElement('div');
     host.appendChild(target);
     try {
-      this._player = await this._youtube.createPlayer(target, {
+      const player = await this._youtube.createPlayer(target, {
         width: '100%',
         height: '100%',
         playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
         events: {
           onReady: (event) =>
             this._zone.run(() => {
+              if (this._destroyed) return;
               clearTimeout(this._readyTimer);
               this._player ??= event.target;
               this._playerReady = true;
@@ -206,8 +256,15 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
           onError: () => this._zone.run(() => this._failPlayer()),
         },
       });
+      // Die Seite wurde verlassen, während das Skript noch lud: Der Player
+      // gehört zu keiner Ansicht mehr.
+      if (this._destroyed) {
+        player.destroy();
+        return;
+      }
+      this._player = player;
     } catch {
-      this._zone.run(() => this._failPlayer());
+      if (!this._destroyed) this._zone.run(() => this._failPlayer());
     }
   }
 
@@ -315,6 +372,8 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     this.saving = true;
     this.saveFailed = false;
     this.saveError = null;
+    this._sentOffset = this.offset;
+    this._sentSelection = this.selection;
     this._request(
       this._token
         ? this._service.updateByToken(this._token, update)
@@ -322,6 +381,10 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
       true
     );
   }
+
+  /** Stand beim Absenden, um Änderungen während des Speicherns zu erkennen. */
+  private _sentOffset: number | null = null;
+  private _sentSelection: Record<string, boolean> = {};
 
   private _update(): HighlightEditorUpdate {
     return this.data ? buildUpdate(this.data, this.offset, this.selection) : {};
@@ -333,10 +396,12 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   ): void {
     request.pipe(takeUntil(this._destroy$)).subscribe({
       next: (data) => {
-        this._apply(data);
         if (saving) {
+          this._applyKeepingLocal(data);
           this.saving = false;
-          this.saved = true;
+          this.saved = !this.dirty;
+        } else {
+          this._apply(data);
         }
         this._cdr.markForCheck();
       },
@@ -356,6 +421,9 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
         } else {
           this.state = stateForError(err);
         }
+        if (this.state === 'invalid' || this.state === 'expired') {
+          removeToken();
+        }
         this._cdr.markForCheck();
       },
     });
@@ -368,6 +436,49 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
       data.scenes.map((scene) => [scene.client_uuid, scene.in_highlights])
     );
     this.state = 'ready';
+  }
+
+  /**
+   * Antwort auf ein Speichern übernehmen, ohne Eingaben zu verwerfen, die
+   * während des Speicherns gemacht wurden: Was sich seit dem Absenden
+   * geändert hat, bleibt lokal stehen und ist danach wieder ungespeichert.
+   */
+  private _applyKeepingLocal(data: HighlightEditorData): void {
+    const offset = this.offset;
+    const selection = this.selection;
+    const sentOffset = this._sentOffset;
+    const sentSelection = this._sentSelection;
+    this._apply(data);
+    if (offset !== sentOffset) this.offset = offset;
+    for (const uuid of Object.keys(selection)) {
+      if (selection[uuid] !== sentSelection[uuid] && uuid in this.selection) {
+        this.selection = { ...this.selection, [uuid]: selection[uuid] };
+      }
+    }
+  }
+}
+
+function storeToken(token: string): void {
+  try {
+    sessionStorage.setItem(EDITOR_TOKEN_STORAGE_KEY, token);
+  } catch {
+    // Ohne Speicher funktioniert die Seite, nur ein Neuladen nicht.
+  }
+}
+
+function readToken(): string | null {
+  try {
+    return sessionStorage.getItem(EDITOR_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function removeToken(): void {
+  try {
+    sessionStorage.removeItem(EDITOR_TOKEN_STORAGE_KEY);
+  } catch {
+    // nichts zu tun
   }
 }
 

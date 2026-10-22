@@ -40,5 +40,6 @@
   "saving": "Saving…",
   "saved": "Saved. The highlights on the game page are updated.",
   "saveFailed": "Saving failed. Please try again.",
-  "unsaved": "Unsaved changes"
+  "unsaved": "Unsaved changes",
+  "leaveConfirm": "There are unsaved changes to the offset or selection. Leave the page anyway?"
 }
