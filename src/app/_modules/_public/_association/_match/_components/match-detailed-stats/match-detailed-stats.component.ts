@@ -217,6 +217,14 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     );
   }
 
+  /**
+   * Admin und SBK des Spielbetriebs dürfen Versatz und Auswahl der Highlights
+   * jederzeit ändern (api#838). Dieselbe Grenze wie `check_game`.
+   */
+  get canEditHighlights(): boolean {
+    return !!this.game?.permission?.includes('check_game');
+  }
+
   onHighlightsUnavailable(): void {
     this.highlightsUnavailable = true;
     this.updateLinkedShots();

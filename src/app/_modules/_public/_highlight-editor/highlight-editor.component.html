@@ -1,0 +1,301 @@
+<div class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8 pb-16 max-w-5xl">
+  <h1 class="font-bold text-xl lg:text-2xl mb-2">
+    {{ "highlightEditor.title" | transloco }}
+  </h1>
+
+  @switch (state) {
+    @case ("loading") {
+      <p class="text-fb-gray-500" data-test="editor-loading">
+        {{ "highlightEditor.loading" | transloco }}
+      </p>
+    }
+    @case ("invalid") {
+      <p class="text-fb-gray-500" role="alert" data-test="editor-invalid">
+        {{ "highlightEditor.error.invalid" | transloco }}
+      </p>
+    }
+    @case ("expired") {
+      <p class="text-fb-gray-500" role="alert" data-test="editor-expired">
+        {{ "highlightEditor.error.expired" | transloco }}
+      </p>
+    }
+    @case ("forbidden") {
+      <p class="text-fb-gray-500" role="alert" data-test="editor-forbidden">
+        {{ "highlightEditor.error.forbidden" | transloco }}
+      </p>
+    }
+    @case ("failed") {
+      <p class="text-fb-gray-500" role="alert" data-test="editor-failed">
+        {{ "highlightEditor.error.failed" | transloco }}
+      </p>
+    }
+  }
+
+  @if (state === "ready" && data) {
+    <p class="text-fb-gray-500 mb-6" data-test="editor-game">
+      {{ data.game.home_team_name }} : {{ data.game.guest_team_name }}
+      @if (data.game.game_number) {
+        · {{ "highlightEditor.gameNumber" | transloco }}
+        {{ data.game.game_number }}
+      }
+      @if (data.expires_at) {
+        ·
+        {{
+          "highlightEditor.expires"
+            | transloco: { date: (data.expires_at | date: "dd.MM.yyyy") }
+        }}
+      }
+    </p>
+
+    @if (!data.video_id) {
+      <p
+        class="rounded-[5px] border border-amber-300 bg-amber-50 p-4 text-amber-900"
+        data-test="editor-no-video"
+      >
+        {{ "highlightEditor.noVideo" | transloco }}
+      </p>
+    } @else {
+      <!-- Video, eines für Kalibrierung und Szenen -->
+      <div
+        class="relative w-full aspect-video bg-black rounded-[5px] overflow-hidden mb-6"
+      >
+        <div
+          #playerHost
+          class="absolute inset-0 [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:w-full [&_iframe]:h-full"
+        ></div>
+        @if (!consented) {
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center text-white"
+            data-test="editor-consent"
+          >
+            <p class="text-sm max-w-md">
+              {{ "highlightEditor.consent.notice" | transloco }}
+            </p>
+            <button
+              type="button"
+              class="px-4 py-2 bg-white text-black text-sm font-bold rounded-[5px] hover:bg-fb-gray-200"
+              (click)="consent()"
+              data-test="editor-consent-button"
+            >
+              {{ "highlightEditor.consent.button" | transloco }}
+            </button>
+            @if (playerFailed) {
+              <p class="text-xs text-amber-300" role="alert">
+                {{ "highlightEditor.consent.failed" | transloco }}
+              </p>
+            }
+          </div>
+        }
+        @if (consented && playerLoading) {
+          <div
+            class="absolute inset-0 flex items-center justify-center text-sm text-white"
+          >
+            {{ "highlightEditor.loadingVideo" | transloco }}
+          </div>
+        }
+      </div>
+
+      <!-- 1. Kalibrierung -->
+      <section class="mb-10" data-test="editor-calibration">
+        <h2 class="font-bold text-lg lg:text-xl mb-2">
+          {{ "highlightEditor.calibration.title" | transloco }}
+        </h2>
+        @if (calibrationAnchor === null) {
+          <p class="text-fb-gray-500" data-test="editor-no-calibration-scene">
+            {{ "highlightEditor.calibration.noGoal" | transloco }}
+          </p>
+        } @else {
+          <p class="text-sm mb-3">
+            {{
+              "highlightEditor.calibration.explanation"
+                | transloco: { goal: calibrationLabel }
+            }}
+          </p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              type="button"
+              class="min-h-[44px] rounded-[5px] border border-black px-4 font-bold"
+              (click)="playCalibration()"
+              data-test="editor-play-calibration"
+            >
+              {{ "highlightEditor.calibration.play" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[44px] rounded-[5px] bg-black px-4 font-bold text-white disabled:opacity-50"
+              [disabled]="
+                !consented || playerLoading || playing !== 'calibration'
+              "
+              (click)="markGoalNow()"
+              data-test="editor-mark-goal"
+            >
+              {{ "highlightEditor.calibration.now" | transloco }}
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="font-bold" data-test="editor-offset">
+              @if (offset === null) {
+                {{ "highlightEditor.calibration.none" | transloco }}
+              } @else {
+                {{
+                  "highlightEditor.calibration.offset"
+                    | transloco: { seconds: offset }
+                }}
+              }
+            </span>
+            @for (delta of [-5, -1, 1, 5]; track delta) {
+              <button
+                type="button"
+                class="min-h-[40px] min-w-[52px] rounded-[5px] border border-fb-gray-600 px-2 text-sm font-bold disabled:opacity-50"
+                [disabled]="
+                  (delta < 0 && offset !== null && offset <= offsetMin) ||
+                  (delta > 0 && offset !== null && offset >= offsetMax)
+                "
+                (click)="adjustOffset(delta)"
+                [attr.data-test]="'editor-adjust-' + delta"
+              >
+                {{ delta > 0 ? "+" : "−" }}{{ delta > 0 ? delta : -delta }} s
+              </button>
+            }
+            <button
+              type="button"
+              class="min-h-[40px] rounded-[5px] border border-fb-gray-600 px-3 text-sm font-bold"
+              [disabled]="offset === null"
+              (click)="checkCalibration()"
+              data-test="editor-check-calibration"
+            >
+              {{ "highlightEditor.calibration.check" | transloco }}
+            </button>
+            @if (offset !== null) {
+              <button
+                type="button"
+                class="min-h-[40px] rounded-[5px] border border-red-700 px-3 text-sm font-bold text-red-700"
+                (click)="resetOffset()"
+                data-test="editor-reset-offset"
+              >
+                {{ "highlightEditor.calibration.reset" | transloco }}
+              </button>
+            }
+          </div>
+          <p class="text-xs text-fb-gray-500">
+            {{ "highlightEditor.calibration.hint" | transloco }}
+          </p>
+        }
+      </section>
+
+      <!-- 2. Auswahl -->
+      <section class="mb-8" data-test="editor-scenes">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <h2 class="font-bold text-lg lg:text-xl">
+            {{
+              "highlightEditor.scenes.title"
+                | transloco: { selected: selectedCount, total: scenes.length }
+            }}
+          </h2>
+          @if (scenes.length) {
+            <div class="flex gap-2 text-sm">
+              <button type="button" class="underline" (click)="setAll(true)">
+                {{ "highlightEditor.scenes.all" | transloco }}
+              </button>
+              <button type="button" class="underline" (click)="setAll(false)">
+                {{ "highlightEditor.scenes.none" | transloco }}
+              </button>
+            </div>
+          }
+        </div>
+        @if (scenes.length === 0) {
+          <p class="text-fb-gray-500">
+            {{ "highlightEditor.scenes.empty" | transloco }}
+          </p>
+        }
+        <ul class="list-none p-0 m-0">
+          @for (scene of scenes; track scene.client_uuid) {
+            <li
+              class="flex flex-wrap items-center gap-3 border-b border-fb-gray-200 py-2"
+              [class.bg-fb-gray-700]="playing === scene.client_uuid"
+              data-test="editor-scene"
+            >
+              <label class="flex flex-1 min-w-0 items-center gap-3">
+                <input
+                  type="checkbox"
+                  class="h-5 w-5 shrink-0"
+                  [checked]="selection[scene.client_uuid]"
+                  (change)="toggleScene(scene)"
+                  [attr.data-test]="'editor-scene-toggle-' + scene.client_uuid"
+                />
+                <span class="min-w-0">
+                  <span
+                    class="block font-bold truncate"
+                    [class.text-violet-800]="scene.kind === 'mark'"
+                  >
+                    {{ scene.label }}
+                  </span>
+                  <span class="block text-xs text-fb-gray-500">
+                    {{
+                      "highlightEditor.scenes.meta"
+                        | transloco
+                          : {
+                              period: scene.period,
+                              time: scene.game_time || "–",
+                              at: formatVideoTime(window(scene).start),
+                            }
+                    }}
+                  </span>
+                </span>
+              </label>
+              <button
+                type="button"
+                class="min-h-[40px] rounded-full border border-black px-3 text-sm font-bold hover:bg-black hover:text-white"
+                (click)="playScene(scene)"
+                data-test="editor-scene-play"
+              >
+                {{ "highlightEditor.scenes.play" | transloco }}
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <div
+        class="sticky bottom-0 flex flex-wrap items-center gap-3 border-t border-fb-gray-200 bg-white py-3"
+      >
+        <button
+          type="button"
+          class="min-h-[48px] rounded-[5px] bg-black px-6 font-bold text-white disabled:opacity-50"
+          [disabled]="!dirty || saving"
+          (click)="save()"
+          data-test="editor-save"
+        >
+          {{
+            (saving ? "highlightEditor.saving" : "highlightEditor.save")
+              | transloco
+          }}
+        </button>
+        @if (saved && !dirty) {
+          <span
+            class="text-sm font-bold text-green-800"
+            role="status"
+            data-test="editor-saved"
+          >
+            {{ "highlightEditor.saved" | transloco }}
+          </span>
+        }
+        @if (saveFailed) {
+          <span
+            class="text-sm font-bold text-red-700"
+            role="alert"
+            data-test="editor-save-failed"
+          >
+            {{ saveError || ("highlightEditor.saveFailed" | transloco) }}
+          </span>
+        }
+        @if (dirty && !saving) {
+          <span class="text-sm text-fb-gray-500">
+            {{ "highlightEditor.unsaved" | transloco }}
+          </span>
+        }
+      </div>
+    }
+  }
+</div>

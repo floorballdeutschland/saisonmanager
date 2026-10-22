@@ -53,6 +53,12 @@ describe('YoutubeIframeApiService', () => {
       loadVideoById() {
         return undefined;
       }
+      getCurrentTime() {
+        return 0;
+      }
+      pauseVideo() {
+        return undefined;
+      }
       destroy() {
         return undefined;
       }

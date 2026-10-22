@@ -256,6 +256,22 @@ export function isFreeHit(shot: Pick<ShotInput, 'kind'>): boolean {
   return shot.kind === 'free_hit';
 }
 
+/** Vorgemerkte Szene (api#838): nur ein Zeitpunkt, ohne Team und Position. */
+export function isMark(shot: Pick<ShotInput, 'kind'>): boolean {
+  return shot.kind === 'mark';
+}
+
+/**
+ * Hat der Eintrag eine Stelle auf dem Feld? Schüsse und Freischläge immer,
+ * eine vorgemerkte Szene nie. Nur solche Einträge lassen sich zeichnen und
+ * korrigieren.
+ */
+export function isPlaced<T extends Pick<ShotInput, 'team' | 'x' | 'y'>>(
+  shot: T
+): shot is T & { team: ShotTeam; x: number; y: number } {
+  return shot.team !== null && shot.x !== null && shot.y !== null;
+}
+
 /**
  * Vorbelegung des Schalters „aus Freischlag“: Gab es höchstens
  * FREE_HIT_SHOT_WINDOW_MS vor dem Antippen des Schusses einen Freischlag

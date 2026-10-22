@@ -77,6 +77,29 @@ describe('MatchHighlightsComponent', () => {
   const ended = () =>
     options?.events?.onStateChange?.({ data: YT_STATE_ENDED, target: player });
 
+  it('zeigt eine vorgemerkte Szene als „Szene“, ohne Spielstand und Schütze (api#838)', () => {
+    const mark: HighlightScene = {
+      kind: 'mark',
+      event_id: null,
+      start: 1500,
+      end: 1520,
+      team: null,
+      period: 2,
+      game_time: '',
+    };
+    fixture.componentRef.setInput('highlights', {
+      ...highlights(),
+      scenes: [scene(1, 100), mark],
+    });
+    fixture.detectChanges();
+
+    const rows = el().querySelectorAll('[data-test="highlights-scene"]');
+    expect(rows.length).toBe(2);
+    expect(rows[1].textContent).toContain(matchDe.highlights.mark);
+    expect(rows[1].textContent).not.toContain('undefined');
+    expect(rows[1].textContent).not.toContain('Schütze');
+  });
+
   it('lädt vor dem Klick nichts von YouTube und zeigt den Hinweis', () => {
     expect(youtube.createPlayer).not.toHaveBeenCalled();
     expect(

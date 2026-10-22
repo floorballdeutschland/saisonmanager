@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { MatchReportModule } from '@floorball/public/association/match-report';
 import { UikitCommonModule } from '@floorball/uikit/common';
@@ -30,6 +31,7 @@ import { PublicAssociationMatchRoutingModule } from './public-association-match-
     UikitTeamModule,
     UikitPlayerModule,
     FormsModule,
+    RouterModule,
     MatchReportModule,
   ],
   providers: [

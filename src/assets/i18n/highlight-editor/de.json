@@ -1,0 +1,44 @@
+{
+  "title": "Highlights bearbeiten",
+  "loading": "Wird geladen…",
+  "loadingVideo": "Video wird geladen…",
+  "gameNumber": "Spiel",
+  "expires": "Link gültig bis {{ date }}",
+  "noVideo": "Für dieses Spiel gibt es noch keine veröffentlichte Aufzeichnung. Sobald sie verlinkt ist, lassen sich die Highlights hier bearbeiten.",
+  "error": {
+    "invalid": "Dieser Link ist ungültig. Bitte prüfe, ob er vollständig aus der Mail übernommen wurde.",
+    "expired": "Dieser Link ist abgelaufen. Die SBK kann die Highlights weiterhin bearbeiten.",
+    "forbidden": "Du hast keine Berechtigung, die Highlights dieses Spiels zu bearbeiten.",
+    "failed": "Die Daten konnten nicht geladen werden. Bitte später erneut versuchen."
+  },
+  "consent": {
+    "notice": "Das Video wird von YouTube geladen. Dabei werden Daten an YouTube übertragen.",
+    "button": "Video laden",
+    "failed": "Das Video konnte nicht geladen werden. Bitte erneut versuchen."
+  },
+  "calibration": {
+    "title": "1. Video und Halle abgleichen",
+    "explanation": "Das Videobild läuft der Halle hinterher. Spiel die Szene ab und drücke genau in dem Moment, in dem das Tor fällt, auf „Jetzt fällt das Tor“ ({{ goal }}). Daraus ergibt sich der Versatz für alle Szenen.",
+    "noGoal": "Es gibt kein Tor mit Tablet-Schuss, an dem sich der Versatz einstellen lässt. Die Szenen lassen sich trotzdem auswählen.",
+    "play": "Szene abspielen",
+    "now": "Jetzt fällt das Tor",
+    "none": "Nicht abgeglichen",
+    "offset": "Versatz: {{ seconds }} s",
+    "check": "Prüfen",
+    "reset": "Zurücksetzen",
+    "hint": "Mit „Prüfen“ läuft die Torszene mit dem eingestellten Versatz. Fehlt der Anfang, den Versatz verringern; kommt das Tor zu spät, erhöhen. Der Versatz gilt auch für die Sprungmarken im YouTube-Video."
+  },
+  "scenes": {
+    "title": "2. Szenen auswählen ({{ selected }} von {{ total }})",
+    "all": "Alle",
+    "none": "Keine",
+    "empty": "Für dieses Spiel gibt es keine Szenen.",
+    "meta": "{{ period }}. Abschnitt · {{ time }} · ab {{ at }} im Video",
+    "play": "Abspielen"
+  },
+  "save": "Speichern",
+  "saving": "Wird gespeichert…",
+  "saved": "Gespeichert. Die Highlights auf der Spielseite sind aktualisiert.",
+  "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+  "unsaved": "Nicht gespeicherte Änderungen"
+}

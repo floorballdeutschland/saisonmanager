@@ -166,6 +166,9 @@
       "@floorball/public/course-consent": [
         "src/app/_modules/_public/_course-consent"
       ],
+      "@floorball/public/highlight-editor": [
+        "src/app/_modules/_public/_highlight-editor"
+      ],
       "@floorball/public/referee-courses": [
         "src/app/_modules/_public/_referee-courses"
       ],
