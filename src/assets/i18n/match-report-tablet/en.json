@@ -10,7 +10,9 @@
     "expandedHint": "Careful: do not enter a goal again that the scorekeeper has already entered."
   },
   "capture": {
-    "title": "Shot tracking"
+    "title": "Shot tracking",
+    "notReplacementTitle": "Important:",
+    "notReplacement": "Tablet mode does not replace the regular match report input. Goals, penalties and all other events are still entered there by the scorekeeper as usual. Shot tracking here is an additional task, best done by a second person in parallel on a separate device."
   },
   "notStarted": "Shot tracking starts with the opening whistle.",
   "period": "Period",
