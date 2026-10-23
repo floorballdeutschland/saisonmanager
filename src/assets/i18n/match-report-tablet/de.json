@@ -10,7 +10,9 @@
     "expandedHint": "Achtung: Ein Tor, das das Sekretariat schon eingetragen hat, nicht noch einmal eintragen."
   },
   "capture": {
-    "title": "Schusserfassung"
+    "title": "Schusserfassung",
+    "notReplacementTitle": "Wichtig:",
+    "notReplacement": "Der Tabletmodus ersetzt die normale Spielberichtseingabe nicht. Tore, Strafen und alle anderen Ereignisse trägt das Sekretariat wie gewohnt dort ein. Die Schusserfassung hier ist eine zusätzliche Aufgabe und gehört am besten in die Hand einer weiteren Person, die parallel auf einem eigenen Gerät erfasst."
   },
   "notStarted": "Die Schusserfassung beginnt mit dem Anpfiff.",
   "period": "Abschnitt",

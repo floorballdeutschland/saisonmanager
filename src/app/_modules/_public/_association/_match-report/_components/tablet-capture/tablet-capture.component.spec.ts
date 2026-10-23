@@ -242,6 +242,24 @@ describe('TabletCaptureComponent', () => {
     await settle();
   });
 
+  it('weist unter dem Titel darauf hin, dass die normale Eingabe bleibt', async () => {
+    await start();
+    const note = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="tablet-not-a-replacement"]'
+    );
+    expect(note).not.toBeNull();
+
+    component.toggleFullscreen();
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="tablet-not-a-replacement"]'
+      )
+    ).not.toBeNull();
+    component.toggleFullscreen();
+    fixture.detectChanges();
+  });
+
   it('räumt beim Zerstören Takt und online-Lauscher ab', async () => {
     await start();
     component.startDraft(0.8, 0.5);
