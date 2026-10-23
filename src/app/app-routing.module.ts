@@ -407,6 +407,16 @@ export const routes: Routes = [
       ),
   },
   {
+    // Kalibrierung und Highlight-Auswahl eines Tablet-Spiels (api#838): Link
+    // aus der Mail nach dem Spiel, für Admin und SBK auch von der Spielseite.
+    // Ohne Guard und ohne Vorabladen, die API prüft Token bzw. Rolle.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/highlight-editor').then(
+        (m) => m.PublicHighlightEditorModule
+      ),
+  },
+  {
     // Öffentliche Kursseite (/schiri-kurse) und die Links aus den
     // Anmeldemails. Ohne Guard und ohne Vorabladen.
     path: '',

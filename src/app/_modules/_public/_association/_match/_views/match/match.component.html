@@ -99,7 +99,10 @@
     ></fb-match-public>
   }
   @if (isTabActive("stats") && game.tablet_capture) {
-    <fb-match-detailed-stats [game]="game"></fb-match-detailed-stats>
+    <fb-match-detailed-stats
+      [game]="game"
+      [fieldSize]="fieldSize$ | async"
+    ></fb-match-detailed-stats>
   }
   @if (isTabActive("secretary") && canEdit(game)) {
     <fb-match-report

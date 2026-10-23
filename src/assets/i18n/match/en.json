@@ -62,10 +62,22 @@
     },
     "players": {
       "title": "Shots per player"
+    },
+    "freeHits": {
+      "title": "Free hits",
+      "ariaLabel": "Free hits {{ team }}: {{ count }}",
+      "count": "Free hits",
+      "shots": "Shots from them",
+      "goals": "Goals from them",
+      "zone": {
+        "own_half": "Own half",
+        "opponent_half": "Opponent half",
+        "near_goal_area": "Near goal area"
+      }
     }
   },
   "highlights": {
-    "title": "Goal scenes",
+    "title": "Highlights",
     "consent": {
       "notice": "The scenes come from the live stream recording on YouTube. Content from YouTube (Google) is only loaded after you click; data such as your IP address is then transmitted to YouTube.",
       "button": "Load scenes from YouTube",
@@ -78,6 +90,8 @@
     "playAll": "Play all scenes",
     "assist": "Assist",
     "jumpHint": "Tap a goal in the shot map to jump to its scene.",
-    "goalAria": "Goal {{ time }}, jump to scene"
+    "goalAria": "Goal {{ time }}, jump to scene",
+    "mark": "Scene",
+    "edit": "Edit highlights (offset and selection)"
   }
 }

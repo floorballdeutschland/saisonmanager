@@ -21,6 +21,7 @@ import {
 import { GameStatsService } from '@floorball/core';
 import {
   DetailedStats,
+  DetailedStatsFreeHit,
   DetailedStatsShot,
   Game,
   GoalkeeperStats,
@@ -30,8 +31,13 @@ import {
   ShotTeam,
   TeamShotStats,
 } from '@floorball/types';
+import { fieldGeometry } from 'src/app/_helpers/_utils/field-geometry';
 import {
+  FREE_HIT_ZONES,
+  FreeHitZone,
+  filterFreeHits,
   filterShots,
+  freeHitZoneCounts,
   periodsOf,
   savePercentage,
   SHOT_RESULTS,
@@ -44,6 +50,7 @@ import {
 } from '../../_utils/highlights';
 import { MatchHighlightsComponent } from '../match-highlights/match-highlights.component';
 import { SHOT_COLORS } from '../shot-chart/shot-chart.component';
+import { FREE_HIT_ZONE_COLORS } from '../free-hit-chart/free-hit-chart.component';
 
 interface LoadRequest {
   gameId: number;
@@ -83,6 +90,8 @@ export const DETAILED_STATS_REFRESH_MS = 30000;
 })
 export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
   @Input() game!: Game;
+  /** `league.field_size` für das Schussbild; unbekannt zeichnet Großfeld. */
+  @Input() fieldSize: string | null | undefined = null;
 
   stats?: DetailedStats;
   loading = false;
@@ -104,6 +113,8 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
   readonly teams: ShotTeam[] = ['home', 'guest'];
   readonly results = SHOT_RESULTS;
   readonly colors = SHOT_COLORS;
+  readonly freeHitZones = FREE_HIT_ZONES;
+  readonly zoneColors = FREE_HIT_ZONE_COLORS;
 
   private _load$ = new Subject<LoadRequest>();
   private _destroy$ = new Subject<void>();
@@ -206,6 +217,14 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     );
   }
 
+  /**
+   * Admin und SBK des Spielbetriebs dürfen Versatz und Auswahl der Highlights
+   * jederzeit ändern (api#838). Dieselbe Grenze wie `check_game`.
+   */
+  get canEditHighlights(): boolean {
+    return !!this.game?.permission?.includes('check_game');
+  }
+
   onHighlightsUnavailable(): void {
     this.highlightsUnavailable = true;
     this.updateLinkedShots();
@@ -279,6 +298,26 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
         stats: teamStatsFor(stats, team, period),
       })),
     ];
+  }
+
+  // --- Freischläge (fe#589) ---------------------------------------------------
+
+  /** Freischläge erfasst? Ältere Antworten ohne `free_hits` zählen als keine. */
+  get hasFreeHits(): boolean {
+    return !!this.stats?.free_hits?.length;
+  }
+
+  freeHitsFor(team: ShotTeam): DetailedStatsFreeHit[] {
+    return this.stats
+      ? filterFreeHits(this.stats.free_hits ?? [], team, this.selectedPeriod)
+      : [];
+  }
+
+  zoneCountsFor(team: ShotTeam): Record<FreeHitZone, number> {
+    return freeHitZoneCounts(
+      this.freeHitsFor(team),
+      fieldGeometry(this.fieldSize)
+    );
   }
 
   goalkeepersFor(team: ShotTeam): GoalkeeperStats[] {

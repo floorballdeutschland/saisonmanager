@@ -35,6 +35,19 @@
       ></fb-match-highlights>
     }
 
+    <!-- Kalibrierung und Auswahl der Highlights (api#838), nur Admin und SBK -->
+    @if (canEditHighlights) {
+      <p class="mb-8 text-sm">
+        <a
+          class="underline font-bold"
+          routerLink="/highlights/bearbeiten"
+          [queryParams]="{ spiel: game.id }"
+          data-test="highlights-edit"
+          >{{ "match.highlights.edit" | transloco }}</a
+        >
+      </p>
+    }
+
     <!-- Schussgrafik -->
     <section class="mb-10">
       <h3 class="font-bold text-lg lg:text-xl mb-3">
@@ -111,6 +124,7 @@
               [teamName]="teamName(team)"
               [periodTitles]="game.period_titles"
               [linkedShots]="linkedShots"
+              [fieldSize]="fieldSize"
               (goalSelected)="onGoalSelected($event)"
             ></fb-shot-chart>
             <p class="text-xs text-fb-gray-500 mt-2">
@@ -202,6 +216,106 @@
         }
       </div>
     </section>
+
+    <!-- Freischläge (fe#589), nur Statistik -->
+    @if (hasFreeHits) {
+      <section class="mb-10" data-test="free-hits">
+        <h3 class="font-bold text-lg lg:text-xl mb-3">
+          {{ "match.detailedStats.freeHits.title" | transloco }}
+        </h3>
+        <ul class="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-sm list-none p-0">
+          @for (zone of freeHitZones; track zone) {
+            <li class="flex items-center gap-1.5">
+              <span
+                class="inline-block w-3 h-3 rotate-45"
+                [style.background-color]="zoneColors[zone]"
+                aria-hidden="true"
+              ></span>
+              {{ "match.detailedStats.freeHits.zone." + zone | transloco }}
+            </li>
+          }
+        </ul>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          @for (team of teams; track team) {
+            <div class="min-w-0" [attr.data-test]="'free-hits-' + team">
+              <h4
+                class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
+              >
+                {{ teamName(team) }}
+              </h4>
+              <fb-free-hit-chart
+                [freeHits]="freeHitsFor(team)"
+                [team]="team"
+                [teamName]="teamName(team)"
+                [periodTitles]="game.period_titles"
+                [fieldSize]="fieldSize"
+              ></fb-free-hit-chart>
+              <p
+                class="text-xs text-fb-gray-500 mt-2"
+                [attr.data-test]="'free-hit-zones-' + team"
+              >
+                @for (zone of freeHitZones; track zone; let last = $last) {
+                  {{ "match.detailedStats.freeHits.zone." + zone | transloco }}:
+                  {{ zoneCountsFor(team)[zone] }}{{ last ? "" : " · " }}
+                }
+              </p>
+              <div class="overflow-x-auto mt-3">
+                <table
+                  class="w-full text-sm"
+                  [attr.data-test]="'free-hit-table-' + team"
+                >
+                  <thead>
+                    <tr class="border-b border-fb-gray-200">
+                      <th class="text-left font-bold py-2 pr-3">
+                        {{ "match.detailedStats.shots.period" | transloco }}
+                      </th>
+                      <th class="text-right font-bold py-2 px-2">
+                        {{ "match.detailedStats.freeHits.count" | transloco }}
+                      </th>
+                      <th class="text-right font-bold py-2 px-2">
+                        {{ "match.detailedStats.freeHits.shots" | transloco }}
+                      </th>
+                      <th class="text-right font-bold py-2 pl-2">
+                        {{ "match.detailedStats.freeHits.goals" | transloco }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of rowsFor(team); track row.period) {
+                      <tr
+                        class="border-b border-fb-gray-200"
+                        [class.font-bold]="row.period === null"
+                      >
+                        <td class="py-2 pr-3 whitespace-nowrap">
+                          @if (row.period === null) {
+                            {{ "match.detailedStats.shots.total" | transloco }}
+                          } @else {
+                            {{
+                              periodTitle(row.period) ??
+                                ("match.detailedStats.periodN"
+                                  | transloco: { n: row.period })
+                            }}
+                          }
+                        </td>
+                        <td class="text-right tabular-nums py-2 px-2">
+                          {{ row.stats.free_hits ?? 0 }}
+                        </td>
+                        <td class="text-right tabular-nums py-2 px-2">
+                          {{ row.stats.shots_from_free_hit ?? 0 }}
+                        </td>
+                        <td class="text-right tabular-nums py-2 pl-2">
+                          {{ row.stats.goals_from_free_hit ?? 0 }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
 
     <!-- Torhüter -->
     @if (hasGoalkeepers) {

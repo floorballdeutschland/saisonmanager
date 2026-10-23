@@ -12,7 +12,13 @@ import {
   ShotResult,
   ShotTeam,
 } from '@floorball/types';
-import { FieldPoint, RINK, toFieldPoint } from '../../_utils/detailed-stats';
+import {
+  FieldGeometry,
+  FieldMarkings,
+  fieldGeometry,
+  fieldMarkings,
+} from 'src/app/_helpers/_utils/field-geometry';
+import { FieldPoint, toFieldPoint } from '../../_utils/detailed-stats';
 import { personLabel } from '../../_utils/highlights';
 
 interface PlottedShot extends FieldPoint {
@@ -31,7 +37,8 @@ export const SHOT_COLORS: Record<ShotResult, string> = {
 
 /**
  * Spielfeld mit den Schusspositionen eines Teams. Heim greift nach rechts an,
- * Gast nach links (siehe `toFieldPoint`).
+ * Gast nach links (siehe `toFieldPoint`). Gezeichnet in Metern, je nach
+ * Feldgröße der Liga als Groß- oder Kleinfeld (fe#591).
  */
 @Component({
   selector: 'fb-shot-chart',
@@ -47,21 +54,26 @@ export class ShotChartComponent implements OnChanges {
   @Input() periodTitles: PeriodTitles[] | null | undefined = [];
   /** Tore, zu denen es eine Szene gibt. Ohne Szenen ist nichts anklickbar. */
   @Input() linkedShots: ReadonlySet<DetailedStatsShot> = new Set();
+  /** `league.field_size` ('GF' / 'KF'); unbekannt zeichnet Großfeld. */
+  @Input() fieldSize: string | null | undefined = null;
 
   @Output() goalSelected = new EventEmitter<DetailedStatsShot>();
 
-  readonly rink = RINK;
   readonly colors = SHOT_COLORS;
+  field: FieldGeometry = fieldGeometry(null);
+  markings: FieldMarkings = fieldMarkings(this.field);
   plotted: PlottedShot[] = [];
 
   ngOnChanges(): void {
+    this.field = fieldGeometry(this.fieldSize);
+    this.markings = fieldMarkings(this.field);
     // Tore zuletzt, damit sie über den übrigen Punkten liegen.
     this.plotted = [...this.shots]
       .sort((a, b) => Number(a.result === 'goal') - Number(b.result === 'goal'))
       .map((shot) => ({
         shot,
         linked: this.linkedShots.has(shot),
-        ...toFieldPoint(shot),
+        ...toFieldPoint(shot, this.field),
       }));
   }
 
@@ -71,6 +83,19 @@ export class ShotChartComponent implements OnChanges {
    */
   get hasLinked(): boolean {
     return this.plotted.some((point) => point.linked);
+  }
+
+  /** Rand von einem halben Meter, damit Punkte an der Bande ganz sichtbar sind. */
+  get viewBox(): string {
+    return `-0.5 -0.5 ${this.field.length + 1} ${this.field.width + 1}`;
+  }
+
+  /**
+   * Punkte bleiben auf dem Bildschirm gleich groß: Das Kleinfeld füllt mit
+   * 28 m dieselbe Breite wie das Großfeld mit 40 m.
+   */
+  get dotScale(): number {
+    return this.field.length / 40;
   }
 
   /** Zielt das Team nach rechts? Steuert den Pfeil unter dem Feld. */

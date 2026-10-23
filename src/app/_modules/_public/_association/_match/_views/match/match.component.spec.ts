@@ -10,8 +10,9 @@ import { getTranslocoTestingModule } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, convertToParamMap, Params } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
-import { SessionService } from '@floorball/core';
-import { GameOperation, User } from '@floorball/types';
+import { LeagueService, SessionService } from '@floorball/core';
+import { By } from '@angular/platform-browser';
+import { GameOperation, League, User } from '@floorball/types';
 import matchDe from '../../../../../../../assets/i18n/match/de.json';
 
 // Die Reiterleiste färbt den aktiven Reiter mit dem Verlauf des Verbands.
@@ -398,6 +399,33 @@ describe('MatchComponent', () => {
 
       expect(el(fixture).querySelector('fb-match-detailed-stats')).toBeTruthy();
       expect(el(fixture).querySelector('fb-match-public')).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    // fe#592: Eine Endrunde ohne eigene Feldgröße erbt die der Hauptrunde
+    // (api#839). Das Schussbild muss dann Kleinfeld zeichnen, nicht still auf
+    // Großfeld zurückfallen.
+    it('reicht die geerbte Feldgröße der Liga an die Statistik weiter', () => {
+      TestBed.inject(LeagueService).selectedLeague$ = of({
+        id: 7,
+        field_size: null,
+        effective_field_size: 'KF',
+      } as unknown as League);
+      const { fixture, component, http } = loadPublic({
+        id: 1,
+        tablet_capture: true,
+      });
+
+      component.setTab('stats');
+      http
+        .expectOne((r) => r.url.endsWith('games/1.json'))
+        .flush({ id: 1, tablet_capture: true });
+      fixture.detectChanges();
+
+      const stats = fixture.debugElement.query(
+        By.css('fb-match-detailed-stats')
+      );
+      expect(stats.properties['fieldSize']).toBe('KF');
       component.ngOnDestroy();
     });
 

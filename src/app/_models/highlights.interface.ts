@@ -2,22 +2,28 @@ import { PersonRef } from './detailed-stats.interface';
 import { ShotTeam } from './game-shot.interface';
 
 /**
- * Eine Torszene in der Stream-Aufzeichnung (fe#555). `start` und `end` sind
- * Sekunden im Video, berechnet in der API aus dem Zeitpunkt des verknüpften
- * Tablet-Schusses (15 s davor bis 5 s danach).
+ * Eine Szene in der Stream-Aufzeichnung (fe#555). `start` und `end` sind
+ * Sekunden im Video, berechnet in der API aus dem Zeitpunkt des Antippens am
+ * Tablet (unkalibriert 15 s davor bis 5 s danach, kalibriert 12 s davor bis
+ * 8 s danach, api#838).
+ *
+ * `kind` 'goal' ist ein Tor mit verknüpftem Schuss, 'mark' eine am Tablet
+ * vorgemerkte Szene ohne Tor (dann ohne Spielstand und Personen). Fehlt
+ * `kind` (ältere API), ist es ein Tor.
  */
 export interface HighlightScene {
-  event_id: number;
+  kind?: 'goal' | 'mark';
+  event_id: number | null;
   start: number;
   end: number;
-  team: ShotTeam;
+  team: ShotTeam | null;
   /** Spielstand nach dem Tor. */
-  home_goals: number;
-  guest_goals: number;
+  home_goals?: number;
+  guest_goals?: number;
   period: number;
   game_time: string;
-  scorer: PersonRef | null;
-  assist: PersonRef | null;
+  scorer?: PersonRef | null;
+  assist?: PersonRef | null;
 }
 
 /** `GET games/:id/highlights.json`, nur für Tablet-Spiele (sonst 404). */

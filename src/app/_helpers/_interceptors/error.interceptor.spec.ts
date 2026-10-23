@@ -1267,6 +1267,7 @@ describe('ErrorInterceptor', () => {
       `${environment.apiURL}games/4711/shots/0b6c-uuid/link.json`,
       `${environment.apiURL}games/4711/tablet_capture.json`,
       `${environment.apiURL}games/4711/tablet_feedback.json`,
+      `${environment.apiURL}games/4711/highlight_request.json`,
     ];
 
     for (const url of tabletUrls) {
@@ -1326,6 +1327,49 @@ describe('ErrorInterceptor', () => {
 
       expect(errorSpy).toHaveBeenCalled();
       expect(navigateSpy).toHaveBeenCalled();
+    });
+  });
+
+  // Kalibrierung und Highlight-Auswahl (api#838). Der Mail-Link kommt ohne
+  // Konto; die Seite zeigt ungültige und abgelaufene Links selbst an.
+  describe('Highlight-Editor', () => {
+    const tokenUrl = `${environment.apiURL}highlight_editor.json?token=abc`;
+    const gameUrl = `${environment.apiURL}games/4711/highlight_editor.json`;
+
+    for (const status of [401, 404, 410, 422]) {
+      it(`schweigt beim Mail-Link auf ${status} und meldet niemanden ab`, () => {
+        const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+        failGetWith({ message: 'x' }, status, tokenUrl);
+
+        expect(errorSpy).not.toHaveBeenCalled();
+        expect(navigateSpy).not.toHaveBeenCalled();
+      });
+    }
+
+    it('schweigt für Admin und SBK bei 403, die Seite meldet es selbst', () => {
+      const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+      failGetWith({ message: 'Keine Berechtigung.' }, 403, gameUrl);
+
+      expect(errorSpy).not.toHaveBeenCalled();
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('meldet für Admin und SBK eine abgelaufene Sitzung weiterhin ab', () => {
+      const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+      failGetWith({ message: 'x' }, 401, gameUrl);
+
+      expect(logoutSpy).toHaveBeenCalled();
+    });
+
+    it('meldet niemanden ab, wenn der Mail-Link 401 bekommt', () => {
+      const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+
+      failGetWith({ message: 'x' }, 401, tokenUrl);
+
+      expect(logoutSpy).not.toHaveBeenCalled();
     });
   });
 });

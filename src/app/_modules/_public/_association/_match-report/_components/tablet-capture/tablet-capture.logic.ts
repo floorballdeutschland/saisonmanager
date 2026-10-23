@@ -82,10 +82,12 @@ function round4(value: number): number {
  * Bildschirmposition (0..1 von links nach rechts und von oben nach unten) in
  * die Angriffsrichtung des schießenden Teams umrechnen.
  *
- * Beide Achsen laufen über das ganze Feld von Bande zu Bande (40 x 20 m):
- * x = 0 ist die Bande hinter dem eigenen Tor, x = 1 die Bande hinter dem
- * gegnerischen Tor, y = 0 die linke Seitenbande aus Sicht des Angreifers.
- * Das SVG der Erfassung bildet genau diese Fläche ab (viewBox 400 x 200).
+ * Beide Achsen laufen über das ganze Feld von Bande zu Bande, je nach
+ * Feldgröße 40 x 20 m (GF) oder 28 x 16 m (KF): x = 0 ist die Bande hinter
+ * dem eigenen Tor, x = 1 die Bande hinter dem gegnerischen Tor, y = 0 die
+ * linke Seitenbande aus Sicht des Angreifers. Das SVG der Erfassung bildet
+ * genau diese Fläche ab (viewBox in Metern, siehe field-geometry.ts), die
+ * Umrechnung braucht die Feldgröße deshalb nicht.
  *
  * Greift das Team nach rechts an, ist die linke Bande x = 0 und die obere
  * Seitenbande y = 0. Greift es nach links an, ist das Bild um 180 Grad
@@ -245,6 +247,55 @@ export function mergeShots(
   );
 }
 
+// --- Freischläge (fe#589) ---------------------------------------------------
+
+/** Liegt ein Freischlag so kurz vor dem Schuss, gilt der Schuss als „aus Freischlag“. */
+export const FREE_HIT_SHOT_WINDOW_MS = 10000;
+
+export function isFreeHit(shot: Pick<ShotInput, 'kind'>): boolean {
+  return shot.kind === 'free_hit';
+}
+
+/** Vorgemerkte Szene (api#838): nur ein Zeitpunkt, ohne Team und Position. */
+export function isMark(shot: Pick<ShotInput, 'kind'>): boolean {
+  return shot.kind === 'mark';
+}
+
+/**
+ * Hat der Eintrag eine Stelle auf dem Feld? Schüsse und Freischläge immer,
+ * eine vorgemerkte Szene nie. Nur solche Einträge lassen sich zeichnen und
+ * korrigieren.
+ */
+export function isPlaced<T extends Pick<ShotInput, 'team' | 'x' | 'y'>>(
+  shot: T
+): shot is T & { team: ShotTeam; x: number; y: number } {
+  return shot.team !== null && shot.x !== null && shot.y !== null;
+}
+
+/**
+ * Vorbelegung des Schalters „aus Freischlag“: Gab es höchstens
+ * FREE_HIT_SHOT_WINDOW_MS vor dem Antippen des Schusses einen Freischlag
+ * desselben Teams? Verglichen wird `tapped_at`, also der Zeitpunkt in der
+ * Halle, nicht die Spielzeit.
+ */
+export function followsFreeHit(
+  shots: Pick<ShotInput, 'kind' | 'team' | 'tapped_at'>[],
+  team: ShotTeam,
+  tappedAt: string
+): boolean {
+  const shotMs = Date.parse(tappedAt);
+  if (isNaN(shotMs)) return false;
+  return shots.some((entry) => {
+    if (!isFreeHit(entry) || entry.team !== team) return false;
+    const freeHitMs = Date.parse(entry.tapped_at);
+    return (
+      !isNaN(freeHitMs) &&
+      freeHitMs <= shotMs &&
+      shotMs - freeHitMs <= FREE_HIT_SHOT_WINDOW_MS
+    );
+  });
+}
+
 export interface GoalLinkCandidate {
   goal: GameEvent;
   shots: Shot[];
@@ -263,7 +314,8 @@ export function goalLinkCandidates(
     shots.map((shot) => shot.event_id).filter((id) => id !== null)
   );
   const freeGoalShots = shots.filter(
-    (shot) => shot.result === 'goal' && shot.event_id === null
+    (shot) =>
+      !isFreeHit(shot) && shot.result === 'goal' && shot.event_id === null
   );
 
   return (events ?? [])

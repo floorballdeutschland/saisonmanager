@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import {
+  HighlightRequestInput,
   ServerTimeResponse,
   ShotInput,
   ShotsResponse,
@@ -95,6 +96,17 @@ export class GameShotService {
     return this.http.post<void>(
       environment.apiURL + 'games/' + gameId + '/tablet_feedback.json',
       feedback
+    );
+  }
+
+  /**
+   * Link zur Kalibrierung und Highlight-Auswahl per Mail anfordern (api#838).
+   * Verschickt wird er erst, wenn die Aufzeichnung veröffentlicht ist.
+   */
+  public requestHighlightLink(gameId: number, input: HighlightRequestInput) {
+    return this.http.post<void>(
+      environment.apiURL + 'games/' + gameId + '/highlight_request.json',
+      input
     );
   }
 

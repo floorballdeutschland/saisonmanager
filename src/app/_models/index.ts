@@ -119,3 +119,4 @@ export * from './streaming.interface';
 export * from './game-shot.interface';
 export * from './detailed-stats.interface';
 export * from './highlights.interface';
+export * from './highlight-editor.interface';

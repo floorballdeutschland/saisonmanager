@@ -89,5 +89,39 @@
     "sending": "Sending…",
     "sent": "Thank you for your feedback!",
     "error": "The feedback could not be sent. Please try again later."
+  },
+  "freeHit": {
+    "arm": "Free hit {{ team }}",
+    "armed": "Free hit: tap the spot (cancel)",
+    "hint": "Tap where {{ team }} takes the free hit. It is saved right away.",
+    "label": "Free hit",
+    "saved": "Free hit {{ team }} saved",
+    "swapTeam": "Other team",
+    "undo": "Undo",
+    "ok": "OK",
+    "fromFreeHit": "From free hit",
+    "fromFreeHitShort": "from free hit",
+    "delete": "Delete free hit"
+  },
+  "mark": {
+    "button": "Mark scene",
+    "label": "Marked scene",
+    "saved": "Scene marked. It will be offered for the highlights later.",
+    "undo": "Undo",
+    "ok": "OK"
+  },
+  "highlightRequest": {
+    "toggle": "Edit highlights after the game",
+    "hint": "Get a link by e-mail to align the scenes with the video and pick them.",
+    "explanation": "The video often lags 10 to 30 seconds behind the hall. After the game you get a link: there you set the offset using one goal and choose which scenes go into the highlights. The link arrives once the match report is closed and the recording is published, and is valid for 14 days.",
+    "toAccount": "The e-mail goes to {{ address }}.",
+    "otherAddress": "Send to a different address",
+    "email": "E-mail address",
+    "emailInvalid": "Please enter a valid e-mail address.",
+    "privacy": "The address is only used for this link and deleted once it has been sent.",
+    "send": "Request link",
+    "sending": "Requesting…",
+    "sent": "Requested. The link arrives by e-mail once the recording is published.",
+    "error": "The link could not be requested. Are you missing the permission for this game?"
   }
 }
