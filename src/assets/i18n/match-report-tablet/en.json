@@ -139,7 +139,8 @@
   },
   "fullscreen": {
     "enter": "Full screen",
-    "exit": "Exit full screen"
+    "exit": "Exit full screen",
+    "dismissNotice": "Close message"
   },
   "choice": {
     "title": "What was it?",

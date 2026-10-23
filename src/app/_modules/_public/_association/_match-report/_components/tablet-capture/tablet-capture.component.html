@@ -22,6 +22,37 @@
   [attr.aria-modal]="fullscreen ? 'true' : null"
   [attr.aria-label]="fullscreen ? ('tablet.capture.title' | transloco) : null"
 >
+  <!--
+    Im Browser-Vollbild zeigt der Browser nur noch die Erfassung, die
+    Meldungen der Seite (fb-notification) sind dann unsichtbar. Für diese Zeit
+    spiegelt die Leiste hier die neuen Meldungen. Im reinen Ebenen-Vollbild
+    liegen die Meldungen der Seite ohnehin darüber (z-60 über z-50).
+  -->
+  @if (fullscreenNotices.length) {
+    <ul class="flex flex-col gap-1" data-testid="tablet-fullscreen-notices">
+      @for (notice of fullscreenNotices; track $index) {
+        <li
+          class="flex items-center gap-2 rounded-[5px] border-2 px-3 py-1 text-sm font-bold"
+          [class.border-red-700]="notice.type === noticeTypes.Error"
+          [class.bg-red-50]="notice.type === noticeTypes.Error"
+          [class.text-red-800]="notice.type === noticeTypes.Error"
+          [class.border-fb-gray-600]="notice.type !== noticeTypes.Error"
+          [class.bg-white]="notice.type !== noticeTypes.Error"
+          role="alert"
+        >
+          <span class="flex-1">{{ notice.message }}</span>
+          <button
+            type="button"
+            class="min-h-[48px] min-w-[48px] rounded-[5px] border border-current px-2"
+            [attr.aria-label]="'tablet.fullscreen.dismissNotice' | transloco"
+            (click)="dismissFullscreenNotice(notice)"
+          >
+            ✕
+          </button>
+        </li>
+      }
+    </ul>
+  }
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h3 class="font-bold" [class.text-lg]="!fullscreen">
       {{ "tablet.capture.title" | transloco }}
@@ -918,84 +949,78 @@
           </ul>
         </div>
       }
-      @if (fullscreen) {
-        <div class="mt-3">
-          <ng-container *ngTemplateOutlet="extras"></ng-container>
-        </div>
-      }
-    </div>
-  </div>
-
-  @if (!fullscreen) {
-    <ng-container *ngTemplateOutlet="extras"></ng-container>
-  }
-</section>
-
-<!--
-  Zuordnung, Highlights und Feedback: unter der Erfassung, im Vollbild unten
-  in der rechten Spalte.
--->
-<ng-template #extras>
-  @if (linkCandidates.length) {
-    <div
-      class="mt-4 rounded-[5px] border border-yellow-300 bg-yellow-50 p-3"
-      data-testid="tablet-link-help"
-    >
-      <h4 class="font-bold">{{ "tablet.link.title" | transloco }}</h4>
-      <p class="mb-2 text-sm">{{ "tablet.link.hint" | transloco }}</p>
-      @if (linkError) {
-        <p class="mb-2 text-sm font-bold text-red-700" role="alert">
-          {{ "tablet.link.error" | transloco }}
-        </p>
-      }
-      @for (candidate of linkCandidates; track candidate.goal.event_id) {
-        <div class="mb-2">
-          <div class="text-sm font-bold">
-            {{
-              "tablet.link.goal"
-                | transloco
-                  : {
-                      team: teamName($any(candidate.goal.event_team)),
-                      score:
-                        candidate.goal.home_goals +
-                        ":" +
-                        candidate.goal.guest_goals,
-                      period: candidate.goal.period,
-                      time: candidate.goal.time,
-                    }
-            }}
-          </div>
-          <div class="mt-1 flex flex-wrap gap-2">
-            @for (shot of candidate.shots; track shot.client_uuid) {
-              <button
-                type="button"
-                class="min-h-[48px] rounded-[5px] border border-fb-gray-600 bg-white px-3 text-sm font-bold"
-                (click)="linkShot(shot, candidate.goal)"
-              >
-                {{
-                  "tablet.link.shot"
-                    | transloco
-                      : {
-                          period: shot.period,
-                          time: shot.game_time || "–",
-                          tapped: tappedClock(shot.tapped_at),
-                          shooter: trikotNumber(
-                            shot.team,
-                            shot.shooter_player_id
-                          ),
-                        }
-                }}
-              </button>
+      <!--
+        Zuordnung, Highlights und Feedback stehen immer unten in der rechten
+        Spalte (schmal: unter allem) und werden genau einmal gerendert. Ein
+        Wechsel ins Vollbild baut sie deshalb nicht neu auf; getippter Text
+        und die Meldung „gesendet“ bleiben stehen.
+      -->
+      <div class="mt-3" data-testid="tablet-extras">
+        @if (linkCandidates.length) {
+          <div
+            class="mt-4 rounded-[5px] border border-yellow-300 bg-yellow-50 p-3"
+            data-testid="tablet-link-help"
+          >
+            <h4 class="font-bold">{{ "tablet.link.title" | transloco }}</h4>
+            <p class="mb-2 text-sm">{{ "tablet.link.hint" | transloco }}</p>
+            @if (linkError) {
+              <p class="mb-2 text-sm font-bold text-red-700" role="alert">
+                {{ "tablet.link.error" | transloco }}
+              </p>
+            }
+            @for (candidate of linkCandidates; track candidate.goal.event_id) {
+              <div class="mb-2">
+                <div class="text-sm font-bold">
+                  {{
+                    "tablet.link.goal"
+                      | transloco
+                        : {
+                            team: teamName($any(candidate.goal.event_team)),
+                            score:
+                              candidate.goal.home_goals +
+                              ":" +
+                              candidate.goal.guest_goals,
+                            period: candidate.goal.period,
+                            time: candidate.goal.time,
+                          }
+                  }}
+                </div>
+                <div class="mt-1 flex flex-wrap gap-2">
+                  @for (shot of candidate.shots; track shot.client_uuid) {
+                    <button
+                      type="button"
+                      class="min-h-[48px] rounded-[5px] border border-fb-gray-600 bg-white px-3 text-sm font-bold"
+                      (click)="linkShot(shot, candidate.goal)"
+                    >
+                      {{
+                        "tablet.link.shot"
+                          | transloco
+                            : {
+                                period: shot.period,
+                                time: shot.game_time || "–",
+                                tapped: tappedClock(shot.tapped_at),
+                                shooter: trikotNumber(
+                                  shot.team,
+                                  shot.shooter_player_id
+                                ),
+                              }
+                      }}
+                    </button>
+                  }
+                </div>
+              </div>
             }
           </div>
-        </div>
-      }
-    </div>
-  }
+        }
 
-  <fb-tablet-highlight-request [gameId]="game.id"></fb-tablet-highlight-request>
-  <fb-tablet-feedback [gameId]="game.id"></fb-tablet-feedback>
-</ng-template>
+        <fb-tablet-highlight-request
+          [gameId]="game.id"
+        ></fb-tablet-highlight-request>
+        <fb-tablet-feedback [gameId]="game.id"></fb-tablet-feedback>
+      </div>
+    </div>
+  </div>
+</section>
 
 <ng-template #fieldHint>
   @if (pendingTap) {

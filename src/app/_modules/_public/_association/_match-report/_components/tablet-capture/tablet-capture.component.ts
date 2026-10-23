@@ -15,16 +15,22 @@ import {
 } from '@angular/core';
 import { Subscription, lastValueFrom, timeout } from 'rxjs';
 
-import { GameShotService, StorageService } from '@floorball/core';
+import {
+  GameShotService,
+  NotificationService,
+  StorageService,
+} from '@floorball/core';
 import {
   Game,
   GameEvent,
   GamePlayerEntry,
+  NotificationType,
   Shot,
   ShotInput,
   ShotKind,
   ShotResult,
   ShotTeam,
+  UserNotification,
 } from '@floorball/types';
 import {
   FieldGeometry,
@@ -226,6 +232,12 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   private _nativeFullscreen = false;
   private _bodyOverflowBefore: string | null = null;
   private readonly _document = inject(DOCUMENT);
+  private readonly _notifications = inject(NotificationService);
+  private _noticeSubscription: Subscription | null = null;
+
+  // Meldungen der Seite, gespiegelt für die Dauer des Browser-Vollbilds.
+  public fullscreenNotices: UserNotification[] = [];
+  public readonly noticeTypes = NotificationType;
 
   @ViewChild('captureRoot', { static: true })
   private _root?: ElementRef<HTMLElement>;
@@ -264,6 +276,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (!isNaN(stored)) this.clockOffset = stored;
     void this.measureClock();
 
+    this._noticeSubscription = this._notifications
+      .onNotification()
+      .subscribe((notice) => this._mirrorNotice(notice));
     this._shotsSubscription = this._sync.shots$.subscribe(
       ({ gameId, shots }) => {
         this._applyServerShots(gameId, shots);
@@ -303,6 +318,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (this._retryTimer) clearInterval(this._retryTimer);
     this._retryTimer = null;
     this._shotsSubscription?.unsubscribe();
+    this._noticeSubscription?.unsubscribe();
     if (typeof window !== 'undefined') {
       window.removeEventListener('online', this._onOnline);
     }
@@ -451,6 +467,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       ...this.sides,
       [String(this.viewPeriod)]: otherTeam(this.rightAttackingTeam),
     };
+    // Der Vorschlag einer offenen Wahl folgt der neuen Spielrichtung.
+    const tap = this.pendingTap;
+    if (tap) tap.team = shootingTeamForTap(tap.screenX, tap.period, this.sides);
     this._storage.setItem(
       SIDES_KEY_PREFIX + this._gameId,
       JSON.stringify(this.sides)
@@ -1129,7 +1148,47 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       body.style.overflow = this._bodyOverflowBefore;
     }
     this._bodyOverflowBefore = null;
+    this.fullscreenNotices = [];
     if (this._nativeFullscreen) this._leaveNativeFullscreen();
+  }
+
+  get nativeFullscreen(): boolean {
+    return this._nativeFullscreen;
+  }
+
+  /**
+   * Spiegelt Meldungen der Seite, solange das Browser-Vollbild nur die
+   * Erfassung zeigt. Dieselben Regeln wie fb-notification: gezieltes
+   * Wegräumen per `remove`, leere Meldung räumt alles, gleicher Text nur
+   * einmal, `autoClose` nach drei Sekunden.
+   */
+  private _mirrorNotice(notice: UserNotification): void {
+    if (notice.remove !== undefined) {
+      this.fullscreenNotices = this.fullscreenNotices.filter(
+        (entry) => entry.message !== notice.remove
+      );
+    } else if (!notice.message) {
+      this.fullscreenNotices = [];
+    } else if (this._nativeFullscreen) {
+      if (
+        !this.fullscreenNotices.some(
+          (entry) => entry.message === notice.message
+        )
+      ) {
+        this.fullscreenNotices = [...this.fullscreenNotices, notice];
+      }
+      if (notice.autoClose) {
+        setTimeout(() => this.dismissFullscreenNotice(notice), 3000);
+      }
+    }
+    this._cdr.markForCheck();
+  }
+
+  public dismissFullscreenNotice(notice: UserNotification): void {
+    this.fullscreenNotices = this.fullscreenNotices.filter(
+      (entry) => entry !== notice
+    );
+    this._cdr.markForCheck();
   }
 
   @HostListener('document:keydown.escape')

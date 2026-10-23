@@ -139,7 +139,8 @@
   },
   "fullscreen": {
     "enter": "Vollbild",
-    "exit": "Vollbild beenden"
+    "exit": "Vollbild beenden",
+    "dismissNotice": "Meldung schließen"
   },
   "choice": {
     "title": "Was war das?",

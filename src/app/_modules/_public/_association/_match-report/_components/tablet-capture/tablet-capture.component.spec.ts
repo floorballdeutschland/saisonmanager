@@ -4,8 +4,12 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
-import { getTranslocoTestingModule } from '@floorball/core';
+import {
+  NotificationService,
+  getTranslocoTestingModule,
+} from '@floorball/core';
 import { Game, Shot, ShotInput } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -1552,6 +1556,64 @@ describe('TabletCaptureComponent', () => {
       expect(component.periodChangePending).toBeFalse();
     });
 
+    it('ersetzt einen über 10 s alten Entwurf, der neue trägt den Zeitpunkt des Tipps', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      component.chooseTapShot();
+      const old = component.draft!;
+
+      component.tapField(0.3, 0.4, T0 + 20000);
+      // Der alte Entwurf wartet, solange gewählt wird.
+      expect(component.draft).toBe(old);
+      expect(component.pendingTap!.tapped_device_ms).toBe(T0 + 20000);
+      component.chooseTapShot();
+
+      expect(component.draft!.client_uuid).not.toBe(old.client_uuid);
+      expect(component.draft!.tapped_device_ms).toBe(T0 + 20000);
+      expect(component.draft!.tapped_at).toBe(
+        new Date(T0 + 20000).toISOString()
+      );
+      expect(component.draft!.screenX).toBe(0.3);
+      expect(component.draft!.team).toBe('guest');
+    });
+
+    it('ersetzt einen offenen Tipp nach dem Fenster durch einen neuen mit neuem Zeitpunkt', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      component.tapField(0.2, 0.6, T0 + 10001);
+
+      expect(component.pendingTap).toEqual({
+        tapped_device_ms: T0 + 10001,
+        screenX: 0.2,
+        screenY: 0.6,
+        team: 'guest',
+        period: 1,
+      });
+      component.chooseTapFreeHit('guest');
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      expect(sent.length).toBe(1);
+      expect(sent[0].tapped_at).toBe(new Date(T0 + 10001).toISOString());
+    });
+
+    it('rechnet den Teamvorschlag nach „Seiten tauschen“ neu', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      expect(component.pendingTap!.team).toBe('home');
+      render();
+      click('tablet-swap-sides');
+
+      expect(component.pendingTap!.team).toBe('guest');
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-choice-shot"]'
+        ).textContent
+      ).toContain('tablet.choice.shot');
+      component.chooseTapShot();
+      expect(component.draft!.team).toBe('guest');
+      expect(component.draft!.tapped_device_ms).toBe(T0);
+    });
+
     it('verwirft die Wahl beim Spielwechsel', async () => {
       await start();
       component.tapField(0.8, 0.5, T0);
@@ -1710,6 +1772,89 @@ describe('TabletCaptureComponent', () => {
 
       fixture.destroy();
       expect(document.body.style.overflow).toBe('');
+    });
+
+    it('baut Feedback und Highlights beim Umschalten nicht neu auf', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      const feedback = () =>
+        fixture.debugElement.query(By.directive(TabletFeedbackComponent))
+          .componentInstance as TabletFeedbackComponent;
+      const highlight = () =>
+        fixture.debugElement.query(
+          By.directive(TabletHighlightRequestComponent)
+        ).componentInstance;
+      const firstFeedback = feedback();
+      const firstHighlight = highlight();
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-feedback-toggle"]')
+        .click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const textarea = () =>
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-feedback-message"]'
+        ) as HTMLTextAreaElement;
+      textarea().value = 'Spielfeld endlich groß';
+      textarea().dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(feedback().message).toBe('Spielfeld endlich groß');
+
+      component.toggleFullscreen();
+      fixture.detectChanges();
+      expect(feedback()).toBe(firstFeedback);
+      component.toggleFullscreen();
+      fixture.detectChanges();
+
+      expect(feedback()).toBe(firstFeedback);
+      expect(highlight()).toBe(firstHighlight);
+      expect(feedback().message).toBe('Spielfeld endlich groß');
+      expect(textarea().value).toBe('Spielfeld endlich groß');
+    });
+
+    it('spiegelt Meldungen der Seite nur im Browser-Vollbild', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      spyOn(document, 'exitFullscreen').and.returnValue(Promise.resolve());
+      const current = spyOnProperty(
+        document,
+        'fullscreenElement',
+        'get'
+      ).and.returnValue(null);
+      const notifications = TestBed.inject(NotificationService);
+      const notices = () =>
+        fixture.nativeElement.querySelectorAll(
+          '[data-testid="tablet-fullscreen-notices"] li'
+        );
+
+      // Nur die Ebene: Die Meldungen der Seite liegen darüber.
+      component.enterFullscreen();
+      notifications.error('Vorher');
+      fixture.detectChanges();
+      expect(notices().length).toBe(0);
+
+      current.and.returnValue(root());
+      document.dispatchEvent(new Event('fullscreenchange'));
+      notifications.error('Keine Verbindung');
+      notifications.error('Keine Verbindung');
+      fixture.detectChanges();
+      expect(notices().length).toBe(1);
+      expect(notices()[0].textContent).toContain('Keine Verbindung');
+
+      notifications.dismiss('Keine Verbindung');
+      fixture.detectChanges();
+      expect(notices().length).toBe(0);
+
+      notifications.warning('Noch eine');
+      fixture.detectChanges();
+      notices()[0].querySelector('button').click();
+      fixture.detectChanges();
+      expect(notices().length).toBe(0);
+
+      notifications.error('Zum Schluss');
+      component.exitFullscreen();
+      fixture.detectChanges();
+      expect(component.fullscreenNotices).toEqual([]);
     });
 
     it('erfasst im Vollbild wie gewohnt: Tipp, Wahl, Entwurf', async () => {
