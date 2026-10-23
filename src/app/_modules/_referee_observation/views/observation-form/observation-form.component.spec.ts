@@ -392,6 +392,20 @@ describe('ObservationFormComponent (Bearbeiten)', () => {
     expect(component.candidate).toBeNull();
   });
 
+  it('nennt beim Bearbeiten die sofortige Sichtbarkeit', () => {
+    expect(component.hintKey).toBe('refereeObservation.form.editHint');
+  });
+
+  it('weist bei einem zurueckgenommenen Bogen auf die Unsichtbarkeit hin', () => {
+    service.getMyObservations.and.returnValue(
+      of([{ ...observation, status: 'hidden' as const }])
+    );
+    build();
+
+    expect(component.notAllowed).toBeFalse();
+    expect(component.hintKey).toBe('refereeObservation.form.editHiddenHint');
+  });
+
   it('merkt sich den Vermerk einer frueheren Bearbeitung', () => {
     service.getMyObservations.and.returnValue(
       of([{ ...observation, edited_at: '2026-10-06T18:30:00Z' }])

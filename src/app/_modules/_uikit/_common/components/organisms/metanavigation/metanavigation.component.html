@@ -421,14 +421,20 @@
     </nav>
   }
   <!-- Coaching -->
-  @if (showItem("menu_item_referee_observations")) {
+  @if (
+    showItem("menu_item_referee_observations") ||
+    showItem("menu_item_referee_observations_own")
+  ) {
     <h2 class="uppercase text-fb-gray-100 font-bold mt-12">
       {{ "nav.section.coaching" | transloco }}
     </h2>
     <nav>
       <!-- alphabetisch nach deutschem Label, siehe Hinweis oben -->
       <ul>
-        @if (showItem("menu_item_referee_observations")) {
+        @if (
+          showItem("menu_item_referee_observations") ||
+          showItem("menu_item_referee_observations_own")
+        ) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"

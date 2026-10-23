@@ -95,7 +95,8 @@
     "editNotAllowed": "Diesen Bogen kannst du nicht bearbeiten. Bearbeiten darf nur, wer den Bogen abgegeben hat.",
     "editHint": "Die Änderungen sind sofort für die beobachteten Schiedsrichter*innen sichtbar, und der Bogen trägt danach den Vermerk „bearbeitet am“. Eine neue Mail geht dabei nicht hinaus.",
     "saveChanges": "Änderungen speichern",
-    "updated": "Die Änderungen wurden gespeichert."
+    "updated": "Die Änderungen wurden gespeichert.",
+    "editHiddenHint": "Der Bogen ist derzeit zurückgenommen und für die Schiedsrichter*innen nicht sichtbar. Deine Änderungen werden gespeichert und der Bogen trägt danach den Vermerk „bearbeitet am“. Eine Mail geht nicht hinaus."
   },
   "admin": {
     "title": "Beobachtungen der Schiedsrichtercoaches",

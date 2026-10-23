@@ -214,12 +214,7 @@
     </div>
 
     <p class="text-xs text-fb-gray-500 mb-3" data-testid="visibility-hint">
-      {{
-        (isEdit
-          ? "refereeObservation.form.editHint"
-          : "refereeObservation.form.visibilityHint"
-        ) | transloco
-      }}
+      {{ hintKey | transloco }}
     </p>
 
     <div class="flex items-center gap-2">

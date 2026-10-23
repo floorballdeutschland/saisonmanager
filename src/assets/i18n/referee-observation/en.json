@@ -95,7 +95,8 @@
     "editNotAllowed": "You cannot edit this form. Only the coach who submitted it can edit it.",
     "editHint": "Your changes are visible to the referees straight away, and the form will be marked as edited. No new e-mail is sent.",
     "saveChanges": "Save changes",
-    "updated": "Your changes have been saved."
+    "updated": "Your changes have been saved.",
+    "editHiddenHint": "This form is currently withdrawn and not visible to the referees. Your changes will be saved and the form will be marked as edited. No e-mail is sent."
   },
   "admin": {
     "title": "Referee coach observations",

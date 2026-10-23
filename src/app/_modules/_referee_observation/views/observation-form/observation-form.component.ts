@@ -58,6 +58,8 @@ export class ObservationFormComponent implements OnInit {
   editId: number | null = null;
   /** Vermerk des bearbeiteten Bogens, falls er schon einmal geändert wurde. */
   editedAt: string | null = null;
+  /** Der bearbeitete Bogen ist zurückgenommen und für die Schiris unsichtbar. */
+  editHidden = false;
   loading = true;
   notAllowed = false;
   submitting = false;
@@ -83,6 +85,14 @@ export class ObservationFormComponent implements OnInit {
 
   get editedAtLabel(): string {
     return formatObservationTimestamp(this.editedAt);
+  }
+
+  /** Hinweis unter dem Formular: Abgabe, Bearbeitung oder zurückgenommener Bogen. */
+  get hintKey(): string {
+    if (!this.isEdit) return 'refereeObservation.form.visibilityHint';
+    return this.editHidden
+      ? 'refereeObservation.form.editHiddenHint'
+      : 'refereeObservation.form.editHint';
   }
 
   get isEdit(): boolean {
@@ -154,6 +164,7 @@ export class ObservationFormComponent implements OnInit {
       (a, b) => (a.position ?? 0) - (b.position ?? 0)
     );
     this.editedAt = observation.edited_at ?? null;
+    this.editHidden = observation.status === 'hidden';
     this.candidate = {
       game_id: observation.game_id,
       game_number: observation.game_number,

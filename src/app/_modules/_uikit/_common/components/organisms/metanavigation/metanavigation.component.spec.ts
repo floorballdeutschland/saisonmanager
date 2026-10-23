@@ -96,6 +96,20 @@ describe('MetanavigationComponent', () => {
     );
   });
 
+  it('zeigt die eigenen Beobachtungen auch nach Ablauf der Qualifikation', () => {
+    currentUser$.next(
+      userWith({
+        menu_item_referee_observations: false,
+        menu_item_referee_observations_own: true,
+      })
+    );
+    fixture.detectChanges();
+
+    expect(linkHrefs(sectionAfter('Coaching'))).toEqual([
+      '/schiedsrichter/meine-beobachtungen',
+    ]);
+  });
+
   it('laesst die erhaltenen Rueckmeldungen im Schiedsrichterwesen stehen', () => {
     currentUser$.next(userWith({ show_page_referee_observations: true }));
     fixture.detectChanges();

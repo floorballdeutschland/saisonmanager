@@ -4,18 +4,24 @@ import { permissionGuard } from 'src/app/_helpers/_guards/permission.guard';
 import * as Views from './views';
 
 /**
- * Zwei getrennte Berechtigungen, deshalb je Route ein eigener Guard statt eines
+ * Getrennte Berechtigungen, deshalb je Route ein eigener Guard statt eines
  * gemeinsamen am Lazy-Einstieg: Beobachtungen SCHREIBEN darf nur, wer eine
  * gültige B-Zusatzqualifikation hat; die eigenen erhaltenen Rückmeldungen LESEN
- * darf jedes Konto mit Schiedsrichterprofil.
+ * darf jedes Konto mit Schiedsrichterprofil. Die eigenen abgegebenen Bögen
+ * ansehen und korrigieren darf ein Coach auch nach Ablauf der Qualifikation
+ * (`menu_item_referee_observations_own`, feedback#74).
  */
+const OWN_OBSERVATIONS = [
+  'menu_item_referee_observations',
+  'menu_item_referee_observations_own',
+];
 const routes: Routes = [
   {
     path: 'schiedsrichter/meine-beobachtungen',
     pathMatch: 'full',
     component: Views.ObservationCoachIndexComponent,
     canActivate: [permissionGuard],
-    data: { permission: 'menu_item_referee_observations', scrollTop: true },
+    data: { permission: OWN_OBSERVATIONS, scrollTop: true },
   },
   {
     path: 'schiedsrichter/meine-beobachtungen/neu/:gameId',
@@ -30,7 +36,7 @@ const routes: Routes = [
     component: Views.ObservationFormComponent,
     canActivate: [permissionGuard],
     data: {
-      permission: 'menu_item_referee_observations',
+      permission: OWN_OBSERVATIONS,
       scrollTop: true,
       mode: 'edit',
     },
