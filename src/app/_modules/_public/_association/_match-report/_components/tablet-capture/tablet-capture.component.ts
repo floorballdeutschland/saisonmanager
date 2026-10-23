@@ -1,25 +1,36 @@
+import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
   SimpleChanges,
+  ViewChild,
+  inject,
 } from '@angular/core';
 import { Subscription, lastValueFrom, timeout } from 'rxjs';
 
-import { GameShotService, StorageService } from '@floorball/core';
+import {
+  GameShotService,
+  NotificationService,
+  StorageService,
+} from '@floorball/core';
 import {
   Game,
   GameEvent,
   GamePlayerEntry,
+  NotificationType,
   Shot,
   ShotInput,
   ShotKind,
   ShotResult,
   ShotTeam,
+  UserNotification,
 } from '@floorball/types';
 import {
   FieldGeometry,
@@ -101,6 +112,21 @@ export interface LastFreeHit {
   screenY: number;
 }
 
+/**
+ * Angetippte Stelle, bevor feststeht, was dort war (Schuss oder Freischlag).
+ * Zeitpunkt und Stelle stehen fest, sobald der Finger das Feld berührt; die
+ * Wahl danach ändert daran nichts.
+ */
+export interface PendingTap {
+  // Gerätezeit des ersten Antippens (ms), umgerechnet wird erst beim Speichern.
+  tapped_device_ms: number;
+  screenX: number;
+  screenY: number;
+  // Vorschlag für den Schuss, aus der Feldhälfte wie bisher.
+  team: ShotTeam;
+  period: number;
+}
+
 export type DisplayedShot = ReturnType<typeof mergeShots>[number];
 
 const CLOCK_OFFSET_KEY = 'tablet_clock_offset';
@@ -112,15 +138,17 @@ const CLOCK_TIMEOUT_MS = 5000;
 // Ein Tipp gilt als Tipp, solange der Finger sich kaum bewegt; darüber ist es
 // ein Wischen (Scrollen am Tablet) und erzeugt keinen Schuss.
 const TAP_MAX_MOVE_PX = 12;
-// Ein offener Entwurf, der älter ist, wird von einem neuen Tipp nicht mehr
-// verschoben, sondern ersetzt: Dann ist es ein neuer Schuss.
+// Ein offener Entwurf oder eine offene Wahl, die älter ist, wird von einem
+// neuen Tipp nicht mehr verschoben, sondern ersetzt: Dann ist es eine neue
+// Szene mit neuem Zeitpunkt.
 const DRAFT_MOVE_WINDOW_MS = 10000;
 const RECENT_SHOTS = 8;
 
 /**
- * Erfassungsansicht des Tabletmodus (Beta, fe#344): Spielfeld antippen ergibt
- * einen Schuss, danach Team, Ergebnis und auf Wunsch Schütze und Torhüter als
- * große Kacheln.
+ * Erfassungsansicht des Tabletmodus (Beta, fe#344): Erst das Spielfeld
+ * antippen, dann wählen, was es war: Schuss (danach Ergebnis und auf Wunsch
+ * Schütze und Torhüter als große Kacheln) oder Freischlag (sofort
+ * gespeichert). Auf Wunsch als Vollbild über der ganzen Seite.
  *
  * Die Spielseite wird über Spiele wiederverwendet (CLAUDE.md): Die Spiel-ID
  * kommt deshalb ausschließlich aus `game`, und jeder Zustand, der an einem
@@ -138,6 +166,7 @@ const RECENT_SHOTS = 8;
 @Component({
   selector: 'fb-tablet-capture',
   templateUrl: './tablet-capture.component.html',
+  styleUrl: './tablet-capture.component.css',
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
@@ -177,21 +206,14 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public draft: ShotDraft | null = null;
   public gameTimeInvalid = false;
 
-  // Der nächste Tipp aufs Feld ist ein Freischlag dieses Teams (fe#589). Gilt
-  // für genau einen Tipp: Wer das Zurückschalten vergisst, soll keine Schüsse
-  // als Freischläge erfassen. Das Team wird ausdrücklich gewählt, weil ein
-  // Freischlag oft in der eigenen Hälfte ausgeführt wird und die Feldhälfte
-  // dann das falsche Team ergäbe.
-  public freeHitArmed: ShotTeam | null = null;
+  // Angetippte Stelle, für die noch gewählt wird, was sie war. Freischläge
+  // wählen ihr Team ausdrücklich, weil ein Freischlag oft in der eigenen
+  // Hälfte ausgeführt wird und die Feldhälfte dann das falsche Team ergäbe.
+  public pendingTap: PendingTap | null = null;
   public lastFreeHit: LastFreeHit | null = null;
 
   // Zuletzt vorgemerkte Szene (api#838), für den Hinweis mit „Rückgängig“.
   public lastMark: string | null = null;
-
-  // Zuletzt per Schnellzähler erfasste Parade (Feedback #62): client_uuid und
-  // das Team des haltenden Torhüters, für den Hinweis mit „Rückgängig“.
-  public lastSave: { client_uuid: string; goalkeeperTeam: ShotTeam } | null =
-    null;
 
   // „Torwart raus“ je Team (Feedback #63, #64), gemerkt je Gerät und Spiel.
   public pulledGoalies: PulledGoalies = {};
@@ -202,6 +224,23 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   // Meldung, wenn eine Zuordnung abgewiesen wurde (403/404 meldet der
   // Interceptor für diese Endpunkte nicht selbst).
   public linkError = false;
+
+  // Vollbild: fixierte Ebene über der ganzen Seite, zusätzlich die
+  // Fullscreen-API des Browsers, wo es sie gibt.
+  public fullscreen = false;
+  // Der Browser zeigt die Erfassung gerade per Fullscreen-API.
+  private _nativeFullscreen = false;
+  private _bodyOverflowBefore: string | null = null;
+  private readonly _document = inject(DOCUMENT);
+  private readonly _notifications = inject(NotificationService);
+  private _noticeSubscription: Subscription | null = null;
+
+  // Meldungen der Seite, gespiegelt für die Dauer des Browser-Vollbilds.
+  public fullscreenNotices: UserNotification[] = [];
+  public readonly noticeTypes = NotificationType;
+
+  @ViewChild('captureRoot', { static: true })
+  private _root?: ElementRef<HTMLElement>;
 
   private _pointerDown: {
     pointerId: number;
@@ -237,6 +276,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (!isNaN(stored)) this.clockOffset = stored;
     void this.measureClock();
 
+    this._noticeSubscription = this._notifications
+      .onNotification()
+      .subscribe((notice) => this._mirrorNotice(notice));
     this._shotsSubscription = this._sync.shots$.subscribe(
       ({ gameId, shots }) => {
         this._applyServerShots(gameId, shots);
@@ -272,9 +314,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.fullscreen) this.exitFullscreen();
     if (this._retryTimer) clearInterval(this._retryTimer);
     this._retryTimer = null;
     this._shotsSubscription?.unsubscribe();
+    this._noticeSubscription?.unsubscribe();
     if (typeof window !== 'undefined') {
       window.removeEventListener('online', this._onOnline);
     }
@@ -289,10 +333,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.draft = null;
     this._pointerDown = null;
     this.gameTimeInvalid = false;
-    this.freeHitArmed = null;
+    this.pendingTap = null;
     this.lastFreeHit = null;
     this.lastMark = null;
-    this.lastSave = null;
     this.linkError = false;
     this._goalkeeperChoice = {};
     this.sides = this._loadSides(gameId);
@@ -326,14 +369,17 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     const period = this._periodFromGame();
     if (period === this.gamePeriod) return;
     this.gamePeriod = period;
-    if (this.draft) {
+    if (this.draft || this.pendingTap) {
       this.periodChangePending = true;
     } else {
       this.viewPeriod = period;
     }
   }
 
-  /** Nach dem Schließen eines Entwurfs (Speichern, Verwerfen, Löschen). */
+  /**
+   * Nach dem Schließen eines Entwurfs (Speichern, Verwerfen, Löschen) oder
+   * einer Wahl ohne offenen Entwurf.
+   */
   private _afterDraftClosed(): void {
     if (this.periodChangePending) {
       this.viewPeriod = this.gamePeriod;
@@ -421,6 +467,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       ...this.sides,
       [String(this.viewPeriod)]: otherTeam(this.rightAttackingTeam),
     };
+    // Der Vorschlag einer offenen Wahl folgt der neuen Spielrichtung.
+    const tap = this.pendingTap;
+    if (tap) tap.team = shootingTeamForTap(tap.screenX, tap.period, this.sides);
     this._storage.setItem(
       SIDES_KEY_PREFIX + this._gameId,
       JSON.stringify(this.sides)
@@ -430,6 +479,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public selectViewPeriod(period: number): void {
     this.viewPeriod = period;
     if (this.draft) this.draft.period = period;
+    if (this.pendingTap) this.pendingTap.period = period;
     this._cdr.markForCheck();
   }
 
@@ -539,21 +589,100 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
     const screenX = (down.clientX - rect.left) / rect.width;
     const screenY = (down.clientY - rect.top) / rect.height;
-    if (this.freeHitArmed) {
-      this.recordFreeHit(this.freeHitArmed, screenX, screenY, down.deviceNow);
-    } else {
-      this.startDraft(screenX, screenY, down.deviceNow);
-    }
+    this.tapField(screenX, screenY, down.deviceNow);
   }
 
   public onFieldPointerCancel(): void {
     this._pointerDown = null;
   }
 
-  public startDraft(
+  /**
+   * Ein Tipp aufs Feld hält Stelle und Zeitpunkt fest; was es war, wird danach
+   * gewählt (`chooseTapShot`, `chooseTapFreeHit`, `cancelTap`).
+   *
+   * Erneutes Tippen verschiebt nur die Stelle, solange es zur selben Szene
+   * gehört: während der Wahl und bei einem offenen Entwurf jeweils innerhalb
+   * des Verschiebe-Fensters, bei einer Korrektur immer. Der Zeitpunkt bleibt
+   * dabei der des ersten Antippens.
+   */
+  public tapField(
     screenX: number,
     screenY: number,
     deviceNow = Date.now()
+  ): void {
+    const pending = this.pendingTap;
+    if (pending) {
+      if (deviceNow - pending.tapped_device_ms <= DRAFT_MOVE_WINDOW_MS) {
+        pending.screenX = screenX;
+        pending.screenY = screenY;
+        pending.team = shootingTeamForTap(screenX, pending.period, this.sides);
+        return;
+      }
+    } else if (this.draft && this._draftMovable(this.draft, deviceNow)) {
+      this.draft.screenX = screenX;
+      this.draft.screenY = screenY;
+      return;
+    }
+    this.pendingTap = {
+      tapped_device_ms: deviceNow,
+      screenX,
+      screenY,
+      team: shootingTeamForTap(screenX, this.viewPeriod, this.sides),
+      period: this.viewPeriod,
+    };
+  }
+
+  /**
+   * Die Stelle war ein Schuss. Ohne Team gilt der Vorschlag aus der
+   * Feldhälfte. Ein älterer, nie gespeicherter Entwurf wird ersetzt, wie
+   * bisher bei einem neuen Tipp nach dem Verschiebe-Fenster.
+   */
+  public chooseTapShot(team?: ShotTeam): void {
+    const tap = this.pendingTap;
+    if (!tap) return;
+    this.pendingTap = null;
+    this.draft = null;
+    this.startDraft(
+      tap.screenX,
+      tap.screenY,
+      tap.tapped_device_ms,
+      team ?? tap.team
+    );
+  }
+
+  /**
+   * Die Stelle war ein Freischlag dieses Teams: sofort gespeichert, mit der
+   * angetippten Stelle und dem Zeitpunkt des Antippens. Ein offener
+   * Schuss-Entwurf bleibt unangetastet.
+   */
+  public chooseTapFreeHit(team: ShotTeam): void {
+    const tap = this.pendingTap;
+    if (!tap) return;
+    this.pendingTap = null;
+    this.recordFreeHit(team, tap.screenX, tap.screenY, tap.tapped_device_ms);
+    if (!this.draft) this._afterDraftClosed();
+  }
+
+  /** Der Tipp war nichts: Stelle und Zeitpunkt verwerfen. */
+  public cancelTap(): void {
+    if (!this.pendingTap) return;
+    this.pendingTap = null;
+    if (!this.draft) this._afterDraftClosed();
+  }
+
+  private _draftMovable(draft: ShotDraft, deviceNow: number): boolean {
+    return (
+      draft.isEdit ||
+      draft.tapped_device_ms === null ||
+      deviceNow - draft.tapped_device_ms <= DRAFT_MOVE_WINDOW_MS
+    );
+  }
+
+  public startDraft(
+    screenX: number,
+    screenY: number,
+    deviceNow = Date.now(),
+    shootingTeam?: ShotTeam
   ): void {
     // Ein frischer Entwurf wird nur verschoben: Wer die Stelle gleich
     // nachbessert, meint denselben Schuss, und dessen Zeitpunkt bleibt. Ein
@@ -561,18 +690,14 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     // Entwurf älter als das Zeitfenster, war es ein neuer Schuss: Der alte,
     // nie gespeicherte Entwurf wird verworfen.
     const draft = this.draft;
-    if (
-      draft &&
-      (draft.isEdit ||
-        draft.tapped_device_ms === null ||
-        deviceNow - draft.tapped_device_ms <= DRAFT_MOVE_WINDOW_MS)
-    ) {
+    if (draft && this._draftMovable(draft, deviceNow)) {
       draft.screenX = screenX;
       draft.screenY = screenY;
       return;
     }
 
-    const team = shootingTeamForTap(screenX, this.viewPeriod, this.sides);
+    const team =
+      shootingTeam ?? shootingTeamForTap(screenX, this.viewPeriod, this.sides);
     const tappedAt = toServerTime(deviceNow, this.clockOffset ?? 0);
     const situation = situationFor(this.pulledGoalies, team, this.viewPeriod);
     this.gameTimeInvalid = false;
@@ -686,15 +811,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   // --- Freischläge (fe#589) ----------------------------------------------------
 
-  /** Freischlag für dieses Team scharf schalten; derselbe Knopf bricht ab. */
-  public toggleFreeHitArmed(team: ShotTeam): void {
-    this.freeHitArmed = this.freeHitArmed === team ? null : team;
-  }
-
   /**
-   * Ein Tipp im Freischlag-Modus speichert sofort, ohne Entwurf, für das
-   * vorher gewählte Team. Ein offener Schuss-Entwurf bleibt dabei unangetastet;
-   * die Rückmeldung mit „Rückgängig“ steht dann über dem Entwurf.
+   * Freischlag speichern, ohne Entwurf. Ein offener Schuss-Entwurf bleibt
+   * dabei unangetastet; die Rückmeldung mit „Rückgängig“ steht dann über dem
+   * Entwurf.
    */
   public recordFreeHit(
     team: ShotTeam,
@@ -702,7 +822,6 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     screenY: number,
     deviceNow = Date.now()
   ): void {
-    this.freeHitArmed = null;
     if (!this.buffer) return;
 
     const entry: LastFreeHit = {
@@ -810,49 +929,6 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   public dismissLastMark(): void {
     this.lastMark = null;
-  }
-
-  // --- Parade ohne Position (Feedback #62) ------------------------------------
-
-  /**
-   * Schnellzähler: Der Torhüter dieses Teams hat gehalten. Ein Tipp, ohne
-   * Feldposition und ohne Entwurf, gespeichert als gehaltener Schuss des
-   * Gegners. Zählt bei Paraden und Fangquote, nicht in der Schussgrafik und
-   * nie als Szene. Spielt das Team ohne Torhüter, gibt es nichts zu halten.
-   */
-  public recordSave(goalkeeperTeam: ShotTeam, deviceNow = Date.now()): void {
-    if (!this.buffer || this.isGoaliePulled(goalkeeperTeam)) return;
-    const shootingTeam = otherTeam(goalkeeperTeam);
-    const clientUuid = newClientUuid();
-    this.buffer.upsert({
-      client_uuid: clientUuid,
-      kind: 'shot',
-      team: shootingTeam,
-      period: this.viewPeriod,
-      game_time: '',
-      tapped_at: toServerTime(deviceNow, this.clockOffset ?? 0),
-      x: null,
-      y: null,
-      result: 'saved',
-      shooter_player_id: null,
-      goalkeeper_player_id: this._goalkeeperFor(goalkeeperTeam),
-      from_free_hit: false,
-      from_penalty_shot: false,
-      empty_net: false,
-      extra_attacker: this.isGoaliePulled(shootingTeam),
-    });
-    this.lastSave = { client_uuid: clientUuid, goalkeeperTeam };
-    this._autoFlush();
-  }
-
-  public undoLastSave(): void {
-    const last = this.lastSave;
-    this.lastSave = null;
-    if (last) this.deleteShot(last.client_uuid);
-  }
-
-  public dismissLastSave(): void {
-    this.lastSave = null;
   }
 
   /**
@@ -1000,7 +1076,6 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.buffer.remove(clientUuid, knownToServer);
     if (this.lastFreeHit?.client_uuid === clientUuid) this.lastFreeHit = null;
     if (this.lastMark === clientUuid) this.lastMark = null;
-    if (this.lastSave?.client_uuid === clientUuid) this.lastSave = null;
     if (this.draft?.client_uuid === clientUuid) {
       this.draft = null;
       this._afterDraftClosed();
@@ -1027,6 +1102,131 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     )
       ? playerId
       : null;
+  }
+
+  // --- Vollbild -----------------------------------------------------------------
+
+  public toggleFullscreen(): void {
+    if (this.fullscreen) {
+      this.exitFullscreen();
+    } else {
+      this.enterFullscreen();
+    }
+  }
+
+  /**
+   * Die Ebene (fixiert über Seitenmenü, Kopf und Spielberichtsschritten, Seite
+   * dahinter gesperrt) trägt das Vollbild allein. Die Fullscreen-API kommt
+   * dazu, wo der Browser sie für Elemente anbietet; fehlt sie (iPhone) oder
+   * lehnt der Browser ab, bleibt es still bei der Ebene.
+   */
+  public enterFullscreen(): void {
+    if (this.fullscreen) return;
+    this.fullscreen = true;
+    this._cdr.markForCheck();
+    const body = this._document.body;
+    if (body) {
+      this._bodyOverflowBefore = body.style.overflow;
+      body.style.overflow = 'hidden';
+    }
+    const root = this._root?.nativeElement;
+    if (!root || typeof root.requestFullscreen !== 'function') return;
+    try {
+      // Ältere Browser geben kein Promise zurück.
+      void Promise.resolve(root.requestFullscreen()).catch(() => undefined);
+    } catch {
+      // Ohne Fullscreen-API bleibt die Ebene.
+    }
+  }
+
+  public exitFullscreen(): void {
+    if (!this.fullscreen) return;
+    this.fullscreen = false;
+    this._cdr.markForCheck();
+    const body = this._document.body;
+    if (body && this._bodyOverflowBefore !== null) {
+      body.style.overflow = this._bodyOverflowBefore;
+    }
+    this._bodyOverflowBefore = null;
+    this.fullscreenNotices = [];
+    if (this._nativeFullscreen) this._leaveNativeFullscreen();
+  }
+
+  get nativeFullscreen(): boolean {
+    return this._nativeFullscreen;
+  }
+
+  /**
+   * Spiegelt Meldungen der Seite, solange das Browser-Vollbild nur die
+   * Erfassung zeigt. Dieselben Regeln wie fb-notification: gezieltes
+   * Wegräumen per `remove`, leere Meldung räumt alles, gleicher Text nur
+   * einmal, `autoClose` nach drei Sekunden.
+   */
+  private _mirrorNotice(notice: UserNotification): void {
+    if (notice.remove !== undefined) {
+      this.fullscreenNotices = this.fullscreenNotices.filter(
+        (entry) => entry.message !== notice.remove
+      );
+    } else if (!notice.message) {
+      this.fullscreenNotices = [];
+    } else if (this._nativeFullscreen) {
+      if (
+        !this.fullscreenNotices.some(
+          (entry) => entry.message === notice.message
+        )
+      ) {
+        this.fullscreenNotices = [...this.fullscreenNotices, notice];
+      }
+      if (notice.autoClose) {
+        setTimeout(() => this.dismissFullscreenNotice(notice), 3000);
+      }
+    }
+    this._cdr.markForCheck();
+  }
+
+  public dismissFullscreenNotice(notice: UserNotification): void {
+    this.fullscreenNotices = this.fullscreenNotices.filter(
+      (entry) => entry !== notice
+    );
+    this._cdr.markForCheck();
+  }
+
+  @HostListener('document:keydown.escape')
+  public onEscape(): void {
+    if (this.fullscreen) this.exitFullscreen();
+  }
+
+  /**
+   * Verlässt jemand das Browser-Vollbild (Esc am Rechner, Wischgeste oder
+   * Zurück am Tablet), endet auch die Ebene: Die Esc-Taste erreicht die Seite
+   * im Browser-Vollbild nicht, und zwei Schritte zum Beenden wären
+   * überraschend. Gezählt wird nur ein Vollbild, das wirklich auf der
+   * Erfassung lag.
+   */
+  @HostListener('document:fullscreenchange')
+  public onFullscreenChange(): void {
+    const root = this._root?.nativeElement;
+    if (root && this._document.fullscreenElement === root) {
+      this._nativeFullscreen = true;
+      // Schon wieder beendet, bevor der Browser umgeschaltet hatte.
+      if (!this.fullscreen) this._leaveNativeFullscreen();
+      return;
+    }
+    if (!this._nativeFullscreen) return;
+    this._nativeFullscreen = false;
+    this.exitFullscreen();
+  }
+
+  private _leaveNativeFullscreen(): void {
+    this._nativeFullscreen = false;
+    if (this._document.fullscreenElement !== this._root?.nativeElement) return;
+    try {
+      void Promise.resolve(this._document.exitFullscreen()).catch(
+        () => undefined
+      );
+    } catch {
+      // Dann beendet der Browser sein Vollbild selbst (Esc, Wischgeste).
+    }
   }
 
   // --- Übertragung ------------------------------------------------------------
@@ -1213,6 +1413,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       (entry) => entry.player_id === playerId
     );
     return player ? '#' + player.trikot_number : '';
+  }
+
+  /** Gerätezeit eines Tipps in Serverzeit, wie sie gespeichert würde. */
+  public toServerTimeIso(deviceMs: number): string {
+    return toServerTime(deviceMs, this.clockOffset ?? 0);
   }
 
   public tappedClock(iso: string): string {
