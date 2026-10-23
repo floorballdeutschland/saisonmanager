@@ -1,0 +1,41 @@
+{
+  "season": {
+    "title": "YouTube-Thumbnails der Saison",
+    "intro": "Alle Thumbnails für die Spiele, die dein Verein in einer Saison ausrichtet, auf einmal: das Livestream-Bild mit der Paarung zum Einrichten der Streams und das Highlight-Bild mit dem Endstand für Videos, die erst Tage später geschnitten werden. Das geht hier auch dann noch, wenn der Overlay-Zugang des Spieltags längst abgelaufen ist.",
+    "season": "Saison",
+    "league": "Liga",
+    "allLeagues": "Alle Ligen",
+    "loading": "Lade…",
+    "failed": "Die Spiele der Saison konnten nicht geladen werden. Bitte lade die Seite neu.",
+    "empty": "In dieser Saison richtet dein Verein keinen Spieltag aus.",
+    "summary": "{{gameDays}} Spieltage mit {{games}} Spielen, davon {{ended}} mit Endstand.",
+    "livestream": "Livestream-Thumbnails ({{count}})",
+    "highlights": "Highlight-Thumbnails ({{count}})",
+    "busy": "Thumbnails werden erzeugt …",
+    "livestreamHint": "Livestream-Thumbnails aller Spiele als ZIP, ein Ordner je Spieltag, 1280 × 720 Pixel",
+    "highlightsHint": "Highlight-Thumbnails mit Endstand aller beendeten Spiele als ZIP, ein Ordner je Spieltag",
+    "noHighlights": "Highlight-Bilder gibt es, sobald ein Spiel beendet ist."
+  },
+  "page": {
+    "title": "YouTube-Thumbnails",
+    "intro": "Bilder im Format 1280 × 720 Pixel, fertig zum Hochladen bei YouTube: das Livestream-Bild mit der Paarung und nach dem Schlusspfiff das Highlight-Bild mit dem Endstand. Sie tragen Zeichen und Farben des Wettbewerbs, passend zu den Overlays.",
+    "gameDay": "Spieltag {{number}}",
+    "validUntil": "Zugang gültig bis {{date}} Uhr.",
+    "loading": "Lade…",
+    "noToken": "Diese Seite braucht den Overlay-Zugang des Spieltags. Öffne sie über „Thumbnails öffnen“ im Bedienfeld.",
+    "expired": "Dieser Zugang ist ungültig oder abgelaufen.",
+    "seasonHint": "Thumbnails für zurückliegende Spieltage holen Vereins- und Teammanager des Ausrichters auf der Seite „Spielsekretariat“, als Stapel für die ganze Saison.",
+    "failed": "Die Spiele konnten nicht geladen werden. Bitte lade die Seite neu.",
+    "noGames": "Für diesen Spieltag sind keine Spiele angelegt.",
+    "allLivestream": "Alle Livestream-Thumbnails",
+    "allHighlights": "Alle Highlight-Thumbnails",
+    "livestream": "Livestream",
+    "highlights": "Highlights",
+    "busy": "Wird erzeugt …",
+    "livestreamHint": "Livestream-Thumbnail dieses Spiels als PNG",
+    "highlightsHint": "Highlight-Thumbnail mit Endstand als PNG",
+    "allLivestreamHint": "Livestream-Thumbnails aller Spiele dieses Spieltags als ZIP",
+    "allHighlightsHint": "Highlight-Thumbnails aller beendeten Spiele als ZIP",
+    "highlightPending": "Highlight-Bild nach dem Schlusspfiff"
+  }
+}

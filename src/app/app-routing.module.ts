@@ -468,6 +468,16 @@ export const routes: Routes = [
       ),
   },
   {
+    // YouTube-Thumbnails eines Spieltags, geöffnet aus dem OBS-Bedienfeld mit
+    // dessen Overlay-Token (feedback#77). Ohne Guard und ohne Vorabladen: Die
+    // Seite ruft nur auf, wer den Link hat.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/stream-thumbnails').then(
+        (m) => m.PublicStreamThumbnailsModule
+      ),
+  },
+  {
     // Öffentlicher Antrag auf einen API-Zugang, dazu der Volltext der
     // Nutzungsvereinbarung und die Abholseite für den genehmigten Key. Bewusst
     // ohne Guard: Antragsteller haben kein Benutzerkonto.

@@ -6,6 +6,7 @@ import {
 } from '@angular/common/http/testing';
 import { NotificationService } from '@floorball/core';
 
+import { ThumbnailBatchItem } from 'src/app/_helpers/_utils/thumbnail-batch';
 import {
   ThumbnailBatchComponent,
   ThumbnailBatchGame,
@@ -428,5 +429,120 @@ describe('ThumbnailBatchComponent', () => {
 
     expect(saved.length).toBe(0);
     expect(messages.length).toBe(0);
+  });
+  // ── Fertige Liste statt Spieltag (feedback#77) ──────────────────────────────
+
+  /** Beantwortet den Ligaabruf, sobald die Schleife ihn stellt. */
+  async function answerLeague(id: number, response: object = league) {
+    for (let attempt = 0; attempt < 300; attempt++) {
+      const pattern = new RegExp(`leagues/${id}(?![0-9])`);
+      const requests = http.match((req) => pattern.test(req.url));
+      if (requests.length) {
+        requests.forEach((request) => request.flush({ ...response, id }));
+        return requests.length;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    return 0;
+  }
+
+  function item(
+    overrides: Partial<ThumbnailBatchItem> = {}
+  ): ThumbnailBatchItem {
+    return {
+      game: game({ home_team_name: 'Heim', guest_team_name: 'Gast' }),
+      gameDay: { number: 3, date: '2026-01-11', league_id: 42 },
+      ...overrides,
+    };
+  }
+
+  it('nimmt mit `items` mehrere Ligen und holt jede nur einmal', async () => {
+    component.items = [
+      item(),
+      item({ gameDay: { number: 4, date: '2026-01-18', league_id: 43 } }),
+      item({ gameDay: { number: 5, date: '2026-01-25', league_id: 42 } }),
+    ];
+    component.zipName = 'thumbnails-saison';
+    fixture.detectChanges();
+
+    const running = component.download();
+    expect(await answerLeague(42)).toBe(1);
+    expect(await answerLeague(43)).toBe(1);
+    await running;
+    http.expectNone((req) => req.url.indexOf('leagues/') >= 0);
+
+    expect(saved.map((file) => file.name)).toEqual(['thumbnails-saison.zip']);
+    const entries = await readZip(saved[0].blob);
+    expect(entries.map((entry) => entry.name)).toEqual([
+      'spieltag-3-2026-01-11/01-18-00-heim-gast.png',
+      'spieltag-4-2026-01-18/02-18-00-heim-gast.png',
+      'spieltag-5-2026-01-25/03-18-00-heim-gast.png',
+    ]);
+    expect(messages).toEqual([
+      { level: 'success', text: '3 Thumbnails als ZIP gespeichert.' },
+    ]);
+  });
+
+  it('zeichnet ein Highlight-Bild mit Endstand und ohne Anwurfzeit', async () => {
+    const texts = captureText();
+    component.items = [
+      item({
+        variant: 'highlights',
+        game: game({
+          home_team_name: 'Heim',
+          guest_team_name: 'Gast',
+          ended: true,
+          result: { home_goals: 4, guest_goals: 3, postfix: { short: '' } },
+        }),
+      }),
+    ];
+    fixture.detectChanges();
+
+    const running = component.download();
+    await answerLeague(42);
+    await running;
+
+    expect(texts).toContain('HIGHLIGHTS');
+    expect(texts).toContain('4:3');
+    expect(texts).toContain('So. 11.01.2026');
+    expect(texts).not.toContain('So. 11.01.2026 · 18:00 Uhr');
+  });
+
+  // Der Knopf je Spiel auf der Thumbnail-Seite: Ein ZIP mit einem Bild wäre
+  // beim Hochladen ein Umweg.
+  it('legt ein einzelnes Bild mit `singleAsPng` als PNG ab', async () => {
+    component.items = [item()];
+    component.singleAsPng = true;
+    component.label = 'Livestream';
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Livestream');
+
+    const running = component.download();
+    await answerLeague(42);
+    await running;
+
+    expect(saved.length).toBe(1);
+    expect(saved[0].name).toBe('01-18-00-heim-gast.png');
+    expect(saved[0].blob.type).toBe('image/png');
+    expect(messages).toEqual([
+      { level: 'success', text: 'Thumbnail gespeichert.' },
+    ]);
+  });
+
+  // `game_days.league_id` ist nullable; ein Abruf von `leagues/0` brächte nur
+  // eine 404-Meldung des Interceptors neben die eigene.
+  it('fragt ohne Liga keine Liga ab und warnt', async () => {
+    component.items = [
+      item({ gameDay: { number: 3, date: '2026-01-11', league_id: 0 } }),
+    ];
+    fixture.detectChanges();
+
+    await component.download();
+
+    http.expectNone((req) => req.url.indexOf('leagues/') >= 0);
+    expect(saved.length).toBe(1);
+    expect(messages[0].level).toBe('warning');
+    expect(messages[0].text).toContain('Ligadaten');
   });
 });

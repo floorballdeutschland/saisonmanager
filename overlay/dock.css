@@ -163,6 +163,15 @@ body {
   color: #7ee2a0;
 }
 
+/* Der Thumbnail-Link sieht aus wie ein Knopf, ist aber ein Anker: Nur so
+   öffnet OBS ihn im Browser (siehe dock.html). */
+.dk-link {
+  display: block;
+  margin: 8px 0;
+  text-align: center;
+  text-decoration: none;
+}
+
 .dk-btn--primary {
   background: rgb(233 69 96 / 20%);
   border-color: var(--dk-accent);

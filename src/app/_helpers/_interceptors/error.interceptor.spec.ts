@@ -1330,6 +1330,24 @@ describe('ErrorInterceptor', () => {
     });
   });
 
+  // Thumbnail-Seite hinter dem OBS-Bedienfeld (feedback#77): nur das
+  // Overlay-Token, die Seite benennt jeden Fehlerzustand selbst. Der 403
+  // („noch nicht gültig") schickte sonst auf die Startseite.
+  describe('Overlay-Token', () => {
+    const url = `${environment.apiURL}public/overlay/game_day?token=abc`;
+
+    for (const status of [400, 403, 410]) {
+      it(`schweigt auf ${status} und bleibt auf der Seite`, () => {
+        const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+        failGetWith({ message: 'x' }, status, url);
+
+        expect(errorSpy).not.toHaveBeenCalled();
+        expect(navigateSpy).not.toHaveBeenCalled();
+      });
+    }
+  });
+
   // Kalibrierung und Highlight-Auswahl (api#838). Der Mail-Link kommt ohne
   // Konto; die Seite zeigt ungültige und abgelaufene Links selbst an.
   describe('Highlight-Editor', () => {

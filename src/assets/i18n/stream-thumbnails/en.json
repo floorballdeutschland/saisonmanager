@@ -1,0 +1,41 @@
+{
+  "season": {
+    "title": "YouTube thumbnails for the season",
+    "intro": "All thumbnails for the games your club hosts in a season at once: the livestream image showing the pairing for setting up the streams, and the highlights image with the final score for videos edited days later. This keeps working after the game day's overlay access has expired.",
+    "season": "Season",
+    "league": "League",
+    "allLeagues": "All leagues",
+    "loading": "Loading…",
+    "failed": "The season's games could not be loaded. Please reload the page.",
+    "empty": "Your club does not host a game day in this season.",
+    "summary": "{{gameDays}} game days with {{games}} games, {{ended}} of them with a final score.",
+    "livestream": "Livestream thumbnails ({{count}})",
+    "highlights": "Highlights thumbnails ({{count}})",
+    "busy": "Creating thumbnails …",
+    "livestreamHint": "Livestream thumbnails of all games as a ZIP, one folder per game day, 1280 × 720 pixels",
+    "highlightsHint": "Highlights thumbnails with the final score of all finished games as a ZIP, one folder per game day",
+    "noHighlights": "Highlights images become available once a game has ended."
+  },
+  "page": {
+    "title": "YouTube thumbnails",
+    "intro": "Images of 1280 × 720 pixels, ready to upload to YouTube: the livestream image with the pairing and, after the final whistle, the highlights image with the final score. They carry the competition's mark and colours, matching the overlays.",
+    "gameDay": "Game day {{number}}",
+    "validUntil": "Access valid until {{date}}.",
+    "loading": "Loading…",
+    "noToken": "This page needs the game day's overlay access. Open it with \"Thumbnails öffnen\" (open thumbnails) in the control panel.",
+    "expired": "This access is invalid or has expired.",
+    "seasonHint": "Club and team managers of the host club get thumbnails for past game days on the \"Match secretariat\" page, as a batch for the whole season.",
+    "failed": "The games could not be loaded. Please reload the page.",
+    "noGames": "No games have been set up for this game day.",
+    "allLivestream": "All livestream thumbnails",
+    "allHighlights": "All highlights thumbnails",
+    "livestream": "Livestream",
+    "highlights": "Highlights",
+    "busy": "Creating …",
+    "livestreamHint": "Livestream thumbnail of this game as a PNG",
+    "highlightsHint": "Highlights thumbnail with the final score as a PNG",
+    "allLivestreamHint": "Livestream thumbnails of all games of this game day as a ZIP",
+    "allHighlightsHint": "Highlights thumbnails of all finished games as a ZIP",
+    "highlightPending": "Highlights image after the final whistle"
+  }
+}

@@ -181,6 +181,16 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Die Thumbnail-Seite hinter dem OBS-Bedienfeld
+        // (/livestream-thumbnails?token=…) arbeitet allein mit dem
+        // Overlay-Token und zeigt einen fehlenden (400), noch nicht gültigen
+        // (403) oder abgelaufenen Zugang (410) selbst an. Ohne die Ausnahme
+        // schickte der 403-Zweig auf die Startseite, und der 410 bekäme einen
+        // zweiten Toast mit demselben Text.
+        if (request.url.includes('public/overlay/')) {
+          return throwError(() => err);
+        }
+
         // Kalibrierung und Highlight-Auswahl (api#838). Über den Mail-Link
         // (/highlights/bearbeiten?token=…) ohne Konto: Die Seite zeigt einen
         // unbekannten (404) oder abgelaufenen Link (410) selbst an, ein 401

@@ -6,6 +6,7 @@ import {
   ThumbnailBatchReport,
   entryName,
   folderName,
+  highlightReady,
   renderThumbnailBatch,
   thumbnailInput,
 } from './thumbnail-batch';
@@ -177,6 +178,84 @@ describe('renderThumbnailBatch', () => {
     expect(eingabe.guest.name).toBe('N.N.');
   });
 
+  // Seit feedback#77 kann ein Stapel auch Highlight-Bilder enthalten
+  // (Saisonstapel, Thumbnail-Seite hinter dem Bedienfeld).
+  describe('Highlight-Bild', () => {
+    const ended: ThumbnailBatchGame = {
+      ...game('Heim'),
+      ended: true,
+      result: { home_goals: 4, guest_goals: 3, postfix: { short: 'n.V.' } },
+    };
+
+    it('ist ohne Angabe das Livestream-Bild, wie im Spielplan', () => {
+      const eingabe = thumbnailInput({ game: ended, gameDay: gameDay() }, null);
+
+      expect(eingabe.variant).toBe('livestream');
+      expect(eingabe.score).toBeNull();
+      expect(eingabe.dateLine).toContain('18:00 Uhr');
+    });
+
+    it('trägt Endstand und Zusatz, aber keine Anwurfzeit', () => {
+      const eingabe = thumbnailInput(
+        { game: ended, gameDay: gameDay(), variant: 'highlights' },
+        null
+      );
+
+      expect(eingabe.variant).toBe('highlights');
+      expect(eingabe.score).toEqual({ home: 4, guest: 3, postfix: 'n.V.' });
+      expect(eingabe.dateLine).toBe('So. 11.01.2026');
+    });
+
+    // Der Forfait-Zusatz der API traegt ein fuehrendes Leerzeichen, ein
+    // leerer Zusatz darf nicht als Leerzeile unter dem Endstand landen.
+    it('setzt einen leeren Zusatz auf null und kuerzt den Forfait-Zusatz', () => {
+      const ohne = thumbnailInput(
+        {
+          game: {
+            ...ended,
+            result: { ...ended.result!, postfix: { short: '' } },
+          },
+          gameDay: gameDay(),
+          variant: 'highlights',
+        },
+        null
+      );
+      const forfait = thumbnailInput(
+        {
+          game: {
+            ...ended,
+            result: { ...ended.result!, postfix: { short: ' (forfait)' } },
+          },
+          gameDay: gameDay(),
+          variant: 'highlights',
+        },
+        null
+      );
+
+      expect(ohne.score?.postfix).toBeNull();
+      expect(forfait.score?.postfix).toBe('(forfait)');
+    });
+
+    it('verlangt Schlusspfiff und Endstand', () => {
+      expect(highlightReady(ended)).toBeTrue();
+      expect(highlightReady({ ...ended, ended: false })).toBeFalse();
+      expect(highlightReady({ ...ended, result: null })).toBeFalse();
+      expect(highlightReady(game('Heim'))).toBeFalse();
+    });
+
+    it('nennt das Highlight-Bild im Dateinamen, das Livestream-Bild nicht', () => {
+      const live = { game: ended, gameDay: gameDay() };
+      const highlights = { ...live, variant: 'highlights' as const };
+
+      expect(entryName(live, 0, thumbnailInput(live, null))).toBe(
+        'spieltag-3-2026-01-11/01-18-00-heim-gast.png'
+      );
+      expect(entryName(highlights, 1, thumbnailInput(highlights, null))).toBe(
+        'spieltag-3-2026-01-11/02-18-00-highlights-heim-gast.png'
+      );
+    });
+  });
+
   describe('folderName', () => {
     it('benennt Spieltag und Datum', () => {
       expect(folderName(gameDay())).toBe('spieltag-3-2026-01-11');
@@ -238,6 +317,12 @@ describe('renderThumbnailBatch', () => {
         level: 'success',
         text: '6 Thumbnails als ZIP gespeichert.',
       });
+    });
+
+    it('spricht beim einzelnen PNG nicht von einem ZIP', () => {
+      expect(new ThumbnailBatchReport().result(1, 1, 'png').text).toBe(
+        'Thumbnail gespeichert.'
+      );
     });
 
     it('meldet einen unvollstaendigen Durchgang als Warnung mit Grund', () => {
