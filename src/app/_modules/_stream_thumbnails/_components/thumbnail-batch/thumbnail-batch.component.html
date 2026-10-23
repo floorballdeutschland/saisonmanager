@@ -1,5 +1,6 @@
 <div class="flex items-center gap-2">
-  @if (busy) {
+  <!-- „1 von 1" sagt nichts; der Knopf zeigt den Durchgang schon selbst. -->
+  @if (busy && total > 1) {
     <span class="text-xs text-fb-gray-400 whitespace-nowrap">
       {{ done }} von {{ total }}
     </span>

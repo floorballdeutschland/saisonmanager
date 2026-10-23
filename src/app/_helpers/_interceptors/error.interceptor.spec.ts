@@ -1346,6 +1346,31 @@ describe('ErrorInterceptor', () => {
         expect(navigateSpy).not.toHaveBeenCalled();
       });
     }
+
+    // Die Ausnahme gilt nur der Thumbnail-Seite. Ein anderer Abruf mit
+    // „public/overlay" im Pfad wird weiter wie jeder andere behandelt.
+    it('lässt andere Overlay-Pfade durch die üblichen Zweige laufen', () => {
+      const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
+
+      failGetWith(
+        { message: 'x' },
+        403,
+        `${environment.apiURL}public/overlay/live?token=abc`
+      );
+
+      expect(errorSpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalledWith(['/']);
+    });
+
+    it('greift nicht bei einem Pfad, der nur so anfängt', () => {
+      failGetWith(
+        { message: 'x' },
+        410,
+        `${environment.apiURL}public/overlay/game_day_extra?token=abc`
+      );
+
+      expect(errorSpy).toHaveBeenCalled();
+    });
   });
 
   // Kalibrierung und Highlight-Auswahl (api#838). Der Mail-Link kommt ohne

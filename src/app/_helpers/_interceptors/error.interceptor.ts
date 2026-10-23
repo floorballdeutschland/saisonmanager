@@ -187,7 +187,18 @@ export class ErrorInterceptor implements HttpInterceptor {
         // (403) oder abgelaufenen Zugang (410) selbst an. Ohne die Ausnahme
         // schickte der 403-Zweig auf die Startseite, und der 410 bekäme einen
         // zweiten Toast mit demselben Text.
-        if (request.url.includes('public/overlay/')) {
+        //
+        // Genau dieser eine Endpunkt und als Pfadvergleich, nicht als
+        // Teilstring: Die übrigen Overlay-Abrufe stellen nur Bühne und
+        // Bedienfeld (Vanilla-JS, ohne diesen Interceptor), und eine
+        // Teilstring-Ausnahme fing jeden künftigen Abruf mit
+        // „public/overlay/" im Pfad mit ein, auch einen aus dem angemeldeten
+        // Frontend, dessen 401 abmelden muss.
+        if (
+          /\/v2\/public\/overlay\/game_day(\.json)?$/.test(
+            request.url.split('?')[0]
+          )
+        ) {
           return throwError(() => err);
         }
 

@@ -466,6 +466,8 @@ describe('ThumbnailBatchComponent', () => {
     fixture.detectChanges();
 
     const running = component.download();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('0 von 3');
     expect(await answerLeague(42)).toBe(1);
     expect(await answerLeague(43)).toBe(1);
     await running;
@@ -519,6 +521,10 @@ describe('ThumbnailBatchComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Livestream');
 
     const running = component.download();
+    fixture.detectChanges();
+    // „1 von 1" ist kein Fortschritt.
+    expect(fixture.nativeElement.textContent).not.toContain('1 von 1');
+
     await answerLeague(42);
     await running;
 

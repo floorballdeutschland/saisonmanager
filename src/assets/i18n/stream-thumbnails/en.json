@@ -1,7 +1,7 @@
 {
   "season": {
     "title": "YouTube thumbnails for the season",
-    "intro": "All thumbnails for the games your club hosts in a season at once: the livestream image showing the pairing for setting up the streams, and the highlights image with the final score for videos edited days later. This keeps working after the game day's overlay access has expired.",
+    "intro": "All thumbnails for the games on game days your club hosts in a season, at once. Away games of your teams are not included; the host club gets those. You get the livestream image showing the pairing for setting up the streams, and the highlights image with the final score for videos edited days later. This keeps working after the game day's overlay access has expired.",
     "season": "Season",
     "league": "League",
     "allLeagues": "All leagues",
