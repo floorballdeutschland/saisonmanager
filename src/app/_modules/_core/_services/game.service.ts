@@ -21,6 +21,8 @@ import {
   GamePlayerEntry,
   GameScan,
   NonEmptyArray,
+  OverlayGameDayPayload,
+  SeasonThumbnailPayload,
   SecretaryGameDayStub,
   SecretaryHallDay,
   SecretaryTokenGameDay,
@@ -561,6 +563,33 @@ export class GameService {
   public getSecretaryGameDays() {
     return this.http.get<SecretaryHallDay[]>(
       environment.apiURL + 'user/secretary_game_days'
+    );
+  }
+
+  /**
+   * Alle Spieltage einer Saison, die der eigene Verein ausrichtet, für den
+   * Thumbnail-Stapel. Ohne `seasonId` die aktuelle Saison.
+   */
+  public getSeasonThumbnailGameDays(seasonId?: number | null) {
+    const params =
+      seasonId != null
+        ? new HttpParams().set('season_id', String(seasonId))
+        : undefined;
+
+    return this.http.get<SeasonThumbnailPayload>(
+      environment.apiURL + 'user/secretary_game_days/season',
+      { params }
+    );
+  }
+
+  /**
+   * Spiele des Spieltags zum Overlay-Token, wie sie auch das OBS-Bedienfeld
+   * liest. Für die Thumbnail-Seite, die das Bedienfeld im Browser öffnet.
+   */
+  public getOverlayGameDay(token: string) {
+    return this.http.get<OverlayGameDayPayload>(
+      environment.apiURL + 'public/overlay/game_day',
+      { params: new HttpParams().set('token', token) }
     );
   }
 

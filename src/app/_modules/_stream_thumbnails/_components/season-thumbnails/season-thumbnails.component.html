@@ -1,0 +1,118 @@
+<div class="border border-fb-gray-600 rounded-[5px] p-4">
+  <div class="font-bold text-sm">
+    {{ "streamThumbnails.season.title" | transloco }}
+  </div>
+  <p class="text-xs text-fb-gray-500 mt-1 mb-3">
+    {{ "streamThumbnails.season.intro" | transloco }}
+  </p>
+
+  @if (payload && (payload.seasons.length > 1 || leagues.length > 1)) {
+    <div class="flex flex-wrap gap-3 mb-3">
+      @if (payload.seasons.length > 1) {
+        <label class="text-xs text-fb-gray-500 flex flex-col gap-1">
+          {{ "streamThumbnails.season.season" | transloco }}
+          <select
+            class="text-sm border border-fb-gray-600 rounded-[5px] px-2 py-1.5 bg-white text-black"
+            data-test="season-select"
+            [disabled]="loading"
+            (change)="selectSeason($any($event.target).value)"
+          >
+            @for (season of payload.seasons; track season.id) {
+              <option [value]="season.id" [selected]="season.id === seasonId">
+                {{ season.name }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+      @if (leagues.length > 1) {
+        <label class="text-xs text-fb-gray-500 flex flex-col gap-1">
+          {{ "streamThumbnails.season.league" | transloco }}
+          <select
+            class="text-sm border border-fb-gray-600 rounded-[5px] px-2 py-1.5 bg-white text-black"
+            data-test="league-select"
+            [disabled]="loading"
+            (change)="selectLeague($any($event.target).value)"
+          >
+            <option [value]="0" [selected]="leagueId === 0">
+              {{ "streamThumbnails.season.allLeagues" | transloco }}
+            </option>
+            @for (league of leagues; track league.id) {
+              <option [value]="league.id" [selected]="league.id === leagueId">
+                {{ league.name }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm">
+      {{ "streamThumbnails.season.loading" | transloco }}
+    </div>
+  } @else if (loadFailed) {
+    <div
+      class="text-sm text-red-700 flex flex-wrap items-center gap-2"
+      data-test="season-failed"
+    >
+      <span>{{ "streamThumbnails.season.failed" | transloco }}</span>
+      <button
+        type="button"
+        data-test="season-retry"
+        class="font-bold text-black text-sm px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+        (click)="retry()"
+      >
+        {{ "streamThumbnails.season.retry" | transloco }}
+      </button>
+    </div>
+  } @else if (!livestreamItems.length) {
+    <div class="text-fb-gray-500 text-sm" data-test="season-empty">
+      {{ "streamThumbnails.season.empty" | transloco }}
+    </div>
+  } @else {
+    <p class="text-xs text-fb-gray-500 mb-2" data-test="season-summary">
+      {{
+        "streamThumbnails.season.summary"
+          | transloco
+            : {
+                gameDays: gameDayCount,
+                games: livestreamItems.length,
+                ended: highlightItems.length,
+              }
+      }}
+    </p>
+    <div class="flex flex-wrap items-center gap-2">
+      <fb-thumbnail-batch
+        data-test="season-livestream"
+        [items]="livestreamItems"
+        [zipName]="zipName('livestream')"
+        [alwaysShowLabel]="true"
+        [label]="
+          'streamThumbnails.season.livestream'
+            | transloco: { count: livestreamItems.length }
+        "
+        [busyLabel]="'streamThumbnails.season.busy' | transloco"
+        [hint]="'streamThumbnails.season.livestreamHint' | transloco"
+      ></fb-thumbnail-batch>
+      <fb-thumbnail-batch
+        data-test="season-highlights"
+        [items]="highlightItems"
+        [zipName]="zipName('highlights')"
+        [alwaysShowLabel]="true"
+        [label]="
+          'streamThumbnails.season.highlights'
+            | transloco: { count: highlightItems.length }
+        "
+        [busyLabel]="'streamThumbnails.season.busy' | transloco"
+        [hint]="'streamThumbnails.season.highlightsHint' | transloco"
+      ></fb-thumbnail-batch>
+    </div>
+    @if (!highlightItems.length) {
+      <p class="text-xs text-fb-gray-500 mt-2">
+        {{ "streamThumbnails.season.noHighlights" | transloco }}
+      </p>
+    }
+  }
+</div>
