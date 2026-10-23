@@ -3,17 +3,21 @@ import { Game, GameEvent, Shot, ShotInput } from '@floorball/types';
 import {
   bestClockOffset,
   clockOffsetMs,
+  consistentShotFlags,
   defaultGoalkeeperId,
   followsFreeHit,
   fromAttackDirection,
   goalLinkCandidates,
+  goaliePulled,
   isFreeHit,
+  isUnplacedSave,
   leftToRightTeam,
   mergeShots,
   newClientUuid,
   normalizeGameTime,
   playablePeriods,
   shootingTeamForTap,
+  situationFor,
   toAttackDirection,
   toServerTime,
 } from './tablet-capture.logic';
@@ -332,5 +336,81 @@ describe('Freischläge (fe#589)', () => {
     expect(goalLinkCandidates([goal], [freeHit({ result: 'goal' })])).toEqual(
       []
     );
+  });
+
+  describe('Strafschuss und Torwartsituation (Feedback #61, #63, #64)', () => {
+    it('„Torwart raus“ gilt nur im Abschnitt, in dem geschaltet wurde', () => {
+      expect(goaliePulled({ guest: 3 }, 'guest', 3)).toBeTrue();
+      expect(goaliePulled({ guest: 3 }, 'guest', 4)).toBeFalse();
+      expect(goaliePulled({ guest: 3 }, 'home', 3)).toBeFalse();
+    });
+
+    it('leitet leeres Tor und 6 gegen 5 aus Sicht des schießenden Teams ab', () => {
+      expect(situationFor({ guest: 3 }, 'home', 3)).toEqual({
+        empty_net: true,
+        extra_attacker: false,
+      });
+      expect(situationFor({ guest: 3 }, 'guest', 3)).toEqual({
+        empty_net: false,
+        extra_attacker: true,
+      });
+      expect(situationFor({ home: 3, guest: 3 }, 'home', 3)).toEqual({
+        empty_net: true,
+        extra_attacker: true,
+      });
+    });
+
+    it('bringt widersprüchliche Kennungen in eine Form, die die API annimmt', () => {
+      const base = shot({ result: 'goal', goalkeeper_player_id: 5 });
+      expect(
+        consistentShotFlags({
+          ...base,
+          from_penalty_shot: true,
+          from_free_hit: true,
+          empty_net: true,
+          extra_attacker: true,
+        })
+      ).toEqual(
+        jasmine.objectContaining({
+          from_penalty_shot: true,
+          from_free_hit: false,
+          empty_net: false,
+          extra_attacker: false,
+          goalkeeper_player_id: 5,
+        })
+      );
+      expect(
+        consistentShotFlags({ ...base, empty_net: true }).goalkeeper_player_id
+      ).toBeNull();
+      expect(
+        consistentShotFlags({ ...base, result: 'saved', empty_net: true })
+          .empty_net
+      ).toBeFalse();
+      expect(
+        consistentShotFlags({
+          ...base,
+          result: 'blocked',
+          from_penalty_shot: true,
+        }).from_penalty_shot
+      ).toBeFalse();
+      expect(
+        consistentShotFlags({
+          ...base,
+          kind: 'free_hit',
+          result: null,
+          empty_net: true,
+        }).empty_net
+      ).toBeFalse();
+    });
+
+    it('erkennt die Parade ohne Position', () => {
+      expect(
+        isUnplacedSave(shot({ result: 'saved', x: null, y: null }))
+      ).toBeTrue();
+      expect(isUnplacedSave(shot({ result: 'saved' }))).toBeFalse();
+      expect(
+        isUnplacedSave(shot({ kind: 'mark', result: null, x: null, y: null }))
+      ).toBeFalse();
+    });
   });
 });

@@ -7,6 +7,7 @@ import {
 import {
   ThumbnailInput,
   ThumbnailResult,
+  ThumbnailVariant,
   filenameSlug,
   renderThumbnailPng,
   thumbnailDateLine,
@@ -30,6 +31,33 @@ export interface ThumbnailBatchGame {
   home_team_small_logo?: string | null;
   guest_team_logo?: string | null;
   guest_team_small_logo?: string | null;
+  /**
+   * Nur für das Highlight-Bild. Der Spieltagsabruf der Verwaltung liefert beides
+   * nicht, der Saisonabruf des Vereins und der Overlay-Abruf hinter dem
+   * Bedienfeld schon -- dort steht `result` erst nach dem Schlusspfiff.
+   */
+  ended?: boolean | null;
+  result?: ThumbnailBatchResult | null;
+}
+
+export interface ThumbnailBatchResult {
+  home_goals: number;
+  guest_goals: number;
+  postfix?: { short?: string | null } | null;
+}
+
+/**
+ * Lässt sich für das Spiel ein Highlight-Bild zeichnen? Ohne Endstand fiele
+ * `renderStreamThumbnail` still auf die Paarung zurück, und im Stapel stünde
+ * dann ein Bild mit „Highlights" und „VS" -- also gar nicht erst aufnehmen.
+ */
+export function highlightReady(game: ThumbnailBatchGame): boolean {
+  return Boolean(
+    game.ended &&
+    game.result &&
+    Number.isFinite(game.result.home_goals) &&
+    Number.isFinite(game.result.guest_goals)
+  );
 }
 
 /**
@@ -71,6 +99,8 @@ export interface ThumbnailBatchGameDayWithGames extends ThumbnailBatchGameDay {
 export interface ThumbnailBatchItem {
   game: ThumbnailBatchGame;
   gameDay: ThumbnailBatchGameDay;
+  /** Ohne Angabe das Livestream-Bild, wie es der Stapel je Spieltag braucht. */
+  variant?: ThumbnailVariant;
 }
 
 export interface ThumbnailBatchHooks {
@@ -153,9 +183,14 @@ export function thumbnailInput(
   league: League | null
 ): ThumbnailInput {
   const competition: CompetitionKey = competitionKey(league);
+  const variant: ThumbnailVariant = item.variant ?? 'livestream';
+  const result =
+    variant === 'highlights' && highlightReady(item.game)
+      ? item.game.result
+      : null;
 
   return {
-    variant: 'livestream',
+    variant,
     // Ohne Liga bleibt die Kopfzeile leer. Einen Rückfall auf das Spiel gibt es
     // nicht: `meta_hash` nennt die Liga nicht, siehe `ThumbnailBatchGame`.
     leagueName: league?.name ?? '',
@@ -174,10 +209,19 @@ export function thumbnailInput(
     },
     // Datum und Halle kommen vom Spieltag und nicht vom Spiel -- ein Spiel hat
     // keine eigene Datumsspalte.
+    // Wie im Spielbericht (`StreamGraphicsComponent`): Endstand samt Zusatz
+    // wie „n.V.", ein leerer Zusatz bleibt weg.
+    score: result
+      ? {
+          home: result.home_goals,
+          guest: result.guest_goals,
+          postfix: result.postfix?.short?.trim() || null,
+        }
+      : null,
     dateLine: thumbnailDateLine(
       item.gameDay.date,
       item.game.start_time,
-      'livestream'
+      variant
     ),
     venue: item.gameDay.arena?.name || null,
   };
@@ -204,12 +248,16 @@ export function entryName(
   index: number,
   input: ThumbnailInput
 ): string {
+  // Das Highlight-Bild trägt sein Wort im Namen: Ein Stapel kann beide Bilder
+  // desselben Spiels enthalten, und im Upload-Dialog von YouTube sieht man
+  // nur den Dateinamen. Das Livestream-Bild bleibt ohne, wie bisher.
   const parts = [
     String(index + 1).padStart(2, '0'),
     filenameSlug(item.game.start_time || '') || 'ohne-zeit',
+    input.variant === 'highlights' ? 'highlights' : '',
     filenameSlug(input.home.name),
     filenameSlug(input.guest.name),
-  ];
+  ].filter(Boolean);
 
   return `${folderName(item.gameDay)}/${parts.join('-')}.png`;
 }
@@ -309,14 +357,21 @@ export class ThumbnailBatchReport {
     return notes.join(' ');
   }
 
+  /**
+   * `png` für den Einzelfall, in dem das eine Bild ohne Archiv abgelegt wurde;
+   * „1 Thumbnail als ZIP gespeichert" wäre dann eine falsche Auskunft.
+   */
   public result(
     written: number,
-    total: number
+    total: number,
+    container: 'zip' | 'png' = 'zip'
   ): { level: 'success' | 'warning'; text: string } {
     const head =
-      written === total
-        ? `${written} ${written === 1 ? 'Thumbnail' : 'Thumbnails'} als ZIP gespeichert.`
-        : `${written} von ${total} Thumbnails als ZIP gespeichert.`;
+      container === 'png'
+        ? 'Thumbnail gespeichert.'
+        : written === total
+          ? `${written} ${written === 1 ? 'Thumbnail' : 'Thumbnails'} als ZIP gespeichert.`
+          : `${written} von ${total} Thumbnails als ZIP gespeichert.`;
     const problems = this.problems();
 
     return {

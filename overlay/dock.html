@@ -274,6 +274,30 @@
         </div>
       </section>
 
+      <!-- YouTube-Thumbnails (feedback#77). Ein Link und kein Knopf, der hier
+           zeichnet und speichert: Ein OBS-Dock hat keinen Download-Handler,
+           ein Speichern verpuffte dort ohne Meldung. Einen Link mit
+           target="_blank" öffnet OBS dagegen im normalen Browser. Die Seite
+           dahinter ist die Angular-Anwendung (/livestream-thumbnails) und
+           zeichnet mit demselben Code wie der Spielbericht. Die Adresse setzt
+           dock.js, weil sie das Token braucht. -->
+      <section class="dk-card">
+        <div class="dk-label">YouTube-Thumbnails</div>
+        <a
+          class="dk-btn dk-link"
+          id="thumbs-link"
+          href="#"
+          target="_blank"
+          rel="noopener"
+          >Thumbnails öffnen</a
+        >
+        <div class="dk-hint">
+          Livestream- und Highlight-Bilder aller Spiele dieses Spieltags, 1280 ×
+          720 Pixel. Öffnet sich im Browser, dort lassen sich die Bilder
+          speichern.
+        </div>
+      </section>
+
       <!-- Die Kürzel auf den Knöpfen setzt dock.js aus derselben Tabelle, aus
            der es sie auch auslöst. Legende und Wirkung können so nicht
            auseinanderlaufen. -->

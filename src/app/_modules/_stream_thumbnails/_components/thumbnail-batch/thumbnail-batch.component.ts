@@ -15,7 +15,6 @@ import {
   saveBlob,
 } from 'src/app/_helpers/_utils/stream-thumbnail';
 import {
-  ThumbnailBatchGame,
   ThumbnailBatchGameDayWithGames,
   ThumbnailBatchItem,
   ThumbnailBatchReport,
@@ -49,6 +48,13 @@ export {
  * ist damit erst nach dem Spiel sinnvoll, der Stapel wird aber vorher gebraucht.
  * Nach dem Spiel holt man das einzelne Bild dort, wo das Ergebnis steht.
  *
+ * ZWEI EINGÄNGE: `gameDay` für den Knopf je Spieltag, `items` für eine fertige
+ * Liste über mehrere Spieltage und Ligen samt Bildaufbau je Bild (Saisonstapel
+ * des Vereins, Thumbnail-Seite hinter dem OBS-Bedienfeld). Mit `items` kann der
+ * Stapel auch Highlight-Bilder enthalten; der Aufrufer nimmt dann nur Spiele
+ * mit Endstand auf (`highlightReady`). Beschriftung und Archivname kommen in
+ * dem Fall vom Aufrufer, der seine Oberfläche übersetzt.
+ *
  * DEUTSCH UND NICHT ÜBERSETZT: bewusst, wie in der ganzen Streaming-Familie
  * (`fb-overlay-links`, `fb-stream-graphics`, die OBS-Szenensammlung). Die
  * Nachbarknöpfe im Spielplan sind übersetzt; wer diese Komponente in eine
@@ -61,8 +67,43 @@ export {
   standalone: false,
 })
 export class ThumbnailBatchComponent implements OnDestroy {
-  @Input({ required: true })
-  gameDay!: ThumbnailBatchGameDayWithGames;
+  @Input()
+  gameDay?: ThumbnailBatchGameDayWithGames | null;
+
+  /** Fertige Liste statt eines Spieltags; hat Vorrang vor `gameDay`. */
+  @Input()
+  items?: ThumbnailBatchItem[] | null;
+
+  /** Archivname ohne `.zip`; ohne Angabe aus Liga und Spieltag gebildet. */
+  @Input()
+  zipName?: string | null;
+
+  /** Beschriftung des Knopfs, ohne Angabe „Thumbnails". */
+  @Input()
+  label?: string | null;
+
+  /** Beschriftung während des Durchgangs. */
+  @Input()
+  busyLabel?: string | null;
+
+  /** Tooltip des Knopfs. */
+  @Input()
+  hint?: string | null;
+
+  /**
+   * Beschriftung immer zeigen. Im Spielplan steht der Knopf in einer engen
+   * Reihe und zeigt auf dem Handy nur das Symbol; als einziger Knopf einer
+   * Karte braucht er den Text auch dort.
+   */
+  @Input()
+  alwaysShowLabel = false;
+
+  /**
+   * Ein einzelnes Bild als PNG statt als ZIP mit einem Eintrag ablegen: für
+   * den Knopf je Spiel. Gilt nur, wenn genau ein Bild entstanden ist.
+   */
+  @Input()
+  singleAsPng = false;
 
   public busy = false;
   /**
@@ -78,11 +119,11 @@ export class ThumbnailBatchComponent implements OnDestroy {
   // nur in eine Fehlermeldung.
   @HostBinding('class.hidden')
   public get hidden(): boolean {
-    return !this.gameDay?.games?.length;
+    return !this.total;
   }
 
-  private _league: League | null = null;
-  private _leagueLoaded = false;
+  /** Erfolgreich geladene Ligen. Ein Fehlschlag wird nicht behalten. */
+  private _leagues = new Map<number, League>();
   private _destroyed = false;
 
   constructor(
@@ -92,7 +133,16 @@ export class ThumbnailBatchComponent implements OnDestroy {
   ) {}
 
   public get total(): number {
-    return this.gameDay?.games?.length ?? 0;
+    return this._items().length;
+  }
+
+  private _items(): ThumbnailBatchItem[] {
+    if (this.items) return this.items;
+
+    const gameDay = this.gameDay;
+    if (!gameDay?.games?.length) return [];
+
+    return gameDay.games.map((game) => ({ game, gameDay }));
   }
 
   // Der Spielplan baut seine Spieltage bei jedem Neuladen neu und zerstört die
@@ -105,30 +155,26 @@ export class ThumbnailBatchComponent implements OnDestroy {
 
   /** Zeichnet alle Bilder und legt sie als ZIP in den Download-Ordner. */
   public async download(): Promise<void> {
-    if (this.busy || !this.gameDay?.games?.length) return;
+    const items = this._items();
+    if (this.busy || !items.length) return;
 
     this.busy = true;
     this.done = 0;
     this._cdr.markForCheck();
 
     try {
-      const items: ThumbnailBatchItem[] = this.gameDay.games.map((game) => ({
-        game,
-        gameDay: this.gameDay,
-      }));
-
       const { entries, report, aborted } = await renderThumbnailBatch(items, {
-        league: () => this._league$(),
+        league: (leagueId) => this._league$(leagueId),
         progress: (done) => {
           this.done = done;
           this._cdr.markForCheck();
         },
-        capture: (error, item) => this._capture(error, item?.game),
+        capture: (error, item) => this._capture(error, item),
         cancelled: () => this._destroyed,
       });
 
       if (aborted) return;
-      this._finish(entries, report);
+      this._finish(entries, report, items);
     } catch (error) {
       // Alles außerhalb der Spiel-Schleife: das Verpacken, ein
       // Programmierfehler. Ohne diesen Riegel bliebe `busy` hängen und der
@@ -144,7 +190,11 @@ export class ThumbnailBatchComponent implements OnDestroy {
     }
   }
 
-  private _finish(entries: ZipEntry[], report: ThumbnailBatchReport): void {
+  private _finish(
+    entries: ZipEntry[],
+    report: ThumbnailBatchReport,
+    items: ThumbnailBatchItem[]
+  ): void {
     if (!entries.length) {
       // Was schon erfasst ist, gehört auch in die Fehlermeldung: Die Ursache
       // (Rechte, Wappen, Schriften) steht in `report`, und ohne sie liest der
@@ -156,8 +206,17 @@ export class ThumbnailBatchComponent implements OnDestroy {
       return;
     }
 
+    const single = this.singleAsPng && entries.length === 1;
+
     try {
-      saveBlob(buildZip(entries), this._zipName());
+      if (single) {
+        saveBlob(
+          new Blob([entries[0].data], { type: 'image/png' }),
+          entries[0].name.split('/').pop() || 'thumbnail.png'
+        );
+      } else {
+        saveBlob(buildZip(entries), this._zipName(items));
+      }
     } catch (error) {
       // Bis hierher sind alle Bilder fertig; scheitert erst das Verpacken oder
       // das Ablegen, liegt trotzdem keine Datei im Ordner. Der Grund von
@@ -173,7 +232,11 @@ export class ThumbnailBatchComponent implements OnDestroy {
       return;
     }
 
-    const { level, text } = report.result(entries.length, this.total);
+    const { level, text } = report.result(
+      entries.length,
+      items.length,
+      single ? 'png' : 'zip'
+    );
     this._notificationService[level](text, { keepAfterRouteChange: true });
   }
 
@@ -183,8 +246,8 @@ export class ThumbnailBatchComponent implements OnDestroy {
    * Sie trägt Ligazeichen und Farbwelt, und beides steht in keinem Spielabruf.
    * Ein Fehlschlag liefert `null`: Dann steht die Paarung im neutralen Bild, und
    * die Meldung am Ende sagt das -- ganz ohne Bilder dastehen wäre die
-   * schlechtere Antwort. Er wird aber NICHT behalten (`_leagueLoaded` nur im
-   * Erfolgsfall), sonst lieferte ein zweiter Klick nach einem kurzen
+   * schlechtere Antwort. Er wird aber NICHT behalten (in `_leagues` landet nur
+   * ein Erfolg), sonst lieferte ein zweiter Klick nach einem kurzen
    * Netzproblem stillschweigend wieder neutrale Bilder.
    *
    * Der Fehler geht an Sentry, obwohl er die Oberfläche nicht aufhält: Es ist
@@ -192,11 +255,16 @@ export class ThumbnailBatchComponent implements OnDestroy {
    * Ligaabruf erzeugt sonst beliebig lange Bilder ohne Wortmarke, ohne dass es
    * jemand erfährt.
    */
-  private async _league$(): Promise<League | null> {
-    if (this._leagueLoaded) return this._league;
+  private async _league$(leagueId: number): Promise<League | null> {
+    // Ein Spieltag ohne Liga (`game_days.league_id` ist nullable): kein Abruf,
+    // der 404 brächte nur eine zweite Meldung neben der des Berichts.
+    if (!leagueId) return null;
+
+    const known = this._leagues.get(leagueId);
+    if (known) return known;
 
     const league = await firstValueFrom(
-      this._leagueService.getSingleLeague(this.gameDay.league_id).pipe(
+      this._leagueService.getSingleLeague(leagueId).pipe(
         catchError((error) => {
           this._capture(error);
           return of(null);
@@ -204,19 +272,19 @@ export class ThumbnailBatchComponent implements OnDestroy {
       )
     );
 
-    if (league) {
-      this._league = league;
-      this._leagueLoaded = true;
-    }
+    if (league) this._leagues.set(leagueId, league);
 
     return league;
   }
 
-  private _zipName(): string {
+  private _zipName(items: ThumbnailBatchItem[]): string {
+    if (this.zipName) return `${this.zipName}.zip`;
+
+    const gameDay = items[0].gameDay;
     const parts = [
       'thumbnails',
-      filenameSlug(this._league?.name || ''),
-      folderName(this.gameDay),
+      filenameSlug(this._leagues.get(gameDay.league_id)?.name || ''),
+      folderName(gameDay),
     ].filter(Boolean);
 
     return `${parts.join('-')}.zip`;
@@ -227,14 +295,16 @@ export class ThumbnailBatchComponent implements OnDestroy {
    * Frontend und Rails-API teilen sich dort ein Projekt, und „Das Bild konnte
    * nicht erzeugt werden." allein sagt niemandem etwas.
    */
-  private _capture(error: unknown, game?: ThumbnailBatchGame): void {
+  private _capture(error: unknown, item?: ThumbnailBatchItem): void {
+    const gameDay = item?.gameDay ?? this.gameDay;
     Sentry.captureException(error, {
       tags: { feature: 'thumbnail-batch' },
       extra: {
-        leagueId: this.gameDay?.league_id,
-        gameDayNumber: this.gameDay?.number,
-        gameDayDate: this.gameDay?.date,
-        pairing: game ? pairing(game) : undefined,
+        leagueId: gameDay?.league_id,
+        gameDayNumber: gameDay?.number,
+        gameDayDate: gameDay?.date,
+        variant: item?.variant,
+        pairing: item ? pairing(item.game) : undefined,
       },
     });
   }

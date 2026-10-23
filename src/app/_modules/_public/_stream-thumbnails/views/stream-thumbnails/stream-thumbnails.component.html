@@ -1,0 +1,149 @@
+<div class="p-4 lg:p-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "streamThumbnails.page.title" | transloco }}
+  </h1>
+  <p class="text-sm text-fb-gray-500 mb-4">
+    {{ "streamThumbnails.page.intro" | transloco }}
+  </p>
+
+  @switch (state) {
+    @case ("loading") {
+      <div class="text-fb-gray-500 text-sm py-4">
+        {{ "streamThumbnails.page.loading" | transloco }}
+      </div>
+    }
+    @case ("noToken") {
+      <p class="text-sm text-fb-gray-500" data-test="state-no-token">
+        {{ "streamThumbnails.page.noToken" | transloco }}
+      </p>
+    }
+    @case ("notStarted") {
+      <p class="text-sm text-fb-gray-500" data-test="state-not-started">
+        {{ serverMessage }}
+      </p>
+    }
+    @case ("expired") {
+      <div class="text-sm text-fb-gray-500" data-test="state-expired">
+        <p class="mb-2">{{ "streamThumbnails.page.expired" | transloco }}</p>
+        <p>{{ "streamThumbnails.page.seasonHint" | transloco }}</p>
+      </div>
+    }
+    @case ("failed") {
+      <div
+        class="bg-red-50 border border-red-200 rounded-[5px] p-4 text-sm text-red-700"
+        data-test="state-failed"
+      >
+        {{ "streamThumbnails.page.failed" | transloco }}
+      </div>
+    }
+    @case ("ready") {
+      @if (payload; as data) {
+        <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-4">
+          <div class="font-bold text-sm" data-test="game-day-head">
+            {{ data.game_day.league }}
+            @if (data.game_day.number) {
+              &middot;
+              {{
+                "streamThumbnails.page.gameDay"
+                  | transloco: { number: data.game_day.number }
+              }}
+            }
+          </div>
+          <div class="text-xs text-fb-gray-500 mt-0.5">
+            {{ dateLine }}
+            @if (data.game_day.arena) {
+              &middot; {{ data.game_day.arena }}
+            }
+          </div>
+          <div
+            class="bg-yellow-50 border border-yellow-200 rounded-[5px] p-2 mt-2 text-xs text-yellow-800"
+            data-test="token-warning"
+          >
+            {{ "streamThumbnails.page.tokenWarning" | transloco }}
+          </div>
+          <div class="text-xs text-fb-gray-500 mt-2">
+            {{
+              "streamThumbnails.page.validUntil"
+                | transloco
+                  : { date: (data.expires_at | date: "dd.MM.yyyy HH:mm") }
+            }}
+          </div>
+        </div>
+
+        @if (!rows.length) {
+          <p class="text-sm text-fb-gray-500">
+            {{ "streamThumbnails.page.noGames" | transloco }}
+          </p>
+        } @else {
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <fb-thumbnail-batch
+              data-test="all-livestream"
+              [items]="allLivestream"
+              [zipName]="zipName('livestream')"
+              [alwaysShowLabel]="true"
+              [label]="'streamThumbnails.page.allLivestream' | transloco"
+              [busyLabel]="'streamThumbnails.page.busy' | transloco"
+              [hint]="'streamThumbnails.page.allLivestreamHint' | transloco"
+            ></fb-thumbnail-batch>
+            <fb-thumbnail-batch
+              data-test="all-highlights"
+              [items]="allHighlights"
+              [zipName]="zipName('highlights')"
+              [alwaysShowLabel]="true"
+              [label]="'streamThumbnails.page.allHighlights' | transloco"
+              [busyLabel]="'streamThumbnails.page.busy' | transloco"
+              [hint]="'streamThumbnails.page.allHighlightsHint' | transloco"
+            ></fb-thumbnail-batch>
+          </div>
+
+          <ul class="flex flex-col gap-2">
+            @for (row of rows; track row.game.id) {
+              <li
+                class="border border-fb-gray-600 rounded-[5px] p-3 flex flex-wrap items-center justify-between gap-2"
+                data-test="game-row"
+              >
+                <div>
+                  <div class="text-sm font-bold">{{ pairing(row.game) }}</div>
+                  <div class="text-xs text-fb-gray-500">
+                    {{ row.game.start_time }}
+                    @if (row.game.result && row.game.ended) {
+                      &middot; {{ row.game.result.home_goals }}:{{
+                        row.game.result.guest_goals
+                      }}
+                    }
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <fb-thumbnail-batch
+                    [items]="row.livestream"
+                    [singleAsPng]="true"
+                    [alwaysShowLabel]="true"
+                    [label]="'streamThumbnails.page.livestream' | transloco"
+                    [busyLabel]="'streamThumbnails.page.busy' | transloco"
+                    [hint]="'streamThumbnails.page.livestreamHint' | transloco"
+                  ></fb-thumbnail-batch>
+                  @if (row.highlights.length) {
+                    <fb-thumbnail-batch
+                      [items]="row.highlights"
+                      [singleAsPng]="true"
+                      [alwaysShowLabel]="true"
+                      [label]="'streamThumbnails.page.highlights' | transloco"
+                      [busyLabel]="'streamThumbnails.page.busy' | transloco"
+                      [hint]="
+                        'streamThumbnails.page.highlightsHint' | transloco
+                      "
+                    ></fb-thumbnail-batch>
+                  } @else {
+                    <span class="text-xs text-fb-gray-500">
+                      {{ "streamThumbnails.page.highlightPending" | transloco }}
+                    </span>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      }
+    }
+  }
+</div>

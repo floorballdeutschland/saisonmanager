@@ -110,6 +110,7 @@
     "override-controls",
     "override-display",
     "override-warn",
+    "thumbs-link",
   ].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
@@ -165,6 +166,14 @@
       true
     );
     return;
+  }
+
+  // Die Thumbnail-Seite liest dasselbe Token. Relativ, damit sie von derselben
+  // Herkunft kommt wie das Bedienfeld: Wappen und Ligazeichen liegen dort
+  // unter /api/storage, und nur dann bleibt die Leinwand unverunreinigt.
+  if (el["thumbs-link"]) {
+    el["thumbs-link"].href =
+      "/livestream-thumbnails?token=" + encodeURIComponent(token);
   }
 
   function setStatus(text, isError) {
@@ -389,7 +398,11 @@
           // ersetzt, und der kennt die gesammelten Drücke noch nicht. Ohne
           // sie erneut aufzulegen, schickte das Nachsenden den Serverstand
           // zurück und der letzte Druck (Spieler 9 statt 7) wäre still weg.
-          state.control = Object.assign({}, state.control, state.pendingChanges);
+          state.control = Object.assign(
+            {},
+            state.control,
+            state.pendingChanges
+          );
           state.pendingChanges = null;
           flushWrite();
         } else {

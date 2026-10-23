@@ -106,10 +106,26 @@
   } @else {
     <div class="flex flex-col gap-4">
       @for (observation of observations; track observation.id) {
-        <fb-referee-observation-detail
-          [observation]="observation"
-          [showCoach]="false"
-        />
+        <div class="flex flex-col gap-2">
+          <fb-referee-observation-detail
+            [observation]="observation"
+            [showCoach]="false"
+          />
+          <div class="flex justify-end">
+            <fb-button
+              size="small"
+              icon="edit"
+              data-testid="edit-observation"
+              [routerLink]="[
+                '/schiedsrichter/meine-beobachtungen',
+                observation.id,
+                'bearbeiten',
+              ]"
+            >
+              {{ "refereeObservation.coach.edit" | transloco }}
+            </fb-button>
+          </div>
+        </div>
       }
     </div>
   }

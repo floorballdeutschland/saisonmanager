@@ -44,6 +44,12 @@ export interface RefereeObservation {
   coach_name: string | null;
   status: 'visible' | 'hidden';
   submitted_at: string | null;
+  /**
+   * Vermerk „bearbeitet am": gesetzt, sobald der Coach den Bogen nach der
+   * Abgabe geändert hat (feedback#74). Optional, ältere API-Stände liefern das
+   * Feld nicht.
+   */
+  edited_at?: string | null;
   /** Der Coach war für dieses Spiel angesetzt (statt es selbst gewählt zu haben). */
   assigned_as_coach: boolean;
 
