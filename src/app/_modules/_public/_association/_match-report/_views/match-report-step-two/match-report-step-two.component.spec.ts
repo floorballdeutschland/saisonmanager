@@ -9,7 +9,8 @@ import { GameTimelineFilterPipe } from 'src/app/_helpers/_pipes/game-timeline-fi
 
 import {
   MatchReportStepTwoComponent,
-  TABLET_MODE_STORAGE_KEY,
+  LEGACY_TABLET_MODE_STORAGE_KEY,
+  tabletModeStorageKey,
   TABLET_NORMAL_INPUT_STORAGE_KEY,
 } from './match-report-step-two.component';
 import { Game, GameAdditionalFields, League } from '@floorball/types';
@@ -177,8 +178,13 @@ describe('MatchReportStepTwoComponent', () => {
   // gewohnten Eingabe ändert. Schritt 2 rendert nur für Bearbeitungsberechtigte
   // (MatchReportComponent#canEditGame), der Schalter steht also für genau die.
   describe('Tabletmodus', () => {
+    // startableGame hat die id 1.
+    const TABLET_MODE_KEY = tabletModeStorageKey(1);
+
     afterEach(() => {
-      localStorage.removeItem(TABLET_MODE_STORAGE_KEY);
+      localStorage.removeItem(TABLET_MODE_KEY);
+      localStorage.removeItem(tabletModeStorageKey(2));
+      localStorage.removeItem(LEGACY_TABLET_MODE_STORAGE_KEY);
       localStorage.removeItem(TABLET_NORMAL_INPUT_STORAGE_KEY);
     });
 
@@ -207,7 +213,7 @@ describe('MatchReportStepTwoComponent', () => {
       ).toBeNull();
     });
 
-    it('blendet die Erfassung nach dem Einschalten ein und merkt sich das je Gerät', () => {
+    it('blendet die Erfassung nach dem Einschalten ein und merkt sich das je Gerät und Spiel', () => {
       const dom = render(startableGame({ started: true }));
 
       const input = toggle(dom)!;
@@ -216,7 +222,7 @@ describe('MatchReportStepTwoComponent', () => {
       fixture.detectChanges();
 
       expect(dom.querySelector('fb-tablet-capture')).not.toBeNull();
-      expect(localStorage.getItem(TABLET_MODE_STORAGE_KEY)).toBe('1');
+      expect(localStorage.getItem(TABLET_MODE_KEY)).toBe('1');
       // Die gewohnte Eingabe klappt dabei ein.
       expect(dom.querySelector('fb-match-event-button')).toBeNull();
     });
@@ -229,24 +235,57 @@ describe('MatchReportStepTwoComponent', () => {
         field_size: null,
         effective_field_size: 'KF',
       } as unknown as League);
-      localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+      localStorage.setItem(TABLET_MODE_KEY, '1');
       render(startableGame({ started: true }));
 
       const capture = fixture.debugElement.query(By.css('fb-tablet-capture'));
       expect(capture.properties['fieldSize']).toBe('KF');
-      localStorage.removeItem(TABLET_MODE_STORAGE_KEY);
+      localStorage.removeItem(TABLET_MODE_KEY);
     });
 
     it('liest den gemerkten Zustand beim Öffnen', () => {
-      localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+      localStorage.setItem(TABLET_MODE_KEY, '1');
       const dom = render(startableGame({ started: true }));
 
       expect(toggle(dom)!.checked).toBeTrue();
       expect(dom.querySelector('fb-tablet-capture')).not.toBeNull();
 
       component.setTabletMode(false);
-      expect(localStorage.getItem(TABLET_MODE_STORAGE_KEY)).toBeNull();
+      expect(localStorage.getItem(TABLET_MODE_KEY)).toBeNull();
     });
+    it('ist bei einem anderen Spiel auf demselben Gerät aus', () => {
+      localStorage.setItem(TABLET_MODE_KEY, '1');
+      const dom = render(
+        startableGame({ id: 2, started: true } as Partial<Game>)
+      );
+
+      expect(toggle(dom)!.checked).toBeFalse();
+      expect(dom.querySelector('fb-tablet-capture')).toBeNull();
+      expect(dom.querySelectorAll('fb-match-event-button').length).toBe(6);
+    });
+
+    it('liest den Schalter beim Spielwechsel auf derselben Seite neu', () => {
+      localStorage.setItem(TABLET_MODE_KEY, '1');
+      fixture.componentRef.setInput('game', startableGame({ started: true }));
+      fixture.detectChanges();
+      expect(component.tabletMode).toBeTrue();
+
+      fixture.componentRef.setInput(
+        'game',
+        startableGame({ id: 2, started: true } as Partial<Game>)
+      );
+      fixture.detectChanges();
+      expect(component.tabletMode).toBeFalse();
+    });
+
+    it('ignoriert und entfernt den früheren Schalter für alle Spiele', () => {
+      localStorage.setItem(LEGACY_TABLET_MODE_STORAGE_KEY, '1');
+      const dom = render(startableGame({ started: true }));
+
+      expect(toggle(dom)!.checked).toBeFalse();
+      expect(localStorage.getItem(LEGACY_TABLET_MODE_STORAGE_KEY)).toBeNull();
+    });
+
     describe('normale Eingabe', () => {
       const normalToggle = (dom: HTMLElement) =>
         dom.querySelector(
@@ -274,7 +313,7 @@ describe('MatchReportStepTwoComponent', () => {
       });
 
       it('ist im Tabletmodus eingeklappt, Erfassung und Zeitleiste bleiben', () => {
-        localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+        localStorage.setItem(TABLET_MODE_KEY, '1');
         const dom = render(startableGame({ started: true }));
 
         const parts = normalInputParts(dom);
@@ -289,7 +328,7 @@ describe('MatchReportStepTwoComponent', () => {
       });
 
       it('klappt per Umschalter auf und merkt sich das je Gerät', () => {
-        localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+        localStorage.setItem(TABLET_MODE_KEY, '1');
         const dom = render(startableGame({ started: true }));
 
         normalToggle(dom)!.click();
@@ -314,7 +353,7 @@ describe('MatchReportStepTwoComponent', () => {
       });
 
       it('liest den aufgeklappten Zustand beim Öffnen', () => {
-        localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+        localStorage.setItem(TABLET_MODE_KEY, '1');
         localStorage.setItem(TABLET_NORMAL_INPUT_STORAGE_KEY, '1');
         const dom = render(startableGame({ started: true }));
 
@@ -323,7 +362,7 @@ describe('MatchReportStepTwoComponent', () => {
       });
 
       it('klappt vor dem Anpfiff auch den Startknopf ein', () => {
-        localStorage.setItem(TABLET_MODE_STORAGE_KEY, '1');
+        localStorage.setItem(TABLET_MODE_KEY, '1');
         const dom = render(startableGame());
 
         expect(
