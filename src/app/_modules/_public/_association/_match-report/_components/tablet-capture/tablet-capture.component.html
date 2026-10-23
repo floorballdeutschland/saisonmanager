@@ -149,6 +149,20 @@
         }
       </div>
 
+      <!--
+        Szene vormerken (api#838): ein Tipp, gespeichert wird nur der Moment.
+        Die Szene landet in der Auswahl für die Highlights, nicht in der
+        Statistik.
+      -->
+      <button
+        type="button"
+        class="mt-2 min-h-[56px] w-full rounded-[5px] border-2 border-violet-600 bg-white px-3 text-lg font-bold text-violet-800 active:bg-violet-100"
+        data-testid="tablet-mark-scene"
+        (click)="recordMark()"
+      >
+        {{ "tablet.mark.button" | transloco }}
+      </button>
+
       <div
         class="mt-2 flex justify-between text-sm font-bold"
         data-testid="tablet-directions"
@@ -309,6 +323,33 @@
     </div>
 
     <div>
+      @if (lastMark) {
+        <div
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-violet-600 bg-violet-50 p-3"
+          data-testid="tablet-last-mark"
+        >
+          <span class="font-bold">
+            {{ "tablet.mark.saved" | transloco }}
+          </span>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+              data-testid="tablet-mark-undo"
+              (click)="undoLastMark()"
+            >
+              {{ "tablet.mark.undo" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+              (click)="dismissLastMark()"
+            >
+              {{ "tablet.mark.ok" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
       @if (lastFreeHit) {
         <div
           class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-amber-500 bg-amber-50 p-3"
@@ -567,13 +608,19 @@
                 class="flex items-center gap-2 rounded-[5px] border border-fb-gray-200 p-2 text-sm"
               >
                 <span class="flex-1">
-                  <span class="font-bold">{{ teamName(shot.team) }}</span>
+                  @if (isMark(shot)) {
+                    <span class="font-bold text-violet-800">{{
+                      "tablet.mark.label" | transloco
+                    }}</span>
+                  } @else {
+                    <span class="font-bold">{{ teamName(shot.team) }}</span>
+                  }
                   @if (isFreeHit(shot)) {
                     ·
                     <span class="font-bold text-amber-800">{{
                       "tablet.freeHit.label" | transloco
                     }}</span>
-                  } @else {
+                  } @else if (!isMark(shot)) {
                     · {{ "tablet.result." + shot.result | transloco }}
                     @if (shot.from_free_hit) {
                       ({{ "tablet.freeHit.fromFreeHitShort" | transloco }})
@@ -595,13 +642,15 @@
                     }}</span>
                   }
                 </span>
-                <button
-                  type="button"
-                  class="min-h-[44px] rounded-[5px] border border-fb-gray-600 px-3 font-bold"
-                  (click)="editShot(shot)"
-                >
-                  {{ "tablet.recent.edit" | transloco }}
-                </button>
+                @if (!isMark(shot)) {
+                  <button
+                    type="button"
+                    class="min-h-[44px] rounded-[5px] border border-fb-gray-600 px-3 font-bold"
+                    (click)="editShot(shot)"
+                  >
+                    {{ "tablet.recent.edit" | transloco }}
+                  </button>
+                }
                 <button
                   type="button"
                   class="min-h-[44px] rounded-[5px] border border-red-700 px-3 font-bold text-red-700"
@@ -674,5 +723,6 @@
     </div>
   }
 
+  <fb-tablet-highlight-request [gameId]="game.id"></fb-tablet-highlight-request>
   <fb-tablet-feedback [gameId]="game.id"></fb-tablet-feedback>
 </section>

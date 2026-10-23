@@ -35,6 +35,19 @@
       ></fb-match-highlights>
     }
 
+    <!-- Kalibrierung und Auswahl der Highlights (api#838), nur Admin und SBK -->
+    @if (canEditHighlights) {
+      <p class="mb-8 text-sm">
+        <a
+          class="underline font-bold"
+          routerLink="/highlights/bearbeiten"
+          [queryParams]="{ spiel: game.id }"
+          data-test="highlights-edit"
+          >{{ "match.highlights.edit" | transloco }}</a
+        >
+      </p>
+    }
+
     <!-- Schussgrafik -->
     <section class="mb-10">
       <h3 class="font-bold text-lg lg:text-xl mb-3">

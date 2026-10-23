@@ -82,7 +82,7 @@
     </div>
 
     <ol class="list-none p-0 m-0 min-w-0" data-test="highlights-scenes">
-      @for (scene of scenes; track scene.event_id; let i = $index) {
+      @for (scene of scenes; track scene.start + "-" + i; let i = $index) {
         <li>
           <button
             type="button"
@@ -93,15 +93,23 @@
             data-test="highlights-scene"
           >
             <span class="font-bold tabular-nums whitespace-nowrap min-w-[3rem]">
-              {{ scene.home_goals }}:{{ scene.guest_goals }}
+              @if (isMark(scene)) {
+                <span class="text-violet-800">{{
+                  "match.highlights.mark" | transloco
+                }}</span>
+              } @else {
+                {{ scene.home_goals }}:{{ scene.guest_goals }}
+              }
             </span>
             <span class="min-w-0 flex-1">
-              <span class="block font-bold truncate">
-                {{
-                  personLabel(scene.scorer) ||
-                    (scene.team === "home" ? homeName : guestName)
-                }}
-              </span>
+              @if (!isMark(scene)) {
+                <span class="block font-bold truncate">
+                  {{
+                    personLabel(scene.scorer) ||
+                      (scene.team === "home" ? homeName : guestName)
+                  }}
+                </span>
+              }
               @if (scene.assist) {
                 <span class="block text-xs text-fb-gray-500 truncate">
                   {{ "match.highlights.assist" | transloco }}:
@@ -109,7 +117,9 @@
                 </span>
               }
               <span class="block text-xs text-fb-gray-500">
-                {{ scene.team === "home" ? homeName : guestName }} ·
+                @if (scene.team) {
+                  {{ scene.team === "home" ? homeName : guestName }} ·
+                }
                 {{
                   "match.detailedStats.periodN" | transloco: { n: scene.period }
                 }}

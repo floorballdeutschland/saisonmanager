@@ -12,6 +12,7 @@ import { environment } from 'src/environments/environment';
 import { TabletCaptureComponent } from './tablet-capture.component';
 import { freeHitZone } from '../../../_match/_utils/detailed-stats';
 import { TabletFeedbackComponent } from './tablet-feedback.component';
+import { TabletHighlightRequestComponent } from './tablet-highlight-request.component';
 
 const API = environment.apiURL;
 
@@ -72,7 +73,11 @@ describe('TabletCaptureComponent', () => {
         FormsModule,
         getTranslocoTestingModule(),
       ],
-      declarations: [TabletCaptureComponent, TabletFeedbackComponent],
+      declarations: [
+        TabletCaptureComponent,
+        TabletFeedbackComponent,
+        TabletHighlightRequestComponent,
+      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -820,7 +825,7 @@ describe('TabletCaptureComponent', () => {
       expect(sent[0].kind).toBe('free_hit');
       expect(sent[0].team).toBe('home');
       expect(sent[0].x).toBeCloseTo(0.25, 2);
-      expect(freeHitZone(sent[0])).toBe('own_half');
+      expect(freeHitZone({ x: sent[0].x!, y: sent[0].y! })).toBe('own_half');
     });
 
     it('bricht den Freischlag-Modus mit demselben Knopf ab', async () => {
@@ -1031,6 +1036,91 @@ describe('TabletCaptureComponent', () => {
       };
       http.expectOne(API + 'games/4711/shots.json').flush({ shots: [freeHit] });
       expect(component.linkCandidates).toEqual([]);
+    });
+  });
+
+  describe('Szene vormerken (api#838)', () => {
+    const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
+
+    it('merkt mit einem Tipp den Moment vor, ohne Team und Position', async () => {
+      await start(inPeriod(4711, 2));
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-mark-scene"]')
+        .click();
+
+      const post = http.expectOne(API + 'games/4711/shots.json');
+      const sent = post.request.body.shots as ShotInput[];
+      expect(sent).toEqual([
+        jasmine.objectContaining({
+          kind: 'mark',
+          team: null,
+          period: 2,
+          game_time: '',
+          x: null,
+          y: null,
+          result: null,
+          shooter_player_id: null,
+          goalkeeper_player_id: null,
+          from_free_hit: false,
+        }),
+      ]);
+      expect(component.draft).toBeNull();
+      post.flush({ shots: [asShot(sent[0])] });
+      await settle();
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-last-mark"]')
+      ).toBeTruthy();
+      // Keine Markierung auf dem Feld, aber in der Liste der letzten Einträge.
+      expect(component.fieldMarkers.length).toBe(0);
+      expect(component.recentShots.length).toBe(1);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-recent"]')
+          .textContent
+      ).toContain('tablet.mark.label');
+    });
+
+    it('hält den Zeitpunkt des Tipps in Serverzeit fest', async () => {
+      await start(game(4711), 60000);
+      component.recordMark(T0);
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      const tapped = Date.parse(sent[0].tapped_at);
+      expect(tapped).toBeGreaterThanOrEqual(T0 + 60000 - 1000);
+      expect(tapped).toBeLessThanOrEqual(T0 + 60000 + 1000);
+    });
+
+    it('lässt einen offenen Schuss-Entwurf unangetastet', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      const draft = component.draft;
+      component.recordMark(T0 + 1000);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      expect(component.draft).toBe(draft);
+    });
+
+    it('nimmt die letzte vorgemerkte Szene zurück', async () => {
+      await start();
+      component.recordMark(T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.undoLastMark();
+
+      expect(component.lastMark).toBeNull();
+      expect(component.allShots.length).toBe(0);
+    });
+
+    it('öffnet eine vorgemerkte Szene nicht zum Korrigieren', async () => {
+      await start();
+      component.recordMark(T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.editShot(component.allShots[0]);
+
+      expect(component.draft).toBeNull();
     });
   });
 });

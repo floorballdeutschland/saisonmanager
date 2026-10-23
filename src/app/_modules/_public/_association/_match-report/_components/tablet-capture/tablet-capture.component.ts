@@ -41,6 +41,8 @@ import {
   fromAttackDirection,
   goalLinkCandidates,
   isFreeHit,
+  isMark,
+  isPlaced,
   leftToRightTeam,
   mergeShots,
   newClientUuid,
@@ -171,6 +173,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public freeHitArmed: ShotTeam | null = null;
   public lastFreeHit: LastFreeHit | null = null;
 
+  // Zuletzt vorgemerkte Szene (api#838), für den Hinweis mit „Rückgängig“.
+  public lastMark: string | null = null;
+
   public clockOffset: number | null = null;
   public clockStatus: 'measuring' | 'ok' | 'stale' | 'unknown' = 'measuring';
 
@@ -266,6 +271,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.gameTimeInvalid = false;
     this.freeHitArmed = null;
     this.lastFreeHit = null;
+    this.lastMark = null;
     this.linkError = false;
     this._goalkeeperChoice = {};
     this.sides = this._loadSides(gameId);
@@ -621,6 +627,45 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     };
   }
 
+  // --- Szene vormerken (api#838) ---------------------------------------------
+
+  /**
+   * Ein Tipp merkt den Moment für die Highlights vor: Großchance, Parade,
+   * Rudelbildung, alles neben den Toren. Kein Team, keine Position, kein
+   * Entwurf; der Zeitpunkt ist der des Tipps. Ein offener Schuss-Entwurf
+   * bleibt unangetastet.
+   */
+  public recordMark(deviceNow = Date.now()): void {
+    if (!this.buffer) return;
+    const clientUuid = newClientUuid();
+    this.buffer.upsert({
+      client_uuid: clientUuid,
+      kind: 'mark',
+      team: null,
+      period: this.viewPeriod,
+      game_time: '',
+      tapped_at: toServerTime(deviceNow, this.clockOffset ?? 0),
+      x: null,
+      y: null,
+      result: null,
+      shooter_player_id: null,
+      goalkeeper_player_id: null,
+      from_free_hit: false,
+    });
+    this.lastMark = clientUuid;
+    this._autoFlush();
+  }
+
+  public undoLastMark(): void {
+    const last = this.lastMark;
+    this.lastMark = null;
+    if (last) this.deleteShot(last);
+  }
+
+  public dismissLastMark(): void {
+    this.lastMark = null;
+  }
+
   public setDraftResult(result: ShotResult): void {
     if (this.draft) this.draft.result = result;
   }
@@ -699,6 +744,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public editShot(shot: DisplayedShot): void {
+    // Eine vorgemerkte Szene hat nichts zu korrigieren, nur zu löschen.
+    if (!isPlaced(shot)) return;
     const screen = fromAttackDirection(
       { x: shot.x, y: shot.y },
       attacksRight(shot.team, shot.period, this.sides)
@@ -735,6 +782,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     );
     this.buffer.remove(clientUuid, knownToServer);
     if (this.lastFreeHit?.client_uuid === clientUuid) this.lastFreeHit = null;
+    if (this.lastMark === clientUuid) this.lastMark = null;
     if (this.draft?.client_uuid === clientUuid) {
       this.draft = null;
       this._afterDraftClosed();
@@ -873,6 +921,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     pending: boolean;
   }[] {
     return this.allShots
+      .filter(isPlaced)
       .filter((shot) => shot.period === this.viewPeriod)
       .map((shot) => {
         const screen = fromAttackDirection(
@@ -912,7 +961,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  public teamName(team: ShotTeam): string {
+  public teamName(team: ShotTeam | null): string {
+    if (!team) return '';
     return (
       (team === 'home'
         ? this.game?.home_team_short_name || this.game?.home_team_name
@@ -937,10 +987,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public trikotNumber(
-    team: ShotTeam,
+    team: ShotTeam | null,
     playerId: number | null | undefined
   ): string {
-    if (!playerId) return '';
+    if (!playerId || !team) return '';
     const player = (this.game?.players?.[team] ?? []).find(
       (entry) => entry.player_id === playerId
     );
@@ -959,6 +1009,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   public isFreeHit(shot: Pick<ShotInput, 'kind'>): boolean {
     return isFreeHit(shot);
+  }
+
+  public isMark(shot: Pick<ShotInput, 'kind'>): boolean {
+    return isMark(shot);
   }
 
   public trackShot(_index: number, shot: { client_uuid: string }): string {

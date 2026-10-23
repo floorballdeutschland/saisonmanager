@@ -1,0 +1,45 @@
+{
+  "title": "Edit highlights",
+  "loading": "Loading…",
+  "loadingVideo": "Loading video…",
+  "gameNumber": "Game",
+  "expires": "Link valid until {{ date }}",
+  "noVideo": "There is no published recording for this game yet. Once it is linked, the highlights can be edited here.",
+  "error": {
+    "invalid": "This link is invalid. Please check that it was copied completely from the e-mail.",
+    "expired": "This link has expired. The game operations office can still edit the highlights.",
+    "forbidden": "You are not allowed to edit the highlights of this game.",
+    "failed": "The data could not be loaded. Please try again later."
+  },
+  "consent": {
+    "notice": "The video is loaded from YouTube. Data is transferred to YouTube in the process.",
+    "button": "Load video",
+    "failed": "The video could not be loaded. Please try again."
+  },
+  "calibration": {
+    "title": "1. Align video and hall",
+    "explanation": "The video lags behind the hall. Play the scene and press “Goal now” exactly when the goal is scored ({{ goal }}). This sets the offset for all scenes.",
+    "noGoal": "There is no goal with a tablet shot to set the offset with. You can still choose the scenes.",
+    "play": "Play scene",
+    "now": "Goal now",
+    "none": "Not aligned",
+    "offset": "Offset: {{ seconds }} s",
+    "check": "Check",
+    "reset": "Reset",
+    "hint": "“Check” plays the goal scene with the current offset. If the start is missing, lower the offset; if the goal comes too late, raise it. The offset also applies to the chapters in the YouTube video."
+  },
+  "scenes": {
+    "title": "2. Choose scenes ({{ selected }} of {{ total }})",
+    "all": "All",
+    "none": "None",
+    "empty": "There are no scenes for this game.",
+    "meta": "Period {{ period }} · {{ time }} · from {{ at }} in the video",
+    "play": "Play"
+  },
+  "save": "Save",
+  "saving": "Saving…",
+  "saved": "Saved. The highlights on the game page are updated.",
+  "saveFailed": "Saving failed. Please try again.",
+  "unsaved": "Unsaved changes",
+  "leaveConfirm": "There are unsaved changes to the offset or selection. Leave the page anyway?"
+}

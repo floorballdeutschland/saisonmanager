@@ -6,6 +6,7 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 
 import { TabletCaptureComponent } from './tablet-capture.component';
 import { TabletFeedbackComponent } from './tablet-feedback.component';
+import { TabletHighlightRequestComponent } from './tablet-highlight-request.component';
 
 /**
  * Tabletmodus der Spielberichtseingabe (Beta, fe#344).
@@ -17,7 +18,11 @@ import { TabletFeedbackComponent } from './tablet-feedback.component';
  */
 @NgModule({
   imports: [CommonModule, FormsModule, UikitCommonModule],
-  declarations: [TabletCaptureComponent, TabletFeedbackComponent],
+  declarations: [
+    TabletCaptureComponent,
+    TabletFeedbackComponent,
+    TabletHighlightRequestComponent,
+  ],
   exports: [TabletCaptureComponent],
   providers: [
     {
