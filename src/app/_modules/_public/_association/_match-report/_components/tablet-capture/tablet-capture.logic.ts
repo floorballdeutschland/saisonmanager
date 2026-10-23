@@ -296,6 +296,96 @@ export function followsFreeHit(
   });
 }
 
+// --- Strafschuss und Torwartsituation (Feedback #61, #63, #64) ---------------
+
+/**
+ * Teams, die gerade ohne Torhüter spielen („Torwart raus“), je Team mit dem
+ * Abschnitt, in dem umgeschaltet wurde. Der Schalter gilt nur in diesem
+ * Abschnitt: Nach einem Abschnittswechsel steht der Torhüter wieder im Tor,
+ * ohne dass jemand zurückschalten muss.
+ */
+export type PulledGoalies = Partial<Record<ShotTeam, number>>;
+
+export function goaliePulled(
+  pulled: PulledGoalies,
+  team: ShotTeam,
+  period: number
+): boolean {
+  return pulled[team] === period;
+}
+
+/**
+ * Vorbelegung eines neuen Schusses aus den Schaltern: aufs leere Tor, wenn
+ * der Gegner ohne Torhüter spielt, 6 gegen 5, wenn das schießende Team ohne
+ * eigenen spielt. Beides kann zugleich gelten.
+ */
+export function situationFor(
+  pulled: PulledGoalies,
+  shootingTeam: ShotTeam,
+  period: number
+): { empty_net: boolean; extra_attacker: boolean } {
+  return {
+    empty_net: goaliePulled(pulled, otherTeam(shootingTeam), period),
+    extra_attacker: goaliePulled(pulled, shootingTeam, period),
+  };
+}
+
+type ShotFlags = Pick<
+  ShotInput,
+  | 'kind'
+  | 'result'
+  | 'goalkeeper_player_id'
+  | 'from_free_hit'
+  | 'from_penalty_shot'
+  | 'empty_net'
+  | 'extra_attacker'
+>;
+
+/**
+ * Bringt die Kennungen eines Schusses in eine Form, die die API annimmt. Ein
+ * abgewiesener Schuss hielte sonst den ganzen Puffer an (422). Regeln wie in
+ * der API: Kennungen nur an Schüssen; ein Strafschuss nie aus Freischlag, nie
+ * geblockt und nie bei herausgenommenem Torhüter; aufs leere Tor ohne
+ * Torhüter und nie gehalten. Widerspricht eine Kennung dem Ergebnis, gewinnt
+ * das Ergebnis: Ein gehaltener Schuss ging nicht aufs leere Tor.
+ */
+export function consistentShotFlags<T extends ShotFlags>(shot: T): T {
+  if ((shot.kind ?? 'shot') !== 'shot') {
+    return {
+      ...shot,
+      from_free_hit: false,
+      from_penalty_shot: false,
+      empty_net: false,
+      extra_attacker: false,
+    };
+  }
+  // Geblockt gibt es beim Strafschuss nicht; das Ergebnis ist die
+  // ausdrücklichere Angabe.
+  const penalty = !!shot.from_penalty_shot && shot.result !== 'blocked';
+  const emptyNet = !penalty && !!shot.empty_net && shot.result !== 'saved';
+  return {
+    ...shot,
+    from_free_hit: !penalty && !!shot.from_free_hit,
+    from_penalty_shot: penalty,
+    empty_net: emptyNet,
+    extra_attacker: !penalty && !!shot.extra_attacker,
+    goalkeeper_player_id: emptyNet ? null : (shot.goalkeeper_player_id ?? null),
+  };
+}
+
+/** Parade aus dem Schnellzähler: gehalten, ohne Feldposition (Feedback #62). */
+export function isUnplacedSave(
+  shot: Pick<ShotInput, 'kind' | 'result' | 'x' | 'y'>
+): boolean {
+  return (
+    !isFreeHit(shot) &&
+    !isMark(shot) &&
+    shot.result === 'saved' &&
+    shot.x === null &&
+    shot.y === null
+  );
+}
+
 export interface GoalLinkCandidate {
   goal: GameEvent;
   shots: Shot[];

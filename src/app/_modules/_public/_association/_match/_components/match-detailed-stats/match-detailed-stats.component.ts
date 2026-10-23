@@ -24,6 +24,7 @@ import {
   DetailedStatsFreeHit,
   DetailedStatsShot,
   Game,
+  GoalkeeperSaveStats,
   GoalkeeperStats,
   Highlights,
   PlayerShotStats,
@@ -38,6 +39,9 @@ import {
   filterFreeHits,
   filterShots,
   freeHitZoneCounts,
+  goalkeeperPeriodStats,
+  hasSpecialSituations,
+  isPlacedShot,
   periodsOf,
   savePercentage,
   SHOT_RESULTS,
@@ -288,6 +292,24 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     return this.shotsFor(team).filter((shot) => shot.result === result).length;
   }
 
+  /**
+   * Paraden ohne Feldposition (Schnellzähler, Feedback #62) eines Teams: in
+   * den Zahlen unter der Grafik enthalten, in der Grafik selbst nicht.
+   */
+  unplacedCountFor(team: ShotTeam): number {
+    return this.shotsFor(team).filter((shot) => !isPlacedShot(shot)).length;
+  }
+
+  // --- Strafschüsse und Torwartsituation (Feedback #61, #63, #64) -------------
+
+  get hasSpecialSituations(): boolean {
+    return !!this.stats && hasSpecialSituations(this.stats);
+  }
+
+  get hasPenaltyShots(): boolean {
+    return !!this.stats?.shots.some((shot) => shot.from_penalty_shot);
+  }
+
   rowsFor(team: ShotTeam): TeamStatsRow[] {
     if (!this.stats) return [];
     const stats = this.stats;
@@ -338,7 +360,22 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     return !!this.stats?.goalkeepers?.length;
   }
 
-  savePercentage(goalkeeper: GoalkeeperStats): number | null {
+  savePercentage(goalkeeper: GoalkeeperSaveStats): number | null {
     return savePercentage(goalkeeper);
+  }
+
+  /** Liefert die API Paraden je Abschnitt (Feedback #62)? */
+  get hasGoalkeeperPeriods(): boolean {
+    return (
+      this.periods.length > 1 &&
+      !!this.stats?.goalkeepers?.some((gk) => !!gk.by_period)
+    );
+  }
+
+  goalkeeperPeriod(
+    goalkeeper: GoalkeeperStats,
+    period: number
+  ): GoalkeeperSaveStats | null {
+    return goalkeeperPeriodStats(goalkeeper, period);
   }
 }

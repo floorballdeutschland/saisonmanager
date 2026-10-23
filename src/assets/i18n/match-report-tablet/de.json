@@ -40,7 +40,9 @@
     "gameTimeInvalid": "Bitte die Spielzeit als m:ss eingeben, zum Beispiel 12:34.",
     "save": "Speichern",
     "cancel": "Verwerfen",
-    "delete": "Schuss löschen"
+    "delete": "Schuss löschen",
+    "goalkeeperUnknown": "Torhüter unbekannt",
+    "goalkeeperClearHint": "(erneut tippen: unbekannt)"
   },
   "recent": {
     "title": "Letzte Schüsse",
@@ -123,5 +125,23 @@
     "sending": "Wird angefordert…",
     "sent": "Angefordert. Der Link kommt per Mail, sobald die Aufzeichnung veröffentlicht ist.",
     "error": "Der Link konnte nicht angefordert werden. Fehlt die Berechtigung für dieses Spiel?"
+  },
+  "save": {
+    "button": "Parade {{ team }}",
+    "saved": "Parade {{ team }} gezählt (ohne Position).",
+    "label": "Parade ohne Position",
+    "undo": "Rückgängig",
+    "ok": "OK"
+  },
+  "goaliePulled": {
+    "button": "Torwart raus: {{ team }}",
+    "active": "{{ team }} ohne Torwart (zurücknehmen)"
+  },
+  "situation": {
+    "penaltyShot": "Strafschuss",
+    "penaltyShotShort": "Strafschuss",
+    "extraAttacker": "6 gegen 5",
+    "extraAttackerShort": "6 gegen 5",
+    "emptyNetShort": "leeres Tor"
   }
 }

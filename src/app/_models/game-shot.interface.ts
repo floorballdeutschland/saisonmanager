@@ -31,7 +31,8 @@ export interface ShotInput {
   // Zeitpunkt des ersten Antippens in Serverzeit (ISO 8601 mit Millisekunden),
   // nicht der des Speicherns. Einzige Quelle für den genauen Torzeitpunkt.
   tapped_at: string;
-  // `null` nur bei einer vorgemerkten Szene.
+  // `null` bei einer vorgemerkten Szene und bei einer Parade aus dem
+  // Schnellzähler (gehalten, ohne Feldposition, Feedback #62).
   x: number | null;
   y: number | null;
   // `null` bei Freischlag und vorgemerkter Szene, sonst Pflicht.
@@ -40,6 +41,14 @@ export interface ShotInput {
   goalkeeper_player_id?: number | null;
   // Schuss aus einem Freischlag heraus; sonst immer `false`.
   from_free_hit?: boolean;
+  // Strafschuss (Feedback #61). Nie zugleich aus Freischlag, nie geblockt,
+  // nie bei herausgenommenem Torhüter.
+  from_penalty_shot?: boolean;
+  // Aufs leere Tor, der Gegner spielt ohne Torhüter (Feedback #63). Dann
+  // ohne Torhüter und nie gehalten.
+  empty_net?: boolean;
+  // Das schießende Team spielt ohne eigenen Torhüter, 6 gegen 5 (#64).
+  extra_attacker?: boolean;
 }
 
 export interface Shot extends ShotInput {
