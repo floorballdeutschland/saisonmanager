@@ -33,6 +33,7 @@ import {
   getPeriodMaxSeconds,
   isEventTimeValid,
 } from './event-time-validation';
+import { countRewrittenGoalScores } from './goal-order';
 import { personName, splitPersonName } from './person-name';
 
 @Component({
@@ -110,6 +111,10 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   // (siehe timeBlocksSubmit).
   private _storedTime: string | null = null;
   private _storedPeriod: number | null = null;
+
+  // Eingabe (Abschnitt, Zeit, Mannschaft), für die die Änderung am Spielstand
+  // erfasster Tore bestätigt wurde. Jede neue Eingabe muss neu bestätigt werden.
+  private _scoreChangeConfirmedFor: string | null = null;
 
   playerSearchNumber?: number;
   playerNumber = 0;
@@ -502,8 +507,50 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
         (!this.penaltyCode || !this.penalty)) ||
       (['goal', 'penalty'].includes(this.type) && !this.playerNumber) ||
       (['goal', 'penalty', 'timeout'].includes(this.type) &&
-        (!this.minutesValid || !this.secondsValid || this.timeBlocksSubmit()))
+        (!this.minutesValid ||
+          !this.secondsValid ||
+          this.timeBlocksSubmit())) ||
+      this.scoreChangeBlocksSubmit()
     );
+  }
+
+  // Zahl der erfassten Tore, deren Spielstand sich mit diesem Tor ändert
+  // (siehe countRewrittenGoalScores). 0, solange Zeit oder Abschnitt fehlen.
+  public rewrittenGoalCount(): number {
+    const period = this.eventPeriod();
+    if (
+      this.type !== 'goal' ||
+      !this.minutesValid ||
+      !this.secondsValid ||
+      Number.isNaN(period)
+    ) {
+      return 0;
+    }
+    return countRewrittenGoalScores(
+      this.match.events || [],
+      { period, time: this.eventTime(), team: this.team },
+      this.existingEvent?.event_id
+    );
+  }
+
+  public scoreChangeConfirmed(): boolean {
+    return this._scoreChangeConfirmedFor === this.scoreChangeKey();
+  }
+
+  public onScoreChangeConfirmed(confirmed: boolean): void {
+    this._scoreChangeConfirmedFor = confirmed ? this.scoreChangeKey() : null;
+  }
+
+  public scoreChangeBlocksSubmit(): boolean {
+    return this.rewrittenGoalCount() > 0 && !this.scoreChangeConfirmed();
+  }
+
+  private scoreChangeKey(): string {
+    return `${this.eventPeriod()}|${this.eventTime()}|${this.team}`;
+  }
+
+  private eventTime(): string {
+    return this.minutes + ':' + this.pad(this.seconds || 0, 2);
   }
 
   private eventPeriod(): number {
@@ -645,7 +692,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   }
 
   public submitEvent() {
-    const time = this.minutes + ':' + this.pad(this.seconds || 0, 2);
+    const time = this.eventTime();
 
     const home_goals =
       this.type === 'goal' && this.team === 'home'
@@ -725,6 +772,9 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
             home_goals,
             guest_goals,
             ...goal,
+            ...(this.rewrittenGoalCount() > 0
+              ? { confirm_score_change: true }
+              : {}),
           };
 
           if (this.existingEvent) {

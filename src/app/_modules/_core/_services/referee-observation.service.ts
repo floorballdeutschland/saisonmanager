@@ -42,6 +42,17 @@ export class RefereeObservationService {
     );
   }
 
+  /**
+   * Eigenen abgegebenen Bogen korrigieren. Dieselben Felder wie bei der Abgabe;
+   * die API setzt danach den Vermerk `edited_at` und verschickt keine Mail.
+   */
+  public update(id: number, body: RefereeObservationAnswers) {
+    return this.http.patch<RefereeObservation>(
+      environment.apiURL + `referee/observations/${id}`,
+      body
+    );
+  }
+
   /** Erhaltene Rückmeldungen der eigenen Person. */
   public getReceived() {
     return this.http.get<RefereeObservation[]>(

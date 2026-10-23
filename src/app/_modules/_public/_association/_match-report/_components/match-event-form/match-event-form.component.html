@@ -729,6 +729,28 @@
         </div>
       }
     }
+    @if (rewrittenGoalCount() > 0) {
+      <div
+        class="col-span-2 rounded bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800"
+        data-test="score-change-warning"
+      >
+        <p class="mb-2">
+          Dieses Tor liegt vor bereits erfassten Toren und ändert den Spielstand
+          von {{ rewrittenGoalCount() }}
+          {{ rewrittenGoalCount() === 1 ? "Tor" : "Toren" }}. Bitte Abschnitt
+          und Zeit prüfen.
+        </p>
+        <label class="flex items-center gap-2 font-medium">
+          <input
+            type="checkbox"
+            data-test="score-change-confirm"
+            [checked]="scoreChangeConfirmed()"
+            (change)="onScoreChangeConfirmed($any($event.target).checked)"
+          />
+          Zeit stimmt, Spielstand der folgenden Tore ändern
+        </label>
+      </div>
+    }
     @if (["goal", "penalty", "timeout"].includes(type)) {
       <fb-button
         (handleClick)="submitEvent()"
@@ -744,6 +766,8 @@
             {{ existingEvent ? "aktualisieren" : "eintragen" }}
           } @else if (timeBlocksSubmit()) {
             Zeit außerhalb des Spielabschnitts
+          } @else if (scoreChangeBlocksSubmit()) {
+            Änderung am Spielstand bestätigen
           } @else {
             Angaben unvollständig
           }
