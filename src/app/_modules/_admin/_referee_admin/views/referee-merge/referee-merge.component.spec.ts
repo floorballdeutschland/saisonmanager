@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -32,14 +33,14 @@ describe('RefereeMergeComponent', () => {
     lizenznummer: 921,
     lizenznummer_display: '921',
     lizenzstufe: 'LJ',
-    gueltigkeit: '2010-07-31',
+    gueltigkeit: '31.07.2010',
   });
   const currentProfile = referee({
     id: 5299,
     lizenznummer: 3454,
     lizenznummer_display: '3454',
     lizenzstufe: 'N2',
-    gueltigkeit: '2028-09-30',
+    gueltigkeit: '30.09.2028',
   });
 
   function build(
@@ -91,6 +92,26 @@ describe('RefereeMergeComponent', () => {
     expect(build(currentProfile, oldProfile).numberChanges).toBeTrue();
   });
 
+  // Die API liefert TT.MM.JJJJ. Als String waere '01.12.2026' < '15.06.2024'.
+  it('vergleicht die Gueltigkeit nach Datum, nicht nach Zeichenfolge', () => {
+    const kept = referee({
+      ...oldProfile,
+      gueltigkeit: '15.06.2024',
+    });
+    const dropped = referee({
+      ...currentProfile,
+      gueltigkeit: '01.12.2026',
+    });
+
+    expect(build(kept, dropped).numberChanges).toBeTrue();
+    expect(
+      build(
+        referee({ ...oldProfile, gueltigkeit: '01.12.2026' }),
+        referee({ ...currentProfile, gueltigkeit: '15.06.2024' })
+      ).numberChanges
+    ).toBeFalse();
+  });
+
   it('kuendigt keinen Nummernwechsel an, wenn das behaltene Profil das aktuelle ist', () => {
     const current = referee({ ...currentProfile, lizenznummer: 500 });
 
@@ -105,7 +126,7 @@ describe('RefereeMergeComponent', () => {
       of({
         message: 'ok',
         master_id: oldProfile.id,
-        master_lizenznummer_display: '921',
+        master_lizenznummer_display: 'aus-der-antwort',
       })
     );
     spyOn(TestBed.inject(NotificationService), 'success');
@@ -121,7 +142,62 @@ describe('RefereeMergeComponent', () => {
       '/',
       'verwaltung',
       'schiedsrichter',
-      '921',
+      'aus-der-antwort',
     ]);
+  });
+});
+
+// Die Vorschau mit echtem Template: Als „wird behalten“ steht das Profil mit
+// der kleineren Nummer, nicht das, von dem aus die Maske geoeffnet wurde.
+describe('RefereeMergeComponent (Template)', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        getTranslocoTestingModule(),
+        HttpClientTestingModule,
+        RouterTestingModule,
+        FormsModule,
+      ],
+      declarations: [RefereeMergeComponent],
+    }).compileComponents();
+  });
+
+  it('zeigt in der Vorschau das behaltene Profil und den Nummernwechsel', () => {
+    const fixture = TestBed.createComponent(RefereeMergeComponent);
+    const component = fixture.componentInstance;
+    component.master = {
+      id: 5299,
+      lizenznummer: 3454,
+      lizenznummer_display: '3454',
+      guest: false,
+      vorname: 'Jens',
+      nachname: 'Kürbis',
+      lizenzstufe: 'N2',
+      gueltigkeit: '30.09.2028',
+    } as RefereeAdmin;
+    component.secondary = {
+      id: 18392,
+      lizenznummer: 921,
+      lizenznummer_display: '921',
+      guest: false,
+      vorname: 'Jens',
+      nachname: 'Kuerbis',
+      lizenzstufe: 'LJ',
+      gueltigkeit: '31.07.2010',
+    } as RefereeAdmin;
+    component.step = 2;
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    const keptBlock = text.slice(
+      text.indexOf('Master (wird behalten)'),
+      text.indexOf('Duplikat (wird deaktiviert)')
+    );
+    expect(keptBlock).toContain('Lizenz: 921');
+    const hint = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-test="number-change-hint"]'
+    );
+    expect(hint?.textContent).toContain('3454');
+    expect(hint?.textContent).toContain('sr-921');
   });
 });

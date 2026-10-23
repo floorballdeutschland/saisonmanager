@@ -14,6 +14,15 @@ import {
 } from '@floorball/core';
 import { RefereeAdmin } from '@floorball/types';
 
+// Die API liefert die Gueltigkeit als „TT.MM.JJJJ“ (referee_json). Als
+// String verglichen schlaegt dort der Tag das Jahr, deshalb erst nach
+// „JJJJ-MM-TT“ drehen. ISO bleibt, wie es ist.
+function comparableDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const german = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
+  return german ? `${german[3]}-${german[2]}-${german[1]}` : value;
+}
+
 @Component({
   templateUrl: './referee-merge.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -153,8 +162,10 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
     const dropped = this.dropped;
     if (!kept?.lizenznummer || !dropped?.lizenznummer) return false;
     if (kept.lizenznummer === dropped.lizenznummer) return false;
-    if (!dropped.lizenzstufe || !dropped.gueltigkeit) return false;
-    return !kept.gueltigkeit || dropped.gueltigkeit > kept.gueltigkeit;
+    const droppedUntil = comparableDate(dropped.gueltigkeit);
+    if (!dropped.lizenzstufe || !droppedUntil) return false;
+    const keptUntil = comparableDate(kept.gueltigkeit);
+    return !keptUntil || droppedUntil > keptUntil;
   }
 
   private _roles(): [RefereeAdmin, RefereeAdmin] | undefined {

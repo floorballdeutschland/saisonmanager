@@ -142,9 +142,12 @@
               <p class="mt-2 font-semibold" data-test="number-change-hint">
                 {{ dropped.vorname }} {{ dropped.nachname }} führt danach die
                 Nummer {{ kept.lizenznummer_display }} statt
-                {{ dropped.lizenznummer_display }}. Ein Konto heißt dann sr-{{
+                {{ dropped.lizenznummer_display }}. Ein mitwanderndes Konto mit
+                automatisch vergebenem Namen heißt dann sr-{{
                   kept.lizenznummer_display
-                }}, die Person bekommt dazu eine E-Mail.
+                }}; hat das behaltene Profil schon ein Konto, gilt dessen Login.
+                Ist eine E-Mail-Adresse hinterlegt, bekommt die Person dazu eine
+                Nachricht.
               </p>
             }
           </div>
