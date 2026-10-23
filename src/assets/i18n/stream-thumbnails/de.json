@@ -6,7 +6,7 @@
     "league": "Liga",
     "allLeagues": "Alle Ligen",
     "loading": "Lade…",
-    "failed": "Die Spiele der Saison konnten nicht geladen werden. Bitte lade die Seite neu.",
+    "failed": "Die Spiele der Saison konnten nicht geladen werden.",
     "empty": "In dieser Saison richtet dein Verein keinen Spieltag aus.",
     "summary": "{{gameDays}} Spieltage mit {{games}} Spielen, davon {{ended}} mit Endstand.",
     "livestream": "Livestream-Thumbnails ({{count}})",
@@ -14,7 +14,8 @@
     "busy": "Thumbnails werden erzeugt …",
     "livestreamHint": "Livestream-Thumbnails aller Spiele als ZIP, ein Ordner je Spieltag, 1280 × 720 Pixel",
     "highlightsHint": "Highlight-Thumbnails mit Endstand aller beendeten Spiele als ZIP, ein Ordner je Spieltag",
-    "noHighlights": "Highlight-Bilder gibt es, sobald ein Spiel beendet ist."
+    "noHighlights": "Highlight-Bilder gibt es, sobald ein Spiel beendet ist.",
+    "retry": "Erneut versuchen"
   },
   "page": {
     "title": "YouTube-Thumbnails",
@@ -36,6 +37,7 @@
     "highlightsHint": "Highlight-Thumbnail mit Endstand als PNG",
     "allLivestreamHint": "Livestream-Thumbnails aller Spiele dieses Spieltags als ZIP",
     "allHighlightsHint": "Highlight-Thumbnails aller beendeten Spiele als ZIP",
-    "highlightPending": "Highlight-Bild nach dem Schlusspfiff"
+    "highlightPending": "Highlight-Bild nach dem Schlusspfiff",
+    "tokenWarning": "Diesen Link nicht weitergeben: Er steuert auch die Overlays der Übertragung. Deshalb steht das Token nicht mehr in der Adresszeile; nach dem Neuladen öffnest du die Seite wieder über das Bedienfeld."
   }
 }

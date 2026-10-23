@@ -39,7 +39,13 @@ import {
 export class SeasonThumbnailsComponent implements OnInit, OnDestroy {
   public loading = true;
   public loadFailed = false;
+  /**
+   * Die zuletzt geladene Antwort. Bleibt bei einem Ladefehler stehen: Sie
+   * trägt die Saisonliste, und ohne sie verschwände nach einem gescheiterten
+   * Saisonwechsel die Auswahl, mit der man es noch einmal versuchen könnte.
+   */
   public payload: SeasonThumbnailPayload | null = null;
+  /** Die gewählte Saison, auch wenn ihr Abruf gerade gescheitert ist. */
   public seasonId: number | null = null;
   /** 0 heißt alle Ligen. */
   public leagueId = 0;
@@ -55,6 +61,8 @@ export class SeasonThumbnailsComponent implements OnInit, OnDestroy {
   public gameDayCount = 0;
 
   private _request?: Subscription;
+  /** Spieltage der zuletzt ERFOLGREICH geladenen Saison, leer nach einem Fehler. */
+  private _gameDays: SeasonThumbnailGameDay[] = [];
 
   constructor(
     private _gameService: GameService,
@@ -71,10 +79,17 @@ export class SeasonThumbnailsComponent implements OnInit, OnDestroy {
 
   public selectSeason(value: string | number): void {
     const id = Number(value);
-    if (!Number.isFinite(id) || id === this.seasonId) return;
+    if (!Number.isFinite(id) || (id === this.seasonId && !this.loadFailed)) {
+      return;
+    }
 
     this.leagueId = 0;
     this._load(id);
+  }
+
+  /** Nach einem Ladefehler dieselbe Saison noch einmal. */
+  public retry(): void {
+    this._load(this.seasonId);
   }
 
   public selectLeague(value: string | number): void {
@@ -101,8 +116,10 @@ export class SeasonThumbnailsComponent implements OnInit, OnDestroy {
 
   private _load(seasonId: number | null): void {
     this._request?.unsubscribe();
+    this.seasonId = seasonId;
     this.loading = true;
     this.loadFailed = false;
+    this._gameDays = [];
     this._cdr.markForCheck();
 
     this._request = this._gameService
@@ -111,14 +128,17 @@ export class SeasonThumbnailsComponent implements OnInit, OnDestroy {
         next: (payload) => {
           this.payload = payload;
           this.seasonId = payload.season_id;
+          this._gameDays = payload.game_days;
           this.leagues = this._leaguesOf(payload.game_days);
           this.loading = false;
           this._rebuild();
         },
         // Den Toast übernimmt der ErrorInterceptor; hier nur der Zustand, damit
-        // die Karte nicht „keine Spieltage" behauptet.
+        // die Karte nicht „keine Spieltage" behauptet. Die Saisonliste der
+        // letzten Antwort bleibt, geleert werden nur die Spieltage.
         error: () => {
-          this.payload = null;
+          this._gameDays = [];
+          this.leagues = [];
           this.loading = false;
           this.loadFailed = true;
           this._rebuild();
@@ -142,7 +162,7 @@ export class SeasonThumbnailsComponent implements OnInit, OnDestroy {
   }
 
   private _rebuild(): void {
-    const gameDays = (this.payload?.game_days ?? []).filter(
+    const gameDays = this._gameDays.filter(
       (gameDay) => !this.leagueId || gameDay.league_id === this.leagueId
     );
 

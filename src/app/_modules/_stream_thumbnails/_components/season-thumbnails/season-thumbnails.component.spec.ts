@@ -162,4 +162,56 @@ describe('SeasonThumbnailsComponent', () => {
       fixture.nativeElement.querySelector('[data-test="season-empty"]')
     ).toBeNull();
   });
+
+  // Nach einem gescheiterten Saisonwechsel muss die Auswahl stehen bleiben,
+  // sonst gibt es keinen Weg zurück außer dem Neuladen der Seite. Die
+  // Spieltage der vorigen Saison dürfen dagegen nicht als die neuen stehen.
+  it('behält nach einem Ladefehler die Saisonauswahl und lädt erneut', () => {
+    gameService.getSeasonThumbnailGameDays.and.returnValue(
+      throwError(() => new Error('weg'))
+    );
+    component.selectSeason(17);
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector(
+      '[data-test="season-select"]'
+    ) as HTMLSelectElement | null;
+    expect(select).not.toBeNull();
+    expect(select?.value).toBe('17');
+    expect(component.livestreamItems).toEqual([]);
+    expect(component.highlightItems).toEqual([]);
+
+    gameService.getSeasonThumbnailGameDays.and.returnValue(
+      of(payload({ season_id: 17 }))
+    );
+    (
+      fixture.nativeElement.querySelector(
+        '[data-test="season-retry"]'
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+
+    expect(gameService.getSeasonThumbnailGameDays).toHaveBeenCalledWith(17);
+    expect(component.livestreamItems.length).toBe(3);
+    expect(
+      fixture.nativeElement.querySelector('[data-test="season-failed"]')
+    ).toBeNull();
+  });
+
+  // Ohne den Riegel bei `loadFailed` ließe sich die gescheiterte Saison über
+  // die Auswahl nicht noch einmal wählen.
+  it('lädt dieselbe Saison erneut, wenn sie zuvor gescheitert war', () => {
+    gameService.getSeasonThumbnailGameDays.and.returnValue(
+      throwError(() => new Error('weg'))
+    );
+    component.selectSeason(17);
+    gameService.getSeasonThumbnailGameDays.calls.reset();
+    gameService.getSeasonThumbnailGameDays.and.returnValue(
+      of(payload({ season_id: 17 }))
+    );
+
+    component.selectSeason(17);
+
+    expect(gameService.getSeasonThumbnailGameDays).toHaveBeenCalledWith(17);
+  });
 });

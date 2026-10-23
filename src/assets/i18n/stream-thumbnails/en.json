@@ -6,7 +6,7 @@
     "league": "League",
     "allLeagues": "All leagues",
     "loading": "Loading…",
-    "failed": "The season's games could not be loaded. Please reload the page.",
+    "failed": "The season's games could not be loaded.",
     "empty": "Your club does not host a game day in this season.",
     "summary": "{{gameDays}} game days with {{games}} games, {{ended}} of them with a final score.",
     "livestream": "Livestream thumbnails ({{count}})",
@@ -14,7 +14,8 @@
     "busy": "Creating thumbnails …",
     "livestreamHint": "Livestream thumbnails of all games as a ZIP, one folder per game day, 1280 × 720 pixels",
     "highlightsHint": "Highlights thumbnails with the final score of all finished games as a ZIP, one folder per game day",
-    "noHighlights": "Highlights images become available once a game has ended."
+    "noHighlights": "Highlights images become available once a game has ended.",
+    "retry": "Try again"
   },
   "page": {
     "title": "YouTube thumbnails",
@@ -36,6 +37,7 @@
     "highlightsHint": "Highlights thumbnail with the final score as a PNG",
     "allLivestreamHint": "Livestream thumbnails of all games of this game day as a ZIP",
     "allHighlightsHint": "Highlights thumbnails of all finished games as a ZIP",
-    "highlightPending": "Highlights image after the final whistle"
+    "highlightPending": "Highlights image after the final whistle",
+    "tokenWarning": "Do not share this link: it also controls the broadcast overlays. The token has therefore been removed from the address bar; after reloading, open the page again from the control panel."
   }
 }

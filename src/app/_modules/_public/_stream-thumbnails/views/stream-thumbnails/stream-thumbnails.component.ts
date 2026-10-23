@@ -5,6 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
+import { Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Meta } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -73,6 +74,7 @@ export class StreamThumbnailsComponent implements OnInit, OnDestroy {
     private _route: ActivatedRoute,
     private _gameService: GameService,
     private _meta: Meta,
+    private _location: Location,
     private _cdr: ChangeDetectorRef
   ) {}
 
@@ -85,6 +87,13 @@ export class StreamThumbnailsComponent implements OnInit, OnDestroy {
       this.state = 'noToken';
       return;
     }
+
+    // Das Overlay-Token schreibt auch den Steuerzustand der Übertragung
+    // (`POST public/overlay/state`). In der Adresszeile landete es im Verlauf,
+    // in Lesezeichen und in jedem Bildschirmfoto; also nach dem Lesen heraus
+    // damit. Gebraucht wird es nur für den einen Abruf unten. Über `Location`
+    // statt `history`, damit es ohne Browser (Prerender) nichts anfasst.
+    this._location.replaceState(this._location.path().split('?')[0]);
 
     this._gameService
       .getOverlayGameDay(token)

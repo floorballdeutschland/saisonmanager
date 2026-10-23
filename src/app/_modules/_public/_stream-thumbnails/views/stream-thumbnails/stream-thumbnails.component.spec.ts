@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -16,6 +17,7 @@ describe('StreamThumbnailsComponent', () => {
   let component: StreamThumbnailsComponent;
   let gameService: jasmine.SpyObj<GameService>;
   let token: string | null;
+  let location: jasmine.SpyObj<Location>;
 
   const payload: OverlayGameDayPayload = {
     game_day: {
@@ -66,6 +68,7 @@ describe('StreamThumbnailsComponent', () => {
       declarations: [StreamThumbnailsComponent],
       providers: [
         { provide: GameService, useValue: gameService },
+        { provide: Location, useValue: location },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -86,6 +89,8 @@ describe('StreamThumbnailsComponent', () => {
     token = 'abc';
     gameService = jasmine.createSpyObj('GameService', ['getOverlayGameDay']);
     gameService.getOverlayGameDay.and.returnValue(of(payload));
+    location = jasmine.createSpyObj('Location', ['path', 'replaceState']);
+    location.path.and.returnValue('/livestream-thumbnails?token=abc');
   });
 
   function query(selector: string): HTMLElement | null {
@@ -127,6 +132,20 @@ describe('StreamThumbnailsComponent', () => {
     ).toBe(2);
   });
 
+  // Das Token schreibt auch den Steuerzustand der Overlays. Es soll nicht in
+  // Verlauf, Lesezeichen und Bildschirmfotos landen.
+  it('nimmt das Token nach dem Lesen aus der Adresszeile und warnt davor, den Link weiterzugeben', async () => {
+    await create();
+
+    expect(gameService.getOverlayGameDay).toHaveBeenCalledWith('abc');
+    expect(location.replaceState).toHaveBeenCalledWith(
+      '/livestream-thumbnails'
+    );
+    expect(query('[data-test="token-warning"]')?.textContent).toContain(
+      'nicht weitergeben'
+    );
+  });
+
   it('benennt die Archive nach Liga und Spieltag', async () => {
     await create();
 
@@ -140,6 +159,7 @@ describe('StreamThumbnailsComponent', () => {
     await create();
 
     expect(gameService.getOverlayGameDay).not.toHaveBeenCalled();
+    expect(location.replaceState).not.toHaveBeenCalled();
     expect(query('[data-test="state-no-token"]')).not.toBeNull();
   });
 

@@ -53,8 +53,19 @@
       {{ "streamThumbnails.season.loading" | transloco }}
     </div>
   } @else if (loadFailed) {
-    <div class="text-sm text-red-700" data-test="season-failed">
-      {{ "streamThumbnails.season.failed" | transloco }}
+    <div
+      class="text-sm text-red-700 flex flex-wrap items-center gap-2"
+      data-test="season-failed"
+    >
+      <span>{{ "streamThumbnails.season.failed" | transloco }}</span>
+      <button
+        type="button"
+        data-test="season-retry"
+        class="font-bold text-black text-sm px-3 py-1.5 border bg-white hover:bg-fb-gray-200 border-fb-gray-600 rounded-[5px]"
+        (click)="retry()"
+      >
+        {{ "streamThumbnails.season.retry" | transloco }}
+      </button>
     </div>
   } @else if (!livestreamItems.length) {
     <div class="text-fb-gray-500 text-sm" data-test="season-empty">
