@@ -25,6 +25,17 @@ const routes: Routes = [
     data: { permission: 'menu_item_referee_observations', scrollTop: true },
   },
   {
+    path: 'schiedsrichter/meine-beobachtungen/:observationId/bearbeiten',
+    pathMatch: 'full',
+    component: Views.ObservationFormComponent,
+    canActivate: [permissionGuard],
+    data: {
+      permission: 'menu_item_referee_observations',
+      scrollTop: true,
+      mode: 'edit',
+    },
+  },
+  {
     path: 'schiedsrichter/beobachtungen',
     pathMatch: 'full',
     component: Views.ObservationReceivedComponent,

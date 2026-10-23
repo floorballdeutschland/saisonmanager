@@ -30,6 +30,12 @@
     }
   </div>
 
+  @if (editedAt) {
+    <p class="text-xs text-fb-gray-500 -mt-2" data-testid="edited-note">
+      {{ "refereeObservation.detail.edited" | transloco: { date: editedAt } }}
+    </p>
+  }
+
   @if (observation.status === "hidden") {
     <p
       class="text-xs font-bold border border-fb-gray-600 rounded-[5px] p-2 bg-fb-gray-800"
@@ -64,7 +70,11 @@
             <td class="py-1 pr-4">
               {{ "refereeObservation.dimension." + dimension.key | transloco }}
             </td>
-            @for (rating of ratedReferees; track rating.referee_id; let i = $index) {
+            @for (
+              rating of ratedReferees;
+              track rating.referee_id;
+              let i = $index
+            ) {
               <td class="py-1 px-2 font-bold">
                 {{ ratingFor(i, dimension) ?? "–" }}
               </td>
@@ -97,9 +107,7 @@
       @if (comment(dimension); as text) {
         <div>
           <div class="text-xs font-bold">
-            {{
-              "refereeObservation.comment." + dimension.key | transloco
-            }}
+            {{ "refereeObservation.comment." + dimension.key | transloco }}
           </div>
           <p class="text-sm whitespace-pre-line">{{ text }}</p>
         </div>
@@ -110,7 +118,9 @@
         <div class="text-xs font-bold">
           {{ "refereeObservation.field.otherMatters" | transloco }}
         </div>
-        <p class="text-sm whitespace-pre-line">{{ observation.other_matters }}</p>
+        <p class="text-sm whitespace-pre-line">
+          {{ observation.other_matters }}
+        </p>
       </div>
     }
     @if (observation.final_comments) {
@@ -118,7 +128,9 @@
         <div class="text-xs font-bold">
           {{ "refereeObservation.field.finalComments" | transloco }}
         </div>
-        <p class="text-sm whitespace-pre-line">{{ observation.final_comments }}</p>
+        <p class="text-sm whitespace-pre-line">
+          {{ observation.final_comments }}
+        </p>
       </div>
     }
   </div>

@@ -5,9 +5,13 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NotificationService, RefereeObservationService } from '@floorball/core';
+import {
+  NotificationService,
+  RefereeObservationService,
+} from '@floorball/core';
 import { TranslocoService } from '@jsverse/transloco';
 import {
+  RefereeObservation,
   RefereeObservationAnswers,
   RefereeObservationCandidate,
 } from '@floorball/types';
@@ -16,6 +20,7 @@ import {
   OBSERVATION_RATING_SCALE,
   ObservationDimensionDefinition,
 } from '../../observation-dimensions';
+import { formatObservationTimestamp } from '../../observation-format';
 
 /**
  * Der Beobachtungsbogen selbst. Bildet das Microsoft-Formular ab: fünf
@@ -29,6 +34,12 @@ import {
  *
  * Bewertungen liegen nach Referee-PK im Hash, nicht nach Position im Array. Ein
  * vertauschter Index würde sonst die Bewertung der falschen Person speichern.
+ *
+ * Zweiter Modus (Route-Daten `mode: 'edit'`): Der Coach korrigiert seinen
+ * abgegebenen Bogen (feedback#74). Der Bogen kommt dann aus den eigenen Bögen,
+ * nicht aus der Spielauswahl: Die listet nur die letzten Monate und nur, solange
+ * die Qualifikation gilt, bearbeitet werden darf aber ohne Frist. Bewertet
+ * werden genau die Personen, die schon im Bogen stehen.
  */
 @Component({
   templateUrl: './observation-form.component.html',
@@ -43,6 +54,10 @@ export class ObservationFormComponent implements OnInit {
   legendOpen = false;
 
   candidate: RefereeObservationCandidate | null = null;
+  /** Im Bearbeitungsmodus die Id des Bogens, sonst null. */
+  editId: number | null = null;
+  /** Vermerk des bearbeiteten Bogens, falls er schon einmal geändert wurde. */
+  editedAt: string | null = null;
   loading = true;
   notAllowed = false;
   submitting = false;
@@ -66,7 +81,22 @@ export class ObservationFormComponent implements OnInit {
     private _cdr: ChangeDetectorRef
   ) {}
 
+  get editedAtLabel(): string {
+    return formatObservationTimestamp(this.editedAt);
+  }
+
+  get isEdit(): boolean {
+    return this.editId !== null;
+  }
+
   ngOnInit(): void {
+    if (this._route.snapshot.data?.['mode'] === 'edit') {
+      this._loadForEdit(
+        Number(this._route.snapshot.paramMap.get('observationId'))
+      );
+      return;
+    }
+
     const gameId = Number(this._route.snapshot.paramMap.get('gameId'));
 
     // Die Spielauswahl ist zugleich die Berechtigungsprüfung: Was die API hier
@@ -78,7 +108,9 @@ export class ObservationFormComponent implements OnInit {
           this.notAllowed = true;
         } else {
           this.candidate = match;
-          match.referees.forEach((r) => (this.refereeRatings[r.referee_id] = {}));
+          match.referees.forEach(
+            (r) => (this.refereeRatings[r.referee_id] = {})
+          );
         }
         this.loading = false;
         this._cdr.markForCheck();
@@ -91,6 +123,82 @@ export class ObservationFormComponent implements OnInit {
     });
   }
 
+  /**
+   * Nur die eigenen Bögen: Was die API dort nicht liefert, hat diese Person
+   * nicht abgegeben und darf sie nicht bearbeiten.
+   */
+  private _loadForEdit(observationId: number): void {
+    this.editId = observationId;
+    this._service.getMyObservations().subscribe({
+      next: (observations) => {
+        const observation = observations.find((o) => o.id === observationId);
+        if (!observation || !observation.ratings?.length) {
+          this.notAllowed = true;
+        } else {
+          this._prefill(observation);
+        }
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.notAllowed = true;
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+    });
+  }
+
+  /** Belegt das Formular mit dem abgegebenen Bogen vor. */
+  private _prefill(observation: RefereeObservation): void {
+    const ratings = [...observation.ratings].sort(
+      (a, b) => (a.position ?? 0) - (b.position ?? 0)
+    );
+    this.editedAt = observation.edited_at ?? null;
+    this.candidate = {
+      game_id: observation.game_id,
+      game_number: observation.game_number,
+      date: observation.date,
+      start_time: null,
+      home_team: observation.home_team,
+      guest_team: observation.guest_team,
+      league: observation.league,
+      league_id: observation.league_id,
+      league_level: null,
+      game_operation_slug: observation.game_operation_slug,
+      assigned_as_coach: observation.assigned_as_coach,
+      referees: ratings.map((rating, index) => ({
+        referee_id: rating.referee_id,
+        name:
+          rating.referee_name ||
+          this._transloco.translate('refereeObservation.detail.refereeSlot', {
+            position: rating.position ?? index + 1,
+          }),
+        position: rating.position ?? index + 1,
+      })),
+      done: true,
+      observation_id: observation.id,
+    };
+
+    this.matchDescription = observation.match_description ?? '';
+    this.otherMatters = observation.other_matters ?? '';
+    this.finalComments = observation.final_comments ?? '';
+    this.dimensions.forEach((dimension) => {
+      const pair = observation[dimension.pairKey];
+      if (pair != null) this.pairRatings[dimension.key] = pair;
+      if (dimension.commentKey) {
+        this.comments[dimension.key] = observation[dimension.commentKey] ?? '';
+      }
+    });
+    ratings.forEach((rating) => {
+      const values: Record<string, number> = {};
+      this.dimensions.forEach((dimension) => {
+        const value = rating[dimension.ratingKey];
+        if (value != null) values[dimension.key] = value;
+      });
+      this.refereeRatings[rating.referee_id] = values;
+    });
+  }
+
   setRefereeRating(
     refereeId: number,
     dimension: ObservationDimensionDefinition,
@@ -99,7 +207,10 @@ export class ObservationFormComponent implements OnInit {
     this.refereeRatings[refereeId][dimension.key] = value;
   }
 
-  setPairRating(dimension: ObservationDimensionDefinition, value: number): void {
+  setPairRating(
+    dimension: ObservationDimensionDefinition,
+    value: number
+  ): void {
     this.pairRatings[dimension.key] = value;
   }
 
@@ -112,7 +223,8 @@ export class ObservationFormComponent implements OnInit {
         this.pairRatings[dimension.key] !== undefined &&
         this.candidate!.referees.every(
           (referee) =>
-            this.refereeRatings[referee.referee_id]?.[dimension.key] !== undefined
+            this.refereeRatings[referee.referee_id]?.[dimension.key] !==
+            undefined
         )
     );
     if (!everyDimensionRated) return false;
@@ -133,10 +245,19 @@ export class ObservationFormComponent implements OnInit {
     if (!this.candidate || !this.canSubmit() || this.submitting) return;
 
     this.submitting = true;
-    this._service.submit(this._answers(this.candidate)).subscribe({
+    const answers = this._answers(this.candidate);
+    const request =
+      this.editId !== null
+        ? this._service.update(this.editId, answers)
+        : this._service.submit(answers);
+    request.subscribe({
       next: () => {
         this._notification.success(
-          this._transloco.translate('refereeObservation.form.saved'),
+          this._transloco.translate(
+            this.isEdit
+              ? 'refereeObservation.form.updated'
+              : 'refereeObservation.form.saved'
+          ),
           { autoClose: true, keepAfterRouteChange: true }
         );
         this._router.navigate(['/schiedsrichter/meine-beobachtungen']);

@@ -1,13 +1,23 @@
 <div class="p-4 max-w-3xl">
   <h1 class="text-xl font-bold mb-1">
-    {{ "refereeObservation.form.title" | transloco }}
+    {{
+      (isEdit
+        ? "refereeObservation.form.editTitle"
+        : "refereeObservation.form.title"
+      ) | transloco
+    }}
   </h1>
 
   @if (loading) {
     <p class="text-sm">{{ "refereeObservation.loading" | transloco }}</p>
   } @else if (notAllowed || !candidate) {
     <p class="text-sm mb-4">
-      {{ "refereeObservation.form.notAllowed" | transloco }}
+      {{
+        (isEdit
+          ? "refereeObservation.form.editNotAllowed"
+          : "refereeObservation.form.notAllowed"
+        ) | transloco
+      }}
     </p>
     <fb-button size="small" routerLink="/schiedsrichter/meine-beobachtungen">
       {{ "refereeObservation.form.back" | transloco }}
@@ -42,6 +52,15 @@
         }
       </div>
     </div>
+
+    @if (editedAtLabel) {
+      <p class="text-xs text-fb-gray-500 -mt-2 mb-4" data-testid="edited-note">
+        {{
+          "refereeObservation.detail.edited"
+            | transloco: { date: editedAtLabel }
+        }}
+      </p>
+    }
 
     @if (candidate.unrated_referee_names?.length) {
       <p
@@ -194,8 +213,13 @@
       ></textarea>
     </div>
 
-    <p class="text-xs text-fb-gray-500 mb-3">
-      {{ "refereeObservation.form.visibilityHint" | transloco }}
+    <p class="text-xs text-fb-gray-500 mb-3" data-testid="visibility-hint">
+      {{
+        (isEdit
+          ? "refereeObservation.form.editHint"
+          : "refereeObservation.form.visibilityHint"
+        ) | transloco
+      }}
     </p>
 
     <div class="flex items-center gap-2">
@@ -208,7 +232,9 @@
         {{
           (submitting
             ? "refereeObservation.form.submitting"
-            : "refereeObservation.form.submit"
+            : isEdit
+              ? "refereeObservation.form.saveChanges"
+              : "refereeObservation.form.submit"
           ) | transloco
         }}
       </fb-button>
