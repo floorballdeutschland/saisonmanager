@@ -545,4 +545,112 @@ describe('MatchDetailedStatsComponent', () => {
     http.expectNone(statsUrl(1));
     http.expectNone(highlightsUrl(1));
   });
+
+  describe('Strafschüsse, Torwartsituation, Paraden ohne Position (Feedback #61 bis #64)', () => {
+    const empty = { shots: 0, on_goal: 0, goals: 0, blocked: 0, missed: 0 };
+
+    function special(): DetailedStats {
+      const base = stats();
+      return stats({
+        shots: [
+          { ...base.shots[0], from_penalty_shot: true },
+          { ...base.shots[1], x: null, y: null },
+          { ...base.shots[2], empty_net: true, result: 'goal' },
+        ],
+        teams: {
+          home: {
+            ...base.teams.home,
+            penalty_shots: 1,
+            goals_from_penalty_shot: 1,
+            goals_empty_net: 0,
+            goals_extra_attacker: 0,
+          },
+          guest: {
+            ...base.teams.guest,
+            goals_empty_net: 1,
+            by_period: {
+              '2': { ...empty, shots: 1, goals: 1, goals_empty_net: 1 },
+            },
+          },
+        },
+        goalkeepers: [
+          {
+            ...base.goalkeepers[0],
+            by_period: {
+              '1': { saves: 0, shots_against: 1, save_pct: 0 },
+              '2': { saves: 1, shots_against: 1, save_pct: 1 },
+            },
+          },
+        ],
+      });
+    }
+
+    it('lässt Paraden ohne Position aus der Grafik, nennt sie aber darunter', () => {
+      load(special());
+
+      expect(
+        el().querySelectorAll('[data-test="chart-home"] circle[data-result]')
+          .length
+      ).toBe(1);
+      expect(
+        el().querySelector('[data-test="unplaced-home"]')?.textContent
+      ).toContain('1 Parade(n) ohne Position');
+      expect(el().querySelector('[data-test="unplaced-guest"]')).toBeNull();
+    });
+
+    it('kennzeichnet Strafschüsse in der Grafik und in der Legende', () => {
+      load(special());
+
+      expect(
+        el().querySelectorAll(
+          '[data-test="chart-home"] circle[data-penalty-shot]'
+        ).length
+      ).toBe(1);
+      expect(el().querySelector('[data-test="legend-penalty"]')).toBeTruthy();
+      const title =
+        el().querySelector('[data-test="chart-home"] circle[data-result] title')
+          ?.textContent ?? '';
+      expect(title).toContain('(Strafschuss)');
+    });
+
+    it('zählt Strafschüsse und Tore ins leere Tor je Team und Abschnitt', () => {
+      load(special());
+
+      const home = el().querySelectorAll(
+        '[data-test="situation-table-home"] tbody tr'
+      );
+      expect(home[0].textContent?.replace(/\s+/g, ' ')).toContain(
+        'Gesamt 1 1 0 0'
+      );
+      const guest = el().querySelectorAll(
+        '[data-test="situation-table-guest"] tbody tr'
+      );
+      expect(guest[0].textContent?.replace(/\s+/g, ' ')).toContain(
+        'Gesamt 0 0 1 0'
+      );
+    });
+
+    it('fehlt ohne Strafschüsse und ohne Tore bei herausgenommenem Torhüter', () => {
+      load(stats());
+      expect(el().querySelector('[data-test="special-situations"]')).toBeNull();
+      expect(el().querySelector('[data-test="legend-penalty"]')).toBeNull();
+    });
+
+    it('zeigt die Paraden des Torhüters je Abschnitt', () => {
+      load(special());
+
+      const cells = Array.from(
+        el().querySelectorAll('[data-test="goalkeeper-period"]')
+      ).map((cell) => cell.textContent?.trim());
+      expect(cells).toEqual(['0/1', '1/1']);
+      expect(
+        el().querySelectorAll('[data-test="goalkeeper-period-head"]').length
+      ).toBe(2);
+    });
+
+    it('zeigt ohne Aufteilung der API keine Abschnittsspalten beim Torhüter', () => {
+      load(stats());
+      expect(el().querySelector('[data-test="goalkeeper-period"]')).toBeNull();
+    });
+  });
 });

@@ -103,6 +103,15 @@
             {{ "match.detailedStats.result." + result | transloco }}
           </li>
         }
+        @if (hasPenaltyShots) {
+          <li class="flex items-center gap-1.5" data-test="legend-penalty">
+            <span
+              class="inline-block w-3.5 h-3.5 rounded-full border-2 border-gray-900"
+              aria-hidden="true"
+            ></span>
+            {{ "match.detailedStats.situation.penaltyShot" | transloco }}
+          </li>
+        }
       </ul>
       @if (linkedShots.size) {
         <p class="text-xs text-fb-gray-500 -mt-2 mb-4" data-test="jump-hint">
@@ -133,6 +142,17 @@
                 {{ countFor(team, result) }}{{ last ? "" : " · " }}
               }
             </p>
+            @if (unplacedCountFor(team)) {
+              <p
+                class="text-xs text-fb-gray-500"
+                [attr.data-test]="'unplaced-' + team"
+              >
+                {{
+                  "match.detailedStats.chart.unplaced"
+                    | transloco: { count: unplacedCountFor(team) }
+                }}
+              </p>
+            }
           </div>
         }
       </div>
@@ -216,6 +236,99 @@
         }
       </div>
     </section>
+
+    <!-- Strafschüsse und Tore bei herausgenommenem Torhüter (Feedback #61, #63, #64) -->
+    @if (hasSpecialSituations) {
+      <section class="mb-10" data-test="special-situations">
+        <h3 class="font-bold text-lg lg:text-xl mb-3">
+          {{ "match.detailedStats.situation.title" | transloco }}
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          @for (team of teams; track team) {
+            <div class="min-w-0">
+              <h4
+                class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
+              >
+                {{ teamName(team) }}
+              </h4>
+              <div class="overflow-x-auto">
+                <table
+                  class="w-full text-sm"
+                  [attr.data-test]="'situation-table-' + team"
+                >
+                  <thead>
+                    <tr class="border-b border-fb-gray-200">
+                      <th class="text-left font-bold py-2 pr-3">
+                        {{ "match.detailedStats.shots.period" | transloco }}
+                      </th>
+                      <th class="text-right font-bold py-2 px-2">
+                        {{
+                          "match.detailedStats.situation.penaltyShots"
+                            | transloco
+                        }}
+                      </th>
+                      <th class="text-right font-bold py-2 px-2">
+                        {{
+                          "match.detailedStats.situation.penaltyGoals"
+                            | transloco
+                        }}
+                      </th>
+                      <th class="text-right font-bold py-2 px-2">
+                        {{
+                          "match.detailedStats.situation.emptyNetGoals"
+                            | transloco
+                        }}
+                      </th>
+                      <th class="text-right font-bold py-2 pl-2">
+                        {{
+                          "match.detailedStats.situation.extraAttackerGoals"
+                            | transloco
+                        }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of rowsFor(team); track row.period) {
+                      <tr
+                        class="border-b border-fb-gray-200"
+                        [class.font-bold]="row.period === null"
+                      >
+                        <td class="py-2 pr-3 whitespace-nowrap">
+                          @if (row.period === null) {
+                            {{ "match.detailedStats.shots.total" | transloco }}
+                          } @else {
+                            {{
+                              periodTitle(row.period) ??
+                                ("match.detailedStats.periodN"
+                                  | transloco: { n: row.period })
+                            }}
+                          }
+                        </td>
+                        <td class="text-right tabular-nums py-2 px-2">
+                          {{ row.stats.penalty_shots ?? 0 }}
+                        </td>
+                        <td class="text-right tabular-nums py-2 px-2">
+                          {{ row.stats.goals_from_penalty_shot ?? 0 }}
+                        </td>
+                        <td class="text-right tabular-nums py-2 px-2">
+                          {{ row.stats.goals_empty_net ?? 0 }}
+                        </td>
+                        <td class="text-right tabular-nums py-2 pl-2">
+                          {{ row.stats.goals_extra_attacker ?? 0 }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+        <p class="text-xs text-fb-gray-500 mt-2">
+          {{ "match.detailedStats.situation.hint" | transloco }}
+        </p>
+      </section>
+    }
 
     <!-- Freischläge (fe#589), nur Statistik -->
     @if (hasFreeHits) {
@@ -323,6 +436,11 @@
         <h3 class="font-bold text-lg lg:text-xl mb-3">
           {{ "match.detailedStats.goalkeepers.title" | transloco }}
         </h3>
+        @if (hasGoalkeeperPeriods) {
+          <p class="text-xs text-fb-gray-500 -mt-1 mb-3">
+            {{ "match.detailedStats.goalkeepers.periodHint" | transloco }}
+          </p>
+        }
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           @for (team of teams; track team) {
             @if (goalkeepersFor(team).length) {
@@ -340,6 +458,21 @@
                         <th class="text-left font-bold py-2 pr-3">
                           {{ "match.detailedStats.name" | transloco }}
                         </th>
+                        <!-- Paraden je Abschnitt (Feedback #62) -->
+                        @if (hasGoalkeeperPeriods) {
+                          @for (period of periods; track period) {
+                            <th
+                              class="text-right font-bold py-2 px-2 whitespace-nowrap"
+                              data-test="goalkeeper-period-head"
+                            >
+                              {{
+                                periodTitle(period) ??
+                                  ("match.detailedStats.periodN"
+                                    | transloco: { n: period })
+                              }}
+                            </th>
+                          }
+                        }
                         <th class="text-right font-bold py-2 px-2">
                           {{
                             "match.detailedStats.goalkeepers.saves" | transloco
@@ -366,6 +499,20 @@
                             {{ gk.trikot_number ?? "" }}
                           </td>
                           <td class="py-2 pr-3">{{ gk.name }}</td>
+                          @if (hasGoalkeeperPeriods) {
+                            @for (period of periods; track period) {
+                              <td
+                                class="text-right tabular-nums py-2 px-2 whitespace-nowrap"
+                                data-test="goalkeeper-period"
+                              >
+                                @if (goalkeeperPeriod(gk, period); as p) {
+                                  {{ p.saves }}/{{ p.shots_against }}
+                                } @else {
+                                  –
+                                }
+                              </td>
+                            }
+                          }
                           <td class="text-right tabular-nums py-2 px-2">
                             {{ gk.saves }}
                           </td>

@@ -42,7 +42,8 @@
     "chart": {
       "title": "Shot map",
       "direction": "Direction of attack",
-      "ariaLabel": "Shot map {{ team }}: {{ count }} shots"
+      "ariaLabel": "Shot map {{ team }}: {{ count }} shots",
+      "unplaced": "Includes {{ count }} save(s) without position, not shown in the chart."
     },
     "shots": {
       "title": "Shots per period",
@@ -58,7 +59,8 @@
       "title": "Goalkeepers",
       "saves": "Saves",
       "shotsAgainst": "Shots on goal",
-      "savePct": "Save %"
+      "savePct": "Save %",
+      "periodHint": "Per period: saves / shots on goal."
     },
     "players": {
       "title": "Shots per player"
@@ -74,6 +76,18 @@
         "opponent_half": "Opponent half",
         "near_goal_area": "Near goal area"
       }
+    },
+    "situation": {
+      "title": "Penalty shots and goalie situation",
+      "penaltyShots": "Penalty shots",
+      "penaltyGoals": "of which goals",
+      "emptyNetGoals": "Empty-net goals",
+      "extraAttackerGoals": "6-on-5 goals",
+      "hint": "Empty-net goals: the opponent played without a goalie. 6-on-5 goals: the team played without its own goalie. Shots on an empty net count for no goalie.",
+      "penaltyShot": "penalty shot",
+      "fromFreeHit": "from free hit",
+      "emptyNet": "empty net",
+      "extraAttacker": "6 on 5"
     }
   },
   "highlights": {

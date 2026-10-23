@@ -6,6 +6,7 @@ import {
   OnChanges,
   Output,
 } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   DetailedStatsShot,
   PeriodTitles,
@@ -18,7 +19,11 @@ import {
   fieldGeometry,
   fieldMarkings,
 } from 'src/app/_helpers/_utils/field-geometry';
-import { FieldPoint, toFieldPoint } from '../../_utils/detailed-stats';
+import {
+  FieldPoint,
+  isPlacedShot,
+  toFieldPoint,
+} from '../../_utils/detailed-stats';
 import { personLabel } from '../../_utils/highlights';
 
 interface PlottedShot extends FieldPoint {
@@ -60,6 +65,9 @@ export class ShotChartComponent implements OnChanges {
   @Output() goalSelected = new EventEmitter<DetailedStatsShot>();
 
   readonly colors = SHOT_COLORS;
+
+  constructor(private _transloco: TranslocoService) {}
+
   field: FieldGeometry = fieldGeometry(null);
   markings: FieldMarkings = fieldMarkings(this.field);
   plotted: PlottedShot[] = [];
@@ -67,8 +75,10 @@ export class ShotChartComponent implements OnChanges {
   ngOnChanges(): void {
     this.field = fieldGeometry(this.fieldSize);
     this.markings = fieldMarkings(this.field);
-    // Tore zuletzt, damit sie über den übrigen Punkten liegen.
-    this.plotted = [...this.shots]
+    // Tore zuletzt, damit sie über den übrigen Punkten liegen. Paraden ohne
+    // Feldposition (Schnellzähler) haben hier keinen Platz.
+    this.plotted = this.shots
+      .filter(isPlacedShot)
       .sort((a, b) => Number(a.result === 'goal') - Number(b.result === 'goal'))
       .map((shot) => ({
         shot,
@@ -110,6 +120,26 @@ export class ShotChartComponent implements OnChanges {
 
   shooterLabel(shot: DetailedStatsShot): string {
     return personLabel(shot.shooter);
+  }
+
+  /**
+   * Kennungen eines Schusses für den Titel, z. B. „(Strafschuss)“. Im
+   * SVG-`<title>` gibt es nur Text, keine Blöcke, deshalb hier übersetzt.
+   */
+  situationLabel(shot: DetailedStatsShot): string {
+    const keys: string[] = [];
+    if (shot.from_penalty_shot) keys.push('penaltyShot');
+    if (shot.from_free_hit) keys.push('fromFreeHit');
+    if (shot.empty_net) keys.push('emptyNet');
+    if (shot.extra_attacker) keys.push('extraAttacker');
+    return keys
+      .map(
+        (key) =>
+          '(' +
+          this._transloco.translate('match.detailedStats.situation.' + key) +
+          ')'
+      )
+      .join(' ');
   }
 
   select(point: PlottedShot): void {

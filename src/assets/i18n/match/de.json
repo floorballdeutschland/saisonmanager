@@ -42,7 +42,8 @@
     "chart": {
       "title": "Schussgrafik",
       "direction": "Angriffsrichtung",
-      "ariaLabel": "Schussgrafik {{ team }}: {{ count }} Schüsse"
+      "ariaLabel": "Schussgrafik {{ team }}: {{ count }} Schüsse",
+      "unplaced": "Davon {{ count }} Parade(n) ohne Position, nicht in der Grafik."
     },
     "shots": {
       "title": "Schüsse je Abschnitt",
@@ -58,7 +59,8 @@
       "title": "Torhüter",
       "saves": "Paraden",
       "shotsAgainst": "Schüsse aufs Tor",
-      "savePct": "Fangquote"
+      "savePct": "Fangquote",
+      "periodHint": "Je Abschnitt: Paraden / Schüsse aufs Tor."
     },
     "players": {
       "title": "Schüsse je Spieler"
@@ -74,6 +76,18 @@
         "opponent_half": "Gegnerische Hälfte",
         "near_goal_area": "Nähe Torraum"
       }
+    },
+    "situation": {
+      "title": "Strafschüsse und Torwartsituation",
+      "penaltyShots": "Strafschüsse",
+      "penaltyGoals": "davon Tore",
+      "emptyNetGoals": "Tore ins leere Tor",
+      "extraAttackerGoals": "Tore 6 gegen 5",
+      "hint": "Tore ins leere Tor: Der Gegner spielte ohne Torhüter. Tore 6 gegen 5: Das Team spielte ohne eigenen Torhüter. Schüsse aufs leere Tor zählen bei keinem Torhüter.",
+      "penaltyShot": "Strafschuss",
+      "fromFreeHit": "aus Freischlag",
+      "emptyNet": "leeres Tor",
+      "extraAttacker": "6 gegen 5"
     }
   },
   "highlights": {

@@ -123,5 +123,23 @@
     "sending": "Requesting…",
     "sent": "Requested. The link arrives by e-mail once the recording is published.",
     "error": "The link could not be requested. Are you missing the permission for this game?"
+  },
+  "save": {
+    "button": "Save {{ team }}",
+    "saved": "Save {{ team }} counted (no position).",
+    "label": "Save without position",
+    "undo": "Undo",
+    "ok": "OK"
+  },
+  "goaliePulled": {
+    "button": "Goalie pulled: {{ team }}",
+    "active": "{{ team }} without goalie (undo)"
+  },
+  "situation": {
+    "penaltyShot": "Penalty shot",
+    "penaltyShotShort": "penalty shot",
+    "extraAttacker": "6 on 5",
+    "extraAttackerShort": "6 on 5",
+    "emptyNetShort": "empty net"
   }
 }

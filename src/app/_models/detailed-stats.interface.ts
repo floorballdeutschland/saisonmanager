@@ -22,14 +22,22 @@ export interface DetailedStatsShot {
   team: ShotTeam;
   period: number;
   game_time: string;
-  x: number;
-  y: number;
+  /**
+   * `null` bei einer Parade ohne Feldposition (Schnellzähler, Feedback #62):
+   * zählt in Summen und beim Torhüter, aber in keiner Schussgrafik.
+   */
+  x: number | null;
+  y: number | null;
   result: ShotResult;
   shooter: PersonRef | null;
   /** Verknüpftes offizielles Tor (id in games.events), `null` ohne Verknüpfung. */
   event_id: number | null;
   /** Schuss aus einem Freischlag heraus (fe#589). */
   from_free_hit?: boolean;
+  /** Seit Feedback #61, #63, #64; ältere API-Stände liefern die Felder nicht. */
+  from_penalty_shot?: boolean;
+  empty_net?: boolean;
+  extra_attacker?: boolean;
 }
 
 /**
@@ -55,6 +63,11 @@ export interface TeamShotStats {
   free_hits?: number;
   shots_from_free_hit?: number;
   goals_from_free_hit?: number;
+  /** Seit Feedback #61, #63, #64; ältere API-Stände liefern sie nicht. */
+  penalty_shots?: number;
+  goals_from_penalty_shot?: number;
+  goals_empty_net?: number;
+  goals_extra_attacker?: number;
 }
 
 export interface TeamDetailedStats extends TeamShotStats {
@@ -62,13 +75,18 @@ export interface TeamDetailedStats extends TeamShotStats {
   by_period: Record<string, TeamShotStats>;
 }
 
-export interface GoalkeeperStats {
-  team: ShotTeam;
-  trikot_number: number | null;
-  name: string;
+export interface GoalkeeperSaveStats {
   saves: number;
   shots_against: number;
   save_pct: number | null;
+}
+
+export interface GoalkeeperStats extends GoalkeeperSaveStats {
+  team: ShotTeam;
+  trikot_number: number | null;
+  name: string;
+  /** Je Abschnitt (Schlüssel als Zeichenkette), seit Feedback #62, ältere API-Stände ohne. */
+  by_period?: Record<string, GoalkeeperSaveStats>;
 }
 
 export interface PlayerShotStats {

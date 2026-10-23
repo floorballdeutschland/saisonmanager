@@ -10,6 +10,9 @@ import {
   filterShots,
   freeHitZone,
   freeHitZoneCounts,
+  goalkeeperPeriodStats,
+  hasSpecialSituations,
+  isPlacedShot,
   periodsOf,
   savePercentage,
   sortPlayers,
@@ -20,7 +23,11 @@ import { FIELD_GEOMETRY } from 'src/app/_helpers/_utils/field-geometry';
 
 const RINK = FIELD_GEOMETRY.GF;
 
-function shot(overrides: Partial<DetailedStatsShot> = {}): DetailedStatsShot {
+type PlacedShot = DetailedStatsShot & { x: number; y: number };
+
+function shot(
+  overrides: Partial<DetailedStatsShot> & { x?: number; y?: number } = {}
+): PlacedShot {
   return {
     team: 'home',
     period: 1,
@@ -268,5 +275,46 @@ describe('Freischläge (fe#589)', () => {
   it('nimmt Abschnitte mit nur Freischlägen in die Abschnittsliste auf', () => {
     const data = stats({ free_hits: [freeHit({ period: 4 })] });
     expect(periodsOf(data)).toContain(4);
+  });
+
+  describe('Feedback #61 bis #64', () => {
+    it('isPlacedShot erkennt Paraden ohne Position', () => {
+      expect(isPlacedShot(shot())).toBeTrue();
+      expect(isPlacedShot({ ...shot(), x: null, y: null })).toBeFalse();
+      expect(isPlacedShot({ ...shot(), y: null })).toBeFalse();
+    });
+
+    it('goalkeeperPeriodStats liest die Aufteilung je Abschnitt, ältere Antworten ohne', () => {
+      const gk: GoalkeeperStats = {
+        team: 'guest',
+        trikot_number: 1,
+        name: 'G',
+        saves: 3,
+        shots_against: 4,
+        save_pct: 0.75,
+        by_period: { '2': { saves: 3, shots_against: 4, save_pct: 0.75 } },
+      };
+      expect(goalkeeperPeriodStats(gk, 2)?.saves).toBe(3);
+      expect(goalkeeperPeriodStats(gk, 1)).toBeNull();
+      expect(
+        goalkeeperPeriodStats({ ...gk, by_period: undefined }, 2)
+      ).toBeNull();
+    });
+
+    it('hasSpecialSituations nur bei Strafschüssen oder Toren ohne Torhüter', () => {
+      expect(hasSpecialSituations(stats())).toBeFalse();
+      const withPenalty = stats();
+      withPenalty.teams.guest = {
+        ...withPenalty.teams.guest,
+        penalty_shots: 1,
+      };
+      expect(hasSpecialSituations(withPenalty)).toBeTrue();
+      const withEmptyNet = stats();
+      withEmptyNet.teams.home = {
+        ...withEmptyNet.teams.home,
+        goals_extra_attacker: 1,
+      };
+      expect(hasSpecialSituations(withEmptyNet)).toBeTrue();
+    });
   });
 });

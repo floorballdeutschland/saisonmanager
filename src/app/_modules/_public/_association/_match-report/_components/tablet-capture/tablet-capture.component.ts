@@ -33,16 +33,20 @@ import { TabletShotSyncService } from './tablet-shot-sync.service';
 import {
   ClockSample,
   GoalLinkCandidate,
+  PulledGoalies,
   SideConfig,
   attacksRight,
   bestClockOffset,
+  consistentShotFlags,
   defaultGoalkeeperId,
   followsFreeHit,
   fromAttackDirection,
   goalLinkCandidates,
+  goaliePulled,
   isFreeHit,
   isMark,
   isPlaced,
+  isUnplacedSave,
   leftToRightTeam,
   mergeShots,
   newClientUuid,
@@ -50,6 +54,7 @@ import {
   otherTeam,
   playablePeriods,
   shootingTeamForTap,
+  situationFor,
   toAttackDirection,
   toServerTime,
 } from './tablet-capture.logic';
@@ -78,6 +83,12 @@ export interface ShotDraft {
   from_free_hit: boolean;
   // Schalter „aus Freischlag“ von Hand gesetzt: dann nicht mehr vorbelegen.
   fromFreeHitTouched: boolean;
+  // Strafschuss und Torwartsituation (Feedback #61, #63, #64). Die
+  // Torwartsituation kommt aus den Schaltern „Torwart raus“ und lässt sich je
+  // Schuss umstellen.
+  from_penalty_shot: boolean;
+  empty_net: boolean;
+  extra_attacker: boolean;
   isEdit: boolean;
 }
 
@@ -94,6 +105,7 @@ export type DisplayedShot = ReturnType<typeof mergeShots>[number];
 
 const CLOCK_OFFSET_KEY = 'tablet_clock_offset';
 const SIDES_KEY_PREFIX = 'tablet_sides_';
+const PULLED_KEY_PREFIX = 'tablet_pulled_goalie_';
 const RETRY_INTERVAL_MS = 15000;
 const CLOCK_SAMPLES = 3;
 const CLOCK_TIMEOUT_MS = 5000;
@@ -175,6 +187,14 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   // Zuletzt vorgemerkte Szene (api#838), für den Hinweis mit „Rückgängig“.
   public lastMark: string | null = null;
+
+  // Zuletzt per Schnellzähler erfasste Parade (Feedback #62): client_uuid und
+  // das Team des haltenden Torhüters, für den Hinweis mit „Rückgängig“.
+  public lastSave: { client_uuid: string; goalkeeperTeam: ShotTeam } | null =
+    null;
+
+  // „Torwart raus“ je Team (Feedback #63, #64), gemerkt je Gerät und Spiel.
+  public pulledGoalies: PulledGoalies = {};
 
   public clockOffset: number | null = null;
   public clockStatus: 'measuring' | 'ok' | 'stale' | 'unknown' = 'measuring';
@@ -272,9 +292,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.freeHitArmed = null;
     this.lastFreeHit = null;
     this.lastMark = null;
+    this.lastSave = null;
     this.linkError = false;
     this._goalkeeperChoice = {};
     this.sides = this._loadSides(gameId);
+    this.pulledGoalies = this._loadPulledGoalies(gameId);
     this.gamePeriod = this._periodFromGame();
     this.viewPeriod = this.gamePeriod;
     this.periodChangePending = false;
@@ -422,6 +444,48 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  // --- Torwart raus (Feedback #63, #64) ---------------------------------------
+
+  /** Spielt das Team im angezeigten Abschnitt ohne Torhüter? */
+  public isGoaliePulled(team: ShotTeam): boolean {
+    return goaliePulled(this.pulledGoalies, team, this.viewPeriod);
+  }
+
+  /**
+   * Schalter „Torwart raus“: gilt bis zum Zurücknehmen, längstens bis zum
+   * Ende des Abschnitts. Ein offener Entwurf bleibt unberührt; er wurde in der
+   * Lage davor angetippt.
+   */
+  public toggleGoaliePulled(team: ShotTeam): void {
+    if (this._gameId === null) return;
+    const pulled = { ...this.pulledGoalies };
+    if (this.isGoaliePulled(team)) {
+      delete pulled[team];
+    } else {
+      pulled[team] = this.viewPeriod;
+    }
+    this.pulledGoalies = pulled;
+    this._storage.setItem(
+      PULLED_KEY_PREFIX + this._gameId,
+      JSON.stringify(pulled)
+    );
+  }
+
+  private _loadPulledGoalies(gameId: number): PulledGoalies {
+    try {
+      const parsed = JSON.parse(
+        this._storage.getItem(PULLED_KEY_PREFIX + gameId) || '{}'
+      );
+      const pulled: PulledGoalies = {};
+      for (const team of ['home', 'guest'] as ShotTeam[]) {
+        if (Number.isInteger(parsed?.[team])) pulled[team] = parsed[team];
+      }
+      return pulled;
+    } catch {
+      return {};
+    }
+  }
+
   // --- Erfassen ----------------------------------------------------------------
 
   /**
@@ -497,6 +561,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
     const team = shootingTeamForTap(screenX, this.viewPeriod, this.sides);
     const tappedAt = toServerTime(deviceNow, this.clockOffset ?? 0);
+    const situation = situationFor(this.pulledGoalies, team, this.viewPeriod);
     this.gameTimeInvalid = false;
     this.lastFreeHit = null;
     this.draft = {
@@ -511,9 +576,13 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       game_time: '',
       result: null,
       shooter_player_id: null,
-      goalkeeper_player_id: this._goalkeeperFor(otherTeam(team)),
+      goalkeeper_player_id: situation.empty_net
+        ? null
+        : this._goalkeeperFor(otherTeam(team)),
       from_free_hit: followsFreeHit(this.allShots, team, tappedAt),
       fromFreeHitTouched: false,
+      from_penalty_shot: false,
+      ...situation,
       isEdit: false,
     };
   }
@@ -522,8 +591,25 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (!this.draft || this.draft.team === team) return;
     this.draft.team = team;
     this.draft.shooter_player_id = null;
-    this.draft.goalkeeper_player_id = this._goalkeeperFor(otherTeam(team));
-    if (this.draft.kind === 'shot' && !this.draft.fromFreeHitTouched) {
+    // Die Torwartsituation hängt am Team: Wer eben aufs leere Tor schoss,
+    // schießt nach dem Tausch mit 6 gegen 5 und umgekehrt.
+    if (this.draft.kind === 'shot' && !this.draft.from_penalty_shot) {
+      Object.assign(
+        this.draft,
+        situationFor(this.pulledGoalies, team, this.draft.period)
+      );
+      if (this.draft.empty_net && this.draft.result === 'saved') {
+        this.draft.result = null;
+      }
+    }
+    this.draft.goalkeeper_player_id = this.draft.empty_net
+      ? null
+      : this._goalkeeperFor(otherTeam(team));
+    if (
+      this.draft.kind === 'shot' &&
+      !this.draft.fromFreeHitTouched &&
+      !this.draft.from_penalty_shot
+    ) {
       this.draft.from_free_hit = followsFreeHit(
         this.allShots,
         team,
@@ -536,6 +622,53 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (!this.draft || this.draft.kind !== 'shot') return;
     this.draft.from_free_hit = !this.draft.from_free_hit;
     this.draft.fromFreeHitTouched = true;
+    if (this.draft.from_free_hit) this.draft.from_penalty_shot = false;
+  }
+
+  /**
+   * Strafschuss (Feedback #61): nie aus Freischlag, nie geblockt und immer
+   * gegen den Torhüter. Einschalten räumt deshalb, was dem widerspricht, und
+   * holt den Torhüter zurück.
+   */
+  public toggleDraftPenaltyShot(): void {
+    const draft = this.draft;
+    if (!draft || draft.kind !== 'shot') return;
+    draft.from_penalty_shot = !draft.from_penalty_shot;
+    if (!draft.from_penalty_shot) return;
+
+    draft.from_free_hit = false;
+    draft.fromFreeHitTouched = true;
+    draft.extra_attacker = false;
+    if (draft.result === 'blocked') draft.result = null;
+    if (draft.empty_net) {
+      draft.empty_net = false;
+      draft.goalkeeper_player_id = this._goalkeeperFor(otherTeam(draft.team));
+    }
+  }
+
+  /** 6 gegen 5 für diesen Schuss (Feedback #64). */
+  public toggleDraftExtraAttacker(): void {
+    const draft = this.draft;
+    if (!draft || draft.kind !== 'shot') return;
+    draft.extra_attacker = !draft.extra_attacker;
+    if (draft.extra_attacker) draft.from_penalty_shot = false;
+  }
+
+  /**
+   * Aufs leere Tor für diesen Schuss (Feedback #63), die Kachel „Leeres Tor“
+   * bei den Torhütern. Ohne Torhüter gibt es keine Parade.
+   */
+  public toggleDraftEmptyNet(): void {
+    const draft = this.draft;
+    if (!draft || draft.kind !== 'shot') return;
+    draft.empty_net = !draft.empty_net;
+    if (draft.empty_net) {
+      draft.goalkeeper_player_id = null;
+      draft.from_penalty_shot = false;
+      if (draft.result === 'saved') draft.result = null;
+    } else {
+      draft.goalkeeper_player_id = this._goalkeeperFor(otherTeam(draft.team));
+    }
   }
 
   // --- Freischläge (fe#589) ----------------------------------------------------
@@ -666,8 +799,63 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.lastMark = null;
   }
 
+  // --- Parade ohne Position (Feedback #62) ------------------------------------
+
+  /**
+   * Schnellzähler: Der Torhüter dieses Teams hat gehalten. Ein Tipp, ohne
+   * Feldposition und ohne Entwurf, gespeichert als gehaltener Schuss des
+   * Gegners. Zählt bei Paraden und Fangquote, nicht in der Schussgrafik und
+   * nie als Szene. Spielt das Team ohne Torhüter, gibt es nichts zu halten.
+   */
+  public recordSave(goalkeeperTeam: ShotTeam, deviceNow = Date.now()): void {
+    if (!this.buffer || this.isGoaliePulled(goalkeeperTeam)) return;
+    const shootingTeam = otherTeam(goalkeeperTeam);
+    const clientUuid = newClientUuid();
+    this.buffer.upsert({
+      client_uuid: clientUuid,
+      kind: 'shot',
+      team: shootingTeam,
+      period: this.viewPeriod,
+      game_time: '',
+      tapped_at: toServerTime(deviceNow, this.clockOffset ?? 0),
+      x: null,
+      y: null,
+      result: 'saved',
+      shooter_player_id: null,
+      goalkeeper_player_id: this._goalkeeperFor(goalkeeperTeam),
+      from_free_hit: false,
+      from_penalty_shot: false,
+      empty_net: false,
+      extra_attacker: this.isGoaliePulled(shootingTeam),
+    });
+    this.lastSave = { client_uuid: clientUuid, goalkeeperTeam };
+    this._autoFlush();
+  }
+
+  public undoLastSave(): void {
+    const last = this.lastSave;
+    this.lastSave = null;
+    if (last) this.deleteShot(last.client_uuid);
+  }
+
+  public dismissLastSave(): void {
+    this.lastSave = null;
+  }
+
+  /**
+   * Ergebnis wählen. Widerspricht es einer Kennung, gewinnt das Ergebnis:
+   * Gehalten heißt, es stand ein Torhüter im Tor; einen Strafschuss blockt
+   * niemand.
+   */
   public setDraftResult(result: ShotResult): void {
-    if (this.draft) this.draft.result = result;
+    const draft = this.draft;
+    if (!draft) return;
+    draft.result = result;
+    if (result === 'saved' && draft.empty_net) {
+      draft.empty_net = false;
+      draft.goalkeeper_player_id = this._goalkeeperFor(otherTeam(draft.team));
+    }
+    if (result === 'blocked') draft.from_penalty_shot = false;
   }
 
   public setDraftShooter(playerId: number | null): void {
@@ -680,6 +868,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     if (!this.draft) return;
     this.draft.goalkeeper_player_id = playerId;
     this._goalkeeperChoice[otherTeam(this.draft.team)] = playerId;
+    // Ein gewählter Torhüter steht im Tor.
+    if (playerId !== null) this.draft.empty_net = false;
   }
 
   public cancelDraft(): void {
@@ -710,7 +900,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       attacksRight(draft.team, draft.period, this.sides)
     );
     const freeHit = draft.kind === 'free_hit';
-    const shot: ShotInput = {
+    const shot: ShotInput = consistentShotFlags({
       client_uuid: draft.client_uuid,
       kind: draft.kind,
       team: draft.team,
@@ -734,7 +924,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
         ? null
         : this._inLineup(otherTeam(draft.team), draft.goalkeeper_player_id),
       from_free_hit: !freeHit && draft.from_free_hit,
-    };
+      from_penalty_shot: !freeHit && draft.from_penalty_shot,
+      empty_net: !freeHit && draft.empty_net,
+      extra_attacker: !freeHit && draft.extra_attacker,
+    });
 
     this.buffer.upsert(shot);
     this.draft = null;
@@ -771,6 +964,9 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       goalkeeper_player_id: shot.goalkeeper_player_id ?? null,
       from_free_hit: shot.from_free_hit ?? false,
       fromFreeHitTouched: true,
+      from_penalty_shot: shot.from_penalty_shot ?? false,
+      empty_net: shot.empty_net ?? false,
+      extra_attacker: shot.extra_attacker ?? false,
       isEdit: true,
     };
   }
@@ -783,6 +979,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.buffer.remove(clientUuid, knownToServer);
     if (this.lastFreeHit?.client_uuid === clientUuid) this.lastFreeHit = null;
     if (this.lastMark === clientUuid) this.lastMark = null;
+    if (this.lastSave?.client_uuid === clientUuid) this.lastSave = null;
     if (this.draft?.client_uuid === clientUuid) {
       this.draft = null;
       this._afterDraftClosed();
@@ -1013,6 +1210,17 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   public isMark(shot: Pick<ShotInput, 'kind'>): boolean {
     return isMark(shot);
+  }
+
+  public isUnplacedSave(
+    shot: Pick<ShotInput, 'kind' | 'result' | 'x' | 'y'>
+  ): boolean {
+    return isUnplacedSave(shot);
+  }
+
+  /** Nur Einträge mit Stelle auf dem Feld lassen sich korrigieren. */
+  public canEdit(shot: DisplayedShot): boolean {
+    return isPlaced(shot);
   }
 
   public trackShot(_index: number, shot: { client_uuid: string }): string {

@@ -2,6 +2,7 @@ import {
   DetailedStats,
   DetailedStatsFreeHit,
   DetailedStatsShot,
+  GoalkeeperSaveStats,
   GoalkeeperStats,
   PlayerShotStats,
   ShotResult,
@@ -46,7 +47,7 @@ const clamp = (value: number, min: number, max: number) =>
  * ist in Metern des übergebenen Feldes, ohne Angabe Großfeld.
  */
 export function toFieldPoint(
-  shot: Pick<DetailedStatsShot, 'team' | 'x' | 'y'>,
+  shot: Pick<DetailedStatsShot, 'team'> & { x: number; y: number },
   field: Pick<FieldGeometry, 'length' | 'width'> = FIELD_GEOMETRY.GF
 ): FieldPoint {
   const x = shot.team === 'home' ? shot.x : 1 - shot.x;
@@ -56,6 +57,22 @@ export function toFieldPoint(
     cx: clamp(x * field.length, 0, field.length),
     cy: clamp(y * field.width, 0, field.width),
   };
+}
+
+/**
+ * Hat der Schuss eine Feldposition? Paraden aus dem Schnellzähler (Feedback
+ * #62) haben keine: Sie zählen in Summen und beim Torhüter, gehören aber in
+ * keine Schussgrafik.
+ */
+export function isPlacedShot<T extends Pick<DetailedStatsShot, 'x' | 'y'>>(
+  shot: T
+): shot is T & { x: number; y: number } {
+  return (
+    typeof shot.x === 'number' &&
+    typeof shot.y === 'number' &&
+    isFinite(shot.x) &&
+    isFinite(shot.y)
+  );
 }
 
 /** Schüsse eines Teams, wahlweise nur eines Abschnitts (`null` = alle). */
@@ -183,9 +200,35 @@ export function teamStatsFor(
  * davon abhängt, ob die API einen Anteil (0..1) oder Prozent liefert.
  * `null`, wenn kein Schuss aufs Tor kam.
  */
-export function savePercentage(goalkeeper: GoalkeeperStats): number | null {
+export function savePercentage(goalkeeper: GoalkeeperSaveStats): number | null {
   if (!goalkeeper.shots_against) return null;
   return Math.round((goalkeeper.saves / goalkeeper.shots_against) * 1000) / 10;
+}
+
+/**
+ * Paraden eines Torhüters in einem Abschnitt (Feedback #62). `null`, wenn die
+ * API keine Aufteilung liefert (ältere Stände) oder der Abschnitt fehlt.
+ */
+export function goalkeeperPeriodStats(
+  goalkeeper: GoalkeeperStats,
+  period: number
+): GoalkeeperSaveStats | null {
+  return goalkeeper.by_period?.[String(period)] ?? null;
+}
+
+/**
+ * Gibt es Strafschüsse oder Tore mit herausgenommenem Torhüter (Feedback #61,
+ * #63, #64)? Nur dann zeigt die Statistik den Abschnitt dafür.
+ */
+export function hasSpecialSituations(stats: DetailedStats): boolean {
+  return (['home', 'guest'] as const).some((team) => {
+    const teamStats = stats.teams?.[team];
+    return (
+      !!teamStats?.penalty_shots ||
+      !!teamStats?.goals_empty_net ||
+      !!teamStats?.goals_extra_attacker
+    );
+  });
 }
 
 /** Spieler mit den meisten Schüssen zuerst, bei Gleichstand mehr Tore. */

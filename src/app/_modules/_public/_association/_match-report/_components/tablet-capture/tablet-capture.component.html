@@ -150,6 +150,54 @@
       </div>
 
       <!--
+        Schnellzähler Parade (Feedback #62): ein Tipp je gehaltenem Ball, ohne
+        Feldposition. Beschriftet mit dem Team des haltenden Torhüters.
+        Darunter „Torwart raus“ (Feedback #63, #64): gilt bis zum Zurücknehmen,
+        längstens bis zum Abschnittsende, und belegt die Torwartsituation jedes
+        neuen Schusses vor.
+      -->
+      <div class="mt-2 grid grid-cols-2 gap-2">
+        @for (team of ["home", "guest"]; track team) {
+          <button
+            type="button"
+            class="min-h-[56px] rounded-[5px] border-2 border-blue-700 bg-white px-2 text-base font-bold text-blue-800 active:bg-blue-100 disabled:opacity-40"
+            [attr.data-testid]="'tablet-quick-save-' + team"
+            [disabled]="isGoaliePulled($any(team))"
+            (click)="recordSave($any(team))"
+          >
+            {{
+              "tablet.save.button" | transloco: { team: teamName($any(team)) }
+            }}
+          </button>
+        }
+        @for (team of ["home", "guest"]; track team) {
+          <button
+            type="button"
+            class="min-h-[48px] rounded-[5px] border-2 px-2 text-sm font-bold"
+            [class.bg-red-700]="isGoaliePulled($any(team))"
+            [class.text-white]="isGoaliePulled($any(team))"
+            [class.border-red-700]="isGoaliePulled($any(team))"
+            [class.border-fb-gray-600]="!isGoaliePulled($any(team))"
+            [attr.aria-pressed]="isGoaliePulled($any(team))"
+            [attr.data-testid]="'tablet-goalie-pulled-' + team"
+            (click)="toggleGoaliePulled($any(team))"
+          >
+            @if (isGoaliePulled($any(team))) {
+              {{
+                "tablet.goaliePulled.active"
+                  | transloco: { team: teamName($any(team)) }
+              }}
+            } @else {
+              {{
+                "tablet.goaliePulled.button"
+                  | transloco: { team: teamName($any(team)) }
+              }}
+            }
+          </button>
+        }
+      </div>
+
+      <!--
         Szene vormerken (api#838): ein Tipp, gespeichert wird nur der Moment.
         Die Szene landet in der Auswahl für die Highlights, nicht in der
         Statistik.
@@ -323,6 +371,36 @@
     </div>
 
     <div>
+      @if (lastSave) {
+        <div
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-blue-700 bg-blue-50 p-3"
+          data-testid="tablet-last-save"
+        >
+          <span class="font-bold">
+            {{
+              "tablet.save.saved"
+                | transloco: { team: teamName(lastSave.goalkeeperTeam) }
+            }}
+          </span>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+              data-testid="tablet-save-undo"
+              (click)="undoLastSave()"
+            >
+              {{ "tablet.save.undo" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+              (click)="dismissLastSave()"
+            >
+              {{ "tablet.save.ok" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
       @if (lastMark) {
         <div
           class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-violet-600 bg-violet-50 p-3"
@@ -444,18 +522,47 @@
               }
             </div>
 
-            <button
-              type="button"
-              class="min-h-[56px] rounded-[5px] border-2 px-3 text-lg font-bold"
-              [class.bg-amber-500]="draft.from_free_hit"
-              [class.border-amber-600]="draft.from_free_hit"
-              [class.border-fb-gray-600]="!draft.from_free_hit"
-              [attr.aria-pressed]="draft.from_free_hit"
-              data-testid="tablet-from-free-hit"
-              (click)="toggleDraftFromFreeHit()"
-            >
-              {{ "tablet.freeHit.fromFreeHit" | transloco }}
-            </button>
+            <!-- Art und Lage des Schusses (fe#589, Feedback #61, #64) -->
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
+                [class.bg-amber-500]="draft.from_free_hit"
+                [class.border-amber-600]="draft.from_free_hit"
+                [class.border-fb-gray-600]="!draft.from_free_hit"
+                [attr.aria-pressed]="draft.from_free_hit"
+                data-testid="tablet-from-free-hit"
+                (click)="toggleDraftFromFreeHit()"
+              >
+                {{ "tablet.freeHit.fromFreeHit" | transloco }}
+              </button>
+              <button
+                type="button"
+                class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
+                [class.bg-black]="draft.from_penalty_shot"
+                [class.text-white]="draft.from_penalty_shot"
+                [class.border-black]="draft.from_penalty_shot"
+                [class.border-fb-gray-600]="!draft.from_penalty_shot"
+                [attr.aria-pressed]="draft.from_penalty_shot"
+                data-testid="tablet-penalty-shot"
+                (click)="toggleDraftPenaltyShot()"
+              >
+                {{ "tablet.situation.penaltyShot" | transloco }}
+              </button>
+              <button
+                type="button"
+                class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
+                [class.bg-red-700]="draft.extra_attacker"
+                [class.text-white]="draft.extra_attacker"
+                [class.border-red-700]="draft.extra_attacker"
+                [class.border-fb-gray-600]="!draft.extra_attacker"
+                [attr.aria-pressed]="draft.extra_attacker"
+                data-testid="tablet-extra-attacker"
+                (click)="toggleDraftExtraAttacker()"
+              >
+                {{ "tablet.situation.extraAttacker" | transloco }}
+              </button>
+            </div>
 
             <div>
               <div class="mb-1 text-sm font-bold">
@@ -521,16 +628,16 @@
                       {{ player.trikot_number }}
                     </button>
                   }
+                  <!-- Aufs leere Tor (Feedback #63): kein Torhüter, keine Parade -->
                   <button
                     type="button"
                     class="col-span-2 min-h-[48px] rounded-[5px] border text-sm font-bold"
-                    [class.bg-blue-700]="draft.goalkeeper_player_id === null"
-                    [class.text-white]="draft.goalkeeper_player_id === null"
-                    [class.border-fb-gray-600]="
-                      draft.goalkeeper_player_id !== null
-                    "
-                    [attr.aria-pressed]="draft.goalkeeper_player_id === null"
-                    (click)="setDraftGoalkeeper(null)"
+                    [class.bg-red-700]="draft.empty_net"
+                    [class.text-white]="draft.empty_net"
+                    [class.border-fb-gray-600]="!draft.empty_net"
+                    [attr.aria-pressed]="draft.empty_net"
+                    data-testid="tablet-empty-net"
+                    (click)="toggleDraftEmptyNet()"
                   >
                     {{ "tablet.draft.emptyNet" | transloco }}
                   </button>
@@ -620,11 +727,25 @@
                     <span class="font-bold text-amber-800">{{
                       "tablet.freeHit.label" | transloco
                     }}</span>
+                  } @else if (isUnplacedSave(shot)) {
+                    ·
+                    <span class="font-bold text-blue-800">{{
+                      "tablet.save.label" | transloco
+                    }}</span>
                   } @else if (!isMark(shot)) {
                     · {{ "tablet.result." + shot.result | transloco }}
                     @if (shot.from_free_hit) {
                       ({{ "tablet.freeHit.fromFreeHitShort" | transloco }})
                     }
+                    @if (shot.from_penalty_shot) {
+                      ({{ "tablet.situation.penaltyShotShort" | transloco }})
+                    }
+                  }
+                  @if (shot.empty_net) {
+                    ({{ "tablet.situation.emptyNetShort" | transloco }})
+                  }
+                  @if (shot.extra_attacker) {
+                    ({{ "tablet.situation.extraAttackerShort" | transloco }})
                   }
                   @if (shot.shooter_player_id) {
                     {{ trikotNumber(shot.team, shot.shooter_player_id) }}
@@ -642,7 +763,7 @@
                     }}</span>
                   }
                 </span>
-                @if (!isMark(shot)) {
+                @if (canEdit(shot)) {
                   <button
                     type="button"
                     class="min-h-[44px] rounded-[5px] border border-fb-gray-600 px-3 font-bold"
