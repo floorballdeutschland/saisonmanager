@@ -33,6 +33,11 @@ export interface League {
 
   legacy_league: boolean;
   field_size: string;
+  /**
+   * Eigene Feldgröße, sonst die der Hauptrunde (`league_id_preround`); null,
+   * wenn beides fehlt (api#839).
+   */
+  effective_field_size?: string | null;
   league_modus: string;
   /**
    * Wettbewerbsgruppe (api#603): `liga` (Liga und Playoffs), `pokal`,

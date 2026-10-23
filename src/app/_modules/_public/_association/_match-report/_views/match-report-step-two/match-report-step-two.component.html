@@ -148,7 +148,11 @@
     <div class="container mx-auto px-4 pb-8 lg:px-8 mt-4 lg:mt-8">
       <h2 class="font-bold text-xl lg:text-2xl">Ereignisse eingeben</h2>
       @if (tabletMode) {
-        <fb-tablet-capture class="mt-4 block" [game]="game"></fb-tablet-capture>
+        <fb-tablet-capture
+          class="mt-4 block"
+          [game]="game"
+          [fieldSize]="fieldSize$ | async"
+        ></fb-tablet-capture>
       }
       <nav aria-label="Progress" class="mt-4">
         <ol

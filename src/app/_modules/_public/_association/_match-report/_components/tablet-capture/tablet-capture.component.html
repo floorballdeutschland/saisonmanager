@@ -127,91 +127,100 @@
       </div>
 
       <!--
-        Feste Seitenverhältnisse (Großfeld 40 x 20 m) und kein
-        preserveAspectRatio-Spielraum: Die Umrechnung der Tippstelle setzt
-        voraus, dass das Bild die Fläche linear füllt.
+        Gezeichnet in Metern (fe#591), Seitenverhältnis und viewBox kommen aus
+        derselben Feldgeometrie: Die Umrechnung der Tippstelle setzt voraus,
+        dass das Bild die Fläche linear füllt, deshalb auch kein
+        preserveAspectRatio-Spielraum. Linien behalten mit
+        non-scaling-stroke ihre Breite in Pixeln.
       -->
       <svg
-        class="mt-1 block aspect-[2/1] w-full cursor-crosshair touch-none select-none"
-        viewBox="0 0 400 200"
+        class="mt-1 block w-full cursor-crosshair touch-none select-none"
+        [style.aspect-ratio]="field.length + ' / ' + field.width"
+        [attr.viewBox]="'0 0 ' + field.length + ' ' + field.width"
         preserveAspectRatio="none"
         role="img"
         [attr.aria-label]="'tablet.field' | transloco"
+        [attr.data-field-size]="field.size"
         data-testid="tablet-field"
         (pointerdown)="onFieldPointerDown($event)"
         (pointerup)="onFieldPointerUp($event)"
         (pointercancel)="onFieldPointerCancel()"
       >
         <rect
-          x="1"
-          y="1"
-          width="398"
-          height="198"
-          rx="30"
+          x="0"
+          y="0"
+          [attr.width]="field.length"
+          [attr.height]="field.width"
+          [attr.rx]="field.cornerRadius"
           class="fill-sky-50 stroke-fb-gray-500"
           stroke-width="2"
+          vector-effect="non-scaling-stroke"
         />
         <line
-          x1="200"
-          y1="1"
-          x2="200"
-          y2="199"
+          [attr.x1]="markings.center.x"
+          y1="0"
+          [attr.x2]="markings.center.x"
+          [attr.y2]="field.width"
           class="stroke-fb-gray-500"
           stroke-width="1.5"
+          vector-effect="non-scaling-stroke"
         />
         <circle
-          cx="200"
-          cy="100"
-          r="30"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
+          [attr.cx]="markings.center.x"
+          [attr.cy]="markings.center.y"
+          [attr.r]="0.25 * markerScale"
+          class="fill-fb-gray-500"
+          data-testid="tablet-field-center"
         />
-        <!-- Torraum 4 x 5 m und Torhüterraum 1 x 2,5 m, links und rechts -->
-        <rect
-          x="28"
-          y="75"
-          width="40"
-          height="50"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
-        />
-        <rect
-          x="35"
-          y="87.5"
-          width="10"
-          height="25"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1"
-        />
-        <rect x="27" y="92" width="8" height="16" class="fill-fb-gray-500" />
-        <rect
-          x="332"
-          y="75"
-          width="40"
-          height="50"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
-        />
-        <rect
-          x="355"
-          y="87.5"
-          width="10"
-          height="25"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1"
-        />
-        <rect x="365" y="92" width="8" height="16" class="fill-fb-gray-500" />
+        @for (spot of markings.faceoffSpots; track $index) {
+          <circle
+            [attr.cx]="spot.x"
+            [attr.cy]="spot.y"
+            [attr.r]="0.15 * markerScale"
+            class="fill-fb-gray-400"
+          />
+        }
+        <!-- Torraum, Torhüterraum (Schutzraum) und Tor, links und rechts -->
+        @for (area of markings.goalAreas; track $index) {
+          <rect
+            [attr.x]="area.x"
+            [attr.y]="area.y"
+            [attr.width]="area.width"
+            [attr.height]="area.height"
+            fill="none"
+            class="stroke-fb-gray-500"
+            stroke-width="1.5"
+            vector-effect="non-scaling-stroke"
+            data-testid="tablet-field-goal-area"
+          />
+        }
+        @for (area of markings.goalkeeperAreas; track $index) {
+          <rect
+            [attr.x]="area.x"
+            [attr.y]="area.y"
+            [attr.width]="area.width"
+            [attr.height]="area.height"
+            fill="none"
+            class="stroke-fb-gray-500"
+            stroke-width="1"
+            vector-effect="non-scaling-stroke"
+          />
+        }
+        @for (goal of markings.goals; track $index) {
+          <rect
+            [attr.x]="goal.x"
+            [attr.y]="goal.y"
+            [attr.width]="goal.width"
+            [attr.height]="goal.height"
+            class="fill-fb-gray-500"
+          />
+        }
 
         @for (marker of fieldMarkers; track $index) {
           <circle
-            [attr.cx]="marker.x * 400"
-            [attr.cy]="marker.y * 200"
-            r="5"
+            [attr.cx]="marker.x * field.length"
+            [attr.cy]="marker.y * field.width"
+            [attr.r]="0.5 * markerScale"
             [attr.opacity]="marker.pending ? 0.5 : 1"
             [class.fill-green-600]="marker.result === 'goal'"
             [class.fill-blue-600]="marker.result === 'saved'"
@@ -221,11 +230,12 @@
         }
         @if (draft && draft.period === viewPeriod) {
           <circle
-            [attr.cx]="draft.screenX * 400"
-            [attr.cy]="draft.screenY * 200"
-            r="8"
+            [attr.cx]="draft.screenX * field.length"
+            [attr.cy]="draft.screenY * field.width"
+            [attr.r]="0.8 * markerScale"
             class="fill-red-600 stroke-white"
             stroke-width="2"
+            vector-effect="non-scaling-stroke"
             data-testid="tablet-draft-marker"
           />
         }

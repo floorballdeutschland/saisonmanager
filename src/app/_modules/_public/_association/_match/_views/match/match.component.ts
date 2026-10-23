@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import {
   interval,
+  map,
   Observable,
   Subject,
   Subscription,
@@ -26,6 +27,7 @@ import {
   LeagueService,
   SessionService,
 } from '@floorball/core';
+import { leagueFieldSize } from 'src/app/_helpers/_utils/field-geometry';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
@@ -46,6 +48,8 @@ export class MatchComponent implements OnInit, OnDestroy {
   game?: Game;
   additionalFields?: GameAdditionalFields;
   selectedAssociation$!: Observable<GameOperation | null>;
+  // Feldgröße der Liga für das Schussbild (fe#591), Großfeld ohne Liga.
+  fieldSize$!: Observable<string | null>;
 
   intervalSub?: Subscription;
   // Das Spiel, das die Adresse gerade verlangt. Eine Antwort fuer ein anderes
@@ -93,6 +97,9 @@ export class MatchComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._associationService.displayAssociationHeader$.next(false);
     this.selectedAssociation$ = this._associationService.selectedAssociation$;
+    this.fieldSize$ = this._leagueService.selectedLeague$.pipe(
+      map((league) => leagueFieldSize(league))
+    );
 
     const secretaryToken =
       this._route.snapshot.queryParamMap.get('secretary_token');

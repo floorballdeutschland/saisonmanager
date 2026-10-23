@@ -364,6 +364,76 @@ describe('TabletCaptureComponent', () => {
     expect(component.recentShots[0].pending).toBeFalse();
   });
 
+  describe('Spielfeld je Feldgröße (fe#591)', () => {
+    const field = () =>
+      fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGSVGElement;
+
+    it('zeichnet ohne Feldgröße das Großfeld, ohne Mittelkreis', async () => {
+      await start();
+      expect(field().getAttribute('data-field-size')).toBe('GF');
+      expect(field().getAttribute('viewBox')).toBe('0 0 40 20');
+      expect(field().style.aspectRatio).toBe('40 / 20');
+      const center = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field-center"]'
+      ) as SVGCircleElement;
+      expect(center.getAttribute('cx')).toBe('20');
+      // Nur ein Punkt in der Mitte, kein Kreis mit 3 m Radius
+      expect(Number(center.getAttribute('r'))).toBeLessThan(1);
+      expect(
+        fixture.nativeElement.querySelectorAll(
+          '[data-testid="tablet-field-goal-area"]'
+        ).length
+      ).toBe(2);
+    });
+
+    it('zeichnet das Kleinfeld 28 x 16 m und rechnet die Tippstelle gleich um', async () => {
+      fixture.componentRef.setInput('fieldSize', 'KF');
+      await start();
+      expect(field().getAttribute('data-field-size')).toBe('KF');
+      expect(field().getAttribute('viewBox')).toBe('0 0 28 16');
+      expect(field().style.aspectRatio).toBe('28 / 16');
+
+      // Seitenverhältnis 1,75 : 1 auf dem Bildschirm
+      const rect = field().getBoundingClientRect();
+      expect(rect.width / rect.height).toBeCloseTo(1.75, 1);
+
+      const at = {
+        clientX: rect.left + rect.width * 0.8,
+        clientY: rect.top + rect.height * 0.25,
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        bubbles: true,
+      };
+      field().dispatchEvent(new PointerEvent('pointerdown', at));
+      field().dispatchEvent(new PointerEvent('pointerup', at));
+      fixture.detectChanges();
+
+      const draft = component.draft!;
+      expect(draft.screenX).toBeCloseTo(0.8, 2);
+      expect(draft.screenY).toBeCloseTo(0.25, 2);
+      expect(draft.team).toBe('home');
+      // Markierung sitzt in Metern des Kleinfelds an der Tippstelle
+      const marker = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-draft-marker"]'
+      ) as SVGCircleElement;
+      expect(Number(marker.getAttribute('cx'))).toBeCloseTo(0.8 * 28, 1);
+      expect(Number(marker.getAttribute('cy'))).toBeCloseTo(0.25 * 16, 1);
+
+      component.setDraftResult('saved');
+      component.saveDraft();
+      const request = http.expectOne(API + 'games/4711/shots.json');
+      const sent = request.request.body.shots as ShotInput[];
+      // Normierung bleibt 0..1 von Bande zu Bande, unabhängig von der Größe
+      expect(sent[0].x).toBeCloseTo(0.8, 2);
+      expect(sent[0].y).toBeCloseTo(0.25, 2);
+      request.flush({ shots: [asShot(sent[0])] });
+      await settle();
+    });
+  });
+
   it('weist eine ungültige Spielzeit ab, ohne zu speichern', async () => {
     await start();
     component.startDraft(0.8, 0.5);

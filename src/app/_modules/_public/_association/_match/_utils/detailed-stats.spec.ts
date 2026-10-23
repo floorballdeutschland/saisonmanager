@@ -7,12 +7,14 @@ import {
 import {
   filterShots,
   periodsOf,
-  RINK,
   savePercentage,
   sortPlayers,
   teamStatsFor,
   toFieldPoint,
 } from './detailed-stats';
+import { FIELD_GEOMETRY } from 'src/app/_helpers/_utils/field-geometry';
+
+const RINK = FIELD_GEOMETRY.GF;
 
 function shot(overrides: Partial<DetailedStatsShot> = {}): DetailedStatsShot {
   return {
@@ -90,6 +92,21 @@ describe('detailed-stats utils', () => {
       expect(toFieldPoint(shot({ x: 36.5 / 40, y: 0.5 }))).toEqual({
         cx: 36.5,
         cy: 10,
+      });
+    });
+
+    it('rechnet Kleinfeld-Schüsse in Meter des 28 x 16 m-Feldes um', () => {
+      const kf = FIELD_GEOMETRY.KF;
+      // Torlinie 3 m vor der gegnerischen Bande, mittig
+      expect(toFieldPoint(shot({ x: 25 / 28, y: 0.5 }), kf)).toEqual({
+        cx: 25,
+        cy: 8,
+      });
+      const guest = toFieldPoint(shot({ team: 'guest', x: 1, y: 0 }), kf);
+      expect(guest).toEqual({ cx: 0, cy: 16 });
+      expect(toFieldPoint(shot({ x: 5, y: 2 }), kf)).toEqual({
+        cx: 28,
+        cy: 16,
       });
     });
 

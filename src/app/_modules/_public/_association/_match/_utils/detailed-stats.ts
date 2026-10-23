@@ -7,15 +7,10 @@ import {
   ShotTeam,
   TeamShotStats,
 } from '@floorball/types';
-
-/**
- * Spielfeld in Metern (Großfeld, 40 × 20 m). Die Schussgrafik zeichnet in
- * diesen Einheiten, damit die Linien maßstabsgetreu bleiben.
- */
-export const RINK = {
-  length: 40,
-  width: 20,
-} as const;
+import {
+  FIELD_GEOMETRY,
+  FieldGeometry,
+} from 'src/app/_helpers/_utils/field-geometry';
 
 export const SHOT_RESULTS: readonly ShotResult[] = [
   'goal',
@@ -39,24 +34,26 @@ const clamp = (value: number, min: number, max: number) =>
  * um: Heim greift nach rechts an, Gast nach links.
  *
  * Normierung laut API über das ganze Feld von Bande zu Bande (so erfasst
- * auch der Tabletmodus): x = 0 eigene Bande, x = 1 gegnerische Bande,
- * y = 0 links und y = 1 rechts aus Sicht des Angreifers. Für Heim (Blick nach
+ * auch der Tabletmodus), je nach Feldgröße 40 x 20 m oder 28 x 16 m: x = 0
+ * eigene Bande, x = 1 gegnerische Bande, y = 0 links und y = 1 rechts aus Sicht des Angreifers. Für Heim (Blick nach
  * rechts) liegt „links“ oben. Der Gast blickt nach links, für ihn liegt „links“
  * unten. Sein Schuss wird deshalb um den Mittelpunkt gedreht, also x UND y
  * gespiegelt. Spiegelte man nur x, landete ein Schuss von der linken Seite des
  * Gastes auf seiner rechten.
  *
- * Werte außerhalb von 0..1 werden an der Bande abgeschnitten.
+ * Werte außerhalb von 0..1 werden an der Bande abgeschnitten. Das Ergebnis
+ * ist in Metern des übergebenen Feldes, ohne Angabe Großfeld.
  */
 export function toFieldPoint(
-  shot: Pick<DetailedStatsShot, 'team' | 'x' | 'y'>
+  shot: Pick<DetailedStatsShot, 'team' | 'x' | 'y'>,
+  field: Pick<FieldGeometry, 'length' | 'width'> = FIELD_GEOMETRY.GF
 ): FieldPoint {
   const x = shot.team === 'home' ? shot.x : 1 - shot.x;
   const y = shot.team === 'home' ? shot.y : 1 - shot.y;
 
   return {
-    cx: clamp(x * RINK.length, 0, RINK.length),
-    cy: clamp(y * RINK.width, 0, RINK.width),
+    cx: clamp(x * field.length, 0, field.length),
+    cy: clamp(y * field.width, 0, field.width),
   };
 }
 

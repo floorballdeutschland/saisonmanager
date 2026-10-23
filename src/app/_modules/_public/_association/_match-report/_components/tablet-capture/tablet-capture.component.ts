@@ -20,6 +20,12 @@ import {
   ShotResult,
   ShotTeam,
 } from '@floorball/types';
+import {
+  FieldGeometry,
+  FieldMarkings,
+  fieldGeometry,
+  fieldMarkings,
+} from 'src/app/_helpers/_utils/field-geometry';
 
 import { ShotBuffer } from './shot-buffer';
 import { TabletShotSyncService } from './tablet-shot-sync.service';
@@ -107,6 +113,16 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   game!: Game;
 
+  /**
+   * `league.field_size` ('GF' / 'KF'). Bestimmt nur die Zeichnung: Die
+   * Positionen bleiben auf 0..1 von Bande zu Bande normiert (fe#591).
+   */
+  @Input()
+  fieldSize: string | null | undefined = null;
+
+  public field: FieldGeometry = fieldGeometry(null);
+  public markings: FieldMarkings = fieldMarkings(this.field);
+
   public readonly results: ShotResult[] = [
     'goal',
     'saved',
@@ -185,6 +201,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['fieldSize']) {
+      this.field = fieldGeometry(this.fieldSize);
+      this.markings = fieldMarkings(this.field);
+    }
     if (changes['game'] && this.game) {
       if (this.game.id !== this._gameId) {
         this._resetForGame(this.game.id);
@@ -641,6 +661,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // --- Anzeige -----------------------------------------------------------------
+
+  /** Markierungen bleiben auf dem Bildschirm gleich groß, auch auf dem KF. */
+  get markerScale(): number {
+    return this.field.length / 40;
+  }
 
   private _shotsCache: {
     server: Shot[];
