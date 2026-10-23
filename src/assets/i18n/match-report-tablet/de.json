@@ -89,5 +89,18 @@
     "sending": "Wird gesendet…",
     "sent": "Danke für deine Rückmeldung!",
     "error": "Die Rückmeldung konnte nicht gesendet werden. Bitte später erneut versuchen."
+  },
+  "freeHit": {
+    "arm": "Freischlag {{ team }}",
+    "armed": "Freischlag: Stelle antippen (abbrechen)",
+    "hint": "Stelle des Freischlags für {{ team }} antippen. Er wird sofort gespeichert.",
+    "label": "Freischlag",
+    "saved": "Freischlag {{ team }} gespeichert",
+    "swapTeam": "Anderes Team",
+    "undo": "Rückgängig",
+    "ok": "OK",
+    "fromFreeHit": "Aus Freischlag",
+    "fromFreeHitShort": "aus Freischlag",
+    "delete": "Freischlag löschen"
   }
 }

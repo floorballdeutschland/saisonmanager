@@ -17,6 +17,7 @@ import {
   GamePlayerEntry,
   Shot,
   ShotInput,
+  ShotKind,
   ShotResult,
   ShotTeam,
 } from '@floorball/types';
@@ -36,8 +37,10 @@ import {
   attacksRight,
   bestClockOffset,
   defaultGoalkeeperId,
+  followsFreeHit,
   fromAttackDirection,
   goalLinkCandidates,
+  isFreeHit,
   leftToRightTeam,
   mergeShots,
   newClientUuid,
@@ -51,6 +54,9 @@ import {
 
 export interface ShotDraft {
   client_uuid: string;
+  // Ein Freischlag entsteht ohne Entwurf (ein Tipp); als Entwurf nur beim
+  // Korrigieren.
+  kind: ShotKind;
   // Gerätezeit des Antippens (ms). Umgerechnet in Serverzeit wird erst beim
   // Speichern: Ein Tipp, der vor dem Ende der Uhrmessung fiel, bekommt so
   // noch den gemessenen Versatz. Null bei einem geladenen Schuss, dessen
@@ -67,7 +73,19 @@ export interface ShotDraft {
   result: ShotResult | null;
   shooter_player_id: number | null;
   goalkeeper_player_id: number | null;
+  from_free_hit: boolean;
+  // Schalter „aus Freischlag“ von Hand gesetzt: dann nicht mehr vorbelegen.
+  fromFreeHitTouched: boolean;
   isEdit: boolean;
+}
+
+/** Zuletzt per Tipp gespeicherter Freischlag, für Teamtausch und Rückgängig. */
+export interface LastFreeHit {
+  client_uuid: string;
+  team: ShotTeam;
+  period: number;
+  screenX: number;
+  screenY: number;
 }
 
 export type DisplayedShot = ReturnType<typeof mergeShots>[number];
@@ -144,6 +162,14 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public periodChangePending = false;
   public draft: ShotDraft | null = null;
   public gameTimeInvalid = false;
+
+  // Der nächste Tipp aufs Feld ist ein Freischlag dieses Teams (fe#589). Gilt
+  // für genau einen Tipp: Wer das Zurückschalten vergisst, soll keine Schüsse
+  // als Freischläge erfassen. Das Team wird ausdrücklich gewählt, weil ein
+  // Freischlag oft in der eigenen Hälfte ausgeführt wird und die Feldhälfte
+  // dann das falsche Team ergäbe.
+  public freeHitArmed: ShotTeam | null = null;
+  public lastFreeHit: LastFreeHit | null = null;
 
   public clockOffset: number | null = null;
   public clockStatus: 'measuring' | 'ok' | 'stale' | 'unknown' = 'measuring';
@@ -238,6 +264,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.draft = null;
     this._pointerDown = null;
     this.gameTimeInvalid = false;
+    this.freeHitArmed = null;
+    this.lastFreeHit = null;
     this.linkError = false;
     this._goalkeeperChoice = {};
     this.sides = this._loadSides(gameId);
@@ -428,7 +456,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
     const screenX = (down.clientX - rect.left) / rect.width;
     const screenY = (down.clientY - rect.top) / rect.height;
-    this.startDraft(screenX, screenY, down.deviceNow);
+    if (this.freeHitArmed) {
+      this.recordFreeHit(this.freeHitArmed, screenX, screenY, down.deviceNow);
+    } else {
+      this.startDraft(screenX, screenY, down.deviceNow);
+    }
   }
 
   public onFieldPointerCancel(): void {
@@ -458,11 +490,14 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     const team = shootingTeamForTap(screenX, this.viewPeriod, this.sides);
+    const tappedAt = toServerTime(deviceNow, this.clockOffset ?? 0);
     this.gameTimeInvalid = false;
+    this.lastFreeHit = null;
     this.draft = {
       client_uuid: newClientUuid(),
+      kind: 'shot',
       tapped_device_ms: deviceNow,
-      tapped_at: toServerTime(deviceNow, this.clockOffset ?? 0),
+      tapped_at: tappedAt,
       screenX,
       screenY,
       team,
@@ -471,6 +506,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       result: null,
       shooter_player_id: null,
       goalkeeper_player_id: this._goalkeeperFor(otherTeam(team)),
+      from_free_hit: followsFreeHit(this.allShots, team, tappedAt),
+      fromFreeHitTouched: false,
       isEdit: false,
     };
   }
@@ -480,6 +517,108 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.draft.team = team;
     this.draft.shooter_player_id = null;
     this.draft.goalkeeper_player_id = this._goalkeeperFor(otherTeam(team));
+    if (this.draft.kind === 'shot' && !this.draft.fromFreeHitTouched) {
+      this.draft.from_free_hit = followsFreeHit(
+        this.allShots,
+        team,
+        this.draft.tapped_at
+      );
+    }
+  }
+
+  public toggleDraftFromFreeHit(): void {
+    if (!this.draft || this.draft.kind !== 'shot') return;
+    this.draft.from_free_hit = !this.draft.from_free_hit;
+    this.draft.fromFreeHitTouched = true;
+  }
+
+  // --- Freischläge (fe#589) ----------------------------------------------------
+
+  /** Freischlag für dieses Team scharf schalten; derselbe Knopf bricht ab. */
+  public toggleFreeHitArmed(team: ShotTeam): void {
+    this.freeHitArmed = this.freeHitArmed === team ? null : team;
+  }
+
+  /**
+   * Ein Tipp im Freischlag-Modus speichert sofort, ohne Entwurf, für das
+   * vorher gewählte Team. Ein offener Schuss-Entwurf bleibt dabei unangetastet;
+   * die Rückmeldung mit „Rückgängig“ steht dann über dem Entwurf.
+   */
+  public recordFreeHit(
+    team: ShotTeam,
+    screenX: number,
+    screenY: number,
+    deviceNow = Date.now()
+  ): void {
+    this.freeHitArmed = null;
+    if (!this.buffer) return;
+
+    const entry: LastFreeHit = {
+      client_uuid: newClientUuid(),
+      team,
+      period: this.viewPeriod,
+      screenX,
+      screenY,
+    };
+    this.buffer.upsert(
+      this._freeHitInput(entry, toServerTime(deviceNow, this.clockOffset ?? 0))
+    );
+    this.lastFreeHit = entry;
+    this._autoFlush();
+  }
+
+  /** Letzten Freischlag dem anderen Team zuschreiben. */
+  public swapLastFreeHitTeam(): void {
+    const last = this.lastFreeHit;
+    const saved = last
+      ? this.allShots.find((shot) => shot.client_uuid === last.client_uuid)
+      : null;
+    if (!last || !saved || !this.buffer) {
+      this.lastFreeHit = null;
+      return;
+    }
+    // Die Position ist auf die Angriffsrichtung des Teams normiert und muss
+    // mit dem Team neu gerechnet werden.
+    this.lastFreeHit = { ...last, team: otherTeam(last.team) };
+    this.buffer.upsert(
+      this._freeHitInput(this.lastFreeHit, saved.tapped_at, saved.game_time)
+    );
+    this._autoFlush();
+  }
+
+  public undoLastFreeHit(): void {
+    const last = this.lastFreeHit;
+    this.lastFreeHit = null;
+    if (last) this.deleteShot(last.client_uuid);
+  }
+
+  public dismissLastFreeHit(): void {
+    this.lastFreeHit = null;
+  }
+
+  private _freeHitInput(
+    entry: LastFreeHit,
+    tappedAt: string,
+    gameTime = ''
+  ): ShotInput {
+    const position = toAttackDirection(
+      { x: entry.screenX, y: entry.screenY },
+      attacksRight(entry.team, entry.period, this.sides)
+    );
+    return {
+      client_uuid: entry.client_uuid,
+      kind: 'free_hit',
+      team: entry.team,
+      period: entry.period,
+      game_time: gameTime,
+      tapped_at: tappedAt,
+      x: position.x,
+      y: position.y,
+      result: null,
+      shooter_player_id: null,
+      goalkeeper_player_id: null,
+      from_free_hit: false,
+    };
   }
 
   public setDraftResult(result: ShotResult): void {
@@ -504,9 +643,16 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this._afterDraftClosed();
   }
 
+  /** Ein Schuss braucht ein Ergebnis, ein Freischlag nicht. */
+  get canSaveDraft(): boolean {
+    return (
+      !!this.draft && (this.draft.kind === 'free_hit' || !!this.draft.result)
+    );
+  }
+
   public saveDraft(): void {
     const draft = this.draft;
-    if (!draft || !draft.result || !this.buffer) return;
+    if (!draft || !this.canSaveDraft || !this.buffer) return;
 
     const gameTime = normalizeGameTime(draft.game_time);
     if (gameTime === null) {
@@ -518,8 +664,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       { x: draft.screenX, y: draft.screenY },
       attacksRight(draft.team, draft.period, this.sides)
     );
+    const freeHit = draft.kind === 'free_hit';
     const shot: ShotInput = {
       client_uuid: draft.client_uuid,
+      kind: draft.kind,
       team: draft.team,
       period: draft.period,
       game_time: gameTime,
@@ -529,14 +677,18 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
           : toServerTime(draft.tapped_device_ms, this.clockOffset ?? 0),
       x: position.x,
       y: position.y,
-      result: draft.result,
+      // Ein Freischlag hat weder Ergebnis noch Personen, die API weist sie
+      // dort ab.
+      result: freeHit ? null : draft.result,
       // Die API weist IDs ab, die nicht in der Aufstellung des jeweiligen
       // Teams stehen (Schütze: schießendes, Torhüter: verteidigendes Team).
-      shooter_player_id: this._inLineup(draft.team, draft.shooter_player_id),
-      goalkeeper_player_id: this._inLineup(
-        otherTeam(draft.team),
-        draft.goalkeeper_player_id
-      ),
+      shooter_player_id: freeHit
+        ? null
+        : this._inLineup(draft.team, draft.shooter_player_id),
+      goalkeeper_player_id: freeHit
+        ? null
+        : this._inLineup(otherTeam(draft.team), draft.goalkeeper_player_id),
+      from_free_hit: !freeHit && draft.from_free_hit,
     };
 
     this.buffer.upsert(shot);
@@ -556,8 +708,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     // nächste wechselt, soll danach trotzdem zum Ausgangspunkt zurück.
     if (!this.draft?.isEdit) this._periodBeforeEdit = this.viewPeriod;
     this.viewPeriod = shot.period;
+    this.lastFreeHit = null;
     this.draft = {
       client_uuid: shot.client_uuid,
+      kind: isFreeHit(shot) ? 'free_hit' : 'shot',
       tapped_device_ms: null,
       tapped_at: shot.tapped_at,
       screenX: screen.x,
@@ -568,6 +722,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       result: shot.result,
       shooter_player_id: shot.shooter_player_id ?? null,
       goalkeeper_player_id: shot.goalkeeper_player_id ?? null,
+      from_free_hit: shot.from_free_hit ?? false,
+      fromFreeHitTouched: true,
       isEdit: true,
     };
   }
@@ -578,6 +734,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       (shot) => shot.client_uuid === clientUuid
     );
     this.buffer.remove(clientUuid, knownToServer);
+    if (this.lastFreeHit?.client_uuid === clientUuid) this.lastFreeHit = null;
     if (this.draft?.client_uuid === clientUuid) {
       this.draft = null;
       this._afterDraftClosed();
@@ -711,7 +868,8 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   get fieldMarkers(): {
     x: number;
     y: number;
-    result: ShotResult;
+    freeHit: boolean;
+    result: ShotResult | null;
     pending: boolean;
   }[] {
     return this.allShots
@@ -721,7 +879,12 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
           { x: shot.x, y: shot.y },
           attacksRight(shot.team, shot.period, this.sides)
         );
-        return { ...screen, result: shot.result, pending: shot.pending };
+        return {
+          ...screen,
+          freeHit: isFreeHit(shot),
+          result: shot.result,
+          pending: shot.pending,
+        };
       });
   }
 
@@ -792,6 +955,10 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       minute: '2-digit',
       second: '2-digit',
     });
+  }
+
+  public isFreeHit(shot: Pick<ShotInput, 'kind'>): boolean {
+    return isFreeHit(shot);
   }
 
   public trackShot(_index: number, shot: { client_uuid: string }): string {

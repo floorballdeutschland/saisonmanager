@@ -247,6 +247,39 @@ export function mergeShots(
   );
 }
 
+// --- Freischläge (fe#589) ---------------------------------------------------
+
+/** Liegt ein Freischlag so kurz vor dem Schuss, gilt der Schuss als „aus Freischlag“. */
+export const FREE_HIT_SHOT_WINDOW_MS = 10000;
+
+export function isFreeHit(shot: Pick<ShotInput, 'kind'>): boolean {
+  return shot.kind === 'free_hit';
+}
+
+/**
+ * Vorbelegung des Schalters „aus Freischlag“: Gab es höchstens
+ * FREE_HIT_SHOT_WINDOW_MS vor dem Antippen des Schusses einen Freischlag
+ * desselben Teams? Verglichen wird `tapped_at`, also der Zeitpunkt in der
+ * Halle, nicht die Spielzeit.
+ */
+export function followsFreeHit(
+  shots: Pick<ShotInput, 'kind' | 'team' | 'tapped_at'>[],
+  team: ShotTeam,
+  tappedAt: string
+): boolean {
+  const shotMs = Date.parse(tappedAt);
+  if (isNaN(shotMs)) return false;
+  return shots.some((entry) => {
+    if (!isFreeHit(entry) || entry.team !== team) return false;
+    const freeHitMs = Date.parse(entry.tapped_at);
+    return (
+      !isNaN(freeHitMs) &&
+      freeHitMs <= shotMs &&
+      shotMs - freeHitMs <= FREE_HIT_SHOT_WINDOW_MS
+    );
+  });
+}
+
 export interface GoalLinkCandidate {
   goal: GameEvent;
   shots: Shot[];
@@ -265,7 +298,8 @@ export function goalLinkCandidates(
     shots.map((shot) => shot.event_id).filter((id) => id !== null)
   );
   const freeGoalShots = shots.filter(
-    (shot) => shot.result === 'goal' && shot.event_id === null
+    (shot) =>
+      !isFreeHit(shot) && shot.result === 'goal' && shot.event_id === null
   );
 
   return (events ?? [])

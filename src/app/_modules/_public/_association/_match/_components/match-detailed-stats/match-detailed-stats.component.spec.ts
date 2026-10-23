@@ -9,6 +9,8 @@ import { YoutubeIframeApiService } from '@floorball/core';
 import matchDe from '../../../../../../../assets/i18n/match/de.json';
 import { MatchHighlightsComponent } from '../match-highlights/match-highlights.component';
 import { ShotChartComponent } from '../shot-chart/shot-chart.component';
+import { FreeHitChartComponent } from '../free-hit-chart/free-hit-chart.component';
+import { RinkMarkingsComponent } from '../rink-markings/rink-markings.component';
 import { MatchDetailedStatsComponent } from './match-detailed-stats.component';
 
 function game(id: number, overrides: Partial<Game> = {}): Game {
@@ -127,6 +129,8 @@ describe('MatchDetailedStatsComponent', () => {
       declarations: [
         MatchDetailedStatsComponent,
         ShotChartComponent,
+        FreeHitChartComponent,
+        RinkMarkingsComponent,
         MatchHighlightsComponent,
       ],
       providers: [
@@ -209,6 +213,82 @@ describe('MatchDetailedStatsComponent', () => {
           '[data-test="chart-home"] [data-testid="field-goal-area"]'
         ).length
       ).toBe(2);
+    });
+  });
+
+  describe('Freischläge (fe#589)', () => {
+    const withFreeHits = () => {
+      const data = stats({
+        free_hits: [
+          { team: 'home', period: 1, game_time: '02:00', x: 0.2, y: 0.5 },
+          { team: 'home', period: 2, game_time: '21:00', x: 0.8, y: 0.5 },
+          { team: 'guest', period: 2, game_time: '23:00', x: 0.6, y: 0.1 },
+        ],
+      });
+      data.teams.home.free_hits = 2;
+      data.teams.home.shots_from_free_hit = 1;
+      data.teams.home.goals_from_free_hit = 1;
+      data.teams.home.by_period['2'].free_hits = 1;
+      return data;
+    };
+
+    it('fehlt ohne erfasste Freischläge', () => {
+      load(stats());
+      expect(el().querySelector('[data-test="free-hits"]')).toBeNull();
+    });
+
+    it('zeigt Freischläge getrennt vom Schussbild mit Zonen und Summen', () => {
+      load(withFreeHits());
+
+      expect(
+        el().querySelectorAll('[data-test="free-hits-home"] polygon').length
+      ).toBe(2);
+      // Das Schussbild zeigt weiter nur die Schüsse.
+      expect(
+        el().querySelectorAll('[data-test="chart-home"] circle[data-result]')
+          .length
+      ).toBe(2);
+      expect(
+        el().querySelector('[data-test="free-hit-zones-home"]')?.textContent
+      ).toMatch(
+        /Eigene Hälfte:\s*1.*Gegnerische Hälfte:\s*0.*Nähe Torraum:\s*1/s
+      );
+
+      const total = el().querySelector(
+        '[data-test="free-hit-table-home"] tbody tr'
+      ) as HTMLTableRowElement;
+      const cells = Array.from(total.cells).map((c) => c.textContent?.trim());
+      expect(cells.slice(1)).toEqual(['2', '1', '1']);
+    });
+
+    it('filtert die Freischläge mit dem Abschnittsfilter', () => {
+      load(withFreeHits());
+      component.selectPeriod(2);
+      fixture.detectChanges();
+      expect(
+        el().querySelectorAll('[data-test="free-hits-home"] polygon').length
+      ).toBe(1);
+    });
+
+    it('rechnet die Zonen auf dem Kleinfeld in dessen Metern', () => {
+      fixture.componentRef.setInput('fieldSize', 'KF');
+      load(
+        stats({
+          free_hits: [
+            { team: 'home', period: 1, game_time: '02:00', x: 0.65, y: 0.5 },
+          ],
+        })
+      );
+      expect(
+        el()
+          .querySelector('[data-test="free-hits-home"] polygon')
+          ?.getAttribute('data-zone')
+      ).toBe('near_goal_area');
+      expect(
+        el()
+          .querySelector('[data-test="free-hits-home"] svg')
+          ?.getAttribute('data-field-size')
+      ).toBe('KF');
     });
   });
 

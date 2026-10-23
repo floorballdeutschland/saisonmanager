@@ -62,6 +62,18 @@
     },
     "players": {
       "title": "Shots per player"
+    },
+    "freeHits": {
+      "title": "Free hits",
+      "ariaLabel": "Free hits {{ team }}: {{ count }}",
+      "count": "Free hits",
+      "shots": "Shots from them",
+      "goals": "Goals from them",
+      "zone": {
+        "own_half": "Own half",
+        "opponent_half": "Opponent half",
+        "near_goal_area": "Near goal area"
+      }
     }
   },
   "highlights": {

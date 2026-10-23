@@ -62,6 +62,18 @@
     },
     "players": {
       "title": "Schüsse je Spieler"
+    },
+    "freeHits": {
+      "title": "Freischläge",
+      "ariaLabel": "Freischläge {{ team }}: {{ count }}",
+      "count": "Freischläge",
+      "shots": "Schüsse daraus",
+      "goals": "Tore daraus",
+      "zone": {
+        "own_half": "Eigene Hälfte",
+        "opponent_half": "Gegnerische Hälfte",
+        "near_goal_area": "Nähe Torraum"
+      }
     }
   },
   "highlights": {
