@@ -110,4 +110,16 @@ describe('ObservationDetailComponent', () => {
     expect(component.ratedReferees.length).toBe(1);
     expect(component.ratingFor(1, component.dimensions[0])).toBeNull();
   });
+
+  it('zeigt den Vermerk erst, wenn der Bogen bearbeitet wurde', () => {
+    expect(component.editedAt).toBe('');
+
+    component.observation = observation({ edited_at: '2026-10-06T18:30:00Z' });
+    expect(component.editedAt).toContain('06.10.2026');
+  });
+
+  it('gibt einen unbrauchbaren Bearbeitungszeitpunkt unveraendert zurueck', () => {
+    component.observation = observation({ edited_at: 'kaputt' });
+    expect(component.editedAt).toBe('kaputt');
+  });
 });

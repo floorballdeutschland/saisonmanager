@@ -46,7 +46,8 @@
     "refereeSlot": "Schiedsrichter {{position}}",
     "byCoach": "Beobachtet von {{name}}",
     "toGame": "Zum Spiel",
-    "hidden": "Diese Beobachtung wurde zurückgenommen und ist für die beobachteten Schiedsrichter*innen nicht mehr sichtbar."
+    "hidden": "Diese Beobachtung wurde zurückgenommen und ist für die beobachteten Schiedsrichter*innen nicht mehr sichtbar.",
+    "edited": "Bearbeitet am {{date}}"
   },
   "coach": {
     "title": "Beobachtungsbögen",
@@ -62,7 +63,8 @@
     "assigned": "Angesetzt",
     "reminderHint": "Für dieses Spiel bist du als Schiedsrichtercoach angesetzt. Zum Anpfiff bekommst du eine Erinnerung per Mail mit dem Link auf diesen Bogen.",
     "unrated": "nicht einzeln bewertet: {{names}}",
-    "onlyUnrated": "Im Gespann ist niemand einem regulären Schiedsrichterprofil zugeordnet ({{names}}). Gastschiedsrichter werden nicht einzeln bewertet, eine Beobachtung ist hier nicht möglich."
+    "onlyUnrated": "Im Gespann ist niemand einem regulären Schiedsrichterprofil zugeordnet ({{names}}). Gastschiedsrichter werden nicht einzeln bewertet, eine Beobachtung ist hier nicht möglich.",
+    "edit": "Bearbeiten"
   },
   "received": {
     "title": "Mein Feedback",
@@ -87,8 +89,14 @@
     "cancel": "Abbrechen",
     "saved": "Die Beobachtung wurde gespeichert und den Schiedsrichter*innen zugestellt.",
     "incomplete": "Bitte alle Bewertungen vergeben und alle Textfelder ausfüllen.",
-    "visibilityHint": "Nach dem Absenden ist der Bogen für die beobachteten Schiedsrichter*innen sichtbar und lässt sich nicht mehr ändern. Jede Person sieht die gemeinsamen Anmerkungen, die Bewertung des Gespanns und ihre eigenen Einzelbewertungen – nicht die des Gespannpartners.",
-    "unratedHint": "Nicht einzeln bewertet, weil kein reguläres Schiedsrichterprofil zugeordnet ist (zum Beispiel bei Gastschiedsrichtern): {{names}}. Die Gespann-Bewertung bezieht sich weiterhin auf das ganze Gespann."
+    "visibilityHint": "Nach dem Absenden ist der Bogen für die beobachteten Schiedsrichter*innen sichtbar. Jede Person sieht die gemeinsamen Anmerkungen, die Bewertung des Gespanns und ihre eigenen Einzelbewertungen, nicht die des Gespannpartners. Du kannst den Bogen später noch korrigieren; er trägt dann den Vermerk „bearbeitet am“.",
+    "unratedHint": "Nicht einzeln bewertet, weil kein reguläres Schiedsrichterprofil zugeordnet ist (zum Beispiel bei Gastschiedsrichtern): {{names}}. Die Gespann-Bewertung bezieht sich weiterhin auf das ganze Gespann.",
+    "editTitle": "Beobachtungsbogen bearbeiten",
+    "editNotAllowed": "Diesen Bogen kannst du nicht bearbeiten. Bearbeiten darf nur, wer den Bogen abgegeben hat.",
+    "editHint": "Die Änderungen sind sofort für die beobachteten Schiedsrichter*innen sichtbar, und der Bogen trägt danach den Vermerk „bearbeitet am“. Eine neue Mail geht dabei nicht hinaus.",
+    "saveChanges": "Änderungen speichern",
+    "updated": "Die Änderungen wurden gespeichert.",
+    "editHiddenHint": "Der Bogen ist derzeit zurückgenommen und für die Schiedsrichter*innen nicht sichtbar. Deine Änderungen werden gespeichert und der Bogen trägt danach den Vermerk „bearbeitet am“. Eine Mail geht nicht hinaus."
   },
   "admin": {
     "title": "Beobachtungen der Schiedsrichtercoaches",
