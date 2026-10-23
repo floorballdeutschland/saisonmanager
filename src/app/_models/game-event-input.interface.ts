@@ -12,4 +12,7 @@ export interface GameEventInput {
   penalty_id?: number;
   penalty_code_id?: number;
   goal_type?: string;
+  // Ausdrückliche Bestätigung, dass die Eingabe den Spielstand bereits
+  // erfasster Tore ändern darf (api#835).
+  confirm_score_change?: boolean;
 }
