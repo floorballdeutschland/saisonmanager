@@ -14,6 +14,15 @@ import {
 } from '@floorball/core';
 import { RefereeAdmin } from '@floorball/types';
 
+// Die API liefert die Gueltigkeit als „TT.MM.JJJJ“ (referee_json). Als
+// String verglichen schlaegt dort der Tag das Jahr, deshalb erst nach
+// „JJJJ-MM-TT“ drehen. ISO bleibt, wie es ist.
+function comparableDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const german = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
+  return german ? `${german[3]}-${german[2]}-${german[1]}` : value;
+}
+
 @Component({
   templateUrl: './referee-merge.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -133,6 +142,42 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Wer bleibt, entscheidet die API: das Profil mit der kleinsten
+  // Schiedsrichternummer (Referee.merge_roles, api#845), egal von welchem Profil
+  // aus die Maske geoeffnet wurde. Die Vorschau rechnet dieselbe Regel nach,
+  // damit nicht das falsche Profil als „wird behalten" dasteht.
+  get kept(): RefereeAdmin | undefined {
+    return this._roles()?.[0];
+  }
+
+  get dropped(): RefereeAdmin | undefined {
+    return this._roles()?.[1];
+  }
+
+  // Traegt das wegfallende Profil die spaetere Lizenz, laeuft die Person
+  // heute unter dessen Nummer und fuehrt danach die des behaltenen Profils.
+  // Die API benennt dann das Konto um und verschickt eine Mail.
+  get numberChanges(): boolean {
+    const kept = this.kept;
+    const dropped = this.dropped;
+    if (!kept?.lizenznummer || !dropped?.lizenznummer) return false;
+    if (kept.lizenznummer === dropped.lizenznummer) return false;
+    const droppedUntil = comparableDate(dropped.gueltigkeit);
+    if (!dropped.lizenzstufe || !droppedUntil) return false;
+    const keptUntil = comparableDate(kept.gueltigkeit);
+    return !keptUntil || droppedUntil > keptUntil;
+  }
+
+  private _roles(): [RefereeAdmin, RefereeAdmin] | undefined {
+    if (!this.master || !this.secondary) return undefined;
+    const mine = this.master.lizenznummer;
+    const theirs = this.secondary.lizenznummer;
+    if (theirs == null || (mine != null && mine <= theirs)) {
+      return [this.master, this.secondary];
+    }
+    return [this.secondary, this.master];
+  }
+
   selectSecondary(referee: RefereeAdmin): void {
     this.secondary = referee;
     this.step = 2;
@@ -149,12 +194,12 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
   merge(): void {
     if (!this.master || !this.secondary) return;
     this.loading = true;
-    const master = this.master;
+    const expected = this.kept!;
     this._refereeService
-      .adminMerge(master.id, this.secondary.id)
+      .adminMerge(this.master.id, this.secondary.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: () => {
+        next: (res) => {
           this._notificationService.success(
             'Schiedsrichter erfolgreich zusammengeführt.',
             { autoClose: true, keepAfterRouteChange: true }
@@ -163,7 +208,7 @@ export class RefereeMergeComponent implements OnInit, OnDestroy {
             '/',
             'verwaltung',
             'schiedsrichter',
-            master.lizenznummer_display,
+            res.master_lizenznummer_display ?? expected.lizenznummer_display,
           ]);
         },
         error: (err) => {

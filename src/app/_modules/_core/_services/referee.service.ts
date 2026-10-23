@@ -260,10 +260,13 @@ export class RefereeService {
   }
 
   public adminMerge(masterId: number, secondaryId: number) {
-    return this.http.post<{ message: string; master_id: number }>(
-      environment.apiURL + 'admin/referees/' + masterId + '/merge',
-      { secondary_id: secondaryId }
-    );
+    return this.http.post<{
+      message: string;
+      master_id: number;
+      master_lizenznummer_display?: string;
+    }>(environment.apiURL + 'admin/referees/' + masterId + '/merge', {
+      secondary_id: secondaryId,
+    });
   }
 
   public adminGetGames(id: number, seasonId?: number) {
