@@ -40,7 +40,9 @@
     "gameTimeInvalid": "Please enter the game time as m:ss, e.g. 12:34.",
     "save": "Save",
     "cancel": "Discard",
-    "delete": "Delete shot"
+    "delete": "Delete shot",
+    "goalkeeperUnknown": "goalie unknown",
+    "goalkeeperClearHint": "(tap again: unknown)"
   },
   "recent": {
     "title": "Recent shots",

@@ -505,8 +505,13 @@
                                 class="text-right tabular-nums py-2 px-2 whitespace-nowrap"
                                 data-test="goalkeeper-period"
                               >
+                                <!-- Abschnitt ohne Einsatz (z. B. nach Wechsel): „–“ statt 0/0 -->
                                 @if (goalkeeperPeriod(gk, period); as p) {
-                                  {{ p.saves }}/{{ p.shots_against }}
+                                  @if (p.shots_against > 0) {
+                                    {{ p.saves }}/{{ p.shots_against }}
+                                  } @else {
+                                    –
+                                  }
                                 } @else {
                                   –
                                 }

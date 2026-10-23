@@ -173,13 +173,14 @@
         @for (team of ["home", "guest"]; track team) {
           <button
             type="button"
-            class="min-h-[48px] rounded-[5px] border-2 px-2 text-sm font-bold"
+            class="min-h-[48px] rounded-[5px] border-2 px-2 text-sm font-bold disabled:opacity-40"
             [class.bg-red-700]="isGoaliePulled($any(team))"
             [class.text-white]="isGoaliePulled($any(team))"
             [class.border-red-700]="isGoaliePulled($any(team))"
             [class.border-fb-gray-600]="!isGoaliePulled($any(team))"
             [attr.aria-pressed]="isGoaliePulled($any(team))"
             [attr.data-testid]="'tablet-goalie-pulled-' + team"
+            [disabled]="!canToggleGoaliePulled"
             (click)="toggleGoaliePulled($any(team))"
           >
             @if (isGoaliePulled($any(team))) {
@@ -600,6 +601,19 @@
               <div>
                 <div class="mb-1 text-sm font-bold">
                   {{ "tablet.draft.goalkeeper" | transloco }}
+                  @if (
+                    draft.goalkeeper_player_id === null && !draft.empty_net
+                  ) {
+                    <span
+                      class="ml-1 font-normal text-yellow-800"
+                      data-testid="tablet-goalkeeper-unknown"
+                      >{{ "tablet.draft.goalkeeperUnknown" | transloco }}</span
+                    >
+                  } @else if (!draft.empty_net) {
+                    <span class="ml-1 font-normal text-fb-gray-500">{{
+                      "tablet.draft.goalkeeperClearHint" | transloco
+                    }}</span>
+                  }
                 </div>
                 <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
                   @for (

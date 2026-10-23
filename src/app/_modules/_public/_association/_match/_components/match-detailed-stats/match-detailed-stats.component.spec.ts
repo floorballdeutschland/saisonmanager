@@ -648,6 +648,42 @@ describe('MatchDetailedStatsComponent', () => {
       ).toBe(2);
     });
 
+    it('zeigt nach einem Torhüterwechsel „–“ für Abschnitte ohne Einsatz', () => {
+      const data = special();
+      data.goalkeepers = [
+        {
+          team: 'guest',
+          trikot_number: 1,
+          name: 'G. Halter',
+          saves: 1,
+          shots_against: 2,
+          save_pct: 0.5,
+          by_period: {
+            '1': { saves: 1, shots_against: 2, save_pct: 0.5 },
+            '2': { saves: 0, shots_against: 0, save_pct: null },
+          },
+        },
+        {
+          team: 'guest',
+          trikot_number: 30,
+          name: 'E. Wechsel',
+          saves: 2,
+          shots_against: 2,
+          save_pct: 1,
+          by_period: {
+            '1': { saves: 0, shots_against: 0, save_pct: null },
+            '2': { saves: 2, shots_against: 2, save_pct: 1 },
+          },
+        },
+      ];
+      load(data);
+
+      const cells = Array.from(
+        el().querySelectorAll('[data-test="goalkeeper-period"]')
+      ).map((cell) => cell.textContent?.trim());
+      expect(cells).toEqual(['1/2', '–', '–', '2/2']);
+    });
+
     it('zeigt ohne Aufteilung der API keine Abschnittsspalten beim Torhüter', () => {
       load(stats());
       expect(el().querySelector('[data-test="goalkeeper-period"]')).toBeNull();

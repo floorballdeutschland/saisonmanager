@@ -1132,6 +1132,14 @@ describe('TabletCaptureComponent', () => {
         .shots as ShotInput[];
     }
 
+    // Methodenaufrufe markieren die Komponente nicht als geändert.
+    function render(): void {
+      (
+        component as unknown as { _cdr: { markForCheck(): void } }
+      )._cdr.markForCheck();
+      fixture.detectChanges();
+    }
+
     function click(testId: string): void {
       fixture.nativeElement
         .querySelector('[data-testid="' + testId + '"]')
@@ -1287,6 +1295,63 @@ describe('TabletCaptureComponent', () => {
           goalkeeper_player_id: 299,
         })
       );
+    });
+
+    it('hebt die Torhüterwahl mit erneutem Tippen auf: Torhüter unbekannt, nicht leeres Tor', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      render();
+      expect(component.draft!.goalkeeper_player_id).toBe(299);
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-goalkeeper-unknown"]'
+        )
+      ).toBeNull();
+
+      component.setDraftGoalkeeper(299);
+      render();
+
+      expect(component.draft!.goalkeeper_player_id).toBeNull();
+      expect(component.draft!.empty_net).toBeFalse();
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-goalkeeper-unknown"]'
+        )
+      ).toBeTruthy();
+
+      component.setDraftResult('saved');
+      component.saveDraft();
+      expect(sentShots()[0]).toEqual(
+        jasmine.objectContaining({
+          goalkeeper_player_id: null,
+          empty_net: false,
+        })
+      );
+    });
+
+    it('schaltet „Torwart raus“ nur im laufenden Abschnitt', async () => {
+      await start(inPeriod(4711, 2));
+      component.selectViewPeriod(1);
+      fixture.detectChanges();
+
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-goalie-pulled-guest"]'
+      ) as HTMLButtonElement;
+      expect(toggle.disabled).toBeTrue();
+      component.toggleGoaliePulled('guest');
+      expect(component.pulledGoalies).toEqual({});
+
+      component.followGamePeriod();
+      fixture.detectChanges();
+      click('tablet-goalie-pulled-guest');
+      expect(component.pulledGoalies).toEqual({ guest: 2 });
+      expect(component.isGoaliePulled('guest')).toBeTrue();
+
+      // Ein Nachtrag im 1. Abschnitt sieht den Schalter nicht.
+      component.selectViewPeriod(1);
+      expect(component.isGoaliePulled('guest')).toBeFalse();
+      component.startDraft(0.8, 0.5, T0);
+      expect(component.draft!.empty_net).toBeFalse();
     });
 
     it('übernimmt die Kennungen beim Korrigieren', async () => {

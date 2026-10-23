@@ -446,23 +446,36 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
 
   // --- Torwart raus (Feedback #63, #64) ---------------------------------------
 
-  /** Spielt das Team im angezeigten Abschnitt ohne Torhüter? */
+  /**
+   * Spielt das Team im angezeigten Abschnitt ohne Torhüter? Gesetzt wird der
+   * Schalter nur im laufenden Abschnitt; in einem nachträglich angezeigten
+   * Abschnitt ist er daher aus.
+   */
   public isGoaliePulled(team: ShotTeam): boolean {
     return goaliePulled(this.pulledGoalies, team, this.viewPeriod);
   }
 
   /**
+   * „Torwart raus“ ist eine Lage im laufenden Spiel und lässt sich nur im
+   * Abschnitt schalten, in dem das Spiel steht. Bei Nachträgen in einem
+   * anderen Abschnitt bleibt der Schalter gesperrt.
+   */
+  get canToggleGoaliePulled(): boolean {
+    return this.followsGame;
+  }
+
+  /**
    * Schalter „Torwart raus“: gilt bis zum Zurücknehmen, längstens bis zum
-   * Ende des Abschnitts. Ein offener Entwurf bleibt unberührt; er wurde in der
-   * Lage davor angetippt.
+   * Ende des laufenden Abschnitts. Ein offener Entwurf bleibt unberührt; er
+   * wurde in der Lage davor angetippt.
    */
   public toggleGoaliePulled(team: ShotTeam): void {
-    if (this._gameId === null) return;
+    if (this._gameId === null || !this.canToggleGoaliePulled) return;
     const pulled = { ...this.pulledGoalies };
-    if (this.isGoaliePulled(team)) {
+    if (goaliePulled(pulled, team, this.gamePeriod)) {
       delete pulled[team];
     } else {
-      pulled[team] = this.viewPeriod;
+      pulled[team] = this.gamePeriod;
     }
     this.pulledGoalies = pulled;
     this._storage.setItem(
@@ -864,8 +877,16 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       this.draft.shooter_player_id === playerId ? null : playerId;
   }
 
+  /**
+   * Torhüter wählen. Erneutes Tippen auf den gewählten hebt die Wahl auf:
+   * „Torhüter unbekannt“, nicht leeres Tor. Das bedeutete die Kachel
+   * „Leeres Tor“ früher; sie setzt jetzt `empty_net`.
+   */
   public setDraftGoalkeeper(playerId: number | null): void {
     if (!this.draft) return;
+    if (playerId !== null && this.draft.goalkeeper_player_id === playerId) {
+      playerId = null;
+    }
     this.draft.goalkeeper_player_id = playerId;
     this._goalkeeperChoice[otherTeam(this.draft.team)] = playerId;
     // Ein gewählter Torhüter steht im Tor.

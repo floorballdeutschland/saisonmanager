@@ -40,7 +40,9 @@
     "gameTimeInvalid": "Bitte die Spielzeit als m:ss eingeben, zum Beispiel 12:34.",
     "save": "Speichern",
     "cancel": "Verwerfen",
-    "delete": "Schuss löschen"
+    "delete": "Schuss löschen",
+    "goalkeeperUnknown": "Torhüter unbekannt",
+    "goalkeeperClearHint": "(erneut tippen: unbekannt)"
   },
   "recent": {
     "title": "Letzte Schüsse",
