@@ -1123,4 +1123,250 @@ describe('TabletCaptureComponent', () => {
       expect(component.draft).toBeNull();
     });
   });
+
+  describe('Strafschuss, Torwart raus, Parade (Feedback #61 bis #64)', () => {
+    const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
+
+    function sentShots(): ShotInput[] {
+      return http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+    }
+
+    // Methodenaufrufe markieren die Komponente nicht als geändert.
+    function render(): void {
+      (
+        component as unknown as { _cdr: { markForCheck(): void } }
+      )._cdr.markForCheck();
+      fixture.detectChanges();
+    }
+
+    function click(testId: string): void {
+      fixture.nativeElement
+        .querySelector('[data-testid="' + testId + '"]')
+        .click();
+      fixture.detectChanges();
+    }
+
+    it('zählt eine Parade mit einem Tipp, ohne Position, für den Torhüter des Teams', async () => {
+      await start(inPeriod(4711, 2));
+      click('tablet-quick-save-guest');
+
+      const sent = sentShots();
+      expect(sent).toEqual([
+        jasmine.objectContaining({
+          kind: 'shot',
+          team: 'home',
+          period: 2,
+          x: null,
+          y: null,
+          result: 'saved',
+          shooter_player_id: null,
+          goalkeeper_player_id: 299,
+          from_penalty_shot: false,
+          empty_net: false,
+          extra_attacker: false,
+        }),
+      ]);
+      expect(component.draft).toBeNull();
+      expect(component.lastSave?.goalkeeperTeam).toBe('guest');
+      // Kein Punkt auf dem Feld, kein Ändern, aber in der Liste.
+      expect(component.fieldMarkers.length).toBe(0);
+      expect(component.canEdit(component.allShots[0])).toBeFalse();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-recent"]')
+          .textContent
+      ).toContain('tablet.save.label');
+    });
+
+    it('nimmt die letzte Parade zurück', async () => {
+      await start();
+      component.recordSave('home', T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.undoLastSave();
+
+      expect(component.lastSave).toBeNull();
+      expect(component.allShots.length).toBe(0);
+    });
+
+    it('belegt bei „Torwart raus“ leeres Tor und 6 gegen 5 vor, bis zum Abschnittsende', async () => {
+      await start();
+      click('tablet-goalie-pulled-guest');
+      expect(component.isGoaliePulled('guest')).toBeTrue();
+
+      // 1. Abschnitt: rechts greift Heim an, also aufs leere Tor des Gastes.
+      component.startDraft(0.8, 0.5, T0);
+      expect(component.draft!.team).toBe('home');
+      expect(component.draft!.empty_net).toBeTrue();
+      expect(component.draft!.extra_attacker).toBeFalse();
+      expect(component.draft!.goalkeeper_player_id).toBeNull();
+
+      // Der Gast schießt mit 6 gegen 5 auf den Heimtorhüter.
+      component.setDraftTeam('guest');
+      expect(component.draft!.empty_net).toBeFalse();
+      expect(component.draft!.extra_attacker).toBeTrue();
+      expect(component.draft!.goalkeeper_player_id).toBe(199);
+      component.cancelDraft();
+
+      // Eine Parade des Gastes gibt es ohne Torhüter nicht.
+      const save = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-quick-save-guest"]'
+      ) as HTMLButtonElement;
+      expect(save.disabled).toBeTrue();
+
+      // Der Schalter übersteht ein Neuladen, aber nicht den Abschnittswechsel.
+      fixture.componentRef.setInput('game', inPeriod(4711, 2));
+      fixture.detectChanges();
+      expect(component.isGoaliePulled('guest')).toBeFalse();
+    });
+
+    it('merkt „Torwart raus“ je Spiel auf dem Gerät', async () => {
+      await start();
+      component.toggleGoaliePulled('home');
+      expect(
+        JSON.parse(localStorage.getItem('tablet_pulled_goalie_4711')!)
+      ).toEqual({ home: 1 });
+
+      component.toggleGoaliePulled('home');
+      expect(component.isGoaliePulled('home')).toBeFalse();
+    });
+
+    it('sendet einen Tor-Schuss aufs leere Tor ohne Torhüter', async () => {
+      await start();
+      component.toggleGoaliePulled('guest');
+      component.startDraft(0.8, 0.5, T0);
+      component.setDraftResult('goal');
+      component.saveDraft();
+
+      expect(sentShots()[0]).toEqual(
+        jasmine.objectContaining({
+          team: 'home',
+          result: 'goal',
+          empty_net: true,
+          extra_attacker: false,
+          goalkeeper_player_id: null,
+        })
+      );
+    });
+
+    it('nimmt „leeres Tor“ zurück, wenn der Schuss gehalten wurde', async () => {
+      await start();
+      component.toggleGoaliePulled('guest');
+      component.startDraft(0.8, 0.5, T0);
+      component.setDraftResult('saved');
+
+      expect(component.draft!.empty_net).toBeFalse();
+      expect(component.draft!.goalkeeper_player_id).toBe(299);
+
+      component.toggleDraftEmptyNet();
+      expect(component.draft!.empty_net).toBeTrue();
+      expect(component.draft!.result).toBeNull();
+      expect(component.draft!.goalkeeper_player_id).toBeNull();
+    });
+
+    it('Strafschuss schließt Freischlag, Blocken und herausgenommenen Torhüter aus', async () => {
+      await start();
+      component.toggleGoaliePulled('home');
+      component.toggleGoaliePulled('guest');
+      component.startDraft(0.8, 0.5, T0);
+      component.toggleDraftFromFreeHit();
+      component.setDraftResult('blocked');
+      expect(component.draft!.empty_net).toBeTrue();
+
+      component.toggleDraftPenaltyShot();
+
+      const draft = component.draft!;
+      expect(draft.from_penalty_shot).toBeTrue();
+      expect(draft.from_free_hit).toBeFalse();
+      expect(draft.result).toBeNull();
+      expect(draft.empty_net).toBeFalse();
+      expect(draft.extra_attacker).toBeFalse();
+      expect(draft.goalkeeper_player_id).toBe(299);
+
+      component.setDraftResult('saved');
+      component.saveDraft();
+      expect(sentShots()[0]).toEqual(
+        jasmine.objectContaining({
+          result: 'saved',
+          from_penalty_shot: true,
+          from_free_hit: false,
+          empty_net: false,
+          extra_attacker: false,
+          goalkeeper_player_id: 299,
+        })
+      );
+    });
+
+    it('hebt die Torhüterwahl mit erneutem Tippen auf: Torhüter unbekannt, nicht leeres Tor', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      render();
+      expect(component.draft!.goalkeeper_player_id).toBe(299);
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-goalkeeper-unknown"]'
+        )
+      ).toBeNull();
+
+      component.setDraftGoalkeeper(299);
+      render();
+
+      expect(component.draft!.goalkeeper_player_id).toBeNull();
+      expect(component.draft!.empty_net).toBeFalse();
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-goalkeeper-unknown"]'
+        )
+      ).toBeTruthy();
+
+      component.setDraftResult('saved');
+      component.saveDraft();
+      expect(sentShots()[0]).toEqual(
+        jasmine.objectContaining({
+          goalkeeper_player_id: null,
+          empty_net: false,
+        })
+      );
+    });
+
+    it('schaltet „Torwart raus“ nur im laufenden Abschnitt', async () => {
+      await start(inPeriod(4711, 2));
+      component.selectViewPeriod(1);
+      fixture.detectChanges();
+
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-goalie-pulled-guest"]'
+      ) as HTMLButtonElement;
+      expect(toggle.disabled).toBeTrue();
+      component.toggleGoaliePulled('guest');
+      expect(component.pulledGoalies).toEqual({});
+
+      component.followGamePeriod();
+      fixture.detectChanges();
+      click('tablet-goalie-pulled-guest');
+      expect(component.pulledGoalies).toEqual({ guest: 2 });
+      expect(component.isGoaliePulled('guest')).toBeTrue();
+
+      // Ein Nachtrag im 1. Abschnitt sieht den Schalter nicht.
+      component.selectViewPeriod(1);
+      expect(component.isGoaliePulled('guest')).toBeFalse();
+      component.startDraft(0.8, 0.5, T0);
+      expect(component.draft!.empty_net).toBeFalse();
+    });
+
+    it('übernimmt die Kennungen beim Korrigieren', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      component.setDraftResult('goal');
+      component.toggleDraftExtraAttacker();
+      component.saveDraft();
+      const sent = sentShots();
+
+      component.editShot(component.allShots[0]);
+
+      expect(sent[0].extra_attacker).toBeTrue();
+      expect(component.draft!.extra_attacker).toBeTrue();
+      expect(component.draft!.from_penalty_shot).toBeFalse();
+    });
+  });
 });

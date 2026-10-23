@@ -9,6 +9,7 @@ import {
   OBSERVATION_DIMENSIONS,
   ObservationDimensionDefinition,
 } from '../../observation-dimensions';
+import { formatObservationTimestamp } from '../../observation-format';
 
 /**
  * Ein fertiger Beobachtungsbogen, lesend. Von drei Stellen genutzt: der Coach
@@ -54,6 +55,11 @@ export class ObservationDetailComponent {
     return dimension.commentKey
       ? (this.observation[dimension.commentKey] ?? null)
       : null;
+  }
+
+  /** Vermerk „bearbeitet am", leer solange der Bogen unverändert ist. */
+  get editedAt(): string {
+    return formatObservationTimestamp(this.observation.edited_at);
   }
 
   formatDate(iso: string | null): string {

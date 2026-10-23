@@ -6,12 +6,25 @@
     [attr.role]="hasLinked ? 'group' : 'img'"
     [attr.aria-label]="
       'match.detailedStats.chart.ariaLabel'
-        | transloco: { team: teamName, count: shots.length }
+        | transloco: { team: teamName, count: plotted.length }
     "
   >
     <g fbRinkMarkings [field]="field" [markings]="markings"></g>
 
     @for (point of plotted; track $index) {
+      <!-- Strafschuss (Feedback #61): zusätzlicher Ring um den Punkt -->
+      @if (point.shot.from_penalty_shot) {
+        <circle
+          [attr.cx]="point.cx"
+          [attr.cy]="point.cy"
+          [attr.r]="0.95 * dotScale"
+          fill="none"
+          stroke="#111827"
+          [attr.stroke-width]="0.15 * dotScale"
+          data-penalty-shot="true"
+          aria-hidden="true"
+        />
+      }
       <circle
         [attr.cx]="point.cx"
         [attr.cy]="point.cy"
@@ -45,6 +58,7 @@
           {{ point.shot.game_time }}:
           {{ "match.detailedStats.result." + point.shot.result | transloco }}
           {{ shooterLabel(point.shot) }}
+          {{ situationLabel(point.shot) }}
         </title>
       </circle>
     }
