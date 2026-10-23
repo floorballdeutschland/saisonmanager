@@ -3,8 +3,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import {
@@ -23,9 +25,16 @@ import {
 } from '@floorball/core';
 import { leagueFieldSize } from 'src/app/_helpers/_utils/field-geometry';
 
-// Schalter je Gerät, nicht je Spiel oder Konto: Das Sekretariat bleibt in der
-// gewohnten Eingabe, ein zweites Tablet erfasst die Schüsse (fe#344).
-export const TABLET_MODE_STORAGE_KEY = 'match_report_tablet_mode';
+// Schalter je Gerät UND Spiel, nicht je Konto: Das Sekretariat bleibt in der
+// gewohnten Eingabe, ein zweites Tablet erfasst die Schüsse (fe#344). Je Spiel,
+// weil der Modus die normale Eingabe einklappt: Ein einmal eingeschalteter
+// Schalter darf beim nächsten Spiel auf demselben Gerät nicht schon an sein.
+export function tabletModeStorageKey(gameId: number): string {
+  return `match_report_tablet_mode:${gameId}`;
+}
+
+// Früherer Schlüssel für alle Spiele des Geräts. Wird nur noch entfernt.
+export const LEGACY_TABLET_MODE_STORAGE_KEY = 'match_report_tablet_mode';
 
 // Ob die normale Eingabe im Tabletmodus aufgeklappt ist, ebenfalls je Gerät.
 // Ohne Eintrag bleibt sie eingeklappt: Am zweiten Gerät soll niemand ein Tor
@@ -39,7 +48,7 @@ export const TABLET_NORMAL_INPUT_STORAGE_KEY =
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class MatchReportStepTwoComponent implements OnInit {
+export class MatchReportStepTwoComponent implements OnInit, OnChanges {
   @Input()
   game!: Game;
 
@@ -102,7 +111,8 @@ export class MatchReportStepTwoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.tabletMode = this._storage.getItem(TABLET_MODE_STORAGE_KEY) === '1';
+    this._storage.removeItem(LEGACY_TABLET_MODE_STORAGE_KEY);
+    this._readTabletMode();
     this.fieldSize$ = this._leagueService.selectedLeague$.pipe(
       map((league) => leagueFieldSize(league))
     );
@@ -122,14 +132,35 @@ export class MatchReportStepTwoComponent implements OnInit {
     });
   }
 
+  // Die Spielseite tauscht beim Spielwechsel nur `game` aus (spiel/:matchId).
+  ngOnChanges(changes: SimpleChanges): void {
+    const change = changes['game'];
+    if (
+      change &&
+      !change.firstChange &&
+      change.previousValue?.id !== change.currentValue?.id
+    ) {
+      this._readTabletMode();
+    }
+  }
+
   public setTabletMode(enabled: boolean): void {
     this.tabletMode = enabled;
-    if (enabled) {
-      this._storage.setItem(TABLET_MODE_STORAGE_KEY, '1');
-    } else {
-      this._storage.removeItem(TABLET_MODE_STORAGE_KEY);
+    if (this.game?.id != null) {
+      const key = tabletModeStorageKey(this.game.id);
+      if (enabled) {
+        this._storage.setItem(key, '1');
+      } else {
+        this._storage.removeItem(key);
+      }
     }
     this._cdr.markForCheck();
+  }
+
+  private _readTabletMode(): void {
+    this.tabletMode =
+      this.game?.id != null &&
+      this._storage.getItem(tabletModeStorageKey(this.game.id)) === '1';
   }
 
   /**
