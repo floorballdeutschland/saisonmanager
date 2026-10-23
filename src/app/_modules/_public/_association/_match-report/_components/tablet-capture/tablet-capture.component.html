@@ -1,12 +1,29 @@
 <!--
   Erfassungsansicht des Tabletmodus. Leitlayout ist das Querformat: links das
-  Spielfeld, rechts der Ablauf des gerade erfassten Schusses bzw. die Liste der
-  letzten Schüsse. Alle Bedienelemente sind große Kacheln (min. 56 px hoch),
-  damit sie auch mit Handschuh oder feuchten Fingern an der Bande treffen.
+  Spielfeld, rechts die Wahl nach dem Antippen, der Ablauf des gerade
+  erfassten Schusses bzw. die Liste der letzten Schüsse. Alle Bedienelemente
+  sind große Kacheln (min. 48 px hoch), damit sie auch mit Handschuh oder
+  feuchten Fingern an der Bande treffen.
+
+  Im Vollbild liegt die Erfassung als fixierte Ebene über der ganzen Seite:
+  oben eine schmale Leiste, das Spielfeld so groß, wie Höhe und Breite es
+  zulassen, rechts daneben (im Hochformat darunter) eine Spalte, die in sich
+  scrollt. Die Aufteilung steht in tablet-capture.component.css.
 -->
-<section class="rounded-[5px] border border-fb-gray-600 bg-white p-3 md:p-4">
+<section
+  #captureRoot
+  data-testid="tablet-capture"
+  [ngClass]="
+    fullscreen
+      ? 'fixed inset-0 z-50 flex flex-col gap-2 overflow-hidden bg-white p-2 md:p-3'
+      : 'block rounded-[5px] border border-fb-gray-600 bg-white p-3 md:p-4'
+  "
+  [attr.role]="fullscreen ? 'dialog' : null"
+  [attr.aria-modal]="fullscreen ? 'true' : null"
+  [attr.aria-label]="fullscreen ? ('tablet.capture.title' | transloco) : null"
+>
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <h3 class="text-lg font-bold">
+    <h3 class="font-bold" [class.text-lg]="!fullscreen">
       {{ "tablet.capture.title" | transloco }}
     </h3>
     <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -30,6 +47,27 @@
           {{ "tablet.sync.retry" | transloco }}
         </button>
       }
+      <!--
+        Vollbild: Esc oder dieser Knopf beenden es. Standard ist aus, gemerkt
+        wird nichts.
+      -->
+      <button
+        type="button"
+        class="min-h-[48px] rounded-[5px] border-2 border-black px-3 text-base font-bold"
+        [class.bg-black]="fullscreen"
+        [class.text-white]="fullscreen"
+        [class.bg-white]="!fullscreen"
+        [class.text-black]="!fullscreen"
+        [attr.aria-pressed]="fullscreen"
+        data-testid="tablet-fullscreen-toggle"
+        (click)="toggleFullscreen()"
+      >
+        @if (fullscreen) {
+          {{ "tablet.fullscreen.exit" | transloco }}
+        } @else {
+          {{ "tablet.fullscreen.enter" | transloco }}
+        }
+      </button>
     </div>
   </div>
   @if (syncForbidden && pendingCount > 0) {
@@ -56,14 +94,18 @@
     von selbst; weicht er ab, dann nur, weil hier bewusst umgestellt wurde.
   -->
   <div
-    class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[5px] border p-3"
+    class="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[5px] border"
+    [class.mt-3]="!fullscreen"
+    [class.p-3]="!fullscreen"
+    [class.px-3]="fullscreen"
+    [class.py-1]="fullscreen"
     data-testid="tablet-period-status"
     [class.border-fb-gray-600]="followsGame"
     [class.border-yellow-300]="!followsGame"
     [class.bg-yellow-50]="!followsGame"
     [class.text-yellow-800]="!followsGame"
   >
-    <span class="text-xl font-bold">
+    <span class="font-bold" [class.text-xl]="!fullscreen">
       {{ "tablet.periodStatus.capturing" | transloco: { period: viewPeriod } }}
     </span>
     @if (followsGame) {
@@ -90,8 +132,15 @@
     }
   </div>
 
-  <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-[3fr_2fr]">
-    <div>
+  <div
+    [ngClass]="
+      fullscreen
+        ? 'tc-fs-body'
+        : 'mt-3 grid grid-cols-1 gap-4 md:grid-cols-[3fr_2fr]'
+    "
+    data-testid="tablet-body"
+  >
+    <div [class.tc-fs-field-col]="fullscreen">
       <div class="flex flex-wrap items-center gap-2">
         <span class="text-sm font-bold">{{ "tablet.period" | transloco }}</span>
         @for (period of periods; track period) {
@@ -119,57 +168,18 @@
       </div>
 
       <!--
-        Freischlag (fe#589): Team wählen, dann Stelle antippen. Scharf für genau
-        einen Tipp, danach wieder Schuss. Das Team wird nicht aus der
-        Feldhälfte abgeleitet, weil ein Freischlag oft in der eigenen Hälfte
-        ausgeführt wird.
-      -->
-      <div class="mt-2 grid grid-cols-2 gap-2">
-        @for (team of ["home", "guest"]; track team) {
-          <button
-            type="button"
-            class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
-            [class.bg-amber-500]="freeHitArmed === team"
-            [class.border-amber-600]="freeHitArmed === team"
-            [class.text-black]="freeHitArmed === team"
-            [class.border-amber-500]="freeHitArmed !== team"
-            [class.text-amber-800]="freeHitArmed !== team"
-            [attr.aria-pressed]="freeHitArmed === team"
-            [attr.data-testid]="'tablet-free-hit-arm-' + team"
-            (click)="toggleFreeHitArmed($any(team))"
-          >
-            @if (freeHitArmed === team) {
-              {{ "tablet.freeHit.armed" | transloco }}
-            } @else {
-              {{
-                "tablet.freeHit.arm" | transloco: { team: teamName($any(team)) }
-              }}
-            }
-          </button>
-        }
-      </div>
-
-      <!--
-        Schnellzähler Parade (Feedback #62): ein Tipp je gehaltenem Ball, ohne
-        Feldposition. Beschriftet mit dem Team des haltenden Torhüters.
-        Darunter „Torwart raus“ (Feedback #63, #64): gilt bis zum Zurücknehmen,
+        „Torwart raus“ (Feedback #63, #64): gilt bis zum Zurücknehmen,
         längstens bis zum Abschnittsende, und belegt die Torwartsituation jedes
-        neuen Schusses vor.
+        neuen Schusses vor. Daneben „Szene vormerken“ (api#838): ein Tipp,
+        gespeichert wird nur der Moment, für die Auswahl der Highlights.
+        Paraden werden als Schuss mit Ergebnis „Gehalten“ erfasst; ältere
+        Paraden ohne Position stehen weiter in der Liste.
       -->
-      <div class="mt-2 grid grid-cols-2 gap-2">
-        @for (team of ["home", "guest"]; track team) {
-          <button
-            type="button"
-            class="min-h-[56px] rounded-[5px] border-2 border-blue-700 bg-white px-2 text-base font-bold text-blue-800 active:bg-blue-100 disabled:opacity-40"
-            [attr.data-testid]="'tablet-quick-save-' + team"
-            [disabled]="isGoaliePulled($any(team))"
-            (click)="recordSave($any(team))"
-          >
-            {{
-              "tablet.save.button" | transloco: { team: teamName($any(team)) }
-            }}
-          </button>
-        }
+      <div
+        class="mt-2 grid gap-2"
+        [class.grid-cols-2]="!fullscreen"
+        [class.grid-cols-3]="fullscreen"
+      >
         @for (team of ["home", "guest"]; track team) {
           <button
             type="button"
@@ -196,28 +206,31 @@
             }
           </button>
         }
+        <button
+          type="button"
+          class="rounded-[5px] border-2 border-violet-600 bg-white px-3 font-bold text-violet-800 active:bg-violet-100"
+          [ngClass]="
+            fullscreen ? 'min-h-[48px]' : 'col-span-2 min-h-[56px] text-lg'
+          "
+          data-testid="tablet-mark-scene"
+          (click)="recordMark()"
+        >
+          {{ "tablet.mark.button" | transloco }}
+        </button>
       </div>
 
-      <!--
-        Szene vormerken (api#838): ein Tipp, gespeichert wird nur der Moment.
-        Die Szene landet in der Auswahl für die Highlights, nicht in der
-        Statistik.
-      -->
-      <button
-        type="button"
-        class="mt-2 min-h-[56px] w-full rounded-[5px] border-2 border-violet-600 bg-white px-3 text-lg font-bold text-violet-800 active:bg-violet-100"
-        data-testid="tablet-mark-scene"
-        (click)="recordMark()"
-      >
-        {{ "tablet.mark.button" | transloco }}
-      </button>
-
       <div
-        class="mt-2 flex justify-between text-sm font-bold"
+        class="mt-2 flex justify-between gap-2 text-sm font-bold"
         data-testid="tablet-directions"
       >
-        <span>← {{ teamName(leftAttackingTeam) }}</span>
-        <span>{{ teamName(rightAttackingTeam) }} →</span>
+        <span class="shrink-0">← {{ teamName(leftAttackingTeam) }}</span>
+        <!-- Im Vollbild steht der Hinweis hier, nah am Feld. -->
+        @if (fullscreen) {
+          <span class="truncate text-center font-normal text-fb-gray-500">
+            <ng-container *ngTemplateOutlet="fieldHint"></ng-container>
+          </span>
+        }
+        <span class="shrink-0">{{ teamName(rightAttackingTeam) }} →</span>
       </div>
 
       <!--
@@ -227,179 +240,277 @@
         preserveAspectRatio-Spielraum. Linien behalten mit
         non-scaling-stroke ihre Breite in Pixeln.
       -->
-      <svg
-        class="mt-1 block w-full cursor-crosshair touch-none select-none"
-        [class.ring-4]="freeHitArmed"
-        [class.ring-amber-500]="freeHitArmed"
-        [style.aspect-ratio]="field.length + ' / ' + field.width"
-        [attr.viewBox]="'0 0 ' + field.length + ' ' + field.width"
-        preserveAspectRatio="none"
-        role="img"
-        [attr.aria-label]="'tablet.field' | transloco"
-        [attr.data-field-size]="field.size"
-        data-testid="tablet-field"
-        (pointerdown)="onFieldPointerDown($event)"
-        (pointerup)="onFieldPointerUp($event)"
-        (pointercancel)="onFieldPointerCancel()"
+      <div
+        class="mt-1"
+        [class.tc-fs-field-box]="fullscreen"
+        [style.--field-aspect]="field.length / field.width"
       >
-        <rect
-          x="0"
-          y="0"
-          [attr.width]="field.length"
-          [attr.height]="field.width"
-          [attr.rx]="field.cornerRadius"
-          class="fill-sky-50 stroke-fb-gray-500"
-          stroke-width="2"
-          vector-effect="non-scaling-stroke"
-        />
-        <line
-          [attr.x1]="markings.center.x"
-          y1="0"
-          [attr.x2]="markings.center.x"
-          [attr.y2]="field.width"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
-          vector-effect="non-scaling-stroke"
-        />
-        <circle
-          [attr.cx]="markings.center.x"
-          [attr.cy]="markings.center.y"
-          [attr.r]="0.25 * markerScale"
-          class="fill-fb-gray-500"
-          data-testid="tablet-field-center"
-        />
-        @for (spot of markings.faceoffSpots; track $index) {
-          <circle
-            [attr.cx]="spot.x"
-            [attr.cy]="spot.y"
-            [attr.r]="0.15 * markerScale"
-            class="fill-fb-gray-400"
-          />
-        }
-        <!-- Torraum, Torhüterraum (Schutzraum) und Tor, links und rechts -->
-        @for (area of markings.goalAreas; track $index) {
+        <svg
+          class="block w-full cursor-crosshair touch-none select-none"
+          [style.aspect-ratio]="field.length + ' / ' + field.width"
+          [attr.viewBox]="'0 0 ' + field.length + ' ' + field.width"
+          preserveAspectRatio="none"
+          role="img"
+          [attr.aria-label]="'tablet.field' | transloco"
+          [attr.data-field-size]="field.size"
+          data-testid="tablet-field"
+          (pointerdown)="onFieldPointerDown($event)"
+          (pointerup)="onFieldPointerUp($event)"
+          (pointercancel)="onFieldPointerCancel()"
+        >
           <rect
-            [attr.x]="area.x"
-            [attr.y]="area.y"
-            [attr.width]="area.width"
-            [attr.height]="area.height"
-            fill="none"
+            x="0"
+            y="0"
+            [attr.width]="field.length"
+            [attr.height]="field.width"
+            [attr.rx]="field.cornerRadius"
+            class="fill-sky-50 stroke-fb-gray-500"
+            stroke-width="2"
+            vector-effect="non-scaling-stroke"
+          />
+          <line
+            [attr.x1]="markings.center.x"
+            y1="0"
+            [attr.x2]="markings.center.x"
+            [attr.y2]="field.width"
             class="stroke-fb-gray-500"
             stroke-width="1.5"
             vector-effect="non-scaling-stroke"
-            data-testid="tablet-field-goal-area"
           />
-        }
-        @for (area of markings.goalkeeperAreas; track $index) {
-          <rect
-            [attr.x]="area.x"
-            [attr.y]="area.y"
-            [attr.width]="area.width"
-            [attr.height]="area.height"
-            fill="none"
-            class="stroke-fb-gray-500"
-            stroke-width="1"
-            vector-effect="non-scaling-stroke"
-          />
-        }
-        @for (goal of markings.goals; track $index) {
-          <rect
-            [attr.x]="goal.x"
-            [attr.y]="goal.y"
-            [attr.width]="goal.width"
-            [attr.height]="goal.height"
+          <circle
+            [attr.cx]="markings.center.x"
+            [attr.cy]="markings.center.y"
+            [attr.r]="0.25 * markerScale"
             class="fill-fb-gray-500"
+            data-testid="tablet-field-center"
           />
-        }
-
-        @for (marker of fieldMarkers; track $index) {
-          @if (marker.freeHit) {
-            <!-- Freischlag als Raute, Schüsse sind Kreise -->
-            <rect
-              [attr.x]="marker.x * field.length - 0.4 * markerScale"
-              [attr.y]="marker.y * field.width - 0.4 * markerScale"
-              [attr.width]="0.8 * markerScale"
-              [attr.height]="0.8 * markerScale"
-              [attr.transform]="
-                'rotate(45 ' +
-                marker.x * field.length +
-                ' ' +
-                marker.y * field.width +
-                ')'
-              "
-              [attr.opacity]="marker.pending ? 0.5 : 1"
-              class="fill-amber-500 stroke-black"
-              stroke-width="1"
-              vector-effect="non-scaling-stroke"
-              data-testid="tablet-free-hit-marker"
-            />
-          } @else {
+          @for (spot of markings.faceoffSpots; track $index) {
             <circle
-              [attr.cx]="marker.x * field.length"
-              [attr.cy]="marker.y * field.width"
-              [attr.r]="0.5 * markerScale"
-              [attr.opacity]="marker.pending ? 0.5 : 1"
-              [class.fill-green-600]="marker.result === 'goal'"
-              [class.fill-blue-600]="marker.result === 'saved'"
-              [class.fill-fb-gray-400]="marker.result === 'missed'"
-              [class.fill-orange-500]="marker.result === 'blocked'"
+              [attr.cx]="spot.x"
+              [attr.cy]="spot.y"
+              [attr.r]="0.15 * markerScale"
+              class="fill-fb-gray-400"
             />
           }
-        }
-        @if (draft && draft.period === viewPeriod) {
-          <circle
-            [attr.cx]="draft.screenX * field.length"
-            [attr.cy]="draft.screenY * field.width"
-            [attr.r]="0.8 * markerScale"
-            class="fill-red-600 stroke-white"
-            stroke-width="2"
-            vector-effect="non-scaling-stroke"
-            data-testid="tablet-draft-marker"
-          />
-        }
-      </svg>
-      @if (freeHitArmed) {
-        <p class="mt-2 text-sm font-bold text-amber-800">
-          {{
-            "tablet.freeHit.hint" | transloco: { team: teamName(freeHitArmed) }
-          }}
-        </p>
-      } @else if (!draft) {
-        <p class="mt-2 text-sm text-fb-gray-500">
-          {{ "tablet.hint" | transloco }}
+          <!-- Torraum, Torhüterraum (Schutzraum) und Tor, links und rechts -->
+          @for (area of markings.goalAreas; track $index) {
+            <rect
+              [attr.x]="area.x"
+              [attr.y]="area.y"
+              [attr.width]="area.width"
+              [attr.height]="area.height"
+              fill="none"
+              class="stroke-fb-gray-500"
+              stroke-width="1.5"
+              vector-effect="non-scaling-stroke"
+              data-testid="tablet-field-goal-area"
+            />
+          }
+          @for (area of markings.goalkeeperAreas; track $index) {
+            <rect
+              [attr.x]="area.x"
+              [attr.y]="area.y"
+              [attr.width]="area.width"
+              [attr.height]="area.height"
+              fill="none"
+              class="stroke-fb-gray-500"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+            />
+          }
+          @for (goal of markings.goals; track $index) {
+            <rect
+              [attr.x]="goal.x"
+              [attr.y]="goal.y"
+              [attr.width]="goal.width"
+              [attr.height]="goal.height"
+              class="fill-fb-gray-500"
+            />
+          }
+
+          @for (marker of fieldMarkers; track $index) {
+            @if (marker.freeHit) {
+              <!-- Freischlag als Raute, Schüsse sind Kreise -->
+              <rect
+                [attr.x]="marker.x * field.length - 0.4 * markerScale"
+                [attr.y]="marker.y * field.width - 0.4 * markerScale"
+                [attr.width]="0.8 * markerScale"
+                [attr.height]="0.8 * markerScale"
+                [attr.transform]="
+                  'rotate(45 ' +
+                  marker.x * field.length +
+                  ' ' +
+                  marker.y * field.width +
+                  ')'
+                "
+                [attr.opacity]="marker.pending ? 0.5 : 1"
+                class="fill-amber-500 stroke-black"
+                stroke-width="1"
+                vector-effect="non-scaling-stroke"
+                data-testid="tablet-free-hit-marker"
+              />
+            } @else {
+              <circle
+                [attr.cx]="marker.x * field.length"
+                [attr.cy]="marker.y * field.width"
+                [attr.r]="0.5 * markerScale"
+                [attr.opacity]="marker.pending ? 0.5 : 1"
+                [class.fill-green-600]="marker.result === 'goal'"
+                [class.fill-blue-600]="marker.result === 'saved'"
+                [class.fill-fb-gray-400]="marker.result === 'missed'"
+                [class.fill-orange-500]="marker.result === 'blocked'"
+              />
+            }
+          }
+          @if (draft && draft.period === viewPeriod) {
+            <circle
+              [attr.cx]="draft.screenX * field.length"
+              [attr.cy]="draft.screenY * field.width"
+              [attr.r]="0.8 * markerScale"
+              class="fill-red-600 stroke-white"
+              stroke-width="2"
+              vector-effect="non-scaling-stroke"
+              data-testid="tablet-draft-marker"
+            />
+          }
+          <!--
+          Angetippte Stelle vor der Wahl: schwarzer Ring mit Fadenkreuz, damit
+          sie sich von Schüssen (Kreise) und Freischlägen (Rauten) abhebt.
+        -->
+          @if (pendingTap && pendingTap.period === viewPeriod) {
+            <g data-testid="tablet-tap-marker">
+              <circle
+                [attr.cx]="pendingTap.screenX * field.length"
+                [attr.cy]="pendingTap.screenY * field.width"
+                [attr.r]="0.9 * markerScale"
+                class="fill-white/60 stroke-black"
+                stroke-width="3"
+                vector-effect="non-scaling-stroke"
+              />
+              <line
+                [attr.x1]="
+                  pendingTap.screenX * field.length - 1.3 * markerScale
+                "
+                [attr.y1]="pendingTap.screenY * field.width"
+                [attr.x2]="
+                  pendingTap.screenX * field.length + 1.3 * markerScale
+                "
+                [attr.y2]="pendingTap.screenY * field.width"
+                class="stroke-black"
+                stroke-width="2"
+                vector-effect="non-scaling-stroke"
+              />
+              <line
+                [attr.x1]="pendingTap.screenX * field.length"
+                [attr.y1]="pendingTap.screenY * field.width - 1.3 * markerScale"
+                [attr.x2]="pendingTap.screenX * field.length"
+                [attr.y2]="pendingTap.screenY * field.width + 1.3 * markerScale"
+                class="stroke-black"
+                stroke-width="2"
+                vector-effect="non-scaling-stroke"
+              />
+            </g>
+          }
+        </svg>
+      </div>
+      @if (!fullscreen) {
+        <p class="mt-1 text-sm text-fb-gray-500">
+          <ng-container *ngTemplateOutlet="fieldHint"></ng-container>
         </p>
       }
     </div>
 
-    <div>
-      @if (lastSave) {
+    <div [class.tc-fs-side]="fullscreen" data-testid="tablet-side">
+      @if (pendingTap) {
+        <!--
+          Wahl nach dem Antippen: Stelle und Zeitpunkt stehen schon fest. Der
+          Schuss geht in den Entwurf, ein Freischlag wird sofort gespeichert.
+          Der Vorschlag fürs Team kommt aus der Feldhälfte, der zweite Knopf
+          nimmt das andere Team.
+        -->
         <div
-          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-blue-700 bg-blue-50 p-3"
-          data-testid="tablet-last-save"
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-black p-3"
+          role="group"
+          aria-labelledby="tablet-choice-title"
+          data-testid="tablet-tap-choice"
         >
-          <span class="font-bold">
-            {{
-              "tablet.save.saved"
-                | transloco: { team: teamName(lastSave.goalkeeperTeam) }
-            }}
-          </span>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-2">
+            <span id="tablet-choice-title" class="text-lg font-bold">{{
+              "tablet.choice.title" | transloco
+            }}</span>
+            <span class="text-sm text-fb-gray-500">{{
+              "tablet.draft.tappedAt"
+                | transloco
+                  : {
+                      time: tappedClock(
+                        toServerTimeIso(pendingTap.tapped_device_ms)
+                      ),
+                    }
+            }}</span>
+          </div>
+          <div class="grid grid-cols-[2fr_1fr] gap-2">
             <button
               type="button"
-              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
-              data-testid="tablet-save-undo"
-              (click)="undoLastSave()"
+              class="min-h-[72px] rounded-[5px] border-2 border-black bg-black px-2 text-xl font-bold text-white active:bg-fb-gray-600"
+              data-testid="tablet-choice-shot"
+              (click)="chooseTapShot()"
             >
-              {{ "tablet.save.undo" | transloco }}
+              {{
+                "tablet.choice.shot"
+                  | transloco: { team: teamName(pendingTap.team) }
+              }}
             </button>
             <button
               type="button"
-              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
-              (click)="dismissLastSave()"
+              class="min-h-[72px] rounded-[5px] border-2 border-black bg-white px-2 text-base font-bold text-black active:bg-fb-gray-200"
+              data-testid="tablet-choice-shot-other"
+              [attr.aria-label]="
+                'tablet.choice.shotOtherLabel'
+                  | transloco
+                    : {
+                        team: teamName(
+                          pendingTap.team === 'home' ? 'guest' : 'home'
+                        ),
+                      }
+              "
+              (click)="
+                chooseTapShot(pendingTap.team === 'home' ? 'guest' : 'home')
+              "
             >
-              {{ "tablet.save.ok" | transloco }}
+              {{
+                "tablet.choice.shot"
+                  | transloco
+                    : {
+                        team: teamName(
+                          pendingTap.team === "home" ? "guest" : "home"
+                        ),
+                      }
+              }}
             </button>
           </div>
+          <div class="grid grid-cols-2 gap-2">
+            @for (team of ["home", "guest"]; track team) {
+              <button
+                type="button"
+                class="min-h-[64px] rounded-[5px] border-2 border-amber-600 bg-amber-100 px-2 text-lg font-bold text-amber-900 active:bg-amber-200"
+                [attr.data-testid]="'tablet-choice-free-hit-' + team"
+                (click)="chooseTapFreeHit($any(team))"
+              >
+                {{
+                  "tablet.choice.freeHit"
+                    | transloco: { team: teamName($any(team)) }
+                }}
+              </button>
+            }
+          </div>
+          <button
+            type="button"
+            class="min-h-[56px] rounded-[5px] border-2 border-fb-gray-600 bg-white text-lg font-bold"
+            data-testid="tablet-choice-cancel"
+            (click)="cancelTap()"
+          >
+            {{ "tablet.choice.cancel" | transloco }}
+          </button>
         </div>
       }
       @if (lastMark) {
@@ -467,7 +578,9 @@
           </div>
         </div>
       }
-      @if (draft) {
+      @if (pendingTap) {
+        <!-- Erst wählen; ein offener Entwurf kommt danach wieder. -->
+      } @else if (draft) {
         <div class="flex flex-col gap-3" data-testid="tablet-draft">
           <div class="text-sm text-fb-gray-500">
             @if (draft.kind === "free_hit") {
@@ -681,7 +794,14 @@
             </p>
           }
 
-          <div class="grid grid-cols-2 gap-2">
+          <!-- Im Vollbild bleiben Speichern und Verwerfen unten sichtbar. -->
+          <div
+            class="grid grid-cols-2 gap-2"
+            [class.sticky]="fullscreen"
+            [class.bottom-0]="fullscreen"
+            [class.bg-white]="fullscreen"
+            [class.py-2]="fullscreen"
+          >
             <button
               type="button"
               class="min-h-[56px] rounded-[5px] bg-green-700 text-lg font-bold text-white disabled:opacity-40"
@@ -798,9 +918,24 @@
           </ul>
         </div>
       }
+      @if (fullscreen) {
+        <div class="mt-3">
+          <ng-container *ngTemplateOutlet="extras"></ng-container>
+        </div>
+      }
     </div>
   </div>
 
+  @if (!fullscreen) {
+    <ng-container *ngTemplateOutlet="extras"></ng-container>
+  }
+</section>
+
+<!--
+  Zuordnung, Highlights und Feedback: unter der Erfassung, im Vollbild unten
+  in der rechten Spalte.
+-->
+<ng-template #extras>
   @if (linkCandidates.length) {
     <div
       class="mt-4 rounded-[5px] border border-yellow-300 bg-yellow-50 p-3"
@@ -860,4 +995,12 @@
 
   <fb-tablet-highlight-request [gameId]="game.id"></fb-tablet-highlight-request>
   <fb-tablet-feedback [gameId]="game.id"></fb-tablet-feedback>
-</section>
+</ng-template>
+
+<ng-template #fieldHint>
+  @if (pendingTap) {
+    {{ "tablet.choice.moveHint" | transloco }}
+  } @else if (!draft) {
+    {{ "tablet.hint" | transloco }}
+  }
+</ng-template>

@@ -22,8 +22,8 @@
     "pending": "Das Spiel ist in den {{ period }}. Abschnitt gewechselt. Die Erfassung wechselt nach dem Speichern oder Verwerfen dieses Schusses."
   },
   "swapSides": "Seiten tauschen",
-  "field": "Spielfeld: Stelle des Schusses antippen",
-  "hint": "Stelle des Schusses auf dem Spielfeld antippen. Der Zeitpunkt wird sofort festgehalten.",
+  "field": "Spielfeld: Stelle antippen, danach wählen, ob Schuss oder Freischlag",
+  "hint": "Stelle auf dem Spielfeld antippen, danach wählen, was es war. Der Zeitpunkt wird beim Antippen festgehalten.",
   "result": {
     "goal": "Tor",
     "saved": "Gehalten",
@@ -93,9 +93,6 @@
     "error": "Die Rückmeldung konnte nicht gesendet werden. Bitte später erneut versuchen."
   },
   "freeHit": {
-    "arm": "Freischlag {{ team }}",
-    "armed": "Freischlag: Stelle antippen (abbrechen)",
-    "hint": "Stelle des Freischlags für {{ team }} antippen. Er wird sofort gespeichert.",
     "label": "Freischlag",
     "saved": "Freischlag {{ team }} gespeichert",
     "swapTeam": "Anderes Team",
@@ -127,11 +124,7 @@
     "error": "Der Link konnte nicht angefordert werden. Fehlt die Berechtigung für dieses Spiel?"
   },
   "save": {
-    "button": "Parade {{ team }}",
-    "saved": "Parade {{ team }} gezählt (ohne Position).",
-    "label": "Parade ohne Position",
-    "undo": "Rückgängig",
-    "ok": "OK"
+    "label": "Parade ohne Position"
   },
   "goaliePulled": {
     "button": "Torwart raus: {{ team }}",
@@ -143,5 +136,17 @@
     "extraAttacker": "6 gegen 5",
     "extraAttackerShort": "6 gegen 5",
     "emptyNetShort": "leeres Tor"
+  },
+  "fullscreen": {
+    "enter": "Vollbild",
+    "exit": "Vollbild beenden"
+  },
+  "choice": {
+    "title": "Was war das?",
+    "shot": "Schuss {{ team }}",
+    "shotOtherLabel": "Schuss für das andere Team: {{ team }}",
+    "freeHit": "Freischlag {{ team }}",
+    "cancel": "Abbrechen",
+    "moveHint": "Stelle verschieben: noch einmal tippen. Der Zeitpunkt bleibt."
   }
 }

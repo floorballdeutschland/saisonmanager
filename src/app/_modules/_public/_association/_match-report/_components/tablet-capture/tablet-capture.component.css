@@ -1,0 +1,51 @@
+/*
+  Vollbild der Tablet-Erfassung. Leitlayout ist das Querformat: das Spielfeld
+  so groß, wie die Fläche links es zulässt, bei gleichem Seitenverhältnis
+  (GF 40 x 20, KF 28 x 16), rechts eine Spalte, die in sich scrollt. Die Seite
+  selbst scrollt nicht. Im Hochformat steht beides untereinander; das Feld
+  nimmt dann die volle Breite.
+
+  Die Feldbreite im Querformat kommt aus Containerabfragen: Der Kasten um das
+  Feld ist ein Größencontainer, das Feld nimmt die kleinere von voller Breite
+  und Höhe mal Seitenverhältnis. Ohne Unterstützung bleibt `w-full` stehen.
+*/
+.tc-fs-body {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.tc-fs-field-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tc-fs-side {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (orientation: landscape) {
+  .tc-fs-body {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 30%, 420px);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .tc-fs-field-box {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 0;
+    container-type: size;
+  }
+
+  .tc-fs-field-box > svg {
+    width: min(100cqw, 100cqh * var(--field-aspect));
+  }
+}

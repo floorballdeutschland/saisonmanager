@@ -22,8 +22,8 @@
     "pending": "The game has moved to period {{ period }}. Recording switches after this shot is saved or discarded."
   },
   "swapSides": "Swap sides",
-  "field": "Rink: tap where the shot was taken",
-  "hint": "Tap where the shot was taken. The time is recorded immediately.",
+  "field": "Field: tap the spot, then choose shot or free hit",
+  "hint": "Tap the spot on the field, then choose what it was. The time is taken when you tap.",
   "result": {
     "goal": "Goal",
     "saved": "Saved",
@@ -93,9 +93,6 @@
     "error": "The feedback could not be sent. Please try again later."
   },
   "freeHit": {
-    "arm": "Free hit {{ team }}",
-    "armed": "Free hit: tap the spot (cancel)",
-    "hint": "Tap where {{ team }} takes the free hit. It is saved right away.",
     "label": "Free hit",
     "saved": "Free hit {{ team }} saved",
     "swapTeam": "Other team",
@@ -127,11 +124,7 @@
     "error": "The link could not be requested. Are you missing the permission for this game?"
   },
   "save": {
-    "button": "Save {{ team }}",
-    "saved": "Save {{ team }} counted (no position).",
-    "label": "Save without position",
-    "undo": "Undo",
-    "ok": "OK"
+    "label": "Save without position"
   },
   "goaliePulled": {
     "button": "Goalie pulled: {{ team }}",
@@ -143,5 +136,17 @@
     "extraAttacker": "6 on 5",
     "extraAttackerShort": "6 on 5",
     "emptyNetShort": "empty net"
+  },
+  "fullscreen": {
+    "enter": "Full screen",
+    "exit": "Exit full screen"
+  },
+  "choice": {
+    "title": "What was it?",
+    "shot": "Shot {{ team }}",
+    "shotOtherLabel": "Shot for the other team: {{ team }}",
+    "freeHit": "Free hit {{ team }}",
+    "cancel": "Cancel",
+    "moveHint": "Move the spot: tap again. The time stays."
   }
 }

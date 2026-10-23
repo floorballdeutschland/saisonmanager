@@ -128,6 +128,13 @@ describe('TabletCaptureComponent', () => {
     field.dispatchEvent(
       new PointerEvent('pointerup', { ...at, clientX: at.clientX + 3 })
     );
+    // Erst wählen, was es war.
+    expect(component.draft).toBeNull();
+    expect(component.pendingTap).toBeTruthy();
+    fixture.detectChanges();
+    fixture.nativeElement
+      .querySelector('[data-testid="tablet-choice-shot"]')
+      .click();
 
     const draft = component.draft!;
     expect(draft.screenX).toBeCloseTo(0.75, 2);
@@ -172,6 +179,7 @@ describe('TabletCaptureComponent', () => {
       const rect = field().getBoundingClientRect();
       pointer('pointerup', { clientX: rect.left + rect.width / 2 + 80 });
       expect(component.draft).toBeNull();
+      expect(component.pendingTap).toBeNull();
     });
 
     it('ignoriert zweiten Finger, Rechtsklick und Abbruch', async () => {
@@ -184,6 +192,7 @@ describe('TabletCaptureComponent', () => {
       pointer('pointercancel', {});
       pointer('pointerup', {});
       expect(component.draft).toBeNull();
+      expect(component.pendingTap).toBeNull();
     });
   });
 
@@ -415,6 +424,15 @@ describe('TabletCaptureComponent', () => {
       };
       field().dispatchEvent(new PointerEvent('pointerdown', at));
       field().dispatchEvent(new PointerEvent('pointerup', at));
+      fixture.detectChanges();
+      // Die Marke vor der Wahl sitzt schon an der Tippstelle.
+      const tapRing = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-tap-marker"] circle'
+      ) as SVGCircleElement;
+      expect(Number(tapRing.getAttribute('cx'))).toBeCloseTo(0.8 * 28, 1);
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-choice-shot"]')
+        .click();
       fixture.detectChanges();
 
       const draft = component.draft!;
@@ -750,21 +768,38 @@ describe('TabletCaptureComponent', () => {
   describe('Freischläge (fe#589)', () => {
     const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
 
-    function armFreeHit(team: 'home' | 'guest') {
-      fixture.nativeElement
-        .querySelector(`[data-testid="tablet-free-hit-arm-${team}"]`)
-        .click();
+    function tapAt(x: number, y: number): void {
+      const field = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGElement;
+      const rect = field.getBoundingClientRect();
+      const at = {
+        clientX: rect.left + rect.width * x,
+        clientY: rect.top + rect.height * y,
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        bubbles: true,
+      };
+      field.dispatchEvent(new PointerEvent('pointerdown', at));
+      field.dispatchEvent(new PointerEvent('pointerup', at));
       fixture.detectChanges();
-      expect(component.freeHitArmed).toBe(team);
     }
 
-    it('speichert einen Freischlag mit einem Tipp und schaltet danach zurück auf Schuss', async () => {
-      await start();
-      armFreeHit('home');
-      // 1. Abschnitt: Heim greift nach rechts an.
-      component.recordFreeHit('home', 0.75, 0.25, T0);
+    function click(testId: string): void {
+      fixture.nativeElement
+        .querySelector('[data-testid="' + testId + '"]')
+        .click();
+      fixture.detectChanges();
+    }
 
-      expect(component.freeHitArmed).toBeNull();
+    it('speichert einen Freischlag nach Tipp und Wahl mit Stelle und Tippzeitpunkt', async () => {
+      await start();
+      // 1. Abschnitt: Heim greift nach rechts an.
+      component.tapField(0.75, 0.25, T0);
+      component.chooseTapFreeHit('home');
+
+      expect(component.pendingTap).toBeNull();
       expect(component.draft).toBeNull();
       const post = http.expectOne(API + 'games/4711/shots.json');
       const sent = post.request.body.shots as ShotInput[];
@@ -774,6 +809,7 @@ describe('TabletCaptureComponent', () => {
           team: 'home',
           period: 1,
           game_time: '',
+          tapped_at: new Date(T0).toISOString(),
           x: 0.75,
           y: 0.25,
           result: null,
@@ -792,6 +828,9 @@ describe('TabletCaptureComponent', () => {
         ).length
       ).toBe(1);
       expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-tap-marker"]')
+      ).toBeNull();
+      expect(
         fixture.nativeElement.querySelector(
           '[data-testid="tablet-last-free-hit"]'
         )
@@ -799,25 +838,16 @@ describe('TabletCaptureComponent', () => {
       expect(component.lastFreeHit!.team).toBe('home');
     });
 
-    it('legt einen Tipp im Freischlag-Modus als Freischlag des gewählten Teams an, auch in dessen eigener Hälfte', async () => {
+    it('legt über die Knöpfe einen Freischlag des gewählten Teams an, auch in dessen eigener Hälfte', async () => {
       await start();
       // Heim greift im 1. Abschnitt nach rechts an; die linke Hälfte ist
       // Heims Verteidigungszone. Die Feldhälfte ergäbe hier Gast.
-      armFreeHit('home');
-      const field = fixture.nativeElement.querySelector(
-        '[data-testid="tablet-field"]'
-      ) as SVGElement;
-      const rect = field.getBoundingClientRect();
-      const at = {
-        clientX: rect.left + rect.width * 0.25,
-        clientY: rect.top + rect.height * 0.5,
-        pointerId: 1,
-        isPrimary: true,
-        button: 0,
-        bubbles: true,
-      };
-      field.dispatchEvent(new PointerEvent('pointerdown', at));
-      field.dispatchEvent(new PointerEvent('pointerup', at));
+      tapAt(0.25, 0.5);
+      expect(component.pendingTap!.team).toBe('guest');
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-tap-marker"]')
+      ).toBeTruthy();
+      click('tablet-choice-free-hit-home');
 
       expect(component.draft).toBeNull();
       const sent = http.expectOne(API + 'games/4711/shots.json').request.body
@@ -828,40 +858,42 @@ describe('TabletCaptureComponent', () => {
       expect(freeHitZone({ x: sent[0].x!, y: sent[0].y! })).toBe('own_half');
     });
 
-    it('bricht den Freischlag-Modus mit demselben Knopf ab', async () => {
+    it('speichert einen Freischlag des Gastes über seinen Knopf', async () => {
       await start();
-      armFreeHit('guest');
-      fixture.nativeElement
-        .querySelector('[data-testid="tablet-free-hit-arm-guest"]')
-        .click();
-      expect(component.freeHitArmed).toBeNull();
+      tapAt(0.8, 0.5);
+      click('tablet-choice-free-hit-guest');
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      expect(sent[0].kind).toBe('free_hit');
+      expect(sent[0].team).toBe('guest');
+      // Gast greift im 1. Abschnitt nach links an: Position gedreht.
+      expect(sent[0].x).toBeCloseTo(0.2, 2);
+    });
+
+    it('bietet keine Scharf-Knöpfe für Freischläge mehr an', async () => {
+      await start();
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid^="tablet-free-hit-arm"]'
+        )
+      ).toBeNull();
     });
 
     it('zeigt die Rückmeldung zum Freischlag auch bei offenem Schuss-Entwurf', async () => {
       await start();
-      // Über die Oberfläche statt per Methodenaufruf, sonst ist die
-      // Komponente für die Änderungserkennung nicht als geändert markiert.
-      const tapField = (x: number, y: number) => {
-        const field = fixture.nativeElement.querySelector(
-          '[data-testid="tablet-field"]'
-        ) as SVGElement;
-        const rect = field.getBoundingClientRect();
-        const at = {
-          clientX: rect.left + rect.width * x,
-          clientY: rect.top + rect.height * y,
-          pointerId: 1,
-          isPrimary: true,
-          button: 0,
-          bubbles: true,
-        };
-        field.dispatchEvent(new PointerEvent('pointerdown', at));
-        field.dispatchEvent(new PointerEvent('pointerup', at));
-        fixture.detectChanges();
-      };
-      tapField(0.8, 0.5);
+      tapAt(0.8, 0.5);
+      click('tablet-choice-shot');
       expect(component.draft).toBeTruthy();
-      armFreeHit('guest');
-      tapField(0.3, 0.3);
+      // Das Verschiebe-Fenster ist vorbei: Der nächste Tipp ist eine neue
+      // Szene, der Entwurf wartet.
+      component.draft!.tapped_device_ms = Date.now() - 60000;
+      tapAt(0.3, 0.3);
+      expect(component.pendingTap).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-draft"]')
+      ).toBeNull();
+      click('tablet-choice-free-hit-guest');
       http.expectOne(API + 'games/4711/shots.json');
 
       expect(
@@ -872,9 +904,7 @@ describe('TabletCaptureComponent', () => {
           '[data-testid="tablet-last-free-hit"]'
         )
       ).toBeTruthy();
-      fixture.nativeElement
-        .querySelector('[data-testid="tablet-free-hit-undo"]')
-        .click();
+      click('tablet-free-hit-undo');
       expect(component.lastFreeHit).toBeNull();
       expect(component.allShots.length).toBe(0);
       expect(component.draft).toBeTruthy();
@@ -884,8 +914,8 @@ describe('TabletCaptureComponent', () => {
       await start();
       component.startDraft(0.8, 0.5, T0);
       const draft = component.draft;
-      component.toggleFreeHitArmed('guest');
-      component.recordFreeHit('guest', 0.3, 0.3, T0 + 1000);
+      component.tapField(0.3, 0.3, T0 + 30000);
+      component.chooseTapFreeHit('guest');
       http.expectOne(API + 'games/4711/shots.json');
 
       expect(component.draft).toBe(draft);
@@ -1124,7 +1154,7 @@ describe('TabletCaptureComponent', () => {
     });
   });
 
-  describe('Strafschuss, Torwart raus, Parade (Feedback #61 bis #64)', () => {
+  describe('Strafschuss, Torwart raus, Paraden (Feedback #61 bis #64)', () => {
     const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
 
     function sentShots(): ShotInput[] {
@@ -1147,46 +1177,50 @@ describe('TabletCaptureComponent', () => {
       fixture.detectChanges();
     }
 
-    it('zählt eine Parade mit einem Tipp, ohne Position, für den Torhüter des Teams', async () => {
-      await start(inPeriod(4711, 2));
-      click('tablet-quick-save-guest');
-
-      const sent = sentShots();
-      expect(sent).toEqual([
-        jasmine.objectContaining({
-          kind: 'shot',
-          team: 'home',
-          period: 2,
-          x: null,
-          y: null,
-          result: 'saved',
-          shooter_player_id: null,
-          goalkeeper_player_id: 299,
-          from_penalty_shot: false,
-          empty_net: false,
-          extra_attacker: false,
-        }),
-      ]);
-      expect(component.draft).toBeNull();
-      expect(component.lastSave?.goalkeeperTeam).toBe('guest');
-      // Kein Punkt auf dem Feld, kein Ändern, aber in der Liste.
-      expect(component.fieldMarkers.length).toBe(0);
-      expect(component.canEdit(component.allShots[0])).toBeFalse();
+    it('bietet keinen Schnellzähler für Paraden mehr an', async () => {
+      await start();
       expect(
-        fixture.nativeElement.querySelector('[data-testid="tablet-recent"]')
-          .textContent
-      ).toContain('tablet.save.label');
+        fixture.nativeElement.querySelector(
+          '[data-testid^="tablet-quick-save"]'
+        )
+      ).toBeNull();
     });
 
-    it('nimmt die letzte Parade zurück', async () => {
-      await start();
-      component.recordSave('home', T0);
-      http.expectOne(API + 'games/4711/shots.json');
+    it('zeigt ältere Paraden ohne Position in der Liste, ohne Feldmarke, und löscht sie', async () => {
+      fixture.componentRef.setInput('game', inPeriod(4711, 2));
+      fixture.detectChanges();
+      const save: Shot = {
+        client_uuid: 's1',
+        kind: 'shot',
+        team: 'home',
+        period: 2,
+        game_time: '',
+        tapped_at: new Date(T0).toISOString(),
+        x: null,
+        y: null,
+        result: 'saved',
+        shooter_player_id: null,
+        goalkeeper_player_id: 299,
+        id: 1,
+        event_id: null,
+      };
+      http.expectOne(API + 'games/4711/shots.json').flush({ shots: [save] });
+      render();
 
-      component.undoLastSave();
+      expect(component.fieldMarkers.length).toBe(0);
+      expect(component.canEdit(component.allShots[0])).toBeFalse();
+      const recent = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-recent"]'
+      );
+      expect(recent.textContent).toContain('tablet.save.label');
+      expect(recent.textContent).not.toContain('tablet.recent.edit');
 
-      expect(component.lastSave).toBeNull();
+      component.deleteShot('s1');
       expect(component.allShots.length).toBe(0);
+      const del = http.expectOne(API + 'games/4711/shots/s1.json');
+      expect(del.request.method).toBe('DELETE');
+      del.flush({ shots: [] });
+      await settle();
     });
 
     it('belegt bei „Torwart raus“ leeres Tor und 6 gegen 5 vor, bis zum Abschnittsende', async () => {
@@ -1207,12 +1241,6 @@ describe('TabletCaptureComponent', () => {
       expect(component.draft!.extra_attacker).toBeTrue();
       expect(component.draft!.goalkeeper_player_id).toBe(199);
       component.cancelDraft();
-
-      // Eine Parade des Gastes gibt es ohne Torhüter nicht.
-      const save = fixture.nativeElement.querySelector(
-        '[data-testid="tablet-quick-save-guest"]'
-      ) as HTMLButtonElement;
-      expect(save.disabled).toBeTrue();
 
       // Der Schalter übersteht ein Neuladen, aber nicht den Abschnittswechsel.
       fixture.componentRef.setInput('game', inPeriod(4711, 2));
@@ -1367,6 +1395,356 @@ describe('TabletCaptureComponent', () => {
       expect(sent[0].extra_attacker).toBeTrue();
       expect(component.draft!.extra_attacker).toBeTrue();
       expect(component.draft!.from_penalty_shot).toBeFalse();
+    });
+  });
+
+  describe('Erst tippen, dann wählen', () => {
+    const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
+
+    function click(testId: string): void {
+      fixture.nativeElement
+        .querySelector('[data-testid="' + testId + '"]')
+        .click();
+      fixture.detectChanges();
+    }
+
+    function render(): void {
+      (
+        component as unknown as { _cdr: { markForCheck(): void } }
+      )._cdr.markForCheck();
+      fixture.detectChanges();
+    }
+
+    it('hält beim Tipp Stelle und Zeitpunkt fest und zeigt die Wahl', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      render();
+
+      expect(component.draft).toBeNull();
+      expect(component.pendingTap).toEqual({
+        tapped_device_ms: T0,
+        screenX: 0.8,
+        screenY: 0.5,
+        team: 'home',
+        period: 1,
+      });
+      const choice = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-tap-choice"]'
+      );
+      expect(choice).toBeTruthy();
+      expect(choice.textContent).toContain('tablet.choice.shot');
+      // Noch nichts gespeichert.
+      http.expectNone(API + 'games/4711/shots.json');
+    });
+
+    it('führt mit „Schuss“ in den Entwurf, mit dem ursprünglichen Tippzeitpunkt', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      render();
+      click('tablet-choice-shot');
+
+      expect(component.pendingTap).toBeNull();
+      const draft = component.draft!;
+      expect(draft.team).toBe('home');
+      expect(draft.tapped_device_ms).toBe(T0);
+      expect(draft.tapped_at).toBe(new Date(T0).toISOString());
+      expect(draft.goalkeeper_player_id).toBe(299);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-draft"]')
+      ).toBeTruthy();
+
+      component.setDraftResult('missed');
+      component.saveDraft();
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      expect(sent[0].kind).toBe('shot');
+      expect(sent[0].tapped_at).toBe(new Date(T0).toISOString());
+    });
+
+    it('nimmt mit dem zweiten Schuss-Knopf das andere Team', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      render();
+      click('tablet-choice-shot-other');
+
+      expect(component.draft!.team).toBe('guest');
+      // Heim verteidigt: dessen Torhüter.
+      expect(component.draft!.goalkeeper_player_id).toBe(199);
+      expect(component.draft!.tapped_device_ms).toBe(T0);
+    });
+
+    it('verwirft mit „Abbrechen“ Stelle und Zeitpunkt', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      render();
+      click('tablet-choice-cancel');
+
+      expect(component.pendingTap).toBeNull();
+      expect(component.draft).toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-tap-marker"]')
+      ).toBeNull();
+      expect(component.allShots.length).toBe(0);
+      http.expectNone(API + 'games/4711/shots.json');
+    });
+
+    it('verschiebt bei erneutem Tippen nur die Stelle, der Zeitpunkt bleibt', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      component.tapField(0.3, 0.4, T0 + 5000);
+
+      expect(component.pendingTap!.tapped_device_ms).toBe(T0);
+      expect(component.pendingTap!.screenX).toBe(0.3);
+      expect(component.pendingTap!.screenY).toBe(0.4);
+      // Der Vorschlag folgt der neuen Feldhälfte.
+      expect(component.pendingTap!.team).toBe('guest');
+
+      component.chooseTapShot();
+      expect(component.draft!.tapped_at).toBe(new Date(T0).toISOString());
+      expect(component.draft!.screenX).toBe(0.3);
+    });
+
+    it('beginnt nach dem Verschiebe-Fenster eine neue Szene mit neuem Zeitpunkt', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      component.tapField(0.3, 0.4, T0 + 11000);
+
+      expect(component.pendingTap!.tapped_device_ms).toBe(T0 + 11000);
+    });
+
+    it('verschiebt einen frischen Entwurf weiter, ohne neue Wahl', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      component.chooseTapShot();
+      const uuid = component.draft!.client_uuid;
+      component.tapField(0.7, 0.4, T0 + 4000);
+
+      expect(component.pendingTap).toBeNull();
+      expect(component.draft!.client_uuid).toBe(uuid);
+      expect(component.draft!.screenX).toBe(0.7);
+      expect(component.draft!.tapped_device_ms).toBe(T0);
+    });
+
+    it('belegt „aus Freischlag“ beim Schuss nach einem Freischlag vor', async () => {
+      await start();
+      component.tapField(0.75, 0.25, T0);
+      component.chooseTapFreeHit('home');
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.tapField(0.9, 0.5, T0 + 3000);
+      component.chooseTapShot();
+      expect(component.draft!.team).toBe('home');
+      expect(component.draft!.from_free_hit).toBeTrue();
+      // Der Freischlag ist gespeichert, seine Raute steht auf dem Feld.
+      expect(component.fieldMarkers.filter((m) => m.freeHit).length).toBe(1);
+    });
+
+    it('wartet mit dem Abschnittswechsel, solange gewählt wird', async () => {
+      await start(inPeriod(4711, 1));
+      component.tapField(0.8, 0.5, T0);
+      fixture.componentRef.setInput('game', inPeriod(4711, 2));
+      fixture.detectChanges();
+
+      expect(component.viewPeriod).toBe(1);
+      expect(component.periodChangePending).toBeTrue();
+      component.cancelTap();
+      expect(component.viewPeriod).toBe(2);
+      expect(component.periodChangePending).toBeFalse();
+    });
+
+    it('verwirft die Wahl beim Spielwechsel', async () => {
+      await start();
+      component.tapField(0.8, 0.5, T0);
+      fixture.componentRef.setInput('game', game(4712));
+      fixture.detectChanges();
+      http.expectOne(API + 'games/4712/shots.json').flush({ shots: [] });
+
+      expect(component.pendingTap).toBeNull();
+    });
+  });
+
+  describe('Vollbild', () => {
+    function root(): HTMLElement {
+      return fixture.nativeElement.querySelector(
+        '[data-testid="tablet-capture"]'
+      ) as HTMLElement;
+    }
+
+    function toggle(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector(
+        '[data-testid="tablet-fullscreen-toggle"]'
+      ) as HTMLButtonElement;
+    }
+
+    afterEach(() => {
+      document.body.style.overflow = '';
+    });
+
+    it('ist aus und legt sich auf Knopfdruck als Ebene über die Seite', async () => {
+      await start();
+      const request = spyOn(root(), 'requestFullscreen').and.returnValue(
+        Promise.resolve()
+      );
+      expect(component.fullscreen).toBeFalse();
+      expect(root().classList).not.toContain('fixed');
+      expect(toggle().getAttribute('aria-pressed')).toBe('false');
+
+      toggle().click();
+      fixture.detectChanges();
+
+      expect(component.fullscreen).toBeTrue();
+      expect(root().classList).toContain('fixed');
+      expect(root().classList).toContain('inset-0');
+      expect(root().getAttribute('role')).toBe('dialog');
+      expect(document.body.style.overflow).toBe('hidden');
+      expect(request).toHaveBeenCalled();
+      expect(toggle().textContent).toContain('tablet.fullscreen.exit');
+      expect(toggle().getAttribute('aria-pressed')).toBe('true');
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-body"]')
+          .classList
+      ).toContain('tc-fs-body');
+
+      toggle().click();
+      fixture.detectChanges();
+      expect(component.fullscreen).toBeFalse();
+      expect(root().classList).not.toContain('fixed');
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('beendet das Vollbild mit Esc', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      component.enterFullscreen();
+      fixture.detectChanges();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+
+      expect(component.fullscreen).toBeFalse();
+      expect(root().classList).not.toContain('fixed');
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('bleibt bei der Ebene, wenn der Browser das Vollbild ablehnt', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(
+        Promise.reject(new Error('denied'))
+      );
+      component.enterFullscreen();
+      await settle();
+      fixture.detectChanges();
+
+      expect(component.fullscreen).toBeTrue();
+      expect(root().classList).toContain('fixed');
+    });
+
+    it('bleibt bei der Ebene, wenn die Fullscreen-API wirft oder fehlt', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.throwError('not supported');
+      expect(() => component.enterFullscreen()).not.toThrow();
+      expect(component.fullscreen).toBeTrue();
+      component.exitFullscreen();
+
+      (root() as unknown as { requestFullscreen: unknown }).requestFullscreen =
+        undefined;
+      component.enterFullscreen();
+      fixture.detectChanges();
+      expect(component.fullscreen).toBeTrue();
+      expect(root().classList).toContain('fixed');
+    });
+
+    it('beendet die Ebene mit, wenn das Browser-Vollbild verlassen wird', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      const exit = spyOn(document, 'exitFullscreen').and.returnValue(
+        Promise.resolve()
+      );
+      const current = spyOnProperty(
+        document,
+        'fullscreenElement',
+        'get'
+      ).and.returnValue(null);
+      component.enterFullscreen();
+
+      // Ein fremdes Vollbild-Ende vor dem eigenen zählt nicht.
+      document.dispatchEvent(new Event('fullscreenchange'));
+      expect(component.fullscreen).toBeTrue();
+
+      current.and.returnValue(root());
+      document.dispatchEvent(new Event('fullscreenchange'));
+      expect(component.fullscreen).toBeTrue();
+
+      // Esc im Browser-Vollbild erreicht die Seite nicht, nur dieses Ereignis.
+      current.and.returnValue(null);
+      document.dispatchEvent(new Event('fullscreenchange'));
+      fixture.detectChanges();
+      expect(component.fullscreen).toBeFalse();
+      expect(root().classList).not.toContain('fixed');
+      expect(exit).not.toHaveBeenCalled();
+    });
+
+    it('verlässt beim Beenden per Knopf auch das Browser-Vollbild', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      const exit = spyOn(document, 'exitFullscreen').and.returnValue(
+        Promise.reject(new Error('egal'))
+      );
+      spyOnProperty(document, 'fullscreenElement', 'get').and.returnValue(
+        root()
+      );
+      component.enterFullscreen();
+      document.dispatchEvent(new Event('fullscreenchange'));
+
+      component.exitFullscreen();
+      await settle();
+      expect(exit).toHaveBeenCalled();
+      expect(component.fullscreen).toBeFalse();
+    });
+
+    it('gibt die Seite beim Zerstören wieder frei', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      component.enterFullscreen();
+      expect(document.body.style.overflow).toBe('hidden');
+
+      fixture.destroy();
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('erfasst im Vollbild wie gewohnt: Tipp, Wahl, Entwurf', async () => {
+      await start();
+      spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
+      toggle().click();
+      fixture.detectChanges();
+
+      const field = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGElement;
+      const rect = field.getBoundingClientRect();
+      expect(rect.width).toBeGreaterThan(0);
+      const at = {
+        clientX: rect.left + rect.width * 0.75,
+        clientY: rect.top + rect.height * 0.5,
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        bubbles: true,
+      };
+      field.dispatchEvent(new PointerEvent('pointerdown', at));
+      field.dispatchEvent(new PointerEvent('pointerup', at));
+      fixture.detectChanges();
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-choice-shot"]')
+        .click();
+      fixture.detectChanges();
+
+      expect(component.draft!.screenX).toBeCloseTo(0.75, 2);
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-side"] [data-testid="tablet-draft"]'
+        )
+      ).toBeTruthy();
     });
   });
 });
