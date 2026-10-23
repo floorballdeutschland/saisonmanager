@@ -246,6 +246,11 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
 
   personLabel = personLabel;
 
+  /** Am Tablet vorgemerkte Szene ohne Tor (api#838). */
+  isMark(scene: HighlightScene): boolean {
+    return scene.kind === 'mark';
+  }
+
   private reset(): void {
     this.destroyPlayer();
     this.consented = false;

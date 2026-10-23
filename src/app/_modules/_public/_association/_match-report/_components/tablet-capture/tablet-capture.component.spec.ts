@@ -10,7 +10,9 @@ import { Game, Shot, ShotInput } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
 import { TabletCaptureComponent } from './tablet-capture.component';
+import { freeHitZone } from '../../../_match/_utils/detailed-stats';
 import { TabletFeedbackComponent } from './tablet-feedback.component';
+import { TabletHighlightRequestComponent } from './tablet-highlight-request.component';
 
 const API = environment.apiURL;
 
@@ -71,7 +73,11 @@ describe('TabletCaptureComponent', () => {
         FormsModule,
         getTranslocoTestingModule(),
       ],
-      declarations: [TabletCaptureComponent, TabletFeedbackComponent],
+      declarations: [
+        TabletCaptureComponent,
+        TabletFeedbackComponent,
+        TabletHighlightRequestComponent,
+      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -362,6 +368,76 @@ describe('TabletCaptureComponent', () => {
     expect(component.pendingCount).toBe(0);
     expect(component.recentShots.length).toBe(1);
     expect(component.recentShots[0].pending).toBeFalse();
+  });
+
+  describe('Spielfeld je Feldgröße (fe#591)', () => {
+    const field = () =>
+      fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGSVGElement;
+
+    it('zeichnet ohne Feldgröße das Großfeld, ohne Mittelkreis', async () => {
+      await start();
+      expect(field().getAttribute('data-field-size')).toBe('GF');
+      expect(field().getAttribute('viewBox')).toBe('0 0 40 20');
+      expect(field().style.aspectRatio).toBe('40 / 20');
+      const center = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field-center"]'
+      ) as SVGCircleElement;
+      expect(center.getAttribute('cx')).toBe('20');
+      // Nur ein Punkt in der Mitte, kein Kreis mit 3 m Radius
+      expect(Number(center.getAttribute('r'))).toBeLessThan(1);
+      expect(
+        fixture.nativeElement.querySelectorAll(
+          '[data-testid="tablet-field-goal-area"]'
+        ).length
+      ).toBe(2);
+    });
+
+    it('zeichnet das Kleinfeld 28 x 16 m und rechnet die Tippstelle gleich um', async () => {
+      fixture.componentRef.setInput('fieldSize', 'KF');
+      await start();
+      expect(field().getAttribute('data-field-size')).toBe('KF');
+      expect(field().getAttribute('viewBox')).toBe('0 0 28 16');
+      expect(field().style.aspectRatio).toBe('28 / 16');
+
+      // Seitenverhältnis 1,75 : 1 auf dem Bildschirm
+      const rect = field().getBoundingClientRect();
+      expect(rect.width / rect.height).toBeCloseTo(1.75, 1);
+
+      const at = {
+        clientX: rect.left + rect.width * 0.8,
+        clientY: rect.top + rect.height * 0.25,
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        bubbles: true,
+      };
+      field().dispatchEvent(new PointerEvent('pointerdown', at));
+      field().dispatchEvent(new PointerEvent('pointerup', at));
+      fixture.detectChanges();
+
+      const draft = component.draft!;
+      expect(draft.screenX).toBeCloseTo(0.8, 2);
+      expect(draft.screenY).toBeCloseTo(0.25, 2);
+      expect(draft.team).toBe('home');
+      // Markierung sitzt in Metern des Kleinfelds an der Tippstelle
+      const marker = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-draft-marker"]'
+      ) as SVGCircleElement;
+      expect(Number(marker.getAttribute('cx'))).toBeCloseTo(0.8 * 28, 1);
+      expect(Number(marker.getAttribute('cy'))).toBeCloseTo(0.25 * 16, 1);
+
+      component.setDraftResult('saved');
+      component.saveDraft();
+      const request = http.expectOne(API + 'games/4711/shots.json');
+      const sent = request.request.body.shots as ShotInput[];
+      // Normierung bleibt 0..1 von Bande zu Bande, unabhängig von der Größe
+      expect(sent[0].x).toBeCloseTo(0.8, 2);
+      expect(sent[0].y).toBeCloseTo(0.25, 2);
+      request.flush({ shots: [asShot(sent[0])] });
+      await settle();
+    });
   });
 
   it('weist eine ungültige Spielzeit ab, ohne zu speichern', async () => {
@@ -668,6 +744,383 @@ describe('TabletCaptureComponent', () => {
       expect(component.viewPeriod).toBe(1);
       expect(component.gamePeriod).toBe(1);
       expect(component.periodChangePending).toBeFalse();
+    });
+  });
+
+  describe('Freischläge (fe#589)', () => {
+    const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
+
+    function armFreeHit(team: 'home' | 'guest') {
+      fixture.nativeElement
+        .querySelector(`[data-testid="tablet-free-hit-arm-${team}"]`)
+        .click();
+      fixture.detectChanges();
+      expect(component.freeHitArmed).toBe(team);
+    }
+
+    it('speichert einen Freischlag mit einem Tipp und schaltet danach zurück auf Schuss', async () => {
+      await start();
+      armFreeHit('home');
+      // 1. Abschnitt: Heim greift nach rechts an.
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+
+      expect(component.freeHitArmed).toBeNull();
+      expect(component.draft).toBeNull();
+      const post = http.expectOne(API + 'games/4711/shots.json');
+      const sent = post.request.body.shots as ShotInput[];
+      expect(sent).toEqual([
+        jasmine.objectContaining({
+          kind: 'free_hit',
+          team: 'home',
+          period: 1,
+          game_time: '',
+          x: 0.75,
+          y: 0.25,
+          result: null,
+          shooter_player_id: null,
+          goalkeeper_player_id: null,
+          from_free_hit: false,
+        }),
+      ]);
+      post.flush({ shots: [asShot(sent[0])] });
+      await settle();
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelectorAll(
+          '[data-testid="tablet-free-hit-marker"]'
+        ).length
+      ).toBe(1);
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-last-free-hit"]'
+        )
+      ).toBeTruthy();
+      expect(component.lastFreeHit!.team).toBe('home');
+    });
+
+    it('legt einen Tipp im Freischlag-Modus als Freischlag des gewählten Teams an, auch in dessen eigener Hälfte', async () => {
+      await start();
+      // Heim greift im 1. Abschnitt nach rechts an; die linke Hälfte ist
+      // Heims Verteidigungszone. Die Feldhälfte ergäbe hier Gast.
+      armFreeHit('home');
+      const field = fixture.nativeElement.querySelector(
+        '[data-testid="tablet-field"]'
+      ) as SVGElement;
+      const rect = field.getBoundingClientRect();
+      const at = {
+        clientX: rect.left + rect.width * 0.25,
+        clientY: rect.top + rect.height * 0.5,
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        bubbles: true,
+      };
+      field.dispatchEvent(new PointerEvent('pointerdown', at));
+      field.dispatchEvent(new PointerEvent('pointerup', at));
+
+      expect(component.draft).toBeNull();
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      expect(sent[0].kind).toBe('free_hit');
+      expect(sent[0].team).toBe('home');
+      expect(sent[0].x).toBeCloseTo(0.25, 2);
+      expect(freeHitZone({ x: sent[0].x!, y: sent[0].y! })).toBe('own_half');
+    });
+
+    it('bricht den Freischlag-Modus mit demselben Knopf ab', async () => {
+      await start();
+      armFreeHit('guest');
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-free-hit-arm-guest"]')
+        .click();
+      expect(component.freeHitArmed).toBeNull();
+    });
+
+    it('zeigt die Rückmeldung zum Freischlag auch bei offenem Schuss-Entwurf', async () => {
+      await start();
+      // Über die Oberfläche statt per Methodenaufruf, sonst ist die
+      // Komponente für die Änderungserkennung nicht als geändert markiert.
+      const tapField = (x: number, y: number) => {
+        const field = fixture.nativeElement.querySelector(
+          '[data-testid="tablet-field"]'
+        ) as SVGElement;
+        const rect = field.getBoundingClientRect();
+        const at = {
+          clientX: rect.left + rect.width * x,
+          clientY: rect.top + rect.height * y,
+          pointerId: 1,
+          isPrimary: true,
+          button: 0,
+          bubbles: true,
+        };
+        field.dispatchEvent(new PointerEvent('pointerdown', at));
+        field.dispatchEvent(new PointerEvent('pointerup', at));
+        fixture.detectChanges();
+      };
+      tapField(0.8, 0.5);
+      expect(component.draft).toBeTruthy();
+      armFreeHit('guest');
+      tapField(0.3, 0.3);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-draft"]')
+      ).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-last-free-hit"]'
+        )
+      ).toBeTruthy();
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-free-hit-undo"]')
+        .click();
+      expect(component.lastFreeHit).toBeNull();
+      expect(component.allShots.length).toBe(0);
+      expect(component.draft).toBeTruthy();
+    });
+
+    it('lässt einen offenen Schuss-Entwurf beim Freischlag unangetastet', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      const draft = component.draft;
+      component.toggleFreeHitArmed('guest');
+      component.recordFreeHit('guest', 0.3, 0.3, T0 + 1000);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      expect(component.draft).toBe(draft);
+      expect(component.draft!.screenX).toBe(0.8);
+    });
+
+    it('schreibt den letzten Freischlag dem anderen Team zu und rechnet die Position um', async () => {
+      await start();
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+      const first = http.expectOne(API + 'games/4711/shots.json');
+      first.flush({ shots: [asShot(first.request.body.shots[0])] });
+      await settle();
+      const uuid = component.lastFreeHit!.client_uuid;
+
+      component.swapLastFreeHitTeam();
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      const swapped = sent.find((shot) => shot.client_uuid === uuid)!;
+      // Gast greift im 1. Abschnitt nach links an: Position gedreht.
+      expect(swapped.team).toBe('guest');
+      expect(swapped.x).toBeCloseTo(0.25, 5);
+      expect(swapped.y).toBeCloseTo(0.75, 5);
+      expect(swapped.tapped_at).toBe(new Date(T0).toISOString());
+      expect(component.lastFreeHit!.team).toBe('guest');
+    });
+
+    it('nimmt den letzten Freischlag zurück', async () => {
+      await start();
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.undoLastFreeHit();
+
+      expect(component.lastFreeHit).toBeNull();
+      expect(component.allShots.length).toBe(0);
+    });
+
+    it('belegt „aus Freischlag“ vor, wenn derselbe Team-Freischlag höchstens 10 s zurückliegt', async () => {
+      await start();
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.startDraft(0.9, 0.5, T0 + 8000);
+      expect(component.draft!.team).toBe('home');
+      expect(component.draft!.from_free_hit).toBeTrue();
+
+      // Das andere Team hatte keinen Freischlag.
+      component.setDraftTeam('guest');
+      expect(component.draft!.from_free_hit).toBeFalse();
+    });
+
+    it('belegt nicht vor, wenn der Freischlag länger als 10 s zurückliegt', async () => {
+      await start();
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.startDraft(0.9, 0.5, T0 + 11000);
+      expect(component.draft!.from_free_hit).toBeFalse();
+    });
+
+    it('sendet den Schalter „aus Freischlag“ mit dem Schuss und behält eine Handauswahl', async () => {
+      await start();
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+      const first = http.expectOne(API + 'games/4711/shots.json');
+      first.flush({ shots: [asShot(first.request.body.shots[0])] });
+      await settle();
+
+      component.startDraft(0.9, 0.5, T0 + 3000);
+      component.toggleDraftFromFreeHit();
+      // Von Hand abgewählt: Teamwechsel hin und zurück belegt nicht neu vor.
+      component.setDraftTeam('guest');
+      component.setDraftTeam('home');
+      expect(component.draft!.from_free_hit).toBeFalse();
+      component.toggleDraftFromFreeHit();
+      component.setDraftResult('goal');
+      component.saveDraft();
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      const shot = sent.find((entry) => entry.kind === 'shot')!;
+      expect(shot.result).toBe('goal');
+      expect(shot.from_free_hit).toBeTrue();
+    });
+
+    it('korrigiert einen Freischlag ohne Ergebnis und ohne Personen', async () => {
+      await start();
+      component.recordFreeHit('home', 0.75, 0.25, T0);
+      const first = http.expectOne(API + 'games/4711/shots.json');
+      const sent = first.request.body.shots as ShotInput[];
+      first.flush({ shots: [asShot(sent[0])] });
+      await settle();
+
+      component.editShot(component.allShots[0]);
+      fixture.detectChanges();
+      expect(component.draft!.kind).toBe('free_hit');
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="tablet-result-goal"]'
+        )
+      ).toBeNull();
+      expect(component.canSaveDraft).toBeTrue();
+
+      component.draft!.game_time = '5:00';
+      component.saveDraft();
+
+      const second = http.expectOne(API + 'games/4711/shots.json');
+      expect(second.request.body.shots[0]).toEqual(
+        jasmine.objectContaining({
+          client_uuid: sent[0].client_uuid,
+          kind: 'free_hit',
+          game_time: '5:00',
+          result: null,
+          shooter_player_id: null,
+          goalkeeper_player_id: null,
+          from_free_hit: false,
+        })
+      );
+    });
+
+    it('bietet einen Freischlag nicht zur Tor-Zuordnung an', async () => {
+      const goal = {
+        event_id: 900,
+        event_type: 'goal',
+        event_team: 'home',
+        period: 1,
+        time: '01:00',
+        home_goals: 1,
+        guest_goals: 0,
+      };
+      fixture.componentRef.setInput(
+        'game',
+        game(4711, { events: [goal] as unknown as Game['events'] })
+      );
+      fixture.detectChanges();
+      const freeHit: Shot = {
+        client_uuid: 'f1',
+        kind: 'free_hit',
+        team: 'home',
+        period: 1,
+        game_time: '',
+        tapped_at: new Date(T0).toISOString(),
+        x: 0.8,
+        y: 0.5,
+        result: null,
+        id: 1,
+        event_id: null,
+      };
+      http.expectOne(API + 'games/4711/shots.json').flush({ shots: [freeHit] });
+      expect(component.linkCandidates).toEqual([]);
+    });
+  });
+
+  describe('Szene vormerken (api#838)', () => {
+    const T0 = Date.UTC(2026, 9, 16, 12, 0, 0);
+
+    it('merkt mit einem Tipp den Moment vor, ohne Team und Position', async () => {
+      await start(inPeriod(4711, 2));
+      fixture.nativeElement
+        .querySelector('[data-testid="tablet-mark-scene"]')
+        .click();
+
+      const post = http.expectOne(API + 'games/4711/shots.json');
+      const sent = post.request.body.shots as ShotInput[];
+      expect(sent).toEqual([
+        jasmine.objectContaining({
+          kind: 'mark',
+          team: null,
+          period: 2,
+          game_time: '',
+          x: null,
+          y: null,
+          result: null,
+          shooter_player_id: null,
+          goalkeeper_player_id: null,
+          from_free_hit: false,
+        }),
+      ]);
+      expect(component.draft).toBeNull();
+      post.flush({ shots: [asShot(sent[0])] });
+      await settle();
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-last-mark"]')
+      ).toBeTruthy();
+      // Keine Markierung auf dem Feld, aber in der Liste der letzten Einträge.
+      expect(component.fieldMarkers.length).toBe(0);
+      expect(component.recentShots.length).toBe(1);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="tablet-recent"]')
+          .textContent
+      ).toContain('tablet.mark.label');
+    });
+
+    it('hält den Zeitpunkt des Tipps in Serverzeit fest', async () => {
+      await start(game(4711), 60000);
+      component.recordMark(T0);
+
+      const sent = http.expectOne(API + 'games/4711/shots.json').request.body
+        .shots as ShotInput[];
+      const tapped = Date.parse(sent[0].tapped_at);
+      expect(tapped).toBeGreaterThanOrEqual(T0 + 60000 - 1000);
+      expect(tapped).toBeLessThanOrEqual(T0 + 60000 + 1000);
+    });
+
+    it('lässt einen offenen Schuss-Entwurf unangetastet', async () => {
+      await start();
+      component.startDraft(0.8, 0.5, T0);
+      const draft = component.draft;
+      component.recordMark(T0 + 1000);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      expect(component.draft).toBe(draft);
+    });
+
+    it('nimmt die letzte vorgemerkte Szene zurück', async () => {
+      await start();
+      component.recordMark(T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.undoLastMark();
+
+      expect(component.lastMark).toBeNull();
+      expect(component.allShots.length).toBe(0);
+    });
+
+    it('öffnet eine vorgemerkte Szene nicht zum Korrigieren', async () => {
+      await start();
+      component.recordMark(T0);
+      http.expectOne(API + 'games/4711/shots.json');
+
+      component.editShot(component.allShots[0]);
+
+      expect(component.draft).toBeNull();
     });
   });
 });

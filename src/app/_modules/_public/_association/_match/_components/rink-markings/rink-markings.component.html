@@ -1,0 +1,65 @@
+<!-- Bande, Mittellinie, Mittelpunkt, Bullypunkte -->
+<svg:rect
+  x="0"
+  y="0"
+  [attr.width]="field.length"
+  [attr.height]="field.width"
+  [attr.rx]="field.cornerRadius"
+  fill="#f8fafc"
+  stroke="#9ca3af"
+  stroke-width="0.15"
+/>
+<svg:line
+  [attr.x1]="markings.center.x"
+  y1="0"
+  [attr.x2]="markings.center.x"
+  [attr.y2]="field.width"
+  stroke="#d1d5db"
+  stroke-width="0.12"
+/>
+<svg:circle
+  [attr.cx]="markings.center.x"
+  [attr.cy]="markings.center.y"
+  r="0.25"
+  fill="#9ca3af"
+  data-testid="field-center"
+/>
+@for (spot of markings.faceoffSpots; track $index) {
+  <svg:circle [attr.cx]="spot.x" [attr.cy]="spot.y" r="0.15" fill="#d1d5db" />
+}
+
+<!-- Torraum, Torhüterraum und Tor, links und rechts -->
+@for (area of markings.goalAreas; track $index) {
+  <svg:rect
+    [attr.x]="area.x"
+    [attr.y]="area.y"
+    [attr.width]="area.width"
+    [attr.height]="area.height"
+    fill="none"
+    stroke="#d1d5db"
+    stroke-width="0.12"
+    data-testid="field-goal-area"
+  />
+}
+@for (area of markings.goalkeeperAreas; track $index) {
+  <svg:rect
+    [attr.x]="area.x"
+    [attr.y]="area.y"
+    [attr.width]="area.width"
+    [attr.height]="area.height"
+    fill="none"
+    stroke="#d1d5db"
+    stroke-width="0.12"
+  />
+}
+@for (goal of markings.goals; track $index) {
+  <svg:rect
+    [attr.x]="goal.x"
+    [attr.y]="goal.y"
+    [attr.width]="goal.width"
+    [attr.height]="goal.height"
+    fill="#e5e7eb"
+    stroke="#6b7280"
+    stroke-width="0.1"
+  />
+}

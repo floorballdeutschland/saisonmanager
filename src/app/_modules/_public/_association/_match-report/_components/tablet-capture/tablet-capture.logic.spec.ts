@@ -4,8 +4,10 @@ import {
   bestClockOffset,
   clockOffsetMs,
   defaultGoalkeeperId,
+  followsFreeHit,
   fromAttackDirection,
   goalLinkCandidates,
+  isFreeHit,
   leftToRightTeam,
   mergeShots,
   newClientUuid,
@@ -270,5 +272,65 @@ describe('Tabletmodus: Rechenlogik', () => {
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
     );
     expect(newClientUuid()).not.toBe(first);
+  });
+});
+
+describe('Freischläge (fe#589)', () => {
+  const freeHit = (overrides: Partial<Shot> = {}) =>
+    shot({
+      client_uuid: 'f',
+      kind: 'free_hit',
+      result: null,
+      tapped_at: '2026-10-16T12:00:00.000Z',
+      ...overrides,
+    });
+
+  it('erkennt Freischläge am kind, ohne kind ist es ein Schuss', () => {
+    expect(isFreeHit(freeHit())).toBeTrue();
+    expect(isFreeHit(shot())).toBeFalse();
+    expect(isFreeHit(shot({ kind: 'shot' }))).toBeFalse();
+  });
+
+  describe('followsFreeHit', () => {
+    it('trifft einen Freischlag desselben Teams bis 10 s vor dem Schuss', () => {
+      const shots = [freeHit()];
+      expect(
+        followsFreeHit(shots, 'home', '2026-10-16T12:00:00.000Z')
+      ).toBeTrue();
+      expect(
+        followsFreeHit(shots, 'home', '2026-10-16T12:00:10.000Z')
+      ).toBeTrue();
+      expect(
+        followsFreeHit(shots, 'home', '2026-10-16T12:00:10.001Z')
+      ).toBeFalse();
+    });
+
+    it('ignoriert das andere Team, spätere Freischläge und Schüsse', () => {
+      expect(
+        followsFreeHit([freeHit()], 'guest', '2026-10-16T12:00:05.000Z')
+      ).toBeFalse();
+      expect(
+        followsFreeHit([freeHit()], 'home', '2026-10-16T11:59:59.000Z')
+      ).toBeFalse();
+      expect(
+        followsFreeHit([shot()], 'home', '2026-10-16T12:00:05.000Z')
+      ).toBeFalse();
+    });
+
+    it('liefert ohne lesbaren Zeitpunkt false', () => {
+      expect(followsFreeHit([freeHit()], 'home', '')).toBeFalse();
+    });
+  });
+
+  it('bietet Freischläge nie zur Tor-Zuordnung an, auch nicht mit Ergebnis', () => {
+    const goal = {
+      event_id: 5,
+      event_type: 'goal',
+      event_team: 'home',
+      period: 1,
+    } as GameEvent;
+    expect(goalLinkCandidates([goal], [freeHit({ result: 'goal' })])).toEqual(
+      []
+    );
   });
 });

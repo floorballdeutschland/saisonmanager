@@ -181,6 +181,23 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Kalibrierung und Highlight-Auswahl (api#838). Über den Mail-Link
+        // (/highlights/bearbeiten?token=…) ohne Konto: Die Seite zeigt einen
+        // unbekannten (404) oder abgelaufenen Link (410) selbst an, ein 401
+        // dürfte hier niemanden abmelden. Als Admin bzw. SBK über die Spiel-ID
+        // nur 403/404/422, damit eine abgelaufene Sitzung weiter abmeldet; die
+        // Seite meldet einen gescheiterten Speicherversuch selbst.
+        const highlightEditorPath = request.url.split('?')[0];
+        if (/\/v2\/highlight_editor(\.json)?$/.test(highlightEditorPath)) {
+          return throwError(() => err);
+        }
+        if (
+          [403, 404, 422].includes(err.status) &&
+          /\/games\/\d+\/highlight_editor(\.json)?$/.test(highlightEditorPath)
+        ) {
+          return throwError(() => err);
+        }
+
         // Lizenzdokumente sind ein Nachschlag zu einer bereits geöffneten
         // Seite, keine eigene Ansicht. Ein 403 darauf heißt „diese Unterlagen
         // nicht", nicht „diese Seite nicht" – der generische 403-Zweig weiter
@@ -491,12 +508,13 @@ export class ErrorInterceptor implements HttpInterceptor {
         // der lokale Schusspuffer danach still und verloren. Ein 404 ist beim
         // Löschen erwartet (der Schuss ist schon weg). Für beide schweigt der
         // Interceptor, die Erfassung zeigt den Zustand selbst an. Ebenso für
-        // die Rückmeldung zur Beta (fe#560), die ihren Fehler selbst meldet.
+        // die Rückmeldung zur Beta (fe#560) und die Anfrage nach dem
+        // Highlight-Link (api#838), die ihren Fehler jeweils selbst melden.
         //
         // Als Regex auf das Pfadende, kein offener Teilstring: `shots` allein
         // träfe auch fremde Pfade.
         const tabletShotRequest =
-          /\/games\/\d+\/(shots(\.json|\/[^/]+(\.json|\/link\.json))|tablet_(capture|feedback)\.json)$/.test(
+          /\/games\/\d+\/(shots(\.json|\/[^/]+(\.json|\/link\.json))|(tablet_(capture|feedback)|highlight_request)\.json)$/.test(
             request.url.split('?')[0]
           );
 

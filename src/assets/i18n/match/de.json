@@ -62,10 +62,22 @@
     },
     "players": {
       "title": "Schüsse je Spieler"
+    },
+    "freeHits": {
+      "title": "Freischläge",
+      "ariaLabel": "Freischläge {{ team }}: {{ count }}",
+      "count": "Freischläge",
+      "shots": "Schüsse daraus",
+      "goals": "Tore daraus",
+      "zone": {
+        "own_half": "Eigene Hälfte",
+        "opponent_half": "Gegnerische Hälfte",
+        "near_goal_area": "Nähe Torraum"
+      }
     }
   },
   "highlights": {
-    "title": "Torszenen",
+    "title": "Highlights",
     "consent": {
       "notice": "Die Szenen stammen aus der Aufzeichnung des Livestreams bei YouTube. Erst mit dem Klick werden Inhalte von YouTube (Google) geladen; dabei werden Daten wie deine IP-Adresse an YouTube übertragen.",
       "button": "Szenen von YouTube laden",
@@ -78,6 +90,8 @@
     "playAll": "Alle Szenen abspielen",
     "assist": "Vorlage",
     "jumpHint": "Tipp auf ein Tor in der Schussgrafik springt zur Szene.",
-    "goalAria": "Tor {{ time }}, zur Szene springen"
+    "goalAria": "Tor {{ time }}, zur Szene springen",
+    "mark": "Szene",
+    "edit": "Highlights bearbeiten (Versatz und Auswahl)"
   }
 }

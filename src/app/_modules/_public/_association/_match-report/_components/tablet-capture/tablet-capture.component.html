@@ -118,6 +118,51 @@
         </button>
       </div>
 
+      <!--
+        Freischlag (fe#589): Team wählen, dann Stelle antippen. Scharf für genau
+        einen Tipp, danach wieder Schuss. Das Team wird nicht aus der
+        Feldhälfte abgeleitet, weil ein Freischlag oft in der eigenen Hälfte
+        ausgeführt wird.
+      -->
+      <div class="mt-2 grid grid-cols-2 gap-2">
+        @for (team of ["home", "guest"]; track team) {
+          <button
+            type="button"
+            class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
+            [class.bg-amber-500]="freeHitArmed === team"
+            [class.border-amber-600]="freeHitArmed === team"
+            [class.text-black]="freeHitArmed === team"
+            [class.border-amber-500]="freeHitArmed !== team"
+            [class.text-amber-800]="freeHitArmed !== team"
+            [attr.aria-pressed]="freeHitArmed === team"
+            [attr.data-testid]="'tablet-free-hit-arm-' + team"
+            (click)="toggleFreeHitArmed($any(team))"
+          >
+            @if (freeHitArmed === team) {
+              {{ "tablet.freeHit.armed" | transloco }}
+            } @else {
+              {{
+                "tablet.freeHit.arm" | transloco: { team: teamName($any(team)) }
+              }}
+            }
+          </button>
+        }
+      </div>
+
+      <!--
+        Szene vormerken (api#838): ein Tipp, gespeichert wird nur der Moment.
+        Die Szene landet in der Auswahl für die Highlights, nicht in der
+        Statistik.
+      -->
+      <button
+        type="button"
+        class="mt-2 min-h-[56px] w-full rounded-[5px] border-2 border-violet-600 bg-white px-3 text-lg font-bold text-violet-800 active:bg-violet-100"
+        data-testid="tablet-mark-scene"
+        (click)="recordMark()"
+      >
+        {{ "tablet.mark.button" | transloco }}
+      </button>
+
       <div
         class="mt-2 flex justify-between text-sm font-bold"
         data-testid="tablet-directions"
@@ -127,110 +172,150 @@
       </div>
 
       <!--
-        Feste Seitenverhältnisse (Großfeld 40 x 20 m) und kein
-        preserveAspectRatio-Spielraum: Die Umrechnung der Tippstelle setzt
-        voraus, dass das Bild die Fläche linear füllt.
+        Gezeichnet in Metern (fe#591), Seitenverhältnis und viewBox kommen aus
+        derselben Feldgeometrie: Die Umrechnung der Tippstelle setzt voraus,
+        dass das Bild die Fläche linear füllt, deshalb auch kein
+        preserveAspectRatio-Spielraum. Linien behalten mit
+        non-scaling-stroke ihre Breite in Pixeln.
       -->
       <svg
-        class="mt-1 block aspect-[2/1] w-full cursor-crosshair touch-none select-none"
-        viewBox="0 0 400 200"
+        class="mt-1 block w-full cursor-crosshair touch-none select-none"
+        [class.ring-4]="freeHitArmed"
+        [class.ring-amber-500]="freeHitArmed"
+        [style.aspect-ratio]="field.length + ' / ' + field.width"
+        [attr.viewBox]="'0 0 ' + field.length + ' ' + field.width"
         preserveAspectRatio="none"
         role="img"
         [attr.aria-label]="'tablet.field' | transloco"
+        [attr.data-field-size]="field.size"
         data-testid="tablet-field"
         (pointerdown)="onFieldPointerDown($event)"
         (pointerup)="onFieldPointerUp($event)"
         (pointercancel)="onFieldPointerCancel()"
       >
         <rect
-          x="1"
-          y="1"
-          width="398"
-          height="198"
-          rx="30"
+          x="0"
+          y="0"
+          [attr.width]="field.length"
+          [attr.height]="field.width"
+          [attr.rx]="field.cornerRadius"
           class="fill-sky-50 stroke-fb-gray-500"
           stroke-width="2"
+          vector-effect="non-scaling-stroke"
         />
         <line
-          x1="200"
-          y1="1"
-          x2="200"
-          y2="199"
+          [attr.x1]="markings.center.x"
+          y1="0"
+          [attr.x2]="markings.center.x"
+          [attr.y2]="field.width"
           class="stroke-fb-gray-500"
           stroke-width="1.5"
+          vector-effect="non-scaling-stroke"
         />
         <circle
-          cx="200"
-          cy="100"
-          r="30"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
+          [attr.cx]="markings.center.x"
+          [attr.cy]="markings.center.y"
+          [attr.r]="0.25 * markerScale"
+          class="fill-fb-gray-500"
+          data-testid="tablet-field-center"
         />
-        <!-- Torraum 4 x 5 m und Torhüterraum 1 x 2,5 m, links und rechts -->
-        <rect
-          x="28"
-          y="75"
-          width="40"
-          height="50"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
-        />
-        <rect
-          x="35"
-          y="87.5"
-          width="10"
-          height="25"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1"
-        />
-        <rect x="27" y="92" width="8" height="16" class="fill-fb-gray-500" />
-        <rect
-          x="332"
-          y="75"
-          width="40"
-          height="50"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1.5"
-        />
-        <rect
-          x="355"
-          y="87.5"
-          width="10"
-          height="25"
-          fill="none"
-          class="stroke-fb-gray-500"
-          stroke-width="1"
-        />
-        <rect x="365" y="92" width="8" height="16" class="fill-fb-gray-500" />
+        @for (spot of markings.faceoffSpots; track $index) {
+          <circle
+            [attr.cx]="spot.x"
+            [attr.cy]="spot.y"
+            [attr.r]="0.15 * markerScale"
+            class="fill-fb-gray-400"
+          />
+        }
+        <!-- Torraum, Torhüterraum (Schutzraum) und Tor, links und rechts -->
+        @for (area of markings.goalAreas; track $index) {
+          <rect
+            [attr.x]="area.x"
+            [attr.y]="area.y"
+            [attr.width]="area.width"
+            [attr.height]="area.height"
+            fill="none"
+            class="stroke-fb-gray-500"
+            stroke-width="1.5"
+            vector-effect="non-scaling-stroke"
+            data-testid="tablet-field-goal-area"
+          />
+        }
+        @for (area of markings.goalkeeperAreas; track $index) {
+          <rect
+            [attr.x]="area.x"
+            [attr.y]="area.y"
+            [attr.width]="area.width"
+            [attr.height]="area.height"
+            fill="none"
+            class="stroke-fb-gray-500"
+            stroke-width="1"
+            vector-effect="non-scaling-stroke"
+          />
+        }
+        @for (goal of markings.goals; track $index) {
+          <rect
+            [attr.x]="goal.x"
+            [attr.y]="goal.y"
+            [attr.width]="goal.width"
+            [attr.height]="goal.height"
+            class="fill-fb-gray-500"
+          />
+        }
 
         @for (marker of fieldMarkers; track $index) {
-          <circle
-            [attr.cx]="marker.x * 400"
-            [attr.cy]="marker.y * 200"
-            r="5"
-            [attr.opacity]="marker.pending ? 0.5 : 1"
-            [class.fill-green-600]="marker.result === 'goal'"
-            [class.fill-blue-600]="marker.result === 'saved'"
-            [class.fill-fb-gray-400]="marker.result === 'missed'"
-            [class.fill-orange-500]="marker.result === 'blocked'"
-          />
+          @if (marker.freeHit) {
+            <!-- Freischlag als Raute, Schüsse sind Kreise -->
+            <rect
+              [attr.x]="marker.x * field.length - 0.4 * markerScale"
+              [attr.y]="marker.y * field.width - 0.4 * markerScale"
+              [attr.width]="0.8 * markerScale"
+              [attr.height]="0.8 * markerScale"
+              [attr.transform]="
+                'rotate(45 ' +
+                marker.x * field.length +
+                ' ' +
+                marker.y * field.width +
+                ')'
+              "
+              [attr.opacity]="marker.pending ? 0.5 : 1"
+              class="fill-amber-500 stroke-black"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+              data-testid="tablet-free-hit-marker"
+            />
+          } @else {
+            <circle
+              [attr.cx]="marker.x * field.length"
+              [attr.cy]="marker.y * field.width"
+              [attr.r]="0.5 * markerScale"
+              [attr.opacity]="marker.pending ? 0.5 : 1"
+              [class.fill-green-600]="marker.result === 'goal'"
+              [class.fill-blue-600]="marker.result === 'saved'"
+              [class.fill-fb-gray-400]="marker.result === 'missed'"
+              [class.fill-orange-500]="marker.result === 'blocked'"
+            />
+          }
         }
         @if (draft && draft.period === viewPeriod) {
           <circle
-            [attr.cx]="draft.screenX * 400"
-            [attr.cy]="draft.screenY * 200"
-            r="8"
+            [attr.cx]="draft.screenX * field.length"
+            [attr.cy]="draft.screenY * field.width"
+            [attr.r]="0.8 * markerScale"
             class="fill-red-600 stroke-white"
             stroke-width="2"
+            vector-effect="non-scaling-stroke"
             data-testid="tablet-draft-marker"
           />
         }
       </svg>
-      @if (!draft) {
+      @if (freeHitArmed) {
+        <p class="mt-2 text-sm font-bold text-amber-800">
+          {{
+            "tablet.freeHit.hint" | transloco: { team: teamName(freeHitArmed) }
+          }}
+        </p>
+      } @else if (!draft) {
         <p class="mt-2 text-sm text-fb-gray-500">
           {{ "tablet.hint" | transloco }}
         </p>
@@ -238,9 +323,80 @@
     </div>
 
     <div>
+      @if (lastMark) {
+        <div
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-violet-600 bg-violet-50 p-3"
+          data-testid="tablet-last-mark"
+        >
+          <span class="font-bold">
+            {{ "tablet.mark.saved" | transloco }}
+          </span>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+              data-testid="tablet-mark-undo"
+              (click)="undoLastMark()"
+            >
+              {{ "tablet.mark.undo" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+              (click)="dismissLastMark()"
+            >
+              {{ "tablet.mark.ok" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
+      @if (lastFreeHit) {
+        <div
+          class="mb-3 flex flex-col gap-2 rounded-[5px] border-2 border-amber-500 bg-amber-50 p-3"
+          data-testid="tablet-last-free-hit"
+        >
+          <span class="font-bold">
+            {{
+              "tablet.freeHit.saved"
+                | transloco: { team: teamName(lastFreeHit.team) }
+            }}
+          </span>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-black bg-white px-2 text-sm font-bold"
+              data-testid="tablet-free-hit-swap-team"
+              (click)="swapLastFreeHitTeam()"
+            >
+              {{ "tablet.freeHit.swapTeam" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-red-700 bg-white px-2 text-sm font-bold text-red-700"
+              data-testid="tablet-free-hit-undo"
+              (click)="undoLastFreeHit()"
+            >
+              {{ "tablet.freeHit.undo" | transloco }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[48px] rounded-[5px] border-2 border-fb-gray-600 bg-white px-2 text-sm font-bold"
+              (click)="dismissLastFreeHit()"
+            >
+              {{ "tablet.freeHit.ok" | transloco }}
+            </button>
+          </div>
+        </div>
+      }
       @if (draft) {
         <div class="flex flex-col gap-3" data-testid="tablet-draft">
           <div class="text-sm text-fb-gray-500">
+            @if (draft.kind === "free_hit") {
+              <span class="font-bold text-amber-800">{{
+                "tablet.freeHit.label" | transloco
+              }}</span>
+              ·
+            }
             {{
               "tablet.draft.tappedAt"
                 | transloco: { time: tappedClock(draft.tapped_at) }
@@ -264,106 +420,123 @@
             }
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            @for (result of results; track result) {
-              <button
-                type="button"
-                class="min-h-[64px] rounded-[5px] border-2 px-2 text-xl font-bold"
-                [class.bg-green-600]="
-                  draft.result === result && result === 'goal'
-                "
-                [class.bg-black]="draft.result === result && result !== 'goal'"
-                [class.text-white]="draft.result === result"
-                [class.border-black]="draft.result === result"
-                [class.border-fb-gray-600]="draft.result !== result"
-                [attr.aria-pressed]="draft.result === result"
-                [attr.data-testid]="'tablet-result-' + result"
-                (click)="setDraftResult(result)"
-              >
-                {{ "tablet.result." + result | transloco }}
-              </button>
-            }
-          </div>
-
-          <div>
-            <div class="mb-1 text-sm font-bold">
-              {{ "tablet.draft.shooter" | transloco }}
-            </div>
-            <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
-              @for (
-                player of fieldPlayers(draft.team);
-                track player.player_id
-              ) {
+          @if (draft.kind === "shot") {
+            <div class="grid grid-cols-2 gap-2">
+              @for (result of results; track result) {
                 <button
                   type="button"
-                  class="min-h-[48px] rounded-[5px] border text-lg font-bold"
+                  class="min-h-[64px] rounded-[5px] border-2 px-2 text-xl font-bold"
+                  [class.bg-green-600]="
+                    draft.result === result && result === 'goal'
+                  "
                   [class.bg-black]="
-                    draft.shooter_player_id === player.player_id
+                    draft.result === result && result !== 'goal'
                   "
-                  [class.text-white]="
-                    draft.shooter_player_id === player.player_id
-                  "
-                  [class.border-fb-gray-600]="
-                    draft.shooter_player_id !== player.player_id
-                  "
-                  [attr.aria-pressed]="
-                    draft.shooter_player_id === player.player_id
-                  "
-                  (click)="setDraftShooter(player.player_id)"
+                  [class.text-white]="draft.result === result"
+                  [class.border-black]="draft.result === result"
+                  [class.border-fb-gray-600]="draft.result !== result"
+                  [attr.aria-pressed]="draft.result === result"
+                  [attr.data-testid]="'tablet-result-' + result"
+                  (click)="setDraftResult(result)"
                 >
-                  {{ player.trikot_number }}
+                  {{ "tablet.result." + result | transloco }}
                 </button>
               }
             </div>
-          </div>
 
-          @if (goalkeepers(draft.team === "home" ? "guest" : "home").length) {
+            <button
+              type="button"
+              class="min-h-[56px] rounded-[5px] border-2 px-3 text-lg font-bold"
+              [class.bg-amber-500]="draft.from_free_hit"
+              [class.border-amber-600]="draft.from_free_hit"
+              [class.border-fb-gray-600]="!draft.from_free_hit"
+              [attr.aria-pressed]="draft.from_free_hit"
+              data-testid="tablet-from-free-hit"
+              (click)="toggleDraftFromFreeHit()"
+            >
+              {{ "tablet.freeHit.fromFreeHit" | transloco }}
+            </button>
+
             <div>
               <div class="mb-1 text-sm font-bold">
-                {{ "tablet.draft.goalkeeper" | transloco }}
+                {{ "tablet.draft.shooter" | transloco }}
               </div>
               <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
                 @for (
-                  player of goalkeepers(
-                    draft.team === "home" ? "guest" : "home"
-                  );
+                  player of fieldPlayers(draft.team);
                   track player.player_id
                 ) {
                   <button
                     type="button"
                     class="min-h-[48px] rounded-[5px] border text-lg font-bold"
-                    [class.bg-blue-700]="
-                      draft.goalkeeper_player_id === player.player_id
+                    [class.bg-black]="
+                      draft.shooter_player_id === player.player_id
                     "
                     [class.text-white]="
-                      draft.goalkeeper_player_id === player.player_id
+                      draft.shooter_player_id === player.player_id
                     "
                     [class.border-fb-gray-600]="
-                      draft.goalkeeper_player_id !== player.player_id
+                      draft.shooter_player_id !== player.player_id
                     "
                     [attr.aria-pressed]="
-                      draft.goalkeeper_player_id === player.player_id
+                      draft.shooter_player_id === player.player_id
                     "
-                    (click)="setDraftGoalkeeper(player.player_id)"
+                    (click)="setDraftShooter(player.player_id)"
                   >
                     {{ player.trikot_number }}
                   </button>
                 }
-                <button
-                  type="button"
-                  class="col-span-2 min-h-[48px] rounded-[5px] border text-sm font-bold"
-                  [class.bg-blue-700]="draft.goalkeeper_player_id === null"
-                  [class.text-white]="draft.goalkeeper_player_id === null"
-                  [class.border-fb-gray-600]="
-                    draft.goalkeeper_player_id !== null
-                  "
-                  [attr.aria-pressed]="draft.goalkeeper_player_id === null"
-                  (click)="setDraftGoalkeeper(null)"
-                >
-                  {{ "tablet.draft.emptyNet" | transloco }}
-                </button>
               </div>
             </div>
+
+            @if (goalkeepers(draft.team === "home" ? "guest" : "home").length) {
+              <div>
+                <div class="mb-1 text-sm font-bold">
+                  {{ "tablet.draft.goalkeeper" | transloco }}
+                </div>
+                <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
+                  @for (
+                    player of goalkeepers(
+                      draft.team === "home" ? "guest" : "home"
+                    );
+                    track player.player_id
+                  ) {
+                    <button
+                      type="button"
+                      class="min-h-[48px] rounded-[5px] border text-lg font-bold"
+                      [class.bg-blue-700]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      [class.text-white]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      [class.border-fb-gray-600]="
+                        draft.goalkeeper_player_id !== player.player_id
+                      "
+                      [attr.aria-pressed]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      (click)="setDraftGoalkeeper(player.player_id)"
+                    >
+                      {{ player.trikot_number }}
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="col-span-2 min-h-[48px] rounded-[5px] border text-sm font-bold"
+                    [class.bg-blue-700]="draft.goalkeeper_player_id === null"
+                    [class.text-white]="draft.goalkeeper_player_id === null"
+                    [class.border-fb-gray-600]="
+                      draft.goalkeeper_player_id !== null
+                    "
+                    [attr.aria-pressed]="draft.goalkeeper_player_id === null"
+                    (click)="setDraftGoalkeeper(null)"
+                  >
+                    {{ "tablet.draft.emptyNet" | transloco }}
+                  </button>
+                </div>
+              </div>
+            }
           }
 
           <label class="flex items-center gap-2 text-sm font-bold">
@@ -392,7 +565,7 @@
               type="button"
               class="min-h-[56px] rounded-[5px] bg-green-700 text-lg font-bold text-white disabled:opacity-40"
               data-testid="tablet-save"
-              [disabled]="!draft.result"
+              [disabled]="!canSaveDraft"
               (click)="saveDraft()"
             >
               {{ "tablet.draft.save" | transloco }}
@@ -411,7 +584,11 @@
               class="min-h-[48px] rounded-[5px] border-2 border-red-700 font-bold text-red-700"
               (click)="deleteShot(draft.client_uuid)"
             >
-              {{ "tablet.draft.delete" | transloco }}
+              @if (draft.kind === "free_hit") {
+                {{ "tablet.freeHit.delete" | transloco }}
+              } @else {
+                {{ "tablet.draft.delete" | transloco }}
+              }
             </button>
           }
         </div>
@@ -431,8 +608,24 @@
                 class="flex items-center gap-2 rounded-[5px] border border-fb-gray-200 p-2 text-sm"
               >
                 <span class="flex-1">
-                  <span class="font-bold">{{ teamName(shot.team) }}</span>
-                  · {{ "tablet.result." + shot.result | transloco }}
+                  @if (isMark(shot)) {
+                    <span class="font-bold text-violet-800">{{
+                      "tablet.mark.label" | transloco
+                    }}</span>
+                  } @else {
+                    <span class="font-bold">{{ teamName(shot.team) }}</span>
+                  }
+                  @if (isFreeHit(shot)) {
+                    ·
+                    <span class="font-bold text-amber-800">{{
+                      "tablet.freeHit.label" | transloco
+                    }}</span>
+                  } @else if (!isMark(shot)) {
+                    · {{ "tablet.result." + shot.result | transloco }}
+                    @if (shot.from_free_hit) {
+                      ({{ "tablet.freeHit.fromFreeHitShort" | transloco }})
+                    }
+                  }
                   @if (shot.shooter_player_id) {
                     {{ trikotNumber(shot.team, shot.shooter_player_id) }}
                   }
@@ -449,13 +642,15 @@
                     }}</span>
                   }
                 </span>
-                <button
-                  type="button"
-                  class="min-h-[44px] rounded-[5px] border border-fb-gray-600 px-3 font-bold"
-                  (click)="editShot(shot)"
-                >
-                  {{ "tablet.recent.edit" | transloco }}
-                </button>
+                @if (!isMark(shot)) {
+                  <button
+                    type="button"
+                    class="min-h-[44px] rounded-[5px] border border-fb-gray-600 px-3 font-bold"
+                    (click)="editShot(shot)"
+                  >
+                    {{ "tablet.recent.edit" | transloco }}
+                  </button>
+                }
                 <button
                   type="button"
                   class="min-h-[44px] rounded-[5px] border border-red-700 px-3 font-bold text-red-700"
@@ -528,5 +723,6 @@
     </div>
   }
 
+  <fb-tablet-highlight-request [gameId]="game.id"></fb-tablet-highlight-request>
   <fb-tablet-feedback [gameId]="game.id"></fb-tablet-feedback>
 </section>

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
 /**
- * Nur der Ausschnitt der YouTube IFrame Player API, den der Szenen-Player
- * braucht. Kein Typpaket für die ganze Bibliothek.
+ * Nur der Ausschnitt der YouTube IFrame Player API, den der Szenen-Player und
+ * die Kalibrierung (api#838) brauchen. Kein Typpaket für die ganze Bibliothek.
  */
 export interface YtPlayer {
   loadVideoById(options: {
@@ -10,6 +10,9 @@ export interface YtPlayer {
     startSeconds?: number;
     endSeconds?: number;
   }): void;
+  /** Abspielposition in Sekunden, mit Nachkommastellen. */
+  getCurrentTime(): number;
+  pauseVideo(): void;
   destroy(): void;
 }
 

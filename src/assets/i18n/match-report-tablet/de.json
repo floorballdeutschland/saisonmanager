@@ -89,5 +89,39 @@
     "sending": "Wird gesendet…",
     "sent": "Danke für deine Rückmeldung!",
     "error": "Die Rückmeldung konnte nicht gesendet werden. Bitte später erneut versuchen."
+  },
+  "freeHit": {
+    "arm": "Freischlag {{ team }}",
+    "armed": "Freischlag: Stelle antippen (abbrechen)",
+    "hint": "Stelle des Freischlags für {{ team }} antippen. Er wird sofort gespeichert.",
+    "label": "Freischlag",
+    "saved": "Freischlag {{ team }} gespeichert",
+    "swapTeam": "Anderes Team",
+    "undo": "Rückgängig",
+    "ok": "OK",
+    "fromFreeHit": "Aus Freischlag",
+    "fromFreeHitShort": "aus Freischlag",
+    "delete": "Freischlag löschen"
+  },
+  "mark": {
+    "button": "Szene vormerken",
+    "label": "Vorgemerkte Szene",
+    "saved": "Szene vorgemerkt. Sie steht später zur Auswahl für die Highlights.",
+    "undo": "Rückgängig",
+    "ok": "OK"
+  },
+  "highlightRequest": {
+    "toggle": "Highlights nach dem Spiel bearbeiten",
+    "hint": "Link per Mail, um die Szenen ans Video anzupassen und auszuwählen.",
+    "explanation": "Das Videobild läuft der Halle oft 10 bis 30 Sekunden hinterher. Nach dem Spiel bekommst du einen Link: Dort stellst du den Versatz an einem Tor ein und wählst, welche Szenen in die Highlights kommen. Der Link kommt, sobald der Spielbericht abgeschlossen und die Aufzeichnung veröffentlicht ist, und gilt 14 Tage.",
+    "toAccount": "Die Mail geht an {{ address }}.",
+    "otherAddress": "An eine andere Adresse schicken",
+    "email": "E-Mail-Adresse",
+    "emailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben.",
+    "privacy": "Die Adresse wird nur für diesen Link genutzt und nach dem Versand gelöscht.",
+    "send": "Link anfordern",
+    "sending": "Wird angefordert…",
+    "sent": "Angefordert. Der Link kommt per Mail, sobald die Aufzeichnung veröffentlicht ist.",
+    "error": "Der Link konnte nicht angefordert werden. Fehlt die Berechtigung für dieses Spiel?"
   }
 }

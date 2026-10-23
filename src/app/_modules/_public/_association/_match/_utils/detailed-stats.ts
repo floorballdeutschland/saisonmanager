@@ -1,5 +1,6 @@
 import {
   DetailedStats,
+  DetailedStatsFreeHit,
   DetailedStatsShot,
   GoalkeeperStats,
   PlayerShotStats,
@@ -7,15 +8,10 @@ import {
   ShotTeam,
   TeamShotStats,
 } from '@floorball/types';
-
-/**
- * Spielfeld in Metern (Großfeld, 40 × 20 m). Die Schussgrafik zeichnet in
- * diesen Einheiten, damit die Linien maßstabsgetreu bleiben.
- */
-export const RINK = {
-  length: 40,
-  width: 20,
-} as const;
+import {
+  FIELD_GEOMETRY,
+  FieldGeometry,
+} from 'src/app/_helpers/_utils/field-geometry';
 
 export const SHOT_RESULTS: readonly ShotResult[] = [
   'goal',
@@ -39,24 +35,26 @@ const clamp = (value: number, min: number, max: number) =>
  * um: Heim greift nach rechts an, Gast nach links.
  *
  * Normierung laut API über das ganze Feld von Bande zu Bande (so erfasst
- * auch der Tabletmodus): x = 0 eigene Bande, x = 1 gegnerische Bande,
- * y = 0 links und y = 1 rechts aus Sicht des Angreifers. Für Heim (Blick nach
+ * auch der Tabletmodus), je nach Feldgröße 40 x 20 m oder 28 x 16 m: x = 0
+ * eigene Bande, x = 1 gegnerische Bande, y = 0 links und y = 1 rechts aus Sicht des Angreifers. Für Heim (Blick nach
  * rechts) liegt „links“ oben. Der Gast blickt nach links, für ihn liegt „links“
  * unten. Sein Schuss wird deshalb um den Mittelpunkt gedreht, also x UND y
  * gespiegelt. Spiegelte man nur x, landete ein Schuss von der linken Seite des
  * Gastes auf seiner rechten.
  *
- * Werte außerhalb von 0..1 werden an der Bande abgeschnitten.
+ * Werte außerhalb von 0..1 werden an der Bande abgeschnitten. Das Ergebnis
+ * ist in Metern des übergebenen Feldes, ohne Angabe Großfeld.
  */
 export function toFieldPoint(
-  shot: Pick<DetailedStatsShot, 'team' | 'x' | 'y'>
+  shot: Pick<DetailedStatsShot, 'team' | 'x' | 'y'>,
+  field: Pick<FieldGeometry, 'length' | 'width'> = FIELD_GEOMETRY.GF
 ): FieldPoint {
   const x = shot.team === 'home' ? shot.x : 1 - shot.x;
   const y = shot.team === 'home' ? shot.y : 1 - shot.y;
 
   return {
-    cx: clamp(x * RINK.length, 0, RINK.length),
-    cy: clamp(y * RINK.width, 0, RINK.width),
+    cx: clamp(x * field.length, 0, field.length),
+    cy: clamp(y * field.width, 0, field.width),
   };
 }
 
@@ -71,14 +69,85 @@ export function filterShots(
   );
 }
 
+/** Freischläge eines Teams, wahlweise nur eines Abschnitts (`null` = alle). */
+export function filterFreeHits(
+  freeHits: DetailedStatsFreeHit[],
+  team: ShotTeam,
+  period: number | null
+): DetailedStatsFreeHit[] {
+  return freeHits.filter(
+    (freeHit) =>
+      freeHit.team === team && (period === null || freeHit.period === period)
+  );
+}
+
+export type FreeHitZone = 'own_half' | 'opponent_half' | 'near_goal_area';
+
+export const FREE_HIT_ZONES: readonly FreeHitZone[] = [
+  'own_half',
+  'opponent_half',
+  'near_goal_area',
+];
+
+/**
+ * Abstand zum gegnerischen Torraum, bis zu dem ein Freischlag als „Nähe
+ * Torraum“ zählt. Die Regeln legen einen Freischlag näher als 3,5 m am
+ * Torraum auf 3,5 m zurück; mit 1,5 m Spielraum für die Tippstelle fallen
+ * diese Standards sicher hinein.
+ */
+export const NEAR_GOAL_AREA_M = 5;
+
+/**
+ * Zone eines Freischlags, aus Sicht des ausführenden Teams. Die Position ist
+ * auf dessen Angriffsrichtung normiert (x = 1 gegnerische Bande), gerechnet
+ * wird in Metern des jeweiligen Feldes, damit „Nähe Torraum“ auf Groß- und
+ * Kleinfeld dieselben Meter bedeutet. Die Mittellinie zählt zur gegnerischen
+ * Hälfte.
+ */
+export function freeHitZone(
+  freeHit: Pick<DetailedStatsFreeHit, 'x' | 'y'>,
+  field: FieldGeometry = FIELD_GEOMETRY.GF
+): FreeHitZone {
+  const x = clamp(freeHit.x, 0, 1) * field.length;
+  const y = clamp(freeHit.y, 0, 1) * field.width;
+  if (x < field.length / 2) return 'own_half';
+
+  // Gegnerischer Torraum als Rechteck, Abstand zum nächsten Punkt darauf.
+  const areaFront = field.length - field.goalAreaBack - field.goalAreaDepth;
+  const areaBack = field.length - field.goalAreaBack;
+  const areaTop = (field.width - field.goalAreaWidth) / 2;
+  const areaBottom = areaTop + field.goalAreaWidth;
+  const dx = Math.max(areaFront - x, 0, x - areaBack);
+  const dy = Math.max(areaTop - y, 0, y - areaBottom);
+
+  return Math.hypot(dx, dy) <= NEAR_GOAL_AREA_M
+    ? 'near_goal_area'
+    : 'opponent_half';
+}
+
+/** Anzahl Freischläge je Zone. */
+export function freeHitZoneCounts(
+  freeHits: DetailedStatsFreeHit[],
+  field: FieldGeometry = FIELD_GEOMETRY.GF
+): Record<FreeHitZone, number> {
+  const counts: Record<FreeHitZone, number> = {
+    own_half: 0,
+    opponent_half: 0,
+    near_goal_area: 0,
+  };
+  freeHits.forEach((freeHit) => counts[freeHitZone(freeHit, field)]++);
+  return counts;
+}
+
 /**
  * Alle Abschnitte, in denen etwas erfasst wurde, aufsteigend. Quelle sind die
- * Schüsse und die Abschnittswerte beider Teams, denn ein Abschnitt kann für
- * ein Team leer sein und für das andere nicht.
+ * Schüsse, die Freischläge und die Abschnittswerte beider Teams, denn ein
+ * Abschnitt kann für ein Team leer sein und für das andere nicht.
  */
 export function periodsOf(stats: DetailedStats): number[] {
   const periods = new Set<number>();
   stats.shots.forEach((shot) => periods.add(shot.period));
+  (stats.free_hits ?? []).forEach((freeHit) => periods.add(freeHit.period));
   (['home', 'guest'] as const).forEach((team) =>
     Object.keys(stats.teams?.[team]?.by_period ?? {}).forEach((key) => {
       const period = parseInt(key, 10);

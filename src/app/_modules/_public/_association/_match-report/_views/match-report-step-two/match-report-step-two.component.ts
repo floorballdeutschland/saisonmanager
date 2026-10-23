@@ -14,12 +14,14 @@ import {
   PenaltyCode,
   PeriodTitles,
 } from '@floorball/types';
+import { map, Observable } from 'rxjs';
 import {
   GameService,
   LeagueService,
   NotificationService,
   StorageService,
 } from '@floorball/core';
+import { leagueFieldSize } from 'src/app/_helpers/_utils/field-geometry';
 
 // Schalter je Gerät, nicht je Spiel oder Konto: Das Sekretariat bleibt in der
 // gewohnten Eingabe, ein zweites Tablet erfasst die Schüsse (fe#344).
@@ -65,6 +67,8 @@ export class MatchReportStepTwoComponent implements OnInit {
   // Tabletmodus (Beta). Der Schalter allein ändert nichts am Spiel; erst ein
   // erfasster Schuss markiert es in der API als Tablet-Spiel.
   public tabletMode = false;
+  // Feldgröße der Liga für das Spielfeld der Tablet-Erfassung (fe#591).
+  public fieldSize$!: Observable<string | null>;
 
   // Normale Eingabe im Tabletmodus aufgeklappt? Ohne Tabletmodus ohne Wirkung.
   public normalInputExpanded = false;
@@ -99,6 +103,9 @@ export class MatchReportStepTwoComponent implements OnInit {
 
   ngOnInit(): void {
     this.tabletMode = this._storage.getItem(TABLET_MODE_STORAGE_KEY) === '1';
+    this.fieldSize$ = this._leagueService.selectedLeague$.pipe(
+      map((league) => leagueFieldSize(league))
+    );
     this.normalInputExpanded =
       this._storage.getItem(TABLET_NORMAL_INPUT_STORAGE_KEY) === '1';
 

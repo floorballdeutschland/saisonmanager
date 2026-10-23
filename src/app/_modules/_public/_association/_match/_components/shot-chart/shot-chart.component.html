@@ -1,72 +1,26 @@
 <figure class="m-0">
   <svg
     class="block w-full h-auto"
-    viewBox="-0.5 -0.5 41 21"
+    [attr.viewBox]="viewBox"
+    [attr.data-field-size]="field.size"
     [attr.role]="hasLinked ? 'group' : 'img'"
     [attr.aria-label]="
       'match.detailedStats.chart.ariaLabel'
         | transloco: { team: teamName, count: shots.length }
     "
   >
-    <!-- Bande, Mittellinie, Anstoßpunkte -->
-    <rect
-      x="0"
-      y="0"
-      [attr.width]="rink.length"
-      [attr.height]="rink.width"
-      rx="2"
-      fill="#f8fafc"
-      stroke="#9ca3af"
-      stroke-width="0.15"
-    />
-    <line x1="20" y1="0" x2="20" y2="20" stroke="#d1d5db" stroke-width="0.12" />
-    <circle cx="20" cy="10" r="0.25" fill="#9ca3af" />
-    @for (x of [3.5, 20, 36.5]; track x) {
-      <circle [attr.cx]="x" cy="1.5" r="0.15" fill="#d1d5db" />
-      <circle [attr.cx]="x" cy="18.5" r="0.15" fill="#d1d5db" />
-    }
-
-    <!-- Torraum, Torhüterraum und Tor, links und rechts -->
-    @for (side of [0, 1]; track side) {
-      <g [attr.transform]="side ? 'translate(40 20) rotate(180)' : null">
-        <rect
-          x="2.85"
-          y="7.5"
-          width="4"
-          height="5"
-          fill="none"
-          stroke="#d1d5db"
-          stroke-width="0.12"
-        />
-        <rect
-          x="3.5"
-          y="8.75"
-          width="1"
-          height="2.5"
-          fill="none"
-          stroke="#d1d5db"
-          stroke-width="0.12"
-        />
-        <rect
-          x="2.85"
-          y="9.2"
-          width="0.65"
-          height="1.6"
-          fill="#e5e7eb"
-          stroke="#6b7280"
-          stroke-width="0.1"
-        />
-      </g>
-    }
+    <g fbRinkMarkings [field]="field" [markings]="markings"></g>
 
     @for (point of plotted; track $index) {
       <circle
         [attr.cx]="point.cx"
         [attr.cy]="point.cy"
-        [attr.r]="point.shot.result === 'goal' ? 0.65 : 0.5"
+        [attr.r]="(point.shot.result === 'goal' ? 0.65 : 0.5) * dotScale"
         [attr.fill]="colors[point.shot.result]"
         [attr.stroke]="point.shot.result === 'goal' ? '#14532d' : '#ffffff'"
-        [attr.stroke-width]="point.shot.result === 'goal' ? 0.15 : 0.1"
+        [attr.stroke-width]="
+          (point.shot.result === 'goal' ? 0.15 : 0.1) * dotScale
+        "
         [attr.data-result]="point.shot.result"
         [attr.data-linked]="point.linked || null"
         [attr.role]="point.linked ? 'button' : null"

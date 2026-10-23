@@ -47,4 +47,5 @@ export * from './live-stream.service';
 export * from './streaming.service';
 export * from './youtube.service';
 export * from './game-stats.service';
+export * from './highlight-editor.service';
 export * from './youtube-iframe-api.service';
