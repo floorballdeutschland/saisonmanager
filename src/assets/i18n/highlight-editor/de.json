@@ -41,5 +41,15 @@
   "saved": "Gespeichert. Die Highlights auf der Spielseite sind aktualisiert.",
   "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
   "unsaved": "Nicht gespeicherte Änderungen",
-  "leaveConfirm": "Es gibt ungespeicherte Änderungen an Versatz oder Auswahl. Seite trotzdem verlassen?"
+  "leaveConfirm": "Es gibt ungespeicherte Änderungen an Versatz, Auswahl oder Zuordnung. Seite trotzdem verlassen?",
+  "assignment": {
+    "label": "Gehört zu",
+    "unassigned": "Keinem Tor zugeordnet",
+    "noGoal": {
+      "saved": "Kein Tor: gehalten",
+      "missed": "Kein Tor: vorbei",
+      "blocked": "Kein Tor: geblockt"
+    },
+    "hint": "Passt eine Szene nicht zum Tor, unter „Gehört zu“ das richtige Tor wählen oder „Kein Tor“, wenn am Tablet versehentlich ein Tor getippt wurde. Hängt das gewählte Tor schon an einer anderen Szene, wird es dort gelöst. Mit „Abspielen“ lässt sich die Szene vorher ansehen."
+  }
 }

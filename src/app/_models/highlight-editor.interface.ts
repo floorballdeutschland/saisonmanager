@@ -13,9 +13,15 @@ import { ShotTeam } from './game-shot.interface';
 export interface HighlightEditorScene {
   /** Kennung des Tablet-Eintrags, Schlüssel für die Auswahl. */
   client_uuid: string;
-  kind: 'goal' | 'mark';
-  /** „1:0 Müller (Schmidt)“ oder „Vorgemerkte Szene“. */
+  /**
+   * `unlinked`: Tor-Schuss ohne Tor im Bericht. Steht nur hier, nie in den
+   * öffentlichen Highlights, und lässt sich nur zuordnen, nicht auswählen.
+   */
+  kind: 'goal' | 'mark' | 'unlinked';
+  /** „1:0 Müller (Schmidt)“, „Vorgemerkte Szene“ oder „Tor-Schuss ohne Tor im Bericht“. */
   label: string;
+  /** Das Tor des Berichts, an dem der Schuss hängt; `null` bei Marken und `unlinked`. */
+  event_id?: number | null;
   team: ShotTeam | null;
   period: number;
   game_time: string;
@@ -26,6 +32,26 @@ export interface HighlightEditorScene {
   end: number;
   in_highlights: boolean;
 }
+
+/** Ein Tor des Spielberichts, Ziel einer Zuordnung (api#849). */
+export interface HighlightEditorGoal {
+  event_id: number;
+  label: string;
+  team: ShotTeam;
+  period: number;
+  time: string;
+}
+
+/** Was ein Tor-Schuss werden kann, der doch keiner war. */
+export type HighlightEditorNoGoalResult = 'saved' | 'missed' | 'blocked';
+
+export type HighlightEditorAssignment =
+  | { client_uuid: string; event_id: number }
+  | {
+      client_uuid: string;
+      event_id: null;
+      result: HighlightEditorNoGoalResult;
+    };
 
 export interface HighlightEditorData {
   game: {
@@ -42,6 +68,8 @@ export interface HighlightEditorData {
   /** Das erste Tor mit Tablet-Schuss, `null` ohne Tor. */
   calibration_scene: { client_uuid: string; anchor_second: number } | null;
   scenes: HighlightEditorScene[];
+  /** Alle Tore des Berichts; fehlt bei einer API vor api#849. */
+  goals?: HighlightEditorGoal[];
   /** Nur beim Mail-Link. */
   expires_at?: string;
 }
@@ -50,4 +78,6 @@ export interface HighlightEditorUpdate {
   /** Fehlt der Schlüssel, bleibt der Versatz; `null` nimmt ihn zurück. */
   offset_seconds?: number | null;
   scenes?: { client_uuid: string; in_highlights: boolean }[];
+  /** Tor-Schüsse umhängen oder zum Fehlschuss machen. */
+  assignments?: HighlightEditorAssignment[];
 }

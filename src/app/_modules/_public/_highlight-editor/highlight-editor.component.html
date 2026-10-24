@@ -190,7 +190,8 @@
           <h2 class="font-bold text-lg lg:text-xl">
             {{
               "highlightEditor.scenes.title"
-                | transloco: { selected: selectedCount, total: scenes.length }
+                | transloco
+                  : { selected: selectedCount, total: selectableScenes.length }
             }}
           </h2>
           @if (scenes.length) {
@@ -209,6 +210,14 @@
             {{ "highlightEditor.scenes.empty" | transloco }}
           </p>
         }
+        @if (data?.goals && scenes.length) {
+          <p
+            class="text-xs text-fb-gray-500 mb-2"
+            data-test="editor-assignment-hint"
+          >
+            {{ "highlightEditor.assignment.hint" | transloco }}
+          </p>
+        }
         <ul class="list-none p-0 m-0">
           @for (scene of scenes; track scene.client_uuid) {
             <li
@@ -217,17 +226,24 @@
               data-test="editor-scene"
             >
               <label class="flex flex-1 min-w-0 items-center gap-3">
-                <input
-                  type="checkbox"
-                  class="h-5 w-5 shrink-0"
-                  [checked]="selection[scene.client_uuid]"
-                  (change)="toggleScene(scene)"
-                  [attr.data-test]="'editor-scene-toggle-' + scene.client_uuid"
-                />
+                @if (isSelectable(scene)) {
+                  <input
+                    type="checkbox"
+                    class="h-5 w-5 shrink-0"
+                    [checked]="selection[scene.client_uuid]"
+                    (change)="toggleScene(scene)"
+                    [attr.data-test]="
+                      'editor-scene-toggle-' + scene.client_uuid
+                    "
+                  />
+                } @else {
+                  <span class="h-5 w-5 shrink-0" aria-hidden="true"></span>
+                }
                 <span class="min-w-0">
                   <span
                     class="block font-bold truncate"
                     [class.text-violet-800]="scene.kind === 'mark'"
+                    [class.text-amber-700]="scene.kind === 'unlinked'"
                   >
                     {{ scene.label }}
                   </span>
@@ -244,6 +260,57 @@
                   </span>
                 </span>
               </label>
+              @if (isAssignable(scene) && data?.goals) {
+                <label class="flex items-center gap-2 text-sm">
+                  <span>{{
+                    "highlightEditor.assignment.label" | transloco
+                  }}</span>
+                  <!-- [selected] an den Optionen statt [value] am select: Der
+                       Wert stünde sonst vor den Optionen fest und bliebe leer. -->
+                  <select
+                    class="min-h-[40px] max-w-[16rem] rounded-[5px] border border-fb-gray-600 px-2"
+                    (change)="setAssignment(scene, $any($event.target).value)"
+                    [attr.data-test]="
+                      'editor-scene-assign-' + scene.client_uuid
+                    "
+                  >
+                    @if (!scene.event_id) {
+                      <option
+                        value=""
+                        [selected]="assignment[scene.client_uuid] === ''"
+                      >
+                        {{
+                          "highlightEditor.assignment.unassigned" | transloco
+                        }}
+                      </option>
+                    }
+                    @for (goal of goalOptions(scene); track goal.event_id) {
+                      <option
+                        [value]="'goal:' + goal.event_id"
+                        [selected]="
+                          assignment[scene.client_uuid] ===
+                          'goal:' + goal.event_id
+                        "
+                      >
+                        {{ goal.label }}
+                      </option>
+                    }
+                    @for (result of noGoalResults; track result) {
+                      <option
+                        [value]="'none:' + result"
+                        [selected]="
+                          assignment[scene.client_uuid] === 'none:' + result
+                        "
+                      >
+                        {{
+                          "highlightEditor.assignment.noGoal." + result
+                            | transloco
+                        }}
+                      </option>
+                    }
+                  </select>
+                </label>
+              }
               <button
                 type="button"
                 class="min-h-[40px] rounded-full border border-black px-3 text-sm font-bold hover:bg-black hover:text-white"
