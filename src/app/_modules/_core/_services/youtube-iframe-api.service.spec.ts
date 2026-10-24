@@ -53,6 +53,12 @@ describe('YoutubeIframeApiService', () => {
       loadVideoById() {
         return undefined;
       }
+      seekTo() {
+        return undefined;
+      }
+      playVideo() {
+        return undefined;
+      }
       getCurrentTime() {
         return 0;
       }
