@@ -348,6 +348,31 @@ describe('MatchDetailedStatsComponent', () => {
     ).toMatch(/^50[.,]0 %$/);
   });
 
+  it('führt Schüsse ohne Schützen als eigene Zeile, damit die Summe aufgeht', () => {
+    load(stats());
+    const home = el().querySelector('[data-test="players-unassigned-home"]');
+    expect(home?.textContent).toContain('Nicht zugeordnet');
+    expect(
+      Array.from(home?.querySelectorAll('td') ?? []).map((td) =>
+        td.textContent?.trim()
+      )
+    ).toEqual(['', 'Nicht zugeordnet', '1', '1', '0']);
+    // Gast hat keinen zugeordneten Schuss, die Tabelle steht trotzdem da.
+    expect(
+      el().querySelector('[data-test="players-unassigned-guest"]')
+    ).toBeTruthy();
+  });
+
+  it('lässt die Zeile weg, wenn jeder Schuss zugeordnet ist', () => {
+    const data = stats();
+    data.teams.home = { ...data.teams.home, shots: 1, on_goal: 1 };
+    data.teams.guest = { ...data.teams.guest, shots: 0, missed: 0 };
+    load(data);
+    expect(el().querySelector('[data-test="players-home"]')).toBeTruthy();
+    expect(el().querySelector('[data-test^="players-unassigned"]')).toBeNull();
+    expect(el().querySelector('[data-test="players-guest"]')).toBeNull();
+  });
+
   it('blendet Spieler- und Torhüterbereich ohne Daten aus', () => {
     load(stats({ players: [], goalkeepers: [] }));
     expect(el().querySelector('[data-test="players"]')).toBeNull();
