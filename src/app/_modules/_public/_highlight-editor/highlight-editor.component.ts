@@ -236,10 +236,15 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     const target = document.createElement('div');
     host.appendChild(target);
     try {
+      // Der Player bekommt das Video gleich mit, ohne Autoplay: Nach „Video
+      // laden“ steht das Vorschaubild da. Leer angelegt, endete ein Klick ins
+      // Bild in onError und riss den Player wieder ab. Szenen starten per
+      // loadVideoById, das immer abspielt.
       const player = await this._youtube.createPlayer(target, {
+        videoId: this.data.video_id,
         width: '100%',
         height: '100%',
-        playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
+        playerVars: { playsinline: 1, rel: 0 },
         events: {
           onReady: (event) =>
             this._zone.run(() => {
