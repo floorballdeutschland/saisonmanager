@@ -196,7 +196,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
   public sides: SideConfig = {};
   public viewPeriod = 1;
   // Spielbarer Abschnitt, in dem das Spiel laut Server gerade steht (in der
-  // Pause der vorherige). `viewPeriod` folgt ihm bei jeder Änderung; eine
+  // Pause schon der nächste). `viewPeriod` folgt ihm bei jeder Änderung; eine
   // Abweichung entsteht nur durch bewusstes Umstellen (Nachträge).
   public gamePeriod = 1;
   // Der Abschnitt des Spiels hat sich geändert, während ein Entwurf offen war.
@@ -349,10 +349,13 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this._autoFlush();
   }
 
-  // Dieselbe Regel wie `currentPeriod` im Spielbericht: In der Pause steht
-  // dort z. B. 1.5, abgerundet der gerade beendete Abschnitt.
+  // In der Pause steht dort z. B. 1.5. Anders als `currentPeriod` im
+  // Spielbericht wird AUFGERUNDET: Mit „Drittelpause beginnt“ ist der Abschnitt
+  // vorbei, geschossen wird erst wieder im nächsten. So steht das Tablet beim
+  // Anpfiff schon richtig, auch wenn ein zweites Gerät „nächstes Drittel
+  // starten“ erst mit dem nächsten Nachladen (bis 30 s) liefert.
   private _periodFromGame(): number {
-    const parsed = Math.floor(this.game?.current_period_title?.period || 0);
+    const parsed = Math.ceil(this.game?.current_period_title?.period || 0);
     const periods = this.periods;
     if (isNaN(parsed) || parsed < 1) return periods[0] ?? 1;
     // Im Penalty-Schießen oder einer unbekannten Phase bleibt die Erfassung

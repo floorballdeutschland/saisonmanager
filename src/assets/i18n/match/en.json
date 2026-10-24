@@ -63,7 +63,8 @@
       "periodHint": "Per period: saves / shots on goal."
     },
     "players": {
-      "title": "Shots per player"
+      "title": "Shots per player",
+      "unassigned": "Not assigned"
     },
     "freeHits": {
       "title": "Free hits",

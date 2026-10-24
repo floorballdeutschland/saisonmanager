@@ -38,6 +38,15 @@ import { nextSceneIndex, personLabel } from '../../_utils/highlights';
 /** So lange darf es vom Klick bis zum spielbereiten Player dauern. */
 export const PLAYER_READY_TIMEOUT_MS = 15000;
 
+/** So oft prüft der Player, ob die laufende Szene ihr Ende erreicht hat. */
+export const SCENE_END_POLL_MS = 250;
+
+/**
+ * Ein Sprung landet auf dem Keyframe davor, also bis zu einige Sekunden vor
+ * `start`. So weit davor gilt er schon als angekommen.
+ */
+const SEEK_TOLERANCE_S = 5;
+
 @Component({
   selector: 'fb-match-highlights',
   templateUrl: './match-highlights.component.html',
@@ -66,6 +75,11 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   private _playerReady = false;
   private _generation = 0;
   private _readyTimer?: ReturnType<typeof setTimeout>;
+  private _sceneTimer?: ReturnType<typeof setInterval>;
+  /** Das Video steckt im Player; weitere Szenen springen nur noch. */
+  private _videoLoaded = false;
+  /** Die Abspielposition hat die laufende Szene erreicht. */
+  private _arrived = false;
 
   constructor(
     private _youtube: YoutubeIframeApiService,
@@ -219,29 +233,77 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
     this.selectScene(0);
   }
 
+  /**
+   * KEIN `endSeconds` UND NUR EIN `loadVideoById`. Lädt man dasselbe Video aus
+   * dem Ende-Ereignis der vorigen Szene heraus mit neuem Ausschnitt nach,
+   * zeigte YouTube die nächste Szene nicht und übersprang die übernächste
+   * (Spiel 58763, 24.10.2026). Weitere Szenen springen deshalb per `seekTo`,
+   * und das Ende prüft der Player selbst (`checkSceneEnd`).
+   */
   playScene(index: number): void {
     const scene = this.scenes[index];
     if (!scene || !this._player || !this.highlights?.video_id) return;
     this.currentIndex = index;
     this.finished = false;
-    this._player.loadVideoById({
-      videoId: this.highlights.video_id,
-      startSeconds: scene.start,
-      endSeconds: scene.end,
-    });
+    this._arrived = false;
+    if (this._videoLoaded) {
+      this._player.seekTo(scene.start, true);
+      this._player.playVideo();
+    } else {
+      this._player.loadVideoById({
+        videoId: this.highlights.video_id,
+        startSeconds: scene.start,
+      });
+      this._videoLoaded = true;
+    }
+    this.startSceneTimer();
     this._cdr.markForCheck();
   }
 
   /** Eine Szene ist zu Ende: die nächste, nach der letzten ist Schluss. */
   onSceneEnded(): void {
-    if (this.currentIndex === null) return;
+    if (this.currentIndex === null || this.finished) return;
     const next = nextSceneIndex(this.currentIndex, this.scenes.length);
     if (next === null) {
       this.finished = true;
+      this.stopSceneTimer();
+      this._player?.pauseVideo();
       this._cdr.markForCheck();
     } else {
       this.playScene(next);
     }
+  }
+
+  /**
+   * Bis ein Sprung angekommen ist, meldet der Player noch die alte Position.
+   * Erst danach zählt das Ende, sonst beendete ein Sprung zurück die neue
+   * Szene sofort.
+   */
+  checkSceneEnd(): void {
+    const scene = this.currentScene;
+    if (!scene || !this._player || this.finished) return;
+    const time = this._player.getCurrentTime();
+    if (!this._arrived) {
+      this._arrived =
+        time >= scene.start - SEEK_TOLERANCE_S && time < scene.end;
+      return;
+    }
+    if (time >= scene.end) this._zone.run(() => this.onSceneEnded());
+  }
+
+  private startSceneTimer(): void {
+    if (this._sceneTimer) return;
+    this._zone.runOutsideAngular(() => {
+      this._sceneTimer = setInterval(
+        () => this.checkSceneEnd(),
+        SCENE_END_POLL_MS
+      );
+    });
+  }
+
+  private stopSceneTimer(): void {
+    clearInterval(this._sceneTimer);
+    this._sceneTimer = undefined;
   }
 
   personLabel = personLabel;
@@ -265,9 +327,11 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   private destroyPlayer(): void {
     this._generation++;
     clearTimeout(this._readyTimer);
+    this.stopSceneTimer();
     this._player?.destroy();
     this._player = undefined;
     this._playerReady = false;
+    this._videoLoaded = false;
     const host = this.playerHost?.nativeElement;
     if (host) host.replaceChildren();
   }

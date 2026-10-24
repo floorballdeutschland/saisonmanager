@@ -554,7 +554,7 @@
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           @for (team of teams; track team) {
-            @if (playersFor(team).length) {
+            @if (playersFor(team).length || unassignedFor(team)) {
               <div class="min-w-0">
                 <h4
                   class="font-bold text-base lg:text-lg border-b-2 border-fb-gray-200 pb-2 mb-3"
@@ -598,6 +598,29 @@
                           </td>
                           <td class="text-right tabular-nums py-2 pl-2">
                             {{ player.goals }}
+                          </td>
+                        </tr>
+                      }
+                      @if (unassignedFor(team); as unassigned) {
+                        <tr
+                          class="border-b border-fb-gray-200 text-fb-gray-500"
+                          [attr.data-test]="'players-unassigned-' + team"
+                        >
+                          <td class="py-2 pr-2"></td>
+                          <td class="py-2 pr-3 italic">
+                            {{
+                              "match.detailedStats.players.unassigned"
+                                | transloco
+                            }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ unassigned.shots }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ unassigned.on_goal }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 pl-2">
+                            {{ unassigned.goals }}
                           </td>
                         </tr>
                       }

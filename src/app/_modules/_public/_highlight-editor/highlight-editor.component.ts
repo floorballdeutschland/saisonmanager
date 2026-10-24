@@ -21,6 +21,7 @@ import {
 } from '@floorball/core';
 import {
   HighlightEditorData,
+  HighlightEditorGoal,
   HighlightEditorScene,
   HighlightEditorUpdate,
 } from '@floorball/types';
@@ -30,10 +31,15 @@ import {
   OFFSET_MIN,
   buildUpdate,
   calibrationStart,
+  conflictingAssignments,
   clampOffset,
   formatVideoTime,
   hasChanges,
+  initialAssignment,
+  isAssignable,
+  isSelectable,
   measureOffset,
+  NO_GOAL_RESULTS,
   sceneWindow,
 } from './highlight-editor.logic';
 
@@ -93,6 +99,8 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   public offset: number | null = null;
   /** client_uuid → in den Highlights. */
   public selection: Record<string, boolean> = {};
+  /** client_uuid → Wert von „Gehört zu“ (siehe `initialAssignment`). */
+  public assignment: Record<string, string> = {};
 
   public consented = false;
   public playerLoading = false;
@@ -109,6 +117,9 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   public readonly offsetMin = OFFSET_MIN;
   public readonly offsetMax = OFFSET_MAX;
   public readonly formatVideoTime = formatVideoTime;
+  public readonly isAssignable = isAssignable;
+  public readonly isSelectable = isSelectable;
+  public readonly noGoalResults = NO_GOAL_RESULTS;
 
   private _token: string | null = null;
   private _gameId: number | null = null;
@@ -184,6 +195,13 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     return this.scenes.find((scene) => scene.client_uuid === uuid)?.label ?? '';
   }
 
+  /** Szenen, die gerade auf dasselbe Tor zeigen; so lange kein Speichern. */
+  get conflicts(): Set<string> {
+    return this.data
+      ? conflictingAssignments(this.data, this.assignment)
+      : new Set();
+  }
+
   get dirty(): boolean {
     return !!this.data && hasChanges(this._update());
   }
@@ -205,9 +223,34 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     event.returnValue = '';
   }
 
+  /** Szenen mit Haken; Tor-Schüsse ohne Tor kommen nie in die Highlights. */
+  get selectableScenes(): HighlightEditorScene[] {
+    return this.scenes.filter(isSelectable);
+  }
+
   get selectedCount(): number {
-    return this.scenes.filter((scene) => this.selection[scene.client_uuid])
-      .length;
+    return this.selectableScenes.filter(
+      (scene) => this.selection[scene.client_uuid]
+    ).length;
+  }
+
+  /** Tore des Berichts, die zur Mannschaft des Schusses passen. */
+  public goalOptions(scene: HighlightEditorScene): HighlightEditorGoal[] {
+    return (this.data?.goals ?? []).filter((goal) => goal.team === scene.team);
+  }
+
+  /**
+   * Wird der Schuss gerade zu „Kein Tor“? Danach ist er kein Tor-Schuss mehr
+   * und verschwindet aus dem Editor; zurück geht es nur über Tablet oder SBK.
+   */
+  public marksNoGoal(scene: HighlightEditorScene): boolean {
+    const value = this.assignment[scene.client_uuid];
+    return !!value?.startsWith('none:') && value !== initialAssignment(scene);
+  }
+
+  public setAssignment(scene: HighlightEditorScene, value: string): void {
+    this.assignment = { ...this.assignment, [scene.client_uuid]: value };
+    this.saved = false;
   }
 
   // --- Video -------------------------------------------------------------------
@@ -236,10 +279,15 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     const target = document.createElement('div');
     host.appendChild(target);
     try {
+      // Der Player bekommt das Video gleich mit, ohne Autoplay: Nach „Video
+      // laden“ steht das Vorschaubild da. Leer angelegt, endete ein Klick ins
+      // Bild in onError und riss den Player wieder ab. Szenen starten per
+      // loadVideoById, das immer abspielt.
       const player = await this._youtube.createPlayer(target, {
+        videoId: this.data.video_id,
         width: '100%',
         height: '100%',
-        playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
+        playerVars: { playsinline: 1, rel: 0 },
         events: {
           onReady: (event) =>
             this._zone.run(() => {
@@ -358,7 +406,7 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
 
   public setAll(value: boolean): void {
     this.selection = Object.fromEntries(
-      this.scenes.map((scene) => [scene.client_uuid, value])
+      this.selectableScenes.map((scene) => [scene.client_uuid, value])
     );
     this.saved = false;
   }
@@ -366,7 +414,7 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   // --- Speichern ---------------------------------------------------------------
 
   public save(): void {
-    if (!this.data || this.saving) return;
+    if (!this.data || this.saving || this.conflicts.size > 0) return;
     const update = this._update();
     if (!hasChanges(update)) return;
     this.saving = true;
@@ -374,6 +422,7 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     this.saveError = null;
     this._sentOffset = this.offset;
     this._sentSelection = this.selection;
+    this._sentAssignment = this.assignment;
     this._request(
       this._token
         ? this._service.updateByToken(this._token, update)
@@ -385,9 +434,12 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   /** Stand beim Absenden, um Änderungen während des Speicherns zu erkennen. */
   private _sentOffset: number | null = null;
   private _sentSelection: Record<string, boolean> = {};
+  private _sentAssignment: Record<string, string> = {};
 
   private _update(): HighlightEditorUpdate {
-    return this.data ? buildUpdate(this.data, this.offset, this.selection) : {};
+    return this.data
+      ? buildUpdate(this.data, this.offset, this.selection, this.assignment)
+      : {};
   }
 
   private _request(
@@ -433,7 +485,14 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     this.data = data;
     this.offset = data.offset_seconds;
     this.selection = Object.fromEntries(
-      data.scenes.map((scene) => [scene.client_uuid, scene.in_highlights])
+      data.scenes
+        .filter(isSelectable)
+        .map((scene) => [scene.client_uuid, scene.in_highlights])
+    );
+    this.assignment = Object.fromEntries(
+      data.scenes
+        .filter(isAssignable)
+        .map((scene) => [scene.client_uuid, initialAssignment(scene)])
     );
     this.state = 'ready';
   }
@@ -448,11 +507,21 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     const selection = this.selection;
     const sentOffset = this._sentOffset;
     const sentSelection = this._sentSelection;
+    const assignment = this.assignment;
+    const sentAssignment = this._sentAssignment;
     this._apply(data);
     if (offset !== sentOffset) this.offset = offset;
     for (const uuid of Object.keys(selection)) {
       if (selection[uuid] !== sentSelection[uuid] && uuid in this.selection) {
         this.selection = { ...this.selection, [uuid]: selection[uuid] };
+      }
+    }
+    for (const uuid of Object.keys(assignment)) {
+      if (
+        assignment[uuid] !== sentAssignment[uuid] &&
+        uuid in this.assignment
+      ) {
+        this.assignment = { ...this.assignment, [uuid]: assignment[uuid] };
       }
     }
   }
