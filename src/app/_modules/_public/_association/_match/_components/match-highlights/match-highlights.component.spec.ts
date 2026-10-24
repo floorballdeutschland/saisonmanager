@@ -44,6 +44,10 @@ describe('MatchHighlightsComponent', () => {
   beforeEach(async () => {
     player = jasmine.createSpyObj<YtPlayer>('YtPlayer', [
       'loadVideoById',
+      'seekTo',
+      'playVideo',
+      'pauseVideo',
+      'getCurrentTime',
       'destroy',
     ]);
     youtube = jasmine.createSpyObj<YoutubeIframeApiService>(
@@ -76,6 +80,12 @@ describe('MatchHighlightsComponent', () => {
 
   const ended = () =>
     options?.events?.onStateChange?.({ data: YT_STATE_ENDED, target: player });
+
+  /** Der Player steht bei `seconds`, die Endprüfung läuft. */
+  const at = (seconds: number) => {
+    player.getCurrentTime.and.returnValue(seconds);
+    component.checkSceneEnd();
+  };
 
   it('zeigt eine vorgemerkte Szene als „Szene“, ohne Spielstand und Schütze (api#838)', () => {
     const mark: HighlightScene = {
@@ -133,7 +143,6 @@ describe('MatchHighlightsComponent', () => {
     expect(player.loadVideoById).toHaveBeenCalledWith({
       videoId: 'abc123',
       startSeconds: 100,
-      endSeconds: 120,
     });
     expect(component.currentIndex).toBe(0);
   });
@@ -141,16 +150,55 @@ describe('MatchHighlightsComponent', () => {
   it('spielt die Szenen nacheinander und hört nach der letzten auf', async () => {
     await consentAndReady();
 
-    ended();
-    expect(player.loadVideoById).toHaveBeenCalledWith(
-      jasmine.objectContaining({ startSeconds: 400, endSeconds: 420 })
-    );
-    ended();
+    at(105);
+    at(120);
+    expect(component.currentIndex).toBe(1);
+    expect(player.seekTo).toHaveBeenCalledWith(400, true);
+    at(405);
+    at(420);
     expect(component.currentIndex).toBe(2);
-    expect(player.loadVideoById).toHaveBeenCalledTimes(3);
+    expect(player.seekTo).toHaveBeenCalledWith(900, true);
+
+    at(905);
+    at(920);
+    expect(component.finished).toBeTrue();
+    expect(player.pauseVideo).toHaveBeenCalled();
+    expect(player.seekTo).toHaveBeenCalledTimes(2);
+    // Das Video wird nur einmal geladen, danach wird nur gesprungen.
+    expect(player.loadVideoById).toHaveBeenCalledTimes(1);
+  });
+
+  it('wertet die alte Position vor dem Ankommen nicht als Szenenende (Spiel 58763)', async () => {
+    await consentAndReady();
+    at(105);
+    at(120);
+
+    // Der Sprung zu 400 ist noch nicht angekommen: 120 liegt vor der Szene.
+    at(120);
+    at(121);
+    expect(component.currentIndex).toBe(1);
+    expect(player.seekTo).toHaveBeenCalledTimes(1);
+  });
+
+  it('beendet nach einem Sprung zurück die neue Szene nicht sofort', async () => {
+    await consentAndReady();
+    component.selectScene(2);
+    at(905);
+
+    component.selectScene(0);
+    at(925);
+    expect(component.currentIndex).toBe(0);
+
+    at(101);
+    at(120);
+    expect(component.currentIndex).toBe(1);
+  });
+
+  it('schaltet auch weiter, wenn das Video selbst zu Ende ist', async () => {
+    await consentAndReady();
+    component.selectScene(2);
 
     ended();
-    expect(player.loadVideoById).toHaveBeenCalledTimes(3);
     expect(component.finished).toBeTrue();
   });
 
@@ -159,9 +207,8 @@ describe('MatchHighlightsComponent', () => {
 
     component.selectScene(2);
     expect(component.currentIndex).toBe(2);
-    expect(player.loadVideoById).toHaveBeenCalledWith(
-      jasmine.objectContaining({ startSeconds: 900 })
-    );
+    expect(player.seekTo).toHaveBeenCalledWith(900, true);
+    expect(player.playVideo).toHaveBeenCalled();
 
     component.playAll();
     expect(component.currentIndex).toBe(0);
