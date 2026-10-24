@@ -50,6 +50,7 @@
       "missed": "Kein Tor: vorbei",
       "blocked": "Kein Tor: geblockt"
     },
-    "hint": "Passt eine Szene nicht zum Tor, unter „Gehört zu“ das richtige Tor wählen oder „Kein Tor“, wenn am Tablet versehentlich ein Tor getippt wurde. Hängt das gewählte Tor schon an einer anderen Szene, wird es dort gelöst. Mit „Abspielen“ lässt sich die Szene vorher ansehen."
+    "hint": "Passt eine Szene nicht zum Tor, unter „Gehört zu“ das richtige Tor wählen oder „Kein Tor“, wenn am Tablet versehentlich ein Tor getippt wurde. Hängt das gewählte Tor schon an einer anderen Szene, wird es dort gelöst. Mit „Abspielen“ lässt sich die Szene vorher ansehen.",
+    "conflict": "Zwei Szenen sind demselben Tor zugeordnet. Bitte eine davon ändern."
   }
 }

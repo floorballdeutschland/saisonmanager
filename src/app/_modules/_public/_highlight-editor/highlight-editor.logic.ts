@@ -117,6 +117,29 @@ export function buildUpdate(
   return update;
 }
 
+/**
+ * Szenen, die in dieser Bearbeitung auf dasselbe Tor gelegt wurden. Die API
+ * weist das ab („Ein Tor kann nur einen Schuss bekommen“). Ein Tor, das an
+ * einer UNVERÄNDERTEN Szene hängt, zählt nicht: Das löst die API dort
+ * absichtlich.
+ */
+export function conflictingAssignments(
+  loaded: HighlightEditorData,
+  assignment: Record<string, string>
+): Set<string> {
+  const byGoal = new Map<string, string[]>();
+  for (const scene of loaded.scenes) {
+    const value = assignment[scene.client_uuid];
+    if (!value?.startsWith('goal:') || value === initialAssignment(scene)) {
+      continue;
+    }
+    byGoal.set(value, [...(byGoal.get(value) ?? []), scene.client_uuid]);
+  }
+  return new Set(
+    [...byGoal.values()].filter((uuids) => uuids.length > 1).flat()
+  );
+}
+
 export function hasChanges(update: HighlightEditorUpdate): boolean {
   return (
     'offset_seconds' in update ||

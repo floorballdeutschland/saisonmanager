@@ -31,6 +31,7 @@ import {
   OFFSET_MIN,
   buildUpdate,
   calibrationStart,
+  conflictingAssignments,
   clampOffset,
   formatVideoTime,
   hasChanges,
@@ -192,6 +193,13 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   get calibrationLabel(): string {
     const uuid = this.data?.calibration_scene?.client_uuid;
     return this.scenes.find((scene) => scene.client_uuid === uuid)?.label ?? '';
+  }
+
+  /** Szenen, die gerade auf dasselbe Tor zeigen; so lange kein Speichern. */
+  get conflicts(): Set<string> {
+    return this.data
+      ? conflictingAssignments(this.data, this.assignment)
+      : new Set();
   }
 
   get dirty(): boolean {
@@ -392,7 +400,7 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
   // --- Speichern ---------------------------------------------------------------
 
   public save(): void {
-    if (!this.data || this.saving) return;
+    if (!this.data || this.saving || this.conflicts.size > 0) return;
     const update = this._update();
     if (!hasChanges(update)) return;
     this.saving = true;

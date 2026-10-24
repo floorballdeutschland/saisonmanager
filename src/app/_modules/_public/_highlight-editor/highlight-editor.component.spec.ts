@@ -306,6 +306,14 @@ describe('HighlightEditorComponent', () => {
       };
     }
 
+    /** Wie im Browser: Wert wählen, change auslösen (OnPush markiert dabei). */
+    function choose(uuid: string, value: string): void {
+      const select = el('editor-scene-assign-' + uuid) as HTMLSelectElement;
+      select.value = value;
+      select.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    }
+
     function options(uuid: string): string[] {
       const select = el('editor-scene-assign-' + uuid) as HTMLSelectElement;
       return Array.from(select.options).map((o) => o.value);
@@ -346,6 +354,25 @@ describe('HighlightEditorComponent', () => {
         ],
         assignments: [{ client_uuid: 'lose', event_id: 2 }],
       });
+    });
+
+    it('sperrt das Speichern, solange zwei geänderte Szenen auf dasselbe Tor zeigen', () => {
+      const base = mitFehltipper();
+      load({
+        ...base,
+        scenes: [...base.scenes, { ...base.scenes[2], client_uuid: 'lose2' }],
+      });
+      choose('lose', 'goal:2');
+      choose('lose2', 'goal:2');
+
+      expect(el('editor-assignment-conflict')).not.toBeNull();
+      expect((el('editor-save') as HTMLButtonElement).disabled).toBeTrue();
+      component.save();
+      http.expectNone(TOKEN_PATH);
+
+      // Ein unverändertes Tor (1 an „tor“) zu übernehmen ist dagegen erlaubt.
+      choose('lose2', 'goal:1');
+      expect(el('editor-assignment-conflict')).toBeNull();
     });
 
     it('zeigt ohne goals (ältere API) kein Auswahlfeld', () => {

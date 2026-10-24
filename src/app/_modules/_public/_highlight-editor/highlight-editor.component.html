@@ -269,6 +269,10 @@
                        Wert stünde sonst vor den Optionen fest und bliebe leer. -->
                   <select
                     class="min-h-[40px] max-w-[16rem] rounded-[5px] border border-fb-gray-600 px-2"
+                    [class.border-red-700]="conflicts.has(scene.client_uuid)"
+                    [attr.aria-invalid]="
+                      conflicts.has(scene.client_uuid) || null
+                    "
                     (change)="setAssignment(scene, $any($event.target).value)"
                     [attr.data-test]="
                       'editor-scene-assign-' + scene.client_uuid
@@ -330,7 +334,7 @@
         <button
           type="button"
           class="min-h-[48px] rounded-[5px] bg-black px-6 font-bold text-white disabled:opacity-50"
-          [disabled]="!dirty || saving"
+          [disabled]="!dirty || saving || conflicts.size > 0"
           (click)="save()"
           data-test="editor-save"
         >
@@ -346,6 +350,15 @@
             data-test="editor-saved"
           >
             {{ "highlightEditor.saved" | transloco }}
+          </span>
+        }
+        @if (conflicts.size > 0) {
+          <span
+            class="text-sm font-bold text-red-700"
+            role="alert"
+            data-test="editor-assignment-conflict"
+          >
+            {{ "highlightEditor.assignment.conflict" | transloco }}
           </span>
         }
         @if (saveFailed) {
