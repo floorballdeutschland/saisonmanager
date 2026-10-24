@@ -173,7 +173,7 @@ export class StreamThumbnailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 403 heißt „noch nicht gültig" (Zugänge gelten ab 72 Stunden vorher), 400
+   * 403 heißt „noch nicht gültig" (Zugänge gelten erst kurz vor dem Spieltag), 400
    * und 410 „ungültig oder abgelaufen". Der ErrorInterceptor lässt diese
    * Antworten durch, die Seite benennt sie selbst.
    */

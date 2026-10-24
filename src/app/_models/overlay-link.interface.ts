@@ -8,7 +8,7 @@
 export interface OverlayLinkState {
   active: boolean;
   /**
-   * Beginn des Gültigkeitsfensters (72 Stunden vor dem Spieltag). Fehlt bei
+   * Beginn des Gültigkeitsfensters (7 Tage vor dem Spieltag). Fehlt bei
    * einer API vor dem Fenster und bei Altbestand, der ab Ausgabe gilt.
    */
   valid_from?: string | null;

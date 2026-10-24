@@ -4647,8 +4647,10 @@
                 Overlay-Zugang immer nur für <strong>einen</strong> Spieltag,
                 nicht für die ganze Halle. Laufen dort mehrere Ligen
                 nacheinander, steht deshalb je Spieltag ein eigener Abschnitt.
-                Er gilt im selben Zeitraum wie der Sekretariats-Code (nach dem
-                Spieltag erzeugt: noch 36 Stunden) und lässt sich ebenfalls als
+                Er gilt schon <strong>ab sieben Tagen vor dem Spieltag</strong>
+                bis zum Ende des Folgetags (nach dem Spieltag erzeugt: noch 36
+                Stunden), damit sich OBS in der Woche davor einrichten und
+                testen lässt, und er lässt sich ebenfalls als
                 QR-Code ausdrucken. Einzelheiten stehen im
                 Kapitel für Streamer.
               </p>
@@ -9658,7 +9660,7 @@
             angezeigt. Wer die Seite ohne sie verlässt, muss neu erzeugen und
             alles noch einmal in OBS eintragen. Unter <em>Drucken</em> gibt es
             beide Adressen als QR-Code auf einem Blatt. Der Zugang gilt
-            <strong>ab 72 Stunden vor dem Spieltag bis zum Ende des
+            <strong>ab sieben Tagen vor dem Spieltag bis zum Ende des
             Folgetags</strong> und für
             <strong>alle Spiele des Spieltags</strong>, nicht nur für das gerade
             geöffnete. Bei einem Doppelspieltag reicht also ein Satz Adressen,
@@ -11536,8 +11538,8 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             <h2>Der nächste Spieltag</h2>
           </div>
           <p class="proc-text">
-            Das Token gilt nur rund um seinen Spieltag (ab 72 Stunden vorher bis
-            zum Ende des Folgetags), für jeden Spieltag holst du dir also neue
+            Das Token gilt nur rund um seinen Spieltag (ab sieben Tagen vorher
+            bis zum Ende des Folgetags), für jeden Spieltag holst du dir also neue
             Adressen. Richtest du OBS früher ein, zeigt die Bühne erst ab
             Beginn dieses Zeitraums etwas an und springt dann von selbst an;
             das Bedienfeld nennt bis dahin den Beginn. Encoder-Einstellungen, Bitrate, Streamkey und Audiogeräte
@@ -12318,7 +12320,7 @@ curl "https://saisonmanager.de/api/v2/public/overlay/live?token=DEIN_TOKEN&amp;g
           >
           <div class="note">
             <strong>Eigenschaften des Tokens.</strong> 43 Zeichen, gültig ab
-            72 Stunden vor dem Spieltag bis zum Ende des Folgetags (vorher
+            sieben Tagen vor dem Spieltag (00:00 Uhr) bis zum Ende des Folgetags (vorher
             antwortet die API mit <code>403</code> und nennt in
             <code>valid_from</code> den Beginn, danach mit <code>410</code>),
             ein aktives je Spieltag: Ein erneutes Erzeugen entwertet das
