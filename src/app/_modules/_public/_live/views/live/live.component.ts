@@ -112,6 +112,18 @@ export class LiveComponent implements OnInit, OnDestroy {
     return game.result_string ?? '';
   }
 
+  /**
+   * Link zur Spielseite: /:association/:leagueId/spiel/:matchId. Eine Route
+   * /spiel/:matchId ohne Verband gibt es nicht, sie endete auf der
+   * Fehlerseite. Fehlt Slug oder Liga, bleibt der Eintrag ohne Link, statt auf
+   * eine unvollständige Route zu zeigen.
+   */
+  public matchLink(game: LiveStreamGame): (string | number)[] | null {
+    const slug = game.league?.game_operation_slug;
+    if (!slug || !game.league?.id) return null;
+    return ['/', slug, game.league.id, 'spiel', game.game_id];
+  }
+
   public period(game: LiveStreamGame): string {
     return game.current_period_title?.title ?? '';
   }
