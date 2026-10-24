@@ -63,7 +63,8 @@
       "periodHint": "Je Abschnitt: Paraden / Schüsse aufs Tor."
     },
     "players": {
-      "title": "Schüsse je Spieler"
+      "title": "Schüsse je Spieler",
+      "unassigned": "Nicht zugeordnet"
     },
     "freeHits": {
       "title": "Freischläge",
