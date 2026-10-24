@@ -10,6 +10,9 @@ export interface YtPlayer {
     startSeconds?: number;
     endSeconds?: number;
   }): void;
+  /** Springt im geladenen Video, ohne es neu zu laden. */
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
+  playVideo(): void;
   /** Abspielposition in Sekunden, mit Nachkommastellen. */
   getCurrentTime(): number;
   pauseVideo(): void;
