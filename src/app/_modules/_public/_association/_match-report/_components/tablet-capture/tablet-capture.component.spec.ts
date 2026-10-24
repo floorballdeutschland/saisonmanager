@@ -683,17 +683,26 @@ describe('TabletCaptureComponent', () => {
       ) as HTMLElement | null;
     }
 
-    it('startet im Abschnitt des Spiels und rundet die Pause ab', async () => {
+    it('startet im Abschnitt des Spiels, in der Pause schon im nächsten', async () => {
       await start(inPeriod(4711, 1.5));
-      expect(component.viewPeriod).toBe(1);
+      expect(component.viewPeriod).toBe(2);
       expect(component.followsGame).toBeTrue();
       expect(query('tablet-period-deviates')).toBeNull();
+    });
+
+    it('bleibt nach dem letzten Abschnitt in diesem, ohne spielbaren nächsten', async () => {
+      // Drei Drittel, keine Verlängerung: 3.5 rundet nicht auf einen
+      // Abschnitt, den es nicht gibt.
+      await start(inPeriod(4711, 3));
+      reload(inPeriod(4711, 3.5));
+      expect(component.viewPeriod).toBe(3);
     });
 
     it('wechselt mit, wenn ein anderes Gerät den Abschnitt weiterschaltet', async () => {
       await start(inPeriod(4711, 1));
       reload(inPeriod(4711, 1.5));
-      expect(component.viewPeriod).toBe(1);
+      // Mit „Drittelpause beginnt“ steht die Erfassung schon im 2. Drittel.
+      expect(component.viewPeriod).toBe(2);
       reload(inPeriod(4711, 2));
       expect(component.viewPeriod).toBe(2);
       expect(component.gamePeriod).toBe(2);
