@@ -173,9 +173,9 @@ export class StreamThumbnailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 403 heißt „noch nicht gültig" (Zugänge gelten erst kurz vor dem Spieltag), 400
-   * und 410 „ungültig oder abgelaufen". Der ErrorInterceptor lässt diese
-   * Antworten durch, die Seite benennt sie selbst.
+   * 403 heißt „noch nicht gültig" (der Overlay-Zugang gilt erst ab sieben
+   * Tagen vor dem Spieltag), 400 und 410 „ungültig oder abgelaufen". Der
+   * ErrorInterceptor lässt diese Antworten durch, die Seite benennt sie selbst.
    */
   private _fail(error: unknown): void {
     const status = error instanceof HttpErrorResponse ? error.status : 0;
