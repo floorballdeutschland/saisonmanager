@@ -239,6 +239,15 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
     return (this.data?.goals ?? []).filter((goal) => goal.team === scene.team);
   }
 
+  /**
+   * Wird der Schuss gerade zu „Kein Tor“? Danach ist er kein Tor-Schuss mehr
+   * und verschwindet aus dem Editor; zurück geht es nur über Tablet oder SBK.
+   */
+  public marksNoGoal(scene: HighlightEditorScene): boolean {
+    const value = this.assignment[scene.client_uuid];
+    return !!value?.startsWith('none:') && value !== initialAssignment(scene);
+  }
+
   public setAssignment(scene: HighlightEditorScene, value: string): void {
     this.assignment = { ...this.assignment, [scene.client_uuid]: value };
     this.saved = false;

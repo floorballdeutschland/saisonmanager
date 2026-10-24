@@ -323,6 +323,17 @@
               >
                 {{ "highlightEditor.scenes.play" | transloco }}
               </button>
+              @if (marksNoGoal(scene)) {
+                <p
+                  class="basis-full text-sm font-bold text-amber-700"
+                  role="alert"
+                  [attr.data-test]="
+                    'editor-no-goal-warning-' + scene.client_uuid
+                  "
+                >
+                  {{ "highlightEditor.assignment.noGoalWarning" | transloco }}
+                </p>
+              }
             </li>
           }
         </ul>

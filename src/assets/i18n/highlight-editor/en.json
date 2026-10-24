@@ -51,6 +51,7 @@
       "blocked": "No goal: blocked"
     },
     "hint": "If a scene does not match its goal, pick the right goal under “Belongs to”, or “No goal” if a goal was tapped on the tablet by mistake. If the chosen goal is already attached to another scene, it is detached there. Use “Play” to check the scene first.",
-    "conflict": "Two scenes are assigned to the same goal. Please change one of them."
+    "conflict": "Two scenes are assigned to the same goal. Please change one of them.",
+    "noGoalWarning": "Note: after saving, this is no longer a goal shot and disappears from this list. It cannot be undone here, only by the SBK or on the tablet."
   }
 }

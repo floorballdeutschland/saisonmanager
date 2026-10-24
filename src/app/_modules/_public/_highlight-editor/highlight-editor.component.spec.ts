@@ -375,6 +375,17 @@ describe('HighlightEditorComponent', () => {
       expect(el('editor-assignment-conflict')).toBeNull();
     });
 
+    it('warnt bei „Kein Tor“, dass sich das hier nicht rückgängig machen lässt', () => {
+      load(mitFehltipper());
+      expect(el('editor-no-goal-warning-tor')).toBeNull();
+
+      choose('tor', 'none:missed');
+      expect(el('editor-no-goal-warning-tor')).not.toBeNull();
+
+      choose('tor', 'goal:1');
+      expect(el('editor-no-goal-warning-tor')).toBeNull();
+    });
+
     it('zeigt ohne goals (ältere API) kein Auswahlfeld', () => {
       load();
       expect(el('editor-scene-assign-tor')).toBeNull();
