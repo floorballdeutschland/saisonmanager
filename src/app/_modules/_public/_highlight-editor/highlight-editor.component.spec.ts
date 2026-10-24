@@ -199,6 +199,15 @@ describe('HighlightEditorComponent', () => {
     expect(el('editor-calibration')).toBeNull();
   });
 
+  it('legt den Player mit dem Video an, damit ein Klick ins Bild abspielt', async () => {
+    load();
+    await readyPlayer();
+
+    expect(playerOptions!.videoId).toBe('vid123');
+    expect(playerOptions!.playerVars!['autoplay']).toBeUndefined();
+    expect(player.loadVideoById).not.toHaveBeenCalled();
+  });
+
   it('startet die Kalibrierszene 10 s vor dem Antippen, ohne Ende', async () => {
     load();
     component.playCalibration();
