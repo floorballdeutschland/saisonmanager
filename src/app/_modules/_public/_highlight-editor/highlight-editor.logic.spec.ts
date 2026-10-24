@@ -92,6 +92,35 @@ describe('highlight-editor.logic', () => {
     });
   });
 
+  it('schickt geänderte Zuordnungen, Schüsse ohne Tor nie in der Auswahl', () => {
+    const loaded = data({
+      scenes: [
+        scene({ client_uuid: 'a', event_id: 1 }),
+        scene({ client_uuid: 'b', event_id: 2 }),
+        scene({ client_uuid: 'c', kind: 'unlinked', event_id: null }),
+      ],
+    });
+    const unverändert = { a: 'goal:1', b: 'goal:2', c: '' };
+    expect(
+      hasChanges(buildUpdate(loaded, null, { c: false }, unverändert))
+    ).toBe(false);
+
+    expect(
+      buildUpdate(
+        loaded,
+        null,
+        {},
+        { a: 'none:missed', b: 'goal:1', c: 'goal:2' }
+      )
+    ).toEqual({
+      assignments: [
+        { client_uuid: 'a', event_id: null, result: 'missed' },
+        { client_uuid: 'b', event_id: 1 },
+        { client_uuid: 'c', event_id: 2 },
+      ],
+    });
+  });
+
   it('nimmt die Kalibrierung mit null zurück', () => {
     const update = buildUpdate(data({ offset_seconds: 18 }), null, {});
     expect(update).toEqual({ offset_seconds: null });

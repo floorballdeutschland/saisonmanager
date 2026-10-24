@@ -1,5 +1,7 @@
 import {
+  HighlightEditorAssignment,
   HighlightEditorData,
+  HighlightEditorNoGoalResult,
   HighlightEditorScene,
   HighlightEditorUpdate,
 } from '@floorball/types';
@@ -88,13 +90,15 @@ export function sceneWindow(
 export function buildUpdate(
   loaded: HighlightEditorData,
   offset: number | null,
-  selection: Record<string, boolean>
+  selection: Record<string, boolean>,
+  assignment: Record<string, string> = {}
 ): HighlightEditorUpdate {
   const update: HighlightEditorUpdate = {};
   if (offset !== loaded.offset_seconds) update.offset_seconds = offset;
   const scenes = loaded.scenes
     .filter(
       (scene) =>
+        isSelectable(scene) &&
         scene.client_uuid in selection &&
         selection[scene.client_uuid] !== scene.in_highlights
     )
@@ -103,11 +107,87 @@ export function buildUpdate(
       in_highlights: selection[scene.client_uuid],
     }));
   if (scenes.length > 0) update.scenes = scenes;
+  const assignments = loaded.scenes.flatMap((scene) => {
+    const value = assignment[scene.client_uuid];
+    if (!value || value === initialAssignment(scene)) return [];
+    const parsed = parseAssignment(scene.client_uuid, value);
+    return parsed ? [parsed] : [];
+  });
+  if (assignments.length > 0) update.assignments = assignments;
   return update;
 }
 
+/**
+ * Szenen, die in dieser Bearbeitung auf dasselbe Tor gelegt wurden. Die API
+ * weist das ab („Ein Tor kann nur einen Schuss bekommen“). Ein Tor, das an
+ * einer UNVERÄNDERTEN Szene hängt, zählt nicht: Das löst die API dort
+ * absichtlich.
+ */
+export function conflictingAssignments(
+  loaded: HighlightEditorData,
+  assignment: Record<string, string>
+): Set<string> {
+  const byGoal = new Map<string, string[]>();
+  for (const scene of loaded.scenes) {
+    const value = assignment[scene.client_uuid];
+    if (!value?.startsWith('goal:') || value === initialAssignment(scene)) {
+      continue;
+    }
+    byGoal.set(value, [...(byGoal.get(value) ?? []), scene.client_uuid]);
+  }
+  return new Set(
+    [...byGoal.values()].filter((uuids) => uuids.length > 1).flat()
+  );
+}
+
 export function hasChanges(update: HighlightEditorUpdate): boolean {
-  return 'offset_seconds' in update || (update.scenes?.length ?? 0) > 0;
+  return (
+    'offset_seconds' in update ||
+    (update.scenes?.length ?? 0) > 0 ||
+    (update.assignments?.length ?? 0) > 0
+  );
+}
+
+/** Nur Tore und Marken kommen in die Highlights; ein Schuss ohne Tor nie. */
+export function isSelectable(scene: HighlightEditorScene): boolean {
+  return scene.kind !== 'unlinked';
+}
+
+/** Tore und Tor-Schüsse ohne Tor lassen sich einem Tor zuordnen. */
+export function isAssignable(scene: HighlightEditorScene): boolean {
+  return scene.kind === 'goal' || scene.kind === 'unlinked';
+}
+
+export const NO_GOAL_RESULTS: HighlightEditorNoGoalResult[] = [
+  'saved',
+  'missed',
+  'blocked',
+];
+
+/**
+ * Wert des Auswahlfelds „Gehört zu“: `goal:<event_id>`, `none:<result>` oder
+ * leer, solange ein Schuss an keinem Tor hängt.
+ */
+export function initialAssignment(scene: HighlightEditorScene): string {
+  return scene.event_id ? `goal:${scene.event_id}` : '';
+}
+
+function parseAssignment(
+  clientUuid: string,
+  value: string
+): HighlightEditorAssignment | null {
+  const [kind, rest] = value.split(':');
+  if (kind === 'goal' && /^\d+$/.test(rest)) {
+    return { client_uuid: clientUuid, event_id: Number(rest) };
+  }
+  if (kind === 'none' && (NO_GOAL_RESULTS as string[]).includes(rest)) {
+    return {
+      client_uuid: clientUuid,
+      event_id: null,
+      result: rest as HighlightEditorNoGoalResult,
+    };
+  }
+  return null;
 }
 
 /** Sekunden als m:ss bzw. h:mm:ss, wie YouTube die Stelle anzeigt. */
