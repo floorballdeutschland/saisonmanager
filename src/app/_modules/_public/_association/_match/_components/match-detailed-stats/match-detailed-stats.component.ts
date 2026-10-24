@@ -352,6 +352,27 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     );
   }
 
+  /**
+   * Schüsse ohne erfasste Schützin oder Schützen, als Differenz zwischen der
+   * Teamsumme und den Spielerzeilen. Ohne diese Zeile gehen die Spielerzeilen
+   * nicht in der Teamsumme auf, sobald am Tablet die Nummer weggelassen wurde.
+   * `null`, wenn jeder Schuss zugeordnet ist.
+   */
+  unassignedFor(
+    team: ShotTeam
+  ): Pick<PlayerShotStats, 'shots' | 'on_goal' | 'goals'> | null {
+    const total = this.stats?.teams?.[team];
+    if (!total) return null;
+    const players = (this.stats?.players ?? []).filter(
+      (player) => player.team === team
+    );
+    const sum = (key: 'shots' | 'on_goal' | 'goals') =>
+      total[key] - players.reduce((acc, player) => acc + player[key], 0);
+    const shots = sum('shots');
+    if (shots <= 0) return null;
+    return { shots, on_goal: sum('on_goal'), goals: sum('goals') };
+  }
+
   get hasPlayers(): boolean {
     return !!this.stats?.players?.length;
   }
