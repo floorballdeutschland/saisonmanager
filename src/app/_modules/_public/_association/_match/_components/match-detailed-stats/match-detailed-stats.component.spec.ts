@@ -348,7 +348,7 @@ describe('MatchDetailedStatsComponent', () => {
     ).toMatch(/^50[.,]0 %$/);
   });
 
-  it('fuehrt Schuesse ohne Schuetzen als eigene Zeile, damit die Summe aufgeht', () => {
+  it('führt Schüsse ohne Schützen als eigene Zeile, damit die Summe aufgeht', () => {
     load(stats());
     const home = el().querySelector('[data-test="players-unassigned-home"]');
     expect(home?.textContent).toContain('Nicht zugeordnet');
@@ -363,7 +363,7 @@ describe('MatchDetailedStatsComponent', () => {
     ).toBeTruthy();
   });
 
-  it('laesst die Zeile weg, wenn jeder Schuss zugeordnet ist', () => {
+  it('lässt die Zeile weg, wenn jeder Schuss zugeordnet ist', () => {
     const data = stats();
     data.teams.home = { ...data.teams.home, shots: 1, on_goal: 1 };
     data.teams.guest = { ...data.teams.guest, shots: 0, missed: 0 };
