@@ -263,6 +263,98 @@ describe('HighlightEditorComponent', () => {
     expect(el('editor-saved')).not.toBeNull();
   });
 
+  describe('Tor-Zuordnung', () => {
+    function mitFehltipper(): HighlightEditorData {
+      const base = data();
+      return {
+        ...base,
+        goals: [
+          {
+            event_id: 1,
+            label: '1:0 Müller',
+            team: 'home',
+            period: 1,
+            time: '05:00',
+          },
+          {
+            event_id: 2,
+            label: '2:0 Müller',
+            team: 'home',
+            period: 1,
+            time: '09:00',
+          },
+          {
+            event_id: 3,
+            label: '2:1 Schulz',
+            team: 'guest',
+            period: 1,
+            time: '12:00',
+          },
+        ],
+        scenes: [
+          { ...base.scenes[0], event_id: 1 },
+          base.scenes[1],
+          {
+            ...base.scenes[0],
+            client_uuid: 'lose',
+            kind: 'unlinked',
+            label: 'Tor-Schuss ohne Tor im Bericht',
+            event_id: null,
+            in_highlights: true,
+          },
+        ],
+      };
+    }
+
+    function options(uuid: string): string[] {
+      const select = el('editor-scene-assign-' + uuid) as HTMLSelectElement;
+      return Array.from(select.options).map((o) => o.value);
+    }
+
+    it('bietet nur Tore der eigenen Mannschaft und „Kein Tor“ an', () => {
+      load(mitFehltipper());
+
+      expect(options('tor')).toEqual([
+        'goal:1',
+        'goal:2',
+        'none:saved',
+        'none:missed',
+        'none:blocked',
+      ]);
+      expect(options('lose')[0]).toBe('');
+      expect((el('editor-scene-assign-tor') as HTMLSelectElement).value).toBe(
+        'goal:1'
+      );
+      expect(el('editor-scene-assign-chance')).toBeNull();
+      expect(el('editor-scene-toggle-lose')).toBeNull();
+      expect(el('editor-assignment-hint')).not.toBeNull();
+    });
+
+    it('speichert die Zuordnung und lässt die Auswahl ohne den losen Schuss', () => {
+      load(mitFehltipper());
+      component.setAll(false);
+      const select = el('editor-scene-assign-lose') as HTMLSelectElement;
+      select.value = 'goal:2';
+      select.dispatchEvent(new Event('change'));
+      expect(component.dirty).toBeTrue();
+      component.save();
+
+      expect(http.expectOne(TOKEN_PATH).request.body).toEqual({
+        scenes: [
+          { client_uuid: 'tor', in_highlights: false },
+          { client_uuid: 'chance', in_highlights: false },
+        ],
+        assignments: [{ client_uuid: 'lose', event_id: 2 }],
+      });
+    });
+
+    it('zeigt ohne goals (ältere API) kein Auswahlfeld', () => {
+      load();
+      expect(el('editor-scene-assign-tor')).toBeNull();
+      expect(el('editor-assignment-hint')).toBeNull();
+    });
+  });
+
   it('nimmt die Kalibrierung zurück', () => {
     load(data({ offset_seconds: 22 }));
     component.resetOffset();
