@@ -6,6 +6,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { provideRouter, RouterLink } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { LiveStreamService } from '@floorball/core';
 import { LiveStreamGame } from '@floorball/types';
@@ -56,8 +57,11 @@ describe('LiveComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [LiveComponent],
-      imports: [getTranslocoTestingModule()],
-      providers: [{ provide: LiveStreamService, useValue: serviceSpy }],
+      imports: [getTranslocoTestingModule(), RouterLink],
+      providers: [
+        provideRouter([]),
+        { provide: LiveStreamService, useValue: serviceSpy },
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -206,10 +210,6 @@ describe('LiveComponent', () => {
     expect(component.score(game({ result_string: '3:1' }))).toBe('3:1');
   });
 
-  // `current_period_title` ist serverseitig ein HASH und kein Text: Die API gibt
-  // den ganzen Eintrag aus `League#period_titles` zurueck. Wer das Feld direkt
-  // ausgibt, schreibt "[object Object]" auf eine oeffentliche Seite. Vorher fiel
-  // das keinem Test auf.
   it('verlinkt auf die Spielseite unter Verband und Liga', () => {
     serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
     create();
@@ -232,6 +232,44 @@ describe('LiveComponent', () => {
     expect(component.matchLink(game({ league: null }))).toBeNull();
   });
 
+  // Der Fehler lag im Template, nicht in einer Methode: Es verlinkte auf
+  // /spiel/:id, eine Route, die es nie gab. Deshalb hier das gerenderte Ziel.
+  it('rendert Spiel und Liga mit dem Link unter Verband und Liga', () => {
+    serviceSpy.getToday.and.returnValue(
+      of({ date: '2026-08-10', games: [game({ game_id: 42 })] })
+    );
+    create();
+
+    const hrefs = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('a[href]')
+    ).map((a) => a.getAttribute('href'));
+    expect(hrefs.filter((h) => h === '/fd/5/spiel/42').length).toBe(2);
+    expect(hrefs.some((h) => h?.startsWith('/spiel'))).toBeFalse();
+  });
+
+  it('rendert ohne Verbands-Slug keinen Link auf die Spielseite', () => {
+    serviceSpy.getToday.and.returnValue(
+      of({
+        date: '2026-08-10',
+        games: [
+          game({
+            league: { id: 5, name: '1. Bundesliga Herren', short_name: '1BL' },
+          }),
+        ],
+      })
+    );
+    create();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('a[href*="spiel"]')).toBeNull();
+    expect(el.textContent).toContain('1. Bundesliga Herren');
+    expect(el.textContent).toContain('Heim – Gast');
+  });
+
+  // `current_period_title` ist serverseitig ein HASH und kein Text: Die API gibt
+  // den ganzen Eintrag aus `League#period_titles` zurueck. Wer das Feld direkt
+  // ausgibt, schreibt "[object Object]" auf eine oeffentliche Seite. Vorher fiel
+  // das keinem Test auf.
   it('nennt vom Spielabschnitt nur den Titel, nicht das ganze Objekt', () => {
     serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
     create();
