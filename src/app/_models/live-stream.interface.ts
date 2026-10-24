@@ -15,7 +15,12 @@ export interface LiveStreamGame {
   started: boolean;
   ended: boolean;
   current_period_title?: { title?: string } | null;
-  league: { id: number; name: string; short_name: string } | null;
+  league: {
+    id: number;
+    name: string;
+    short_name: string;
+    game_operation_slug?: string | null;
+  } | null;
   arena_name: string | null;
   hosting_club: string | null;
   home_team_id: number | null;

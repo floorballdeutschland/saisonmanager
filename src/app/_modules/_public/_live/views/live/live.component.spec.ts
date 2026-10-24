@@ -27,7 +27,12 @@ describe('LiveComponent', () => {
       started: false,
       ended: false,
       current_period_title: null,
-      league: { id: 5, name: '1. Bundesliga Herren', short_name: '1BL' },
+      league: {
+        id: 5,
+        name: '1. Bundesliga Herren',
+        short_name: '1BL',
+        game_operation_slug: 'fd',
+      },
       arena_name: 'Sporthalle',
       hosting_club: 'SV Muster',
       home_team_id: 1,
@@ -205,6 +210,28 @@ describe('LiveComponent', () => {
   // den ganzen Eintrag aus `League#period_titles` zurueck. Wer das Feld direkt
   // ausgibt, schreibt "[object Object]" auf eine oeffentliche Seite. Vorher fiel
   // das keinem Test auf.
+  it('verlinkt auf die Spielseite unter Verband und Liga', () => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+    expect(component.matchLink(game({ game_id: 42 }))).toEqual([
+      '/',
+      'fd',
+      5,
+      'spiel',
+      42,
+    ]);
+  });
+
+  it('laesst den Link weg, wenn der Verbands-Slug fehlt', () => {
+    serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
+    create();
+    const ohneSlug = game({
+      league: { id: 5, name: '1. Bundesliga Herren', short_name: '1BL' },
+    });
+    expect(component.matchLink(ohneSlug)).toBeNull();
+    expect(component.matchLink(game({ league: null }))).toBeNull();
+  });
+
   it('nennt vom Spielabschnitt nur den Titel, nicht das ganze Objekt', () => {
     serviceSpy.getToday.and.returnValue(of({ date: '2026-08-10', games: [] }));
     create();
