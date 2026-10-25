@@ -1,0 +1,9 @@
+{
+  "title": "Spieltagsaufgaben",
+  "intro": "Was dein Verein rund um einen Spieltag erledigt: vorher den Zugang für das Spielsekretariat erzeugen, danach als Gastmannschaft den Spieltag bestätigen und Feedback zum Schiedsrichtergespann abgeben.",
+  "tabs": {
+    "secretary": "Zugang Spielsekretariat erzeugen",
+    "away": "Auswärtsspieltage bestätigen",
+    "feedback": "Schiri-Feedback abgeben"
+  }
+}

@@ -80,16 +80,6 @@
             >
           </li>
         }
-        @if (showItem("menu_item_team_game_days")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verein', 'spieltage']"
-              (click)="closeMenu()"
-              >{{ "nav.myTeamGameDays" | transloco }}</a
-            >
-          </li>
-        }
         @if (showItem("menu_item_licence_club_admin")) {
           <li class="mt-4 mb-4">
             <a
@@ -107,16 +97,6 @@
               [routerLink]="['/', 'verwaltung', 'spieler-verein']"
               (click)="closeMenu()"
               >{{ "nav.myPlayers" | transloco }}</a
-            >
-          </li>
-        }
-        @if (showItem("menu_item_referee_feedback")) {
-          <li class="mt-4 mb-4">
-            <a
-              class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verein', 'schiri-feedback']"
-              (click)="closeMenu()"
-              >{{ "nav.refereeFeedback" | transloco }}</a
             >
           </li>
         }
@@ -150,13 +130,19 @@
             >
           </li>
         }
-        @if (showItem("menu_item_secretary_links")) {
+        <!-- Ein Punkt fuer Spielsekretariat, Auswaertsspieltage und
+             Schiri-Feedback, die Seite trennt sie in Reiter (fe#586). -->
+        @if (
+          showItem("menu_item_secretary_links") ||
+          showItem("menu_item_team_game_days") ||
+          showItem("menu_item_referee_feedback")
+        ) {
           <li class="mt-4 mb-4">
             <a
               class="font-bold text-fb-gray-500 hover:text-black text-base"
-              [routerLink]="['/', 'verein', 'spielsekretariat']"
+              [routerLink]="['/', 'verein', 'spieltag']"
               (click)="closeMenu()"
-              >{{ "nav.secretaryLinks" | transloco }}</a
+              >{{ "nav.gameDayTasks" | transloco }}</a
             >
           </li>
         }

@@ -126,4 +126,26 @@ describe('MetanavigationComponent', () => {
     expect(de.nav.section.coaching).toBe('Coaching');
     expect(en.nav.section.coaching).toBe('Coaching');
   });
+
+  // fe#586: Spielsekretariat, Auswaertsspieltage und Schiri-Feedback sind ein
+  // Menuepunkt; jeder der drei Schluessel bringt ihn.
+  it('fasst die Spieltagsaufgaben des Vereins in einem Menuepunkt zusammen', () => {
+    currentUser$.next(
+      userWith({
+        menu_item_secretary_links: true,
+        menu_item_team_game_days: true,
+        menu_item_referee_feedback: true,
+      })
+    );
+    fixture.detectChanges();
+
+    const hrefs = Array.from(fixture.nativeElement.querySelectorAll('a')).map(
+      (a) => (a as Element).getAttribute('href')
+    );
+    expect(hrefs.filter((h) => h?.startsWith('/verein/'))).toEqual([
+      '/verein/spieltag',
+    ]);
+    expect(de.nav.gameDayTasks).toBe('Spieltagsaufgaben');
+    expect(en.nav.gameDayTasks).toBe('Game day tasks');
+  });
 });
