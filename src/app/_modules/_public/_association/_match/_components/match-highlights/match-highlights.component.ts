@@ -92,6 +92,11 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
     return this.highlights?.scenes ?? [];
   }
 
+  /** Nur bei ausdrücklichem `false`, nicht bei älterer API ohne das Feld. */
+  get calibrationPending(): boolean {
+    return this.highlights?.calibrated === false;
+  }
+
   get currentScene(): HighlightScene | null {
     return this.currentIndex !== null
       ? (this.scenes[this.currentIndex] ?? null)
