@@ -1,4 +1,9 @@
 {
+  "tabs": {
+    "label": "Bereiche",
+    "players": "Spieler*innen",
+    "changeRequests": "Spielerdaten-Korrekturen"
+  },
   "index": {
     "title": "Spieler*innen",
     "newPlayer": "Neu anlegen",

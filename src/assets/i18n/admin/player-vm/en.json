@@ -1,4 +1,9 @@
 {
+  "tabs": {
+    "label": "Sections",
+    "players": "Players",
+    "changeRequests": "Player data corrections"
+  },
   "index": {
     "title": "Players",
     "newPlayer": "Create new",

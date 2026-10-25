@@ -1,38 +1,63 @@
 <div class="p-4 lg:p-8">
+  <h1 class="text-2xl font-bold mb-6">
+    {{ "playerVm.index.title" | transloco }}
+  </h1>
+
+  <!-- Die Korrekturanträge zu Spielerdaten stehen fuer Vereine hier als
+       Reiter und nicht mehr als eigener Menuepunkt (fe#585). Der Reiter
+       erscheint nur mit `menu_item_player_change_requests`, also nicht fuer
+       den Teammanager; ohne ihn bleibt die Seite ohne Reiterleiste. Die
+       eigene Seite /verwaltung/spieler-korrekturen besteht weiter. -->
+  @if (showChangeRequests) {
+    <fb-tabs [label]="'playerVm.tabs.label' | transloco">
+      <ng-template
+        fbTab="spieler"
+        [fbTabLabel]="'playerVm.tabs.players' | transloco"
+      >
+        <ng-container *ngTemplateOutlet="playersContent" />
+      </ng-template>
+      <ng-template
+        fbTab="korrekturen"
+        [fbTabLabel]="'playerVm.tabs.changeRequests' | transloco"
+      >
+        <fb-player-change-request-list [embedded]="true" />
+      </ng-template>
+    </fb-tabs>
+  } @else {
+    <ng-container *ngTemplateOutlet="playersContent" />
+  }
+</div>
+
+<ng-template #playersContent>
   <!-- Export und Import braucht ein Verein selten, das Anlegen dagegen
-       staendig. Beide liegen deshalb eingeklappt (Kopf „Export", Liste
+       staendig. Beide liegen deshalb eingeklappt (oben „Export", an der Liste
        „Weitere Aktionen fuer <Verein>"); der
        Anlege-Knopf bleibt offen sichtbar. Der Export nimmt ALLE Vereine der
-       Seite in eine Datei (Spalte „Verein") und steht darum im Kopf. Der
+       Seite in eine Datei (Spalte „Verein") und steht darum oben. Der
        Import laeuft dagegen je Verein, weil die API den Verein braucht, gegen
        dessen Bestand die IDs geprueft werden, und steht darum an der
        Vereinsliste. Zeilen eines anderen Vereins landen unter „nicht
        gefunden" -- der Hinweis am Import benennt das. -->
-  <div class="flex items-start justify-between gap-4 mb-6">
-    <h1 class="text-2xl font-bold">
-      {{ "playerVm.index.title" | transloco }}
-    </h1>
-    <div class="shrink-0 max-w-xs" data-testid="export-section">
-      <fb-collapsible [label]="'playerVm.index.exportSection' | transloco">
-        <button
-          data-testid="export-csv"
-          type="button"
-          (click)="exportCsv()"
-          [disabled]="loading || exportablePlayerCount === 0"
-          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {{ "playerVm.index.exportCsv" | transloco }}
-        </button>
-        <p class="mt-2 text-xs text-fb-gray-500">
-          {{
-            (clubLists.length > 1
-              ? "playerVm.index.exportHintAllClubs"
-              : "playerVm.index.exportHint"
-            ) | transloco
-          }}
-        </p>
-      </fb-collapsible>
-    </div>
+  <div class="mb-6 max-w-xs" data-testid="export-section">
+    <fb-collapsible [label]="'playerVm.index.exportSection' | transloco">
+      <button
+        data-testid="export-csv"
+        type="button"
+        (click)="exportCsv()"
+        [disabled]="loading || exportablePlayerCount === 0"
+        class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {{ "playerVm.index.exportCsv" | transloco }}
+      </button>
+      <p class="mt-2 text-xs text-fb-gray-500">
+        {{
+          (clubLists.length > 1
+            ? "playerVm.index.exportHintAllClubs"
+            : "playerVm.index.exportHint"
+          ) | transloco
+        }}
+      </p>
+    </fb-collapsible>
   </div>
 
   @if (loading) {
@@ -555,4 +580,4 @@
       </p>
     }
   }
-</div>
+</ng-template>
