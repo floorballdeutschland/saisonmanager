@@ -83,12 +83,24 @@
       "penaltyShots": "Penalty shots",
       "penaltyGoals": "of which goals",
       "emptyNetGoals": "Empty-net goals",
-      "extraAttackerGoals": "6-on-5 goals",
-      "hint": "Empty-net goals: the opponent played without a goalie. 6-on-5 goals: the team played without its own goalie. Shots on an empty net count for no goalie.",
+      "extraAttackerGoals": "Goals with goalie pulled",
+      "extraAttackerGoals6v5": "of which 6 on 5",
+      "extraAttackerGoals6v4": "of which 6 on 4",
+      "extraAttackerGoals6v3": "of which 6 on 3",
+      "extraAttackerGoalsOther": "of which other",
+      "hint": "Empty-net goals: the opponent played without a goalie. Goals with goalie pulled: the team replaced its goalie with an extra skater. Whether that was 6 on 5 or 6 on 4 follows from the penalties running at the time of the shot. Shots on an empty net count for no goalie.",
+      "hintOther": "Other: the team was short-handed itself, or the shot has no game time.",
       "penaltyShot": "penalty shot",
       "fromFreeHit": "from free hit",
       "emptyNet": "empty net",
-      "extraAttacker": "6 on 5"
+      "extraAttacker": "goalie pulled",
+      "strength": {
+        "6v5": "6 on 5",
+        "6v4": "6 on 4",
+        "6v3": "6 on 3",
+        "5v5": "5 on 5",
+        "4v5": "4 on 5"
+      }
     }
   },
   "highlights": {

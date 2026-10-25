@@ -231,6 +231,18 @@ export function hasSpecialSituations(stats: DetailedStats): boolean {
   });
 }
 
+/**
+ * Tore ohne eigenen Torhüter, die weder 6 gegen 5, 6 gegen 4 noch 6 gegen 3
+ * waren (fe#610): das Team war selbst in Unterzahl, oder der Schuss hat
+ * keine Spielzeit.
+ */
+export function extraAttackerOther(stats: TeamShotStats): number {
+  return (
+    (stats.goals_extra_attacker_shorthanded ?? 0) +
+    (stats.goals_extra_attacker_unknown ?? 0)
+  );
+}
+
 /** Spieler mit den meisten Schüssen zuerst, bei Gleichstand mehr Tore. */
 export function sortPlayers(players: PlayerShotStats[]): PlayerShotStats[] {
   return [...players].sort(

@@ -40,6 +40,7 @@ import {
   filterShots,
   freeHitZoneCounts,
   goalkeeperPeriodStats,
+  extraAttackerOther,
   hasSpecialSituations,
   isPlacedShot,
   periodsOf,
@@ -308,6 +309,36 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
 
   get hasPenaltyShots(): boolean {
     return !!this.stats?.shots.some((shot) => shot.from_penalty_shot);
+  }
+
+  /**
+   * Liefert die API die Aufteilung der Tore ohne eigenen Torhüter nach
+   * Spielstärke (fe#610)? Ältere Stände haben nur die Summe.
+   */
+  get hasExtraAttackerStrength(): boolean {
+    return this.teams.some(
+      (team) =>
+        this.stats?.teams?.[team]?.goals_extra_attacker_6v5 !== undefined
+    );
+  }
+
+  /** 6 gegen 3 ist selten, die Spalte erscheint nur, wenn es vorkam. */
+  get showExtraAttacker6v3(): boolean {
+    return this.teams.some(
+      (team) => !!this.stats?.teams?.[team]?.goals_extra_attacker_6v3
+    );
+  }
+
+  /** Eigene Unterzahl oder ohne Spielzeit, ebenfalls nur bei Bedarf. */
+  get showExtraAttackerOther(): boolean {
+    return this.teams.some((team) => {
+      const stats = this.stats?.teams?.[team];
+      return !!stats && extraAttackerOther(stats) > 0;
+    });
+  }
+
+  extraAttackerOther(stats: TeamShotStats): number {
+    return extraAttackerOther(stats);
   }
 
   rowsFor(team: ShotTeam): TeamStatsRow[] {

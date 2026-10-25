@@ -279,12 +279,55 @@
                             | transloco
                         }}
                       </th>
-                      <th class="text-right font-bold py-2 pl-2">
+                      <th class="text-right font-bold py-2 px-2">
                         {{
                           "match.detailedStats.situation.extraAttackerGoals"
                             | transloco
                         }}
                       </th>
+                      <!-- Aufteilung nach Spielstärke (fe#610) -->
+                      @if (hasExtraAttackerStrength) {
+                        <th
+                          class="text-right font-bold py-2 px-2"
+                          data-test="extra-attacker-6v5-head"
+                        >
+                          {{
+                            "match.detailedStats.situation.extraAttackerGoals6v5"
+                              | transloco
+                          }}
+                        </th>
+                        <th
+                          class="text-right font-bold py-2 px-2"
+                          data-test="extra-attacker-6v4-head"
+                        >
+                          {{
+                            "match.detailedStats.situation.extraAttackerGoals6v4"
+                              | transloco
+                          }}
+                        </th>
+                        @if (showExtraAttacker6v3) {
+                          <th
+                            class="text-right font-bold py-2 px-2"
+                            data-test="extra-attacker-6v3-head"
+                          >
+                            {{
+                              "match.detailedStats.situation.extraAttackerGoals6v3"
+                                | transloco
+                            }}
+                          </th>
+                        }
+                        @if (showExtraAttackerOther) {
+                          <th
+                            class="text-right font-bold py-2 px-2"
+                            data-test="extra-attacker-other-head"
+                          >
+                            {{
+                              "match.detailedStats.situation.extraAttackerGoalsOther"
+                                | transloco
+                            }}
+                          </th>
+                        }
+                      }
                     </tr>
                   </thead>
                   <tbody>
@@ -313,9 +356,27 @@
                         <td class="text-right tabular-nums py-2 px-2">
                           {{ row.stats.goals_empty_net ?? 0 }}
                         </td>
-                        <td class="text-right tabular-nums py-2 pl-2">
+                        <td class="text-right tabular-nums py-2 px-2">
                           {{ row.stats.goals_extra_attacker ?? 0 }}
                         </td>
+                        @if (hasExtraAttackerStrength) {
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ row.stats.goals_extra_attacker_6v5 ?? 0 }}
+                          </td>
+                          <td class="text-right tabular-nums py-2 px-2">
+                            {{ row.stats.goals_extra_attacker_6v4 ?? 0 }}
+                          </td>
+                          @if (showExtraAttacker6v3) {
+                            <td class="text-right tabular-nums py-2 px-2">
+                              {{ row.stats.goals_extra_attacker_6v3 ?? 0 }}
+                            </td>
+                          }
+                          @if (showExtraAttackerOther) {
+                            <td class="text-right tabular-nums py-2 px-2">
+                              {{ extraAttackerOther(row.stats) }}
+                            </td>
+                          }
+                        }
                       </tr>
                     }
                   </tbody>
@@ -326,6 +387,9 @@
         </div>
         <p class="text-xs text-fb-gray-500 mt-2">
           {{ "match.detailedStats.situation.hint" | transloco }}
+          @if (hasExtraAttackerStrength && showExtraAttackerOther) {
+            {{ "match.detailedStats.situation.hintOther" | transloco }}
+          }
         </p>
       </section>
     }
