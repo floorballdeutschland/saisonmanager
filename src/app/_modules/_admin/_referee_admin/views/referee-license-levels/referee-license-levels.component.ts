@@ -18,6 +18,11 @@ import {
   RefereeLicenseSuggestionRulesResponse,
 } from '@floorball/types';
 
+// Immer dasselbe leere Array für eine Stufe ohne Regel. Ein neues je Aufruf
+// gälte als geänderter Input und ersetzte die Regeln der Kindkomponente bei
+// jeder Prüfung, eine eben angelegte Regel verschwände wieder.
+const NO_RULES: RefereeLicenseSuggestionRule[] = [];
+
 @Component({
   templateUrl: './referee-license-levels.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -86,7 +91,13 @@ export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
   }
 
   rulesFor(level: RefereeLicenseLevel): RefereeLicenseSuggestionRule[] {
-    return this.rulesByLevel.get(level.id) ?? [];
+    return this.rulesByLevel.get(level.id) ?? NO_RULES;
+  }
+
+  // Gespeicherte und gelöschte Regeln zurück in die Seite, damit die Zeile sie
+  // behält, wenn sie nach dem Bearbeiten der Stufe neu aufgebaut wird.
+  setRules(level: RefereeLicenseLevel, rules: RefereeLicenseSuggestionRule[]) {
+    this.rulesByLevel.set(level.id, rules);
   }
 
   private _loadSuggestionRules(): void {

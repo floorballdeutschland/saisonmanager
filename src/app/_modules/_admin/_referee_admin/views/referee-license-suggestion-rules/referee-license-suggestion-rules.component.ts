@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -34,6 +36,8 @@ export class RefereeLicenseSuggestionRulesComponent implements OnDestroy {
   @Input({ required: true }) levelId!: number;
   @Input({ required: true }) options!: RuleOptions;
   @Input() rules: RefereeLicenseSuggestionRule[] = [];
+  // Nach Speichern und Löschen: die Seite hält die Regeln je Stufe.
+  @Output() rulesChange = new EventEmitter<RefereeLicenseSuggestionRule[]>();
 
   editing = new Set<RefereeLicenseSuggestionRule>();
   busy = false;
@@ -90,6 +94,7 @@ export class RefereeLicenseSuggestionRulesComponent implements OnDestroy {
       .subscribe({
         next: (saved) => {
           this.rules = this.rules.map((r) => (r === rule ? saved : r));
+          this.rulesChange.emit(this.rules);
           this.editing.delete(rule);
           this.busy = false;
           this._notify.success(
@@ -118,6 +123,7 @@ export class RefereeLicenseSuggestionRulesComponent implements OnDestroy {
       .subscribe({
         next: () => {
           this.rules = this.rules.filter((r) => r !== rule);
+          this.rulesChange.emit(this.rules);
           this.editing.delete(rule);
           this.busy = false;
           this._cdr.markForCheck();
