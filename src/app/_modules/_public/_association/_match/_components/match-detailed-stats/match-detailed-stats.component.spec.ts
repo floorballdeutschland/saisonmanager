@@ -4,10 +4,8 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { DetailedStats, Game, Highlights } from '@floorball/types';
-import { YoutubeIframeApiService } from '@floorball/core';
+import { DetailedStats, Game } from '@floorball/types';
 import matchDe from '../../../../../../../assets/i18n/match/de.json';
-import { MatchHighlightsComponent } from '../match-highlights/match-highlights.component';
 import { ShotChartComponent } from '../shot-chart/shot-chart.component';
 import { FreeHitChartComponent } from '../free-hit-chart/free-hit-chart.component';
 import { RinkMarkingsComponent } from '../rink-markings/rink-markings.component';
@@ -113,12 +111,6 @@ describe('MatchDetailedStatsComponent', () => {
     r.url.endsWith(`games/${id}/detailed_stats.json`);
   const highlightsUrl = (id: number) => (r: { url: string }) =>
     r.url.endsWith(`games/${id}/highlights.json`);
-  // Statistik und Szenen kommen zusammen an; ohne Antwort für die Szenen
-  // bliebe auch die Statistik offen.
-  const noHighlights = (id: number) =>
-    http
-      .expectOne(highlightsUrl(id))
-      .flush('kein Tablet-Spiel', { status: 404, statusText: 'Not Found' });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -131,15 +123,6 @@ describe('MatchDetailedStatsComponent', () => {
         ShotChartComponent,
         FreeHitChartComponent,
         RinkMarkingsComponent,
-        MatchHighlightsComponent,
-      ],
-      providers: [
-        {
-          provide: YoutubeIframeApiService,
-          useValue: jasmine.createSpyObj('YoutubeIframeApiService', [
-            'createPlayer',
-          ]),
-        },
       ],
     }).compileComponents();
 
@@ -150,19 +133,10 @@ describe('MatchDetailedStatsComponent', () => {
 
   afterEach(() => http.verify());
 
-  function load(
-    data: DetailedStats,
-    id = 1,
-    highlights: Highlights | null = null
-  ) {
+  function load(data: DetailedStats, id = 1) {
     fixture.componentRef.setInput('game', game(id));
     fixture.detectChanges();
     http.expectOne(statsUrl(id)).flush(data);
-    if (highlights) {
-      http.expectOne(highlightsUrl(id)).flush(highlights);
-    } else {
-      noHighlights(id);
-    }
     fixture.detectChanges();
   }
 
@@ -385,7 +359,6 @@ describe('MatchDetailedStatsComponent', () => {
     http
       .expectOne(statsUrl(1))
       .flush('nicht da', { status: 404, statusText: 'Not Found' });
-    noHighlights(1);
     fixture.detectChanges();
     expect(el().querySelector('[data-test="stats-failed"]')).toBeTruthy();
   });
@@ -395,7 +368,6 @@ describe('MatchDetailedStatsComponent', () => {
       fixture.componentRef.setInput('game', game(1));
       fixture.detectChanges();
       const alt = http.expectOne(statsUrl(1));
-      const altHighlights = http.expectOne(highlightsUrl(1));
 
       fixture.componentRef.setInput('game', game(2));
 
@@ -404,9 +376,7 @@ describe('MatchDetailedStatsComponent', () => {
 
       // switchMap hat den alten Abruf abgebrochen.
       expect(alt.cancelled).toBeTrue();
-      expect(altHighlights.cancelled).toBeTrue();
       neu.flush(stats({ complete: false }));
-      noHighlights(2);
       fixture.detectChanges();
 
       expect(component.stats?.complete).toBeFalse();
@@ -422,7 +392,6 @@ describe('MatchDetailedStatsComponent', () => {
       expect(component.stats).toBeUndefined();
       expect(component.selectedPeriod).toBeNull();
       http.expectOne(statsUrl(2)).flush(stats());
-      noHighlights(2);
     });
 
     it('lädt dasselbe Spiel mit neuem Stand still nach und behält den Filter', () => {
@@ -434,9 +403,6 @@ describe('MatchDetailedStatsComponent', () => {
       fixture.detectChanges();
       const req = http.expectOne(statsUrl(1));
       req.flush('weg', { status: 500, statusText: 'Server Error' });
-      http
-        .expectOne(highlightsUrl(1))
-        .flush('weg', { status: 500, statusText: 'Server Error' });
 
       expect(component.stats).toBeDefined();
       expect(component.failed).toBeFalse();
@@ -444,83 +410,12 @@ describe('MatchDetailedStatsComponent', () => {
     });
   });
 
-  // fe#555: Torszenen nur mit Video und mindestens einer Szene.
-  describe('Torszenen', () => {
-    const highlights = (overrides: Partial<Highlights> = {}): Highlights => ({
-      video_id: 'abc123',
-      scenes: [
-        {
-          event_id: 11,
-          start: 100,
-          end: 120,
-          team: 'home',
-          home_goals: 1,
-          guest_goals: 0,
-          period: 1,
-          game_time: '01:10',
-          scorer: { trikot_number: 10, name: 'A. Schütze' },
-          assist: null,
-        },
-      ],
-      ...overrides,
-    });
-    const goalPoint = () =>
-      el().querySelector<SVGCircleElement>(
-        '[data-test="chart-home"] circle[data-result="goal"]'
-      );
-
-    it('zeigt den Szenen-Player und macht das Tor in der Schussgrafik anklickbar', () => {
-      load(stats(), 1, highlights());
-
-      expect(el().querySelector('fb-match-highlights')).toBeTruthy();
-      expect(goalPoint()?.getAttribute('role')).toBe('button');
-      // Unter role="img" wären die Tor-Schaltflächen für Screenreader weg.
-      expect(
-        el().querySelector('[data-test="chart-home"] svg')?.getAttribute('role')
-      ).toBe('group');
-      expect(el().querySelector('[data-test="jump-hint"]')).toBeTruthy();
-    });
-
-    it('bleibt ohne Video unsichtbar, auch wenn es Szenen gibt', () => {
-      load(stats(), 1, highlights({ video_id: null }));
-
-      expect(el().querySelector('fb-match-highlights')).toBeNull();
-      expect(goalPoint()?.getAttribute('role')).toBeNull();
-      expect(el().querySelector('[data-test="jump-hint"]')).toBeNull();
-      expect(
-        el().querySelector('[data-test="chart-home"] svg')?.getAttribute('role')
-      ).toBe('img');
-    });
-
-    it('bleibt ohne Szene unsichtbar', () => {
-      load(stats(), 1, highlights({ scenes: [] }));
-      expect(el().querySelector('fb-match-highlights')).toBeNull();
-    });
-
-    it('bleibt bei 404 unsichtbar, die Statistik erscheint trotzdem', () => {
-      load(stats());
-      expect(el().querySelector('fb-match-highlights')).toBeNull();
-      expect(el().querySelector('[data-test="chart-home"]')).toBeTruthy();
-    });
-
-    it('springt beim Klick auf ein Tor zur passenden Szene', () => {
-      load(stats(), 1, highlights());
-      const jump = spyOn(component.highlightsPlayer!, 'jumpTo');
-
-      goalPoint()?.dispatchEvent(new MouseEvent('click'));
-
-      expect(jump).toHaveBeenCalledWith(0);
-    });
-
-    it('verschwindet still, wenn YouTube das Video ablehnt', () => {
-      load(stats(), 1, highlights());
-
-      component.onHighlightsUnavailable();
-      fixture.detectChanges();
-
-      expect(el().querySelector('fb-match-highlights')).toBeNull();
-      expect(goalPoint()?.getAttribute('role')).toBeNull();
-    });
+  // fe#611: Die Torszenen stehen jetzt in der Übersicht und laden dort.
+  it('lädt keine Torszenen und zeigt keinen Player', () => {
+    load(stats());
+    http.expectNone(highlightsUrl(1));
+    expect(el().querySelector('fb-match-highlights')).toBeNull();
+    expect(el().querySelector('[data-test="highlights-edit"]')).toBeNull();
   });
 
   it('nennt im Tooltip der Schussgrafik den Abschnittstitel des Spiels', () => {
@@ -532,7 +427,6 @@ describe('MatchDetailedStatsComponent', () => {
     );
     fixture.detectChanges();
     http.expectOne(statsUrl(1)).flush(stats());
-    noHighlights(1);
     fixture.detectChanges();
 
     const titles = Array.from(
@@ -549,7 +443,6 @@ describe('MatchDetailedStatsComponent', () => {
     fixture.componentRef.setInput('game', game(1, { ended: false }));
     fixture.detectChanges();
     http.expectOne(statsUrl(1)).flush(stats());
-    noHighlights(1);
 
     fixture.componentRef.setInput(
       'game',
@@ -561,7 +454,6 @@ describe('MatchDetailedStatsComponent', () => {
 
     component.onRefreshTick();
     http.expectOne(statsUrl(1)).flush(stats());
-    noHighlights(1);
   });
 
   it('lädt ein beendetes Spiel im Takt nicht mehr nach', () => {
