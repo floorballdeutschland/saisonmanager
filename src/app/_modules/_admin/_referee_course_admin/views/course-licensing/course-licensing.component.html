@@ -229,6 +229,42 @@
                             : { date: (row.gueltigkeit | date: "dd.MM.yyyy") }
                       }}</span>
                     }
+                    @if (row.suggestion; as s) {
+                      <span
+                        class="block text-xs mt-1"
+                        [attr.data-test]="'suggestion-' + row.id"
+                      >
+                        {{
+                          "refereeCourseAdmin.licensing.suggestion"
+                            | transloco: { level: s.lizenzstufe }
+                        }}
+                        @if (s.min_games !== null) {
+                          <span class="text-fb-gray-500">{{
+                            "refereeCourseAdmin.licensing.suggestionGames"
+                              | transloco
+                                : {
+                                    games: s.games ?? 0,
+                                    min: s.min_games,
+                                    season: s.season_name ?? "–",
+                                  }
+                          }}</span>
+                        }
+                        @if (row.lizenzstufe !== s.lizenzstufe) {
+                          <button
+                            type="button"
+                            class="ml-1 underline"
+                            [attr.data-test]="'apply-suggestion-' + row.id"
+                            [disabled]="busy"
+                            (click)="setLevel(row, s.lizenzstufe)"
+                          >
+                            {{
+                              "refereeCourseAdmin.licensing.applySuggestion"
+                                | transloco
+                            }}
+                          </button>
+                        }
+                      </span>
+                    }
                   } @else if (row.status === "applied") {
                     <span class="font-bold">{{ row.lizenzstufe }}</span>
                     <span class="block text-xs text-fb-gray-500">{{

@@ -440,5 +440,41 @@
     "reloginHint": "Die Sperre wirkt sofort. Menüpunkte ändern sich für Betroffene erst nach einer neuen Anmeldung.",
     "lastChange": "Zuletzt geändert am {{date}} von {{user}}.",
     "saved": "Kursprozesse gespeichert."
+  },
+  "suggestionRules": {
+    "title": "Vorschlag nach Kursen",
+    "intro": "Unter jeder Stufe steht, nach welchem Kurs sie in der Lizenzvergabe vorgeschlagen wird. Gezählt werden Spiele laut Spielbericht in der Saison, die im Kalenderjahr vor dem Kursende begann. Geprüft werden zuerst Regeln mit Mindestzahl, die höchste vorn, danach die ohne Bedingung. Die Stufe setzt FD weiterhin selbst.",
+    "add": "+ Vorschlagsregel",
+    "courseType": "Kurstyp",
+    "minGames": "Mindestens Spiele",
+    "noCondition": "ohne Bedingung",
+    "fieldSize": "Wertung",
+    "field": {
+      "all": "Alle",
+      "KF": "Kleinfeld",
+      "GF": "Großfeld"
+    },
+    "ageGroups": "Gezählte Altersklassen",
+    "ageGroupsHint": "Ligen ohne Altersklasse zählen immer mit. Eine neu angelegte Altersklasse ist hier nicht angehakt, bis sie jemand auswählt.",
+    "ageGroupsRequired": "Bitte mindestens eine Altersklasse auswählen. Für alle Altersklassen alle anhaken.",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "saved": "Regel gespeichert.",
+    "type": {
+      "j": "J-Kurs",
+      "g": "G-Kurs",
+      "f": "F-Kurs",
+      "combined": "Kombikurs",
+      "module": "Modul",
+      "refresher": "Fortbildung",
+      "n": "N-Kurs",
+      "a": "A-Kurs",
+      "retest": "Nachtest",
+      "other": "Sonstiger Kurs"
+    },
+    "suggestedAfter": "Vorschlag nach",
+    "summaryCondition": "ab {{ min }} Spielen ({{ field }})",
+    "summaryFallback": "ohne Bedingung",
+    "edit": "Bearbeiten"
   }
 }

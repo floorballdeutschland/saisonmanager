@@ -412,7 +412,10 @@
     "reject": "Ablehnen",
     "rejectPrompt": "Grund für die Ablehnung bei {{name}}:",
     "approvedMany": "{{count}} Lizenzen erteilt.",
-    "accountCreated": "{{name}} hat ein Benutzerkonto bekommen."
+    "accountCreated": "{{name}} hat ein Benutzerkonto bekommen.",
+    "suggestion": "Vorschlag: {{ level }}",
+    "suggestionGames": "({{ games }} Spiele in {{ season }}, ab {{ min }})",
+    "applySuggestion": "übernehmen"
   },
   "billing": {
     "title": "Abrechnung der Kurse",

@@ -1,0 +1,163 @@
+<div class="text-sm" data-test="suggestion-rules">
+  @for (rule of rules; track rule) {
+    @if (editing.has(rule)) {
+      <div
+        class="my-2 p-3 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
+        data-test="rule-form"
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.courseType" | transloco
+            }}</span>
+            <select
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [(ngModel)]="rule.course_type"
+            >
+              @for (t of options.course_types; track t) {
+                <option [ngValue]="t">
+                  {{ "refereeAdmin.suggestionRules.type." + t | transloco }}
+                </option>
+              }
+            </select>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.minGames" | transloco
+            }}</span>
+            <input
+              type="number"
+              min="1"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [placeholder]="
+                'refereeAdmin.suggestionRules.noCondition' | transloco
+              "
+              [(ngModel)]="rule.min_games"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.fieldSize" | transloco
+            }}</span>
+            <select
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [disabled]="rule.min_games === null"
+              [(ngModel)]="rule.field_size"
+            >
+              @for (f of options.field_sizes; track f) {
+                <option [ngValue]="f">
+                  {{ "refereeAdmin.suggestionRules.field." + f | transloco }}
+                </option>
+              }
+            </select>
+          </label>
+        </div>
+
+        @if (rule.min_games !== null) {
+          <fieldset>
+            <legend class="text-xs font-bold mb-1">
+              {{ "refereeAdmin.suggestionRules.ageGroups" | transloco }}
+            </legend>
+            <div class="flex flex-wrap gap-x-4 gap-y-1">
+              @for (ag of options.age_groups; track ag) {
+                <label class="flex items-center gap-1">
+                  <input
+                    type="checkbox"
+                    [checked]="hasAgeGroup(rule, ag)"
+                    [disabled]="isLastAgeGroup(rule, ag)"
+                    (change)="
+                      toggleAgeGroup(rule, ag, $any($event.target).checked)
+                    "
+                  />
+                  {{ ag }}
+                </label>
+              }
+            </div>
+            <p class="text-xs text-fb-gray-500 mt-1">
+              {{ "refereeAdmin.suggestionRules.ageGroupsHint" | transloco }}
+            </p>
+            @if (missingAgeGroups(rule)) {
+              <p
+                class="text-xs text-red-700 mt-1"
+                data-test="age-groups-required"
+              >
+                {{
+                  "refereeAdmin.suggestionRules.ageGroupsRequired" | transloco
+                }}
+              </p>
+            }
+          </fieldset>
+        }
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="text-xs font-bold px-3 py-1 bg-black text-white rounded-[5px] disabled:opacity-50"
+            data-test="save-rule"
+            [disabled]="busy || missingAgeGroups(rule)"
+            (click)="save(rule)"
+          >
+            {{ "refereeAdmin.suggestionRules.save" | transloco }}
+          </button>
+          <button
+            type="button"
+            class="text-xs text-red-700 hover:underline"
+            [disabled]="busy"
+            (click)="remove(rule)"
+          >
+            {{ "refereeAdmin.suggestionRules.delete" | transloco }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="flex items-baseline gap-2 py-0.5" data-test="rule">
+        <span class="text-fb-gray-500">{{
+          "refereeAdmin.suggestionRules.suggestedAfter" | transloco
+        }}</span>
+        <span>
+          {{
+            "refereeAdmin.suggestionRules.type." + rule.course_type | transloco
+          }}
+          @if (rule.min_games !== null) {
+            {{
+              "refereeAdmin.suggestionRules.summaryCondition"
+                | transloco
+                  : {
+                      min: rule.min_games,
+                      field:
+                        ("refereeAdmin.suggestionRules.field." + rule.field_size
+                        | transloco),
+                    }
+            }}
+            @if (rule.age_groups.length) {
+              <span class="text-fb-gray-500"
+                >({{ rule.age_groups.join(", ") }})</span
+              >
+            }
+          } @else {
+            <span class="text-fb-gray-500">{{
+              "refereeAdmin.suggestionRules.summaryFallback" | transloco
+            }}</span>
+          }
+        </span>
+        <button
+          type="button"
+          class="text-xs hover:underline"
+          [disabled]="busy"
+          (click)="edit(rule)"
+        >
+          {{ "refereeAdmin.suggestionRules.edit" | transloco }}
+        </button>
+      </div>
+    }
+  }
+  <button
+    type="button"
+    data-test="add-rule"
+    class="text-xs hover:underline text-fb-gray-500"
+    [disabled]="busy"
+    (click)="add()"
+  >
+    {{ "refereeAdmin.suggestionRules.add" | transloco }}
+  </button>
+</div>

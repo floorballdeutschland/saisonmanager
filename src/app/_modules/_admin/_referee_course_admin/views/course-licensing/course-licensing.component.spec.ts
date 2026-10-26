@@ -124,6 +124,35 @@ describe('CourseLicensingComponent', () => {
     expect(service.licensingApproveMany).toHaveBeenCalledWith([1]);
   });
 
+  // Der Vorschlag belegt nichts vor: Die Stufe bleibt leer, bis FD sie
+  // waehlt oder den Vorschlag uebernimmt.
+  it('zeigt den Vorschlag und uebernimmt ihn auf Klick', () => {
+    const suggestion = {
+      lizenzstufe: 'L2',
+      rule_id: 5,
+      season_id: 18,
+      season_name: 'Saison 2025/26',
+      games: 3,
+      min_games: 4,
+    };
+    const { fixture, service } = render([
+      row(1, 7, { suggestion }),
+      row(2, 7, { suggestion, lizenzstufe: 'L2' }),
+    ]);
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('[data-test="suggestion-1"]')).not.toBeNull();
+    expect(fixture.componentInstance.rows[0].lizenzstufe).toBeNull();
+    expect(el.querySelector('[data-test="apply-suggestion-2"]')).toBeNull();
+
+    (
+      el.querySelector('[data-test="apply-suggestion-1"]') as HTMLButtonElement
+    ).click();
+    expect(service.licensingUpdate).toHaveBeenCalledWith(1, {
+      lizenzstufe: 'L2',
+    });
+  });
+
   it('lehnt nur mit Begruendung ab', () => {
     const { fixture, service } = render([row(1, 7)]);
     const c = fixture.componentInstance;
