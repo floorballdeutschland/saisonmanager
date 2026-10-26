@@ -9,6 +9,12 @@ const routes: Routes = [
     component: Views.RefereeVmIndexComponent,
     data: { scrollTop: true },
   },
+  {
+    path: 'verwaltung/schiedsrichter-verein/:id',
+    pathMatch: 'full',
+    component: Views.RefereeVmDetailComponent,
+    data: { scrollTop: true },
+  },
 ];
 
 @NgModule({
