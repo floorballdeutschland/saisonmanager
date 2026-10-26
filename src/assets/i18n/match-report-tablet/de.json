@@ -135,8 +135,8 @@
   "situation": {
     "penaltyShot": "Strafschuss",
     "penaltyShotShort": "Strafschuss",
-    "extraAttacker": "6 gegen 5",
-    "extraAttackerShort": "6 gegen 5",
+    "extraAttacker": "Torwart raus",
+    "extraAttackerShort": "Torwart raus",
     "emptyNetShort": "leeres Tor"
   },
   "fullscreen": {

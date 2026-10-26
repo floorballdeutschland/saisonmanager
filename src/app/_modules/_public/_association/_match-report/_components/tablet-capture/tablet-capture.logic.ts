@@ -316,8 +316,9 @@ export function goaliePulled(
 
 /**
  * Vorbelegung eines neuen Schusses aus den Schaltern: aufs leere Tor, wenn
- * der Gegner ohne Torhüter spielt, 6 gegen 5, wenn das schießende Team ohne
- * eigenen spielt. Beides kann zugleich gelten.
+ * der Gegner ohne Torhüter spielt, `extra_attacker`, wenn das schießende
+ * Team ohne eigenen spielt. Beides kann zugleich gelten. Ob das 6 gegen 5
+ * oder 6 gegen 4 ist, weiß das Tablet nicht (fe#610).
  */
 export function situationFor(
   pulled: PulledGoalies,

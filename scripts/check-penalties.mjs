@@ -14,8 +14,8 @@
  *
  * Geprüft wird ausdrücklich die REGEL, nicht nur die Arithmetik: Eine kleine
  * Strafe endet beim Überzahltor, eine doppelte nur zur Hälfte, eine große gar
- * nicht -- und persönliche Strafen und Matchstrafen gehören überhaupt nicht auf
- * die Anzeigetafel.
+ * nicht, und eine Matchstrafe läuft als ihre Bankstrafe 2+2 mit (ohne Nummer,
+ * eine eingetragene 2+2 zur selben Zeit zählt nicht doppelt).
  */
 
 import { createRequire } from 'node:module';
@@ -112,7 +112,11 @@ pruef(
 
 pruef(
   'Strafe aus einem früheren Abschnitt läuft nicht weiter',
-  P.laufende(spiel([strafe({ id: 1, time: '5:00', period: 1 })], 2), {}, min(6)),
+  P.laufende(
+    spiel([strafe({ id: 1, time: '5:00', period: 1 })], 2),
+    {},
+    min(6)
+  ),
   []
 );
 
@@ -307,14 +311,96 @@ pruef(
   [2, 1]
 );
 
+for (const type of [
+  'penalty_ms_full',
+  'penalty_ms_tech',
+  'penalty_ms1',
+  'penalty_ms2',
+  'penalty_ms3',
+]) {
+  pruef(
+    `Matchstrafe ${type} läuft als Bankstrafe 2+2, ohne Nummer`,
+    P.laufende(spiel([strafe({ id: 1, time: '5:00', type })]), {}, min(6)).map(
+      (e) => [e.remaining_ms, P.nummerText(e), e.name]
+    ),
+    [[min(3), 'Team', null]]
+  );
+}
+
 pruef(
-  'Matchstrafe nicht dabei',
-  P.laufende(
-    spiel([strafe({ id: 1, time: '5:00', type: 'penalty_ms_full' })]),
-    {},
-    min(6)
+  'Matchstrafe: Überzahltor beendet die erste Hälfte wie bei 2+2',
+  rest(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_ms_full' }),
+        tor({ id: 2, side: 'guest', time: '5:30' }),
+      ]),
+      {},
+      min(6)
+    )
   ),
-  []
+  [min(1, 30)]
+);
+
+pruef(
+  'Matchstrafe mit eingetragener 2+2 zur selben Zeit zählt nicht doppelt',
+  ids(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_ms_full' }),
+        strafe({ id: 2, time: '5:00', type: 'penalty_2and2' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [2]
+);
+
+pruef(
+  'Matchstrafe mit großer Strafe zur selben Zeit (Altbestand) zählt nicht doppelt',
+  ids(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_ms2' }),
+        strafe({ id: 2, time: '5:00', type: 'penalty_5' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [2]
+);
+
+pruef(
+  'Matchstrafe und 2+2 zu verschiedenen Zeiten oder Teams laufen beide',
+  ids(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_ms_full' }),
+        strafe({ id: 2, time: '5:10', type: 'penalty_2and2' }),
+        strafe({ id: 3, side: 'guest', time: '5:00', type: 'penalty_2and2' }),
+      ]),
+      {},
+      min(6)
+    )
+  ).sort(),
+  [1, 2, 3]
+);
+
+pruef(
+  'Matchstrafe mit kleiner Strafe zur selben Zeit: beide laufen',
+  ids(
+    P.laufende(
+      spiel([
+        strafe({ id: 1, time: '5:00', type: 'penalty_ms_full' }),
+        strafe({ id: 2, time: '5:00', type: 'penalty_2' }),
+      ]),
+      {},
+      min(6)
+    )
+  ),
+  [2, 1]
 );
 
 pruef(
@@ -463,7 +549,11 @@ pruef(
 pruef(
   'Strafe mit Abschnitt als Zeichenkette laeuft mit',
   rest(
-    P.laufende(spiel([strafe({ id: 1, time: '5:00', period: '1' })]), {}, min(6))
+    P.laufende(
+      spiel([strafe({ id: 1, time: '5:00', period: '1' })]),
+      {},
+      min(6)
+    )
   ),
   [min(1)]
 );

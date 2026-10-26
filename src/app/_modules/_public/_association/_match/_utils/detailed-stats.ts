@@ -231,6 +231,17 @@ export function hasSpecialSituations(stats: DetailedStats): boolean {
   });
 }
 
+/**
+ * Tore ohne eigenen Torhüter, die weder 6 gegen 5 noch 6 gegen 4 waren
+ * (fe#610): jede andere Spielstärke, oder der Schuss hat keine Spielzeit.
+ */
+export function extraAttackerOther(stats: TeamShotStats): number {
+  return (
+    (stats.goals_extra_attacker_other ?? 0) +
+    (stats.goals_extra_attacker_unknown ?? 0)
+  );
+}
+
 /** Spieler mit den meisten Schüssen zuerst, bei Gleichstand mehr Tore. */
 export function sortPlayers(players: PlayerShotStats[]): PlayerShotStats[] {
   return [...players].sort(

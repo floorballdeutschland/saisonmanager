@@ -547,6 +547,112 @@ describe('MatchDetailedStatsComponent', () => {
       );
     });
 
+    describe('Tore ohne eigenen Torhüter nach Spielstärke (fe#610)', () => {
+      function extraAttacker(
+        home: Partial<DetailedStats['teams']['home']>
+      ): DetailedStats {
+        const base = stats();
+        return stats({
+          shots: [
+            {
+              ...base.shots[0],
+              result: 'goal',
+              extra_attacker: true,
+              extra_attacker_strength: '5v4',
+            },
+            {
+              ...base.shots[1],
+              result: 'goal',
+              extra_attacker: true,
+              extra_attacker_strength: null,
+            },
+          ],
+          teams: {
+            home: { ...base.teams.home, ...home },
+            guest: base.teams.guest,
+          },
+        });
+      }
+
+      function header(): string {
+        return (
+          el()
+            .querySelector('[data-test="situation-table-home"] thead')
+            ?.textContent?.replace(/\s+/g, ' ') ?? ''
+        );
+      }
+
+      function totalRow(): string {
+        return (
+          el()
+            .querySelector('[data-test="situation-table-home"] tbody tr')
+            ?.textContent?.replace(/\s+/g, ' ') ?? ''
+        );
+      }
+
+      it('teilt die Summe in 6 gegen 5 und 6 gegen 4 auf, sonstige nur bei Bedarf', () => {
+        load(
+          extraAttacker({
+            goals_extra_attacker: 3,
+            goals_extra_attacker_6v5: 1,
+            goals_extra_attacker_6v4: 2,
+            goals_extra_attacker_other: 0,
+            goals_extra_attacker_unknown: 0,
+          })
+        );
+
+        expect(header()).toContain('Tore ohne eigenen Torhüter');
+        expect(header()).toContain('davon 6 gegen 5');
+        expect(header()).toContain('davon 6 gegen 4');
+        expect(header()).not.toContain('sonstige');
+        expect(totalRow()).toContain('Gesamt 0 0 0 3 1 2');
+      });
+
+      it('fasst andere Stärken und unbekannte Spielzeit unter sonstige zusammen', () => {
+        load(
+          extraAttacker({
+            goals_extra_attacker: 4,
+            goals_extra_attacker_6v5: 0,
+            goals_extra_attacker_6v4: 1,
+            goals_extra_attacker_other: 2,
+            goals_extra_attacker_unknown: 1,
+          })
+        );
+
+        expect(
+          el().querySelector('[data-test="extra-attacker-other-head"]')
+        ).toBeTruthy();
+        expect(totalRow()).toContain('Gesamt 0 0 0 4 0 1 3');
+        expect(
+          el().querySelector('[data-test="special-situations"]')?.textContent
+        ).toContain('5 gegen 4 bei Strafen auf beiden Seiten');
+      });
+
+      it('ältere API ohne Aufteilung: nur die Summe', () => {
+        load(extraAttacker({ goals_extra_attacker: 2 }));
+
+        expect(header()).toContain('Tore ohne eigenen Torhüter');
+        expect(
+          el().querySelector('[data-test="extra-attacker-6v5-head"]')
+        ).toBeNull();
+        expect(totalRow()).toContain('Gesamt 0 0 0 2');
+      });
+
+      it('nennt die Spielstärke am Schuss, ohne sie neutral', () => {
+        load(extraAttacker({ goals_extra_attacker: 2 }));
+
+        const titles = Array.from(
+          el().querySelectorAll(
+            '[data-test="chart-home"] circle[data-result] title'
+          )
+        ).map((title) => title.textContent ?? '');
+        expect(titles.some((t) => t.includes('(5 gegen 4)'))).toBeTrue();
+        expect(
+          titles.some((t) => t.includes('(ohne eigenen Torhüter)'))
+        ).toBeTrue();
+      });
+    });
+
     it('fehlt ohne Strafschüsse und ohne Tore bei herausgenommenem Torhüter', () => {
       load(stats());
       expect(el().querySelector('[data-test="special-situations"]')).toBeNull();
