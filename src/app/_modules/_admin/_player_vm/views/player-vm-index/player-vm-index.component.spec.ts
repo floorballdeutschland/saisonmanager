@@ -12,6 +12,7 @@ import { User } from '@floorball/types';
 import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
+import { PlayerChangeRequestSharedModule } from '@floorball/admin/player-change-requests';
 import { PlayerVmIndexComponent } from './player-vm-index.component';
 
 describe('PlayerVmIndexComponent', () => {
@@ -974,5 +975,100 @@ describe('PlayerVmIndexComponent (Spielerdaten-Einstieg)', () => {
       '/verwaltung/spieler-verein/113/spielerdaten',
       '/verwaltung/spieler-verein/114/spielerdaten',
     ]);
+  });
+});
+
+// fe#585: Die Korrekturantraege zu Spielerdaten stehen fuer Vereine als Reiter
+// auf dieser Seite statt als eigener Menuepunkt. Mit echter Vorlage und dem
+// echten geteilten Modul, weil die Zusage im Zusammenspiel steckt: Reiter nur
+// mit Recht, und der Reiter laedt die Liste wirklich.
+describe('PlayerVmIndexComponent (Reiter Korrekturen)', () => {
+  let http: HttpTestingController;
+
+  async function setup(permissions: Record<string, boolean>): Promise<void> {
+    await TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        FormsModule,
+        UikitCommonModule,
+        PlayerChangeRequestSharedModule,
+        getTranslocoTestingModule(),
+      ],
+      declarations: [PlayerVmIndexComponent],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            currentUser$: of({
+              permissions,
+            } as User) as Observable<User | null>,
+          },
+        },
+      ],
+    }).compileComponents();
+
+    http = TestBed.inject(HttpTestingController);
+  }
+
+  function einVerein(): void {
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([
+        { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([{ id: 1, first_name: 'A', last_name: 'Eins' }]);
+  }
+
+  afterEach(() => http.verify());
+
+  it('zeigt dem Vereinsmanager die Korrekturen als zweiten Reiter', async () => {
+    await setup({
+      menu_item_player_vm: true,
+      menu_item_player_change_requests: true,
+    });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+    einVerein();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[data-testid="tab-spieler"]')).not.toBeNull();
+    const reiter = el.querySelector(
+      '[data-testid="tab-korrekturen"]'
+    ) as HTMLButtonElement;
+    expect(reiter).not.toBeNull();
+    // Standard ist die Spielerliste, die Korrekturen laden erst beim Wechsel.
+    expect(el.querySelector('[data-testid="new-player-link"]')).not.toBeNull();
+    http.expectNone(`${environment.apiURL}admin/player_change_requests.json`);
+
+    reiter.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}admin/player_change_requests.json`)
+      .flush([]);
+    fixture.detectChanges();
+    expect(
+      el.querySelector('[data-testid="tabpanel-korrekturen"]')
+    ).not.toBeNull();
+    // Eingebettet ohne eigene Seitenueberschrift; die stellt die Seite.
+    expect(el.querySelectorAll('h1').length).toBe(1);
+  });
+
+  it('laesst die Reiterleiste ohne das Recht weg (Teammanager)', async () => {
+    await setup({ menu_item_player_vm: true });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+    einVerein();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[role="tablist"]')).toBeNull();
+    expect(el.querySelector('[data-testid="new-player-link"]')).not.toBeNull();
   });
 });

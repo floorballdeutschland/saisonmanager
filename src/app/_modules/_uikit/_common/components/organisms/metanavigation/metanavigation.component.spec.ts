@@ -126,4 +126,52 @@ describe('MetanavigationComponent', () => {
     expect(de.nav.section.coaching).toBe('Coaching');
     expect(en.nav.section.coaching).toBe('Coaching');
   });
+
+  // fe#585: Der Verein findet seine Korrekturantraege als Reiter unter „Meine
+  // Spieler*innen"; der eigene Menuepunkt bleibt fuer die pruefende Seite.
+  describe('Spielerdaten-Korrekturen', () => {
+    const allHrefs = () =>
+      Array.from(fixture.nativeElement.querySelectorAll('a')).map((a) =>
+        (a as Element).getAttribute('href')
+      );
+
+    it('blendet den Menuepunkt fuer den Vereinsmanager aus', () => {
+      currentUser$.next(
+        userWith({
+          menu_item_player_vm: true,
+          menu_item_player_change_requests: true,
+          create_player_change_request: true,
+        })
+      );
+      fixture.detectChanges();
+
+      expect(allHrefs()).toContain('/verwaltung/spieler-verein');
+      expect(allHrefs()).not.toContain('/verwaltung/spieler-korrekturen');
+    });
+
+    it('laesst den Menuepunkt fuer Admin und SBK stehen', () => {
+      currentUser$.next(
+        userWith({
+          menu_item_player_change_requests: true,
+          approve_player_change_request: true,
+        })
+      );
+      fixture.detectChanges();
+
+      expect(allHrefs()).toContain('/verwaltung/spieler-korrekturen');
+    });
+
+    it('laesst ihn auch stehen, wenn ein SBK zugleich Vereinsmanager ist', () => {
+      currentUser$.next(
+        userWith({
+          menu_item_player_vm: true,
+          menu_item_player_change_requests: true,
+          approve_player_change_request: true,
+        })
+      );
+      fixture.detectChanges();
+
+      expect(allHrefs()).toContain('/verwaltung/spieler-korrekturen');
+    });
+  });
 });
