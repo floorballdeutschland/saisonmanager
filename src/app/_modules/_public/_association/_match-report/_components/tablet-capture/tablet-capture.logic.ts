@@ -393,9 +393,19 @@ export interface GoalLinkCandidate {
 }
 
 /**
+ * Torarten ohne Schuss: Ein Eigentor schießt niemand aufs gegnerische Tor
+ * (ein abgefälschter Schuss ist kein Eigentor), ein technisches Tor wird
+ * zugesprochen. Die API nimmt keine Verknüpfung mit ihnen an. Ein technisches
+ * Tor mit „nicht angegeben“ (2000) kommt als goal_type 'not_assigned' und ist
+ * nur an technical_goal zu erkennen.
+ */
+const GOAL_TYPES_WITHOUT_SHOT = ['owngoal', 'technical'];
+
+/**
  * Tore, die mit keinem Schuss verknüpft sind, jeweils mit den noch freien
  * Tor-Schüssen desselben Teams. Leer, wenn es nichts zuzuordnen gibt: Dann
- * hat die automatische Verknüpfung in der API gegriffen.
+ * hat die automatische Verknüpfung in der API gegriffen. Eigentore und
+ * technische Tore erscheinen nie, sie haben keinen Schuss.
  */
 export function goalLinkCandidates(
   events: GameEvent[] | undefined,
@@ -411,7 +421,11 @@ export function goalLinkCandidates(
 
   return (events ?? [])
     .filter(
-      (event) => event.event_type === 'goal' && !linked.has(event.event_id)
+      (event) =>
+        event.event_type === 'goal' &&
+        !GOAL_TYPES_WITHOUT_SHOT.includes(event.goal_type ?? '') &&
+        !event.technical_goal &&
+        !linked.has(event.event_id)
     )
     .map((goal) => ({
       goal,
