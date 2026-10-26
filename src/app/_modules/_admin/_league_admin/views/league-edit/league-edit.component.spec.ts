@@ -113,8 +113,6 @@ describe('LeagueEditComponent', () => {
     });
   });
 
-  // Reiter mit echtem Template. Die Dienste liefern nur, was die Ansicht zum
-  // Aufbauen braucht.
   // Die Overage-Regel lockert nur einen Stichtag "geboren ab"; dieselbe
   // Bedingung prueft die API (League#female_overage_needs_born_from_deadline).
   describe('errorMsg: Overage-Regel', () => {
@@ -166,6 +164,8 @@ describe('LeagueEditComponent', () => {
     });
   });
 
+  // Reiter mit echtem Template. Die Dienste liefern nur, was die Ansicht zum
+  // Aufbauen braucht.
   describe('Reiter', () => {
     const existing = {
       id: 5,
