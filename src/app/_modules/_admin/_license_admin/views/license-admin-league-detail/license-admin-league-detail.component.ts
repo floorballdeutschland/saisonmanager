@@ -321,4 +321,10 @@ export class LicenseAdminLeagueDetailComponent implements OnInit, OnDestroy {
       'parental_consent'
     );
   }
+
+  // Spielerinnen, die nur über die Overage-Regel der Liga spielberechtigt
+  // sind. Die API markiert sie je Zeile; 0 blendet die Angabe aus.
+  public femaleOverageCount(team: TeamWithPlayers): number {
+    return team.players.filter((p) => p.team_license?.female_overage).length;
+  }
 }
