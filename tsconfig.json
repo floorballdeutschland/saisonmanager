@@ -158,6 +158,7 @@
       "@floorball/referee": ["src/app/_modules/_referee"],
       "@floorball/account": ["src/app/_modules/_account"],
       "@floorball/team-game-days": ["src/app/_modules/_team_game_days"],
+      "@floorball/club-game-day": ["src/app/_modules/_club_game_day"],
       "@floorball/secretary-links": ["src/app/_modules/_secretary_links"],
       "@floorball/overlay-links": ["src/app/_modules/_overlay_links"],
       "@floorball/access-card": ["src/app/_modules/_access_card"],
