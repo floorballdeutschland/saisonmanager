@@ -1,29 +1,10 @@
-import {
-  DetailedStatsShot,
-  HighlightScene,
-  Highlights,
-  PersonRef,
-} from '@floorball/types';
+import { Highlights, PersonRef } from '@floorball/types';
 
 /** Gibt es etwas abzuspielen? Ohne Video oder ohne Szene bleibt alles unsichtbar. */
 export function hasPlayableHighlights(
   highlights: Highlights | null | undefined
 ): highlights is Highlights & { video_id: string } {
   return !!highlights?.video_id && (highlights.scenes?.length ?? 0) > 0;
-}
-
-/**
- * Die Szene zu einem Punkt der Schussgrafik, `-1` wenn es keine gibt.
- *
- * Zugeordnet wird allein über `event_id`, das offizielle Tor, mit dem die API
- * den Schuss verknüpft hat. Ein Tor-Schuss ohne Verknüpfung hat keine Szene.
- */
-export function sceneIndexForShot(
-  shot: DetailedStatsShot,
-  scenes: HighlightScene[]
-): number {
-  if (shot.result !== 'goal' || shot.event_id === null) return -1;
-  return scenes.findIndex((scene) => scene.event_id === shot.event_id);
 }
 
 /** Die Szene nach `current`, `null` nach der letzten. */

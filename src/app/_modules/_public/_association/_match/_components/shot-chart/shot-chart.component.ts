@@ -1,10 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Input,
   OnChanges,
-  Output,
 } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import {
@@ -28,8 +26,6 @@ import { personLabel } from '../../_utils/highlights';
 
 interface PlottedShot extends FieldPoint {
   shot: DetailedStatsShot;
-  /** Tor mit Szene: Klick springt dorthin (fe#555). */
-  linked: boolean;
 }
 
 /** Farben je Ergebnis, dieselben in Grafik und Legende. */
@@ -57,12 +53,8 @@ export class ShotChartComponent implements OnChanges {
   @Input() teamName = '';
   /** Abschnittstitel des Spiels, wie in Filter und Tabelle. */
   @Input() periodTitles: PeriodTitles[] | null | undefined = [];
-  /** Tore, zu denen es eine Szene gibt. Ohne Szenen ist nichts anklickbar. */
-  @Input() linkedShots: ReadonlySet<DetailedStatsShot> = new Set();
   /** `league.field_size` ('GF' / 'KF'); unbekannt zeichnet Großfeld. */
   @Input() fieldSize: string | null | undefined = null;
-
-  @Output() goalSelected = new EventEmitter<DetailedStatsShot>();
 
   readonly colors = SHOT_COLORS;
 
@@ -82,17 +74,8 @@ export class ShotChartComponent implements OnChanges {
       .sort((a, b) => Number(a.result === 'goal') - Number(b.result === 'goal'))
       .map((shot) => ({
         shot,
-        linked: this.linkedShots.has(shot),
         ...toFieldPoint(shot, this.field),
       }));
-  }
-
-  /**
-   * Mit anklickbaren Toren ist die Grafik eine Gruppe statt eines Bildes:
-   * Unter role="img" sähen Screenreader die Tor-Schaltflächen nicht.
-   */
-  get hasLinked(): boolean {
-    return this.plotted.some((point) => point.linked);
   }
 
   /** Rand von einem halben Meter, damit Punkte an der Bande ganz sichtbar sind. */
@@ -140,9 +123,5 @@ export class ShotChartComponent implements OnChanges {
           ')'
       )
       .join(' ');
-  }
-
-  select(point: PlottedShot): void {
-    if (point.linked) this.goalSelected.emit(point.shot);
   }
 }

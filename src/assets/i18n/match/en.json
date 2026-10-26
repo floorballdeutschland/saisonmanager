@@ -104,8 +104,6 @@
     "finished": "all scenes shown",
     "playAll": "Play all scenes",
     "assist": "Assist",
-    "jumpHint": "Tap a goal in the shot map to jump to its scene.",
-    "goalAria": "Goal {{ time }}, jump to scene",
     "mark": "Scene",
     "edit": "Edit highlights (offset and selection)"
   }

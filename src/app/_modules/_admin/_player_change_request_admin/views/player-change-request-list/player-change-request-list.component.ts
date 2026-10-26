@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Input,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -16,12 +17,20 @@ import {
 import { PlayerChangeRequest } from '@floorball/types';
 
 @Component({
+  selector: 'fb-player-change-request-list',
   templateUrl: './player-change-request-list.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class PlayerChangeRequestListComponent implements OnInit, OnDestroy {
+  /**
+   * Als Reiter unter „Meine Spieler*innen" (fe#585): ohne eigene Überschrift
+   * und Seitenabstand, die stellt dort die umgebende Seite.
+   */
+  @Input()
+  embedded = false;
+
   requests: PlayerChangeRequest[] = [];
   loading = false;
   permissions: { [key: string]: boolean } = {};
