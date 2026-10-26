@@ -455,7 +455,8 @@
       "GF": "Großfeld"
     },
     "ageGroups": "Gezählte Altersklassen",
-    "ageGroupsHint": "Keine Auswahl heißt alle Altersklassen. Ligen ohne Altersklasse zählen immer mit. Eine neu angelegte Altersklasse ist hier nicht angehakt, bis sie jemand auswählt.",
+    "ageGroupsHint": "Ligen ohne Altersklasse zählen immer mit. Eine neu angelegte Altersklasse ist hier nicht angehakt, bis sie jemand auswählt.",
+    "ageGroupsRequired": "Bitte mindestens eine Altersklasse auswählen. Für alle Altersklassen alle anhaken.",
     "save": "Speichern",
     "delete": "Löschen",
     "saved": "Regel gespeichert.",

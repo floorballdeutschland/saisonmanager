@@ -64,6 +64,7 @@
                   <input
                     type="checkbox"
                     [checked]="hasAgeGroup(rule, ag)"
+                    [disabled]="isLastAgeGroup(rule, ag)"
                     (change)="
                       toggleAgeGroup(rule, ag, $any($event.target).checked)
                     "
@@ -75,6 +76,16 @@
             <p class="text-xs text-fb-gray-500 mt-1">
               {{ "refereeAdmin.suggestionRules.ageGroupsHint" | transloco }}
             </p>
+            @if (missingAgeGroups(rule)) {
+              <p
+                class="text-xs text-red-700 mt-1"
+                data-test="age-groups-required"
+              >
+                {{
+                  "refereeAdmin.suggestionRules.ageGroupsRequired" | transloco
+                }}
+              </p>
+            }
           </fieldset>
         }
 
@@ -82,7 +93,8 @@
           <button
             type="button"
             class="text-xs font-bold px-3 py-1 bg-black text-white rounded-[5px] disabled:opacity-50"
-            [disabled]="busy"
+            data-test="save-rule"
+            [disabled]="busy || missingAgeGroups(rule)"
             (click)="save(rule)"
           >
             {{ "refereeAdmin.suggestionRules.save" | transloco }}

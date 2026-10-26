@@ -455,7 +455,8 @@
       "GF": "Large field"
     },
     "ageGroups": "Counted age groups",
-    "ageGroupsHint": "No selection means all age groups. Leagues without an age group always count. A newly created age group is unchecked here until someone selects it.",
+    "ageGroupsHint": "Leagues without an age group always count. A newly created age group is unchecked here until someone selects it.",
+    "ageGroupsRequired": "Please select at least one age group. To count all age groups, check all of them.",
     "save": "Save",
     "delete": "Delete",
     "saved": "Rule saved.",

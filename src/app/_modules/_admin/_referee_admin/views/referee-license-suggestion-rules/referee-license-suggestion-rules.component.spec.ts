@@ -97,6 +97,57 @@ describe('RefereeLicenseSuggestionRulesComponent', () => {
     );
   });
 
+  it('laesst die letzte Altersklasse nicht abwaehlen', () => {
+    const { fixture, c } = render();
+    const r = c.rules[0];
+    // Ueber den Knopf, damit OnPush neu zeichnet.
+    (
+      el(fixture).querySelector(
+        '[data-test="rule"] button'
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(c.editing.has(r)).toBeTrue();
+    const boxes = el(fixture).querySelectorAll<HTMLInputElement>(
+      '[data-test="rule-form"] input[type="checkbox"]'
+    );
+    expect(boxes[0].disabled).toBeTrue();
+    expect(boxes[1].disabled).toBeFalse();
+
+    c.toggleAgeGroup(r, 'Herren', false);
+    expect(r.age_groups).toEqual(['Herren']);
+  });
+
+  it('speichert eine Regel mit Mindestzahl nicht ohne Altersklasse', () => {
+    const { fixture, c, service } = render([{ ...rule(), age_groups: [] }]);
+    const r = c.rules[0];
+    // Ueber den Knopf, damit OnPush neu zeichnet.
+    (
+      el(fixture).querySelector(
+        '[data-test="rule"] button'
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(c.editing.has(r)).toBeTrue();
+    expect(
+      el(fixture).querySelector('[data-test="age-groups-required"]')
+    ).not.toBeNull();
+    expect(
+      (
+        el(fixture).querySelector(
+          '[data-test="save-rule"]'
+        ) as HTMLButtonElement
+      ).disabled
+    ).toBeTrue();
+
+    c.save(r);
+    expect(service.adminSaveLicenseSuggestionRule).not.toHaveBeenCalled();
+
+    r.min_games = null;
+    c.save(r);
+    expect(service.adminSaveLicenseSuggestionRule).toHaveBeenCalled();
+  });
+
   it('verwirft eine ungespeicherte Regel ohne Abruf', () => {
     const { c, service } = render();
     c.add();

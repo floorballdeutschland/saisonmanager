@@ -76,17 +76,36 @@ export class RefereeLicenseSuggestionRulesComponent implements OnDestroy {
     return rule.age_groups.includes(ageGroup);
   }
 
+  /**
+   * Eine Regel mit Mindestzahl braucht mindestens eine Altersklasse, sonst
+   * zählt kein Spiel (Entscheidung 26.10.2026, die API antwortet sonst 422).
+   * Die Rückfallregel ohne Mindestzahl zeigt keine Auswahl.
+   */
+  missingAgeGroups(rule: RefereeLicenseSuggestionRule): boolean {
+    return rule.min_games != null && rule.age_groups.length === 0;
+  }
+
+  // Die letzte angehakte Altersklasse lässt sich nicht abwählen.
+  isLastAgeGroup(
+    rule: RefereeLicenseSuggestionRule,
+    ageGroup: string
+  ): boolean {
+    return rule.age_groups.length === 1 && rule.age_groups[0] === ageGroup;
+  }
+
   toggleAgeGroup(
     rule: RefereeLicenseSuggestionRule,
     ageGroup: string,
     checked: boolean
   ): void {
+    if (!checked && this.isLastAgeGroup(rule, ageGroup)) return;
     rule.age_groups = checked
       ? [...rule.age_groups, ageGroup]
       : rule.age_groups.filter((a) => a !== ageGroup);
   }
 
   save(rule: RefereeLicenseSuggestionRule): void {
+    if (this.missingAgeGroups(rule)) return;
     this.busy = true;
     this._service
       .adminSaveLicenseSuggestionRule(rule)
