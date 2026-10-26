@@ -11,6 +11,7 @@ import {
   RefereeCourseResultSummary,
   RefereeHistoryGame,
   RefereeHistorySeason,
+  RefereeSeasonGameStat,
 } from '@floorball/types';
 
 @Component({
@@ -20,6 +21,7 @@ import {
 })
 export class RefereeHistoryComponent implements OnInit {
   seasons: RefereeHistorySeason[] = [];
+  seasonStats: RefereeSeasonGameStat[] = [];
   tests: RefereeCourseResultSummary[] = [];
   loadingGames = true;
   loadingTests = true;
@@ -44,6 +46,13 @@ export class RefereeHistoryComponent implements OnInit {
       },
       error: () => {
         this.loadingGames = false;
+        this._cdr.markForCheck();
+      },
+    });
+
+    this._refereeService.getHistorySeasonStats().subscribe({
+      next: (stats) => {
+        this.seasonStats = stats;
         this._cdr.markForCheck();
       },
     });

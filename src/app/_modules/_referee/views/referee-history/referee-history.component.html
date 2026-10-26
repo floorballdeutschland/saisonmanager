@@ -12,6 +12,11 @@
       fbTab="spiele"
       [fbTabLabel]="'refereeSelf.history.tabGames' | transloco"
     >
+      @if (seasonStats.length > 0) {
+        <div class="mb-6">
+          <fb-referee-season-stats [stats]="seasonStats" />
+        </div>
+      }
       <div>
         @if (loadingGames) {
           <div class="text-fb-gray-500 text-sm">

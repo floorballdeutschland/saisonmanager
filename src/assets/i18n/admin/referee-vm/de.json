@@ -35,6 +35,7 @@
     "colDate": "Datum",
     "colGame": "Spiel",
     "colLeague": "Liga",
-    "colResult": "Ergebnis"
+    "colResult": "Ergebnis",
+    "seasonStats": "Einsätze je Saison"
   }
 }

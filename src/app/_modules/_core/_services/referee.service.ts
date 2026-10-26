@@ -36,6 +36,7 @@ import {
   RefereeSortColumn,
   RefereeStatusFilter,
   RefereeTag,
+  RefereeSeasonGameStat,
   RefereeVm,
   RefereeFeedbackProfileResponse,
 } from '@floorball/types';
@@ -736,6 +737,14 @@ export class RefereeService {
   public getHistoryGames() {
     return this.http.get<RefereeHistorySeason[]>(
       environment.apiURL + 'referee/history/games'
+    );
+  }
+
+  // Einsatzzahlen der laufenden und der Vorsaison, wie in Verbands- und
+  // Vereinssicht.
+  public getHistorySeasonStats() {
+    return this.http.get<RefereeSeasonGameStat[]>(
+      environment.apiURL + 'referee/history/season_stats'
     );
   }
 

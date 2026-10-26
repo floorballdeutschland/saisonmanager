@@ -7,3 +7,4 @@ export * from './select-search/select-search.component';
 export * from './tabs/tab.directive';
 export * from './tabs/tabs.component';
 export * from './collapsible/collapsible.component';
+export * from './referee-season-stats/referee-season-stats.component';

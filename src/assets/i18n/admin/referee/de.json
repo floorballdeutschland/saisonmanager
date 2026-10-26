@@ -130,7 +130,8 @@
       "courses": "Kurse",
       "ratings": "Feedback & Beobachtungen",
       "exclusions": "Ausschlüsse"
-    }
+    },
+    "seasonStats": "Einsätze je Saison"
   },
   "edit": {
     "back": "← Zurück",

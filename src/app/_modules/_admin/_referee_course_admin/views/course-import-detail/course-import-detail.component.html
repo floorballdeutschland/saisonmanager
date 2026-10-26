@@ -400,11 +400,20 @@
                 }}</span>
               }
             </td>
-            <td class="py-3 px-2 text-xs">
-              {{
-                "refereeCourseAdmin.detail.games"
-                  | transloco: { count: r.previous_season_game_count ?? 0 }
-              }}
+            <td class="py-3 px-2 text-xs whitespace-nowrap">
+              <div>
+                {{
+                  "refereeCourseAdmin.detail.games"
+                    | transloco: { count: r.previous_season_game_count ?? 0 }
+                }}
+              </div>
+              <div class="text-fb-gray-500">
+                {{
+                  "refereeCourseAdmin.detail.gamesGfU15Plus"
+                    | transloco
+                      : { count: r.previous_season_game_count_gf_u15_plus ?? 0 }
+                }}
+              </div>
             </td>
             <td class="py-3 px-2">
               <!--

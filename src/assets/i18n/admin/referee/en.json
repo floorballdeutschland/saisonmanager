@@ -130,7 +130,8 @@
       "courses": "Courses",
       "ratings": "Feedback & observations",
       "exclusions": "Exclusions"
-    }
+    },
+    "seasonStats": "Games per season"
   },
   "edit": {
     "back": "← Back",
