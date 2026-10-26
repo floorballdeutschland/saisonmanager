@@ -289,11 +289,25 @@ describe('Tabletmodus: Rechenlogik', () => {
           event_team: 'home',
           goal_type: 'regular',
         },
+        // Technisches Tor mit „nicht angegeben“ (2000): Torart verdrängt.
+        {
+          event_id: 7,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'not_assigned',
+          technical_goal: true,
+        },
+        {
+          event_id: 8,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'not_assigned',
+        },
       ] as GameEvent[];
       const candidates = goalLinkCandidates(ohneSchuss, [
         shot({ client_uuid: 'c', team: 'home', result: 'goal' }),
       ]);
-      expect(candidates.map((entry) => entry.goal.event_id)).toEqual([6]);
+      expect(candidates.map((entry) => entry.goal.event_id)).toEqual([6, 8]);
     });
   });
 

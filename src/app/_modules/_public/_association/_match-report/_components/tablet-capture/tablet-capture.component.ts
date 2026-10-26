@@ -410,7 +410,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
       .filter((event) => event.event_type === 'goal')
       .map(
         (event) =>
-          `${event.event_id}:${event.event_team}:${event.goal_type ?? ''}`
+          `${event.event_id}:${event.event_team}:${event.goal_type ?? ''}:${event.technical_goal ? 't' : ''}`
       )
       .join(',');
   }

@@ -699,6 +699,24 @@ describe('TabletCaptureComponent', () => {
     fixture.detectChanges();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
 
+    // Torart bleibt „not_assigned“, nur die Markierung kommt hinzu (2000).
+    fixture.componentRef.setInput(
+      'game',
+      game(4711, {
+        events: [{ ...goal, goal_type: 'not_assigned' }],
+      } as Partial<Game>)
+    );
+    fixture.detectChanges();
+    http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
+    fixture.componentRef.setInput(
+      'game',
+      game(4711, {
+        events: [{ ...goal, goal_type: 'not_assigned', technical_goal: true }],
+      } as Partial<Game>)
+    );
+    fixture.detectChanges();
+    http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
+
     http.match(API + 'server_time.json');
   });
   describe('Abschnitt folgt dem Spielstand', () => {
