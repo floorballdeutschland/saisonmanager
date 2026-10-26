@@ -1,9 +1,9 @@
 {
   "title": "Game day tasks",
-  "intro": "What your club takes care of around a game day: create the access for the match secretariat beforehand, then confirm the game day as the guest team and give feedback on the referee pair.",
+  "intro": "What your club takes care of around a game day: create the access for the match secretariat beforehand, then, as the guest team, object to the host's game day report if necessary and give feedback on the referee pair.",
   "tabs": {
     "secretary": "Create match secretariat access",
-    "away": "Confirm away game days",
+    "away": "Object to game day report",
     "feedback": "Give referee feedback"
   }
 }

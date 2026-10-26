@@ -17,7 +17,7 @@ export class ClubGameDayComponent {
   /** Zugang fuers Spielsekretariat: jeder Teammanager und Vereinsmanager. */
   readonly showSecretary: boolean;
   /**
-   * Auswaertsspieltage bestaetigen. Der Menueschluessel erscheint nur, wenn
+   * Reiter „Spieltagsbericht widersprechen" (Auswaertsspieltage). Der Menueschluessel erscheint nur, wenn
    * fuer eine eigene Mannschaft ein Spieltagsbericht greift. Die Rechte
    * stammen aber aus der Anmeldung: Legt ein Landesverband seine erste Frage
    * mitten in der Saison an, fehlt der Schluessel bis zur naechsten

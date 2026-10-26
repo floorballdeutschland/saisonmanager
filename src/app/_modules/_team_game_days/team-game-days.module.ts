@@ -6,7 +6,8 @@ import { UikitCommonModule } from '@floorball/uikit/common';
 import * as Views from './views';
 
 /**
- * Auswaertsspieltage bestaetigen, ohne eigene Route: Die Seite ist ein Reiter
+ * Auswaertsspieltage: dem Spieltagsbericht widersprechen oder ihn bestaetigen,
+ * ohne eigene Route. Die Seite ist ein Reiter
  * von „Spieltagsaufgaben" (`@floorball/club-game-day`, fe#586).
  */
 @NgModule({
