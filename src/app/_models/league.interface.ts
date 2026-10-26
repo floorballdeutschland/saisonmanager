@@ -60,6 +60,12 @@ export interface League {
    * null/undefined = keine Untergrenze.
    */
   minimum_age?: number | null;
+  /**
+   * Overage-Regel: Spielerinnen duerfen so viele Jahre aelter sein, als der
+   * Stichtag "geboren ab" erlaubt. Nur zusammen mit before_deadline = false
+   * und gesetztem Stichtag. null/undefined = keine Ausnahme.
+   */
+  female_overage_years?: number | null;
   parental_consent_required: boolean;
   referee_feedback_enabled?: boolean;
 

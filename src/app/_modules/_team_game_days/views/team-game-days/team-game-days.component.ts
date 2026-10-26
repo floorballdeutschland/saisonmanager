@@ -15,6 +15,7 @@ import {
 } from '@floorball/types';
 
 @Component({
+  selector: 'fb-team-game-days',
   templateUrl: './team-game-days.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

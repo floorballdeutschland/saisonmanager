@@ -750,4 +750,15 @@ export class RefereeService {
   public vmGetReferees() {
     return this.http.get<RefereeVm[]>(environment.apiURL + 'vm/referees');
   }
+
+  public vmGetReferee(id: number) {
+    return this.http.get<RefereeVm>(environment.apiURL + 'vm/referees/' + id);
+  }
+
+  // Gesamte Einsatzhistorie laut Spielbericht, alle Saisons.
+  public vmGetGames(id: number) {
+    return this.http.get<RefereeAdminGame[]>(
+      environment.apiURL + 'vm/referees/' + id + '/games'
+    );
+  }
 }

@@ -1,0 +1,38 @@
+<div class="p-4 lg:p-8">
+  <h1 class="text-2xl font-bold mb-2">
+    {{ "clubGameDay.title" | transloco }}
+  </h1>
+  <p class="text-sm text-fb-gray-500 mb-6 max-w-3xl">
+    {{ "clubGameDay.intro" | transloco }}
+  </p>
+
+  <!-- Reihenfolge wie am Spieltag: vorher der Zugang fuer den Tisch,
+       danach Bestaetigung und Feedback. Der erste sichtbare Reiter ist der
+       Standard und steht nicht in der URL. -->
+  <fb-tabs [label]="'clubGameDay.title' | transloco">
+    @if (showSecretary) {
+      <ng-template
+        fbTab="sekretariat"
+        [fbTabLabel]="'clubGameDay.tabs.secretary' | transloco"
+      >
+        <fb-secretary-links />
+      </ng-template>
+    }
+    @if (showAway) {
+      <ng-template
+        fbTab="auswaerts"
+        [fbTabLabel]="'clubGameDay.tabs.away' | transloco"
+      >
+        <fb-team-game-days />
+      </ng-template>
+    }
+    @if (showFeedback) {
+      <ng-template
+        fbTab="schiri-feedback"
+        [fbTabLabel]="'clubGameDay.tabs.feedback' | transloco"
+      >
+        <fb-club-referee-feedback />
+      </ng-template>
+    }
+  </fb-tabs>
+</div>

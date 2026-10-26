@@ -273,35 +273,27 @@ export const routes: Routes = [
           import('@floorball/account').then((m) => m.AccountModule),
       },
       {
+        // „Spieltagsaufgaben" (fe#586): Spielsekretariat, Auswärtsspieltage
+        // und Schiri-Feedback als Reiter einer Seite. Das Modul trägt auch die
+        // Weiterleitungen der drei alten Adressen. Der Guard lässt jeden durch,
+        // der mindestens einen Reiter sehen darf; welche es sind, entscheidet
+        // die Seite mit denselben Schlüsseln wie die früheren Einzel-Guards.
+        // Die rollenbasierten page_*-Schlüssel statt der Menü-Schlüssel, weil
+        // die Menüpunkte für Auswärtsspieltage erst mit einem hinterlegten
+        // Spieltagsbericht erscheinen, die Seite aber erreichbar bleiben muss,
+        // wenn ein Landesverband seine erste Frage während der Saison anlegt
+        // (Berechtigungen stammen aus dem Login).
         path: '',
         loadChildren: () =>
-          import('@floorball/team-game-days').then((m) => m.TeamGameDaysModule),
+          import('@floorball/club-game-day').then((m) => m.ClubGameDayModule),
         canActivate: [permissionGuard],
-        // Rollenbasierter Schlüssel, nicht der Menü-Schlüssel: der Menüpunkt
-        // erscheint nur bei hinterlegtem Spieltagsbericht, die Seite muss
-        // aber erreichbar bleiben, wenn ein Landesverband seine erste Frage erst
-        // während der Saison anlegt (Berechtigungen stammen aus dem Login).
-        data: { permission: 'page_team_game_days' },
-      },
-      {
-        path: '',
-        loadChildren: () =>
-          import('@floorball/secretary-links').then(
-            (m) => m.SecretaryLinksModule
-          ),
-        canActivate: [permissionGuard],
-        // Rollenbasiert wie page_team_game_days: ob für einen konkreten
-        // Spieltag ein Link erzeugt werden darf, entscheidet der Endpunkt.
-        data: { permission: 'page_secretary_links' },
-      },
-      {
-        path: '',
-        loadChildren: () =>
-          import('@floorball/referee-feedback').then(
-            (m) => m.RefereeFeedbackModule
-          ),
-        canActivate: [permissionGuard],
-        data: { permission: 'menu_item_referee_feedback' },
+        data: {
+          permission: [
+            'page_secretary_links',
+            'page_team_game_days',
+            'menu_item_referee_feedback',
+          ],
+        },
       },
       {
         path: '',

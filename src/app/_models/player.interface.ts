@@ -160,6 +160,9 @@ export interface PlayerWithLicense extends Player {
     // brauchten – eine Zweitvereins-Zugehörigkeit ohne Freigabeverfahren
     // zählt bewusst nicht.
     released_at?: string | null;
+    // Nur über die Overage-Regel der Liga spielberechtigt
+    // (League#female_overage?, nur in der Liga-Lizenzliste gesetzt).
+    female_overage?: boolean;
     // Der Expresszuschlag steht NICHT hier, sondern an der Lizenz selbst
     // (`license.express`). In der Ligaliste ist `team_license` ein Umschlag um
     // den rohen Eintrag (League#build_license_items), im Lizenzwesen des

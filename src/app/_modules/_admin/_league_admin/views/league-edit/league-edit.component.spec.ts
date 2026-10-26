@@ -113,6 +113,57 @@ describe('LeagueEditComponent', () => {
     });
   });
 
+  // Die Overage-Regel lockert nur einen Stichtag "geboren ab"; dieselbe
+  // Bedingung prueft die API (League#female_overage_needs_born_from_deadline).
+  describe('errorMsg: Overage-Regel', () => {
+    const errFemaleOverage = 'leagueAdmin.notifications.errFemaleOverage';
+
+    function errorsFor(changes: Partial<League>): string[] {
+      const fixture = TestBed.createComponent(LeagueEditComponent);
+      const component = fixture.componentInstance;
+      component.newLeague();
+
+      let league!: League;
+      component.league$?.subscribe((l) => (league = l));
+      Object.assign(league, changes);
+
+      return component.errorMsg(league);
+    }
+
+    it('meldet nichts ohne Overage-Regel', () => {
+      expect(errorsFor({ female_overage_years: null })).not.toContain(
+        errFemaleOverage
+      );
+    });
+
+    it('akzeptiert die Regel mit Stichtag geboren ab', () => {
+      expect(
+        errorsFor({
+          female_overage_years: 1,
+          before_deadline: false,
+          deadline: '2014-01-01',
+        })
+      ).not.toContain(errFemaleOverage);
+    });
+
+    it('lehnt die Regel bei geboren bis oder ohne Stichtag ab', () => {
+      expect(
+        errorsFor({
+          female_overage_years: 1,
+          before_deadline: true,
+          deadline: '2014-01-01',
+        })
+      ).toContain(errFemaleOverage);
+      expect(
+        errorsFor({
+          female_overage_years: 1,
+          before_deadline: false,
+          deadline: undefined,
+        })
+      ).toContain(errFemaleOverage);
+    });
+  });
+
   // Reiter mit echtem Template. Die Dienste liefern nur, was die Ansicht zum
   // Aufbauen braucht.
   describe('Reiter', () => {

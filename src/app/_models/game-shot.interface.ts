@@ -47,7 +47,9 @@ export interface ShotInput {
   // Aufs leere Tor, der Gegner spielt ohne Torhüter (Feedback #63). Dann
   // ohne Torhüter und nie gehalten.
   empty_net?: boolean;
-  // Das schießende Team spielt ohne eigenen Torhüter, 6 gegen 5 (#64).
+  // Das schießende Team spielt ohne eigenen Torhüter (#64). Nicht immer 6
+  // gegen 5: Die Spielstärke leitet die API aus den laufenden Strafen ab
+  // (`extra_attacker_strength` in der Statistik, fe#610).
   extra_attacker?: boolean;
 }
 

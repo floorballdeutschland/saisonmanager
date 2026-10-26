@@ -1,0 +1,30 @@
+<!-- Ohne Szenen und ohne Recht zum Bearbeiten bleibt auch die Hülle weg. -->
+@if ((showHighlights && highlights) || canEditHighlights) {
+  <div
+    class="container mx-auto px-4 lg:px-8 mt-4 lg:mt-8"
+    data-test="highlights-panel"
+  >
+    <!-- Torszenen aus der Stream-Aufzeichnung (fe#555), nur mit Video und Szenen -->
+    @if (showHighlights && highlights) {
+      <fb-match-highlights
+        [highlights]="highlights"
+        [homeName]="teamShortName('home')"
+        [guestName]="teamShortName('guest')"
+        (unavailable)="onUnavailable()"
+      ></fb-match-highlights>
+    }
+
+    <!-- Kalibrierung und Auswahl der Highlights (api#838), nur Admin und SBK -->
+    @if (canEditHighlights) {
+      <p class="mb-8 text-sm">
+        <a
+          class="underline font-bold"
+          routerLink="/highlights/bearbeiten"
+          [queryParams]="{ spiel: game.id }"
+          data-test="highlights-edit"
+          >{{ "match.highlights.edit" | transloco }}</a
+        >
+      </p>
+    }
+  </div>
+}
