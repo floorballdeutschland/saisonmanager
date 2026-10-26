@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -53,7 +54,9 @@ const SEEK_TOLERANCE_S = 5;
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class MatchHighlightsComponent implements OnChanges, OnDestroy {
+export class MatchHighlightsComponent
+  implements AfterViewInit, OnChanges, OnDestroy
+{
   @Input() highlights!: Highlights;
   @Input() homeName = '';
   @Input() guestName = '';
@@ -61,6 +64,7 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   @Output() unavailable = new EventEmitter<void>();
 
   @ViewChild('playerHost') playerHost?: ElementRef<HTMLElement>;
+  @ViewChild('sceneList') sceneList?: ElementRef<HTMLElement>;
 
   consented = false;
   loading = false;
@@ -70,6 +74,8 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   /** Mit dieser Szene beginnt die Wiedergabe nach der Zustimmung. */
   pendingIndex = 0;
   finished = false;
+  /** Die Szenenliste scrollt und hat unterhalb noch Einträge. */
+  moreBelow = false;
 
   private _player?: YtPlayer;
   private _playerReady = false;
@@ -80,16 +86,21 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   private _videoLoaded = false;
   /** Die Abspielposition hat die laufende Szene erreicht. */
   private _arrived = false;
+  private _listObserver?: ResizeObserver;
 
   constructor(
     private _youtube: YoutubeIframeApiService,
     private _zone: NgZone,
-    private _cdr: ChangeDetectorRef,
-    private _host: ElementRef<HTMLElement>
+    private _cdr: ChangeDetectorRef
   ) {}
 
   get scenes(): HighlightScene[] {
     return this.highlights?.scenes ?? [];
+  }
+
+  /** Nur bei ausdrücklichem `false`, nicht bei älterer API ohne das Feld. */
+  get calibrationPending(): boolean {
+    return this.highlights?.calibrated === false;
   }
 
   get currentScene(): HighlightScene | null {
@@ -98,9 +109,23 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
       : null;
   }
 
+  ngAfterViewInit(): void {
+    // Die Höhe der Liste hängt am Player und damit an der Fensterbreite.
+    const list = this.sceneList?.nativeElement;
+    if (!list || typeof ResizeObserver === 'undefined') return;
+    this._listObserver = new ResizeObserver(() =>
+      this._zone.run(() => this.updateMoreBelow())
+    );
+    this._listObserver.observe(list);
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     const change = changes['highlights'];
     if (!change || change.firstChange) return;
+
+    // Neue Szenen ändern die Länge der Liste, nicht ihre Höhe: Das meldet
+    // der ResizeObserver nicht. Gemessen wird nach dem Rendern.
+    setTimeout(() => this.updateMoreBelow());
 
     const previous = change.previousValue as Highlights | undefined;
     if (previous?.video_id !== this.highlights?.video_id) {
@@ -116,6 +141,7 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this._listObserver?.disconnect();
     this.destroyPlayer();
   }
 
@@ -205,28 +231,51 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  /** Klick auf eine Szene in der Liste oder ein Tor in der Schussgrafik. */
+  /**
+   * Klick auf eine Szene in der Liste. Vor der Zustimmung wird nichts
+   * geladen, die Szene startet dann mit dem Klick auf „Szenen laden“.
+   */
   selectScene(index: number): void {
     if (index < 0 || index >= this.scenes.length) return;
     if (this._player && this._playerReady) {
       this.playScene(index);
     } else {
       this.pendingIndex = index;
+      this.revealScene(index);
       this._cdr.markForCheck();
     }
   }
 
   /**
-   * Sprung von außen (Schussgrafik): Szene wählen und den Player ins Bild
-   * holen. Vor der Zustimmung wird nichts geladen, die Szene startet dann mit
-   * dem Klick auf „Szenen laden“.
+   * Holt die Szene in der Liste ins Bild, auch wenn der Player von selbst
+   * weiterschaltet. Bewusst über `scrollTop` und nicht `scrollIntoView`: Das
+   * scrollte auch die Seite, mobil sogar weg vom Player.
    */
-  jumpTo(index: number): void {
-    this.selectScene(index);
-    this._host.nativeElement.scrollIntoView?.({
-      behavior: 'smooth',
-      block: 'start',
-    });
+  revealScene(index: number): void {
+    const list = this.sceneList?.nativeElement;
+    const item = list?.children[index];
+    if (!list || !item || list.scrollHeight <= list.clientHeight) return;
+    const listBox = list.getBoundingClientRect();
+    const itemBox = item.getBoundingClientRect();
+    if (itemBox.top < listBox.top) {
+      list.scrollTop -= listBox.top - itemBox.top;
+    } else if (itemBox.bottom > listBox.bottom) {
+      // Ist der Eintrag höher als die Liste, bleibt sein Anfang sichtbar.
+      list.scrollTop += Math.min(
+        itemBox.bottom - listBox.bottom,
+        itemBox.top - listBox.top
+      );
+    }
+    this.updateMoreBelow();
+  }
+
+  updateMoreBelow(): void {
+    const list = this.sceneList?.nativeElement;
+    const moreBelow =
+      !!list && list.scrollTop + list.clientHeight < list.scrollHeight - 1;
+    if (moreBelow === this.moreBelow) return;
+    this.moreBelow = moreBelow;
+    this._cdr.markForCheck();
   }
 
   playAll(): void {
@@ -246,6 +295,7 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
     this.currentIndex = index;
     this.finished = false;
     this._arrived = false;
+    this.revealScene(index);
     if (this._videoLoaded) {
       this._player.seekTo(scene.start, true);
       this._player.playVideo();

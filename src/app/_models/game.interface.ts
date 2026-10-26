@@ -38,6 +38,9 @@ export interface GameEvent {
   assist?: number;
   goal_type?: string;
   goal_type_string?: string;
+  // Markiertes technisches Tor, auch wenn goal_type wegen 2000 „not_assigned“
+  // lautet (api#857). Fehlt sonst.
+  technical_goal?: boolean;
   penalty_type?: string;
   penalty_type_string?: string;
   penalty_reason?: number;

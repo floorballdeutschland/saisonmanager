@@ -2,6 +2,7 @@ import {
   DetailedStats,
   DetailedStatsFreeHit,
   DetailedStatsShot,
+  GameEvent,
   GoalkeeperSaveStats,
   GoalkeeperStats,
   PlayerShotStats,
@@ -174,6 +175,45 @@ export function periodsOf(stats: DetailedStats): number[] {
   return [...periods].sort((a, b) => a - b);
 }
 
+/**
+ * Torarten ohne Schuss im Spielfluss: Ein Eigentor schießt niemand aufs
+ * gegnerische Tor, ein technisches Tor wird zugesprochen, und das
+ * Penaltyschießen erfasst das Tablet nicht. Ein Abschnitt, der nur solche
+ * Tore hat, ist also nicht unerfasst.
+ */
+const GOAL_TYPES_WITHOUT_SHOT = ['owngoal', 'technical', 'penalty_shots'];
+
+export interface UncapturedPeriods {
+  periods: number[];
+  /** Tore aus diesen Abschnitten, die in Schuss- und Torhüterwerten fehlen. */
+  goals: number;
+}
+
+/**
+ * Abschnitte mit Toren laut Spielbericht, aber ohne einen einzigen erfassten
+ * Schuss (fe#623). Typisch: Die Tablet-Erfassung begann erst im 2. Drittel,
+ * dann fehlen die Tore des 1. Drittels in Teamsummen und Fangquoten, und die
+ * Statistik passt scheinbar nicht zum Ergebnis. Abschnitte ohne Tor bleiben
+ * außen vor, dort fehlt kein Tor. `null`, wenn nichts fehlt.
+ */
+export function uncapturedPeriods(
+  events: GameEvent[] | null | undefined,
+  stats: DetailedStats
+): UncapturedPeriods | null {
+  const captured = new Set(stats.shots.map((shot) => shot.period));
+  const goals = (events ?? []).filter(
+    (event) =>
+      event.event_type === 'goal' &&
+      !GOAL_TYPES_WITHOUT_SHOT.includes(event.goal_type ?? '') &&
+      !captured.has(event.period)
+  );
+  if (!goals.length) return null;
+  const periods = [...new Set(goals.map((event) => event.period))].sort(
+    (a, b) => a - b
+  );
+  return { periods, goals: goals.length };
+}
+
 export const EMPTY_TEAM_STATS: TeamShotStats = {
   shots: 0,
   on_goal: 0,
@@ -229,6 +269,17 @@ export function hasSpecialSituations(stats: DetailedStats): boolean {
       !!teamStats?.goals_extra_attacker
     );
   });
+}
+
+/**
+ * Tore ohne eigenen Torhüter, die weder 6 gegen 5 noch 6 gegen 4 waren
+ * (fe#610): jede andere Spielstärke, oder der Schuss hat keine Spielzeit.
+ */
+export function extraAttackerOther(stats: TeamShotStats): number {
+  return (
+    (stats.goals_extra_attacker_other ?? 0) +
+    (stats.goals_extra_attacker_unknown ?? 0)
+  );
 }
 
 /** Spieler mit den meisten Schüssen zuerst, bei Gleichstand mehr Tore. */

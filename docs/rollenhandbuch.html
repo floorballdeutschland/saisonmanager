@@ -2970,7 +2970,11 @@
                 Stimmen Stammdaten eines Spielers nicht, stellt der
                 Vereinsmanager einen Änderungsantrag. Die SBK bzw. der Admin
                 prüft ihn und übernimmt oder lehnt ab. So bleiben Korrekturen an
-                fremden Vereinsspielern kontrolliert.
+                fremden Vereinsspielern kontrolliert. Seine Anträge und deren
+                Stand findet der Verein unter <strong>Meine Spieler*innen</strong>
+                im Reiter <em>Spielerdaten-Korrekturen</em>; den eigenen
+                Menüpunkt <em>Spielerdaten-Korrekturen</em> behalten nur Admin
+                und SBK, die die Anträge entscheiden.
               </p>
               <div class="flow">
                 <div class="st start">Korrektur nötig</div>
@@ -4487,21 +4491,25 @@
                 lizenzierten und beantragten Spieler beider Teams zeigt.
               </p>
               <p class="proc-text">
-                Die ordnungsgemäße Durchführung bestätigen die Gastmannschaften
-                unter <strong>Meine Auswärtsspieltage</strong>. Der Menüpunkt
+                Die Gastmannschaften prüfen die Angaben unter
+                <strong>Spieltagsaufgaben</strong> im Reiter
+                <em>Spieltagsbericht widersprechen</em>
+                (<code>/verein/spieltag?reiter=auswaerts</code>). Der Reiter
                 listet ausschließlich Spieltage, die ein anderer Verein
                 ausrichtet, und erscheint nur, wenn der Landesverband des
                 Spielbetriebs überhaupt eine Frage für den Spieltagsbericht hinterlegt hat.
                 Mit dem Abschluss des Spielberichts bekommt jede Gastmannschaft
                 die Antworten des Ausrichters per Mail („Spieltagsbericht
-                bestätigen“, mit Frist und Link). Die Mail geht an die
+                prüfen“, mit Frist und Link). Die Mail geht an die
                 Teammanager der Mannschaft, ohne sie an die Vereinsmanager mit
-                Info-Mails und zuletzt an die Kontaktadresse des Vereins. Bleibt
-                die Bestätigung aus, gilt der Spieltag nach
+                Info-Mails und zuletzt an die Kontaktadresse des Vereins. Stimmt
+                alles, ist nichts zu tun: Ohne Widerspruch gilt der Spieltag nach
                 <strong>48 Stunden</strong> automatisch als bestätigt. Gezählt
-                wird ab dem Ende des Spieltags, kam die Mail erst später, ab
-                ihrem Versand. Wer nicht ordnungsgemäß meldet, löst eine Mail
-                an die SBK aus, die die betroffenen Spiele nennt.
+                wird ab dem Ende des Spieltags (24 Uhr), kam die Mail erst
+                später, ab ihrem Versand. Die genaue Frist steht am Spieltag im
+                Reiter. Vorher bestätigen geht ab Beginn des letzten Spiels.
+                Wer widerspricht, füllt den Spieltagsbericht selbst aus und löst
+                eine Mail an die SBK aus, die die betroffenen Spiele nennt.
               </p>
               <div class="roles-inline">
                 <span class="rb sbk">SBK / LV</span>
@@ -4571,7 +4579,7 @@
                 Konto an. Für sie gibt es einen Zugang, der genau das
                 freischaltet, was vor Ort gebraucht wird: Aufstellung und
                 Spielbericht. Erzeugen können ihn Vereins- und Teammanager
-                selbst unter <strong>Verein › Spielsekretariat</strong>,
+                selbst unter <strong>Spieltagsaufgaben › Zugang Spielsekretariat erzeugen</strong>,
                 außerdem Admin und SBK über die Spielplanverwaltung
                 (<em>Spielsek-Code</em>).
               </p>
@@ -4637,7 +4645,7 @@
                 Rollen.
               </p>
               <p class="proc-text">
-                Unter <strong>Verein › Spielsekretariat</strong> steht bei jedem
+                Unter <strong>Spieltagsaufgaben › Zugang Spielsekretariat erzeugen</strong> steht bei jedem
                 Spieltag daneben der <strong>Overlay-Zugang</strong> für die
                 Livestream-Grafiken. Er ist vom Sekretariats-Code unabhängig:
                 Wer überträgt, sitzt nicht zwangsläufig am Tisch und bekommt so
@@ -8400,14 +8408,19 @@
                   Freigabe und die Nachricht über die erteilte Lizenz ins Leere
                 </li>
                 <li>
-                  Den aktiven Bestand oben rechts als CSV-Datei herunterladen –
-                  mit ID, Name, Geburtsdatum, Geschlecht, Nationalität,
-                  E-Mail-Adresse und Lizenzstand. Deaktivierte sind nicht dabei
+                  Den aktiven Bestand im Bereich <em>Export</em> über der
+                  Liste als CSV-Datei herunterladen, mit ID, Name,
+                  Geburtsdatum, Geschlecht, Nationalität, E-Mail-Adresse und
+                  Lizenzstand. Deaktivierte sind nicht dabei. Betreust du
+                  mehrere Vereine, landen alle in einer Datei (Spalte
+                  „Verein“)
                 </li>
                 <li>
-                  Fehlende E-Mail-Adressen über den Link „Import“ aus derselben
-                  Datei nachtragen. Gefüllt werden nur leere Felder, ein
-                  vorhandener Wert wird nie überschrieben (siehe unten)
+                  Fehlende E-Mail-Adressen im Bereich <em>Import</em> direkt
+                  daneben aus derselben Datei nachtragen. Der Import läuft je
+                  Verein, bei mehreren wählst du ihn dort aus. Gefüllt werden
+                  nur leere Felder, ein vorhandener Wert wird nie
+                  überschrieben (siehe unten)
                 </li>
               </ul>
             </div>
@@ -8486,7 +8499,7 @@
                   eingesetzten Schiedsrichtern geben (nur für Ligen, in denen
                   der Spielbetrieb das Feedback freigeschaltet hat)
                 </li>
-                <li>Erreichbar unter „Verein → Schiri-Feedback"</li>
+                <li>Erreichbar unter „Spieltagsaufgaben“ im Reiter „Schiri-Feedback abgeben“</li>
                 <li>
                   Möglich, sobald der Spielberichtsbogen abgeschlossen ist und
                   der Anpfiff mindestens 12 Stunden zurückliegt; je Mannschaft
@@ -8698,6 +8711,14 @@
                 Mögliche Korrekturen: Vorname · Nachname · Vor- und Nachname
                 vertauscht · Geburtsdatum · Nationalität · Geschlecht (M/W/D).
               </div>
+              <div class="note">
+                <strong>Wo steht mein Antrag?</strong> Unter
+                <strong>Meine Spieler*innen</strong> im Reiter
+                <em>Spielerdaten-Korrekturen</em>, neben dem Reiter
+                <em>Spieler*innen</em>. Dort siehst du deine Anträge mit ihrem
+                Stand. Einen eigenen Menüpunkt dafür gibt es für Vereine nicht
+                mehr. Teammanager sehen den Reiter nicht.
+              </div>
             </div>
           </details>
 
@@ -8719,7 +8740,7 @@
               </div>
               <div class="flow">
                 <div class="st start">
-                  „Meine Spieler*innen“ → oben rechts
+                  „Meine Spieler*innen“ → <em>Export</em> →
                   <strong>CSV-Export</strong>
                 </div>
                 <div class="cn act">
@@ -8728,7 +8749,7 @@
                 </div>
                 <div class="st pending">Datei vorbereitet</div>
                 <div class="cn">
-                  <span class="cl">Link „Import“ → Datei wählen</span
+                  <span class="cl"><em>Import</em> → CSV-Datei wählen</span
                   ><span class="rb vm">VM</span><span class="ar">→</span>
                 </div>
                 <div class="st success">Bericht mit Zeilennummern</div>
@@ -8869,9 +8890,9 @@
                   Pflichtdokumente des Spielers hochladen
                 </li>
                 <li>
-                  Den aktiven Bestand als CSV-Datei herunterladen und fehlende
-                  E-Mail-Adressen über den Link „Import“ aus derselben Datei
-                  nachtragen. Gefüllt werden nur leere Felder; Geburtsdatum,
+                  Den aktiven Bestand im Bereich <em>Export</em> als CSV-Datei
+                  herunterladen und fehlende E-Mail-Adressen im Bereich
+                  <em>Import</em> daneben aus derselben Datei nachtragen. Gefüllt werden nur leere Felder; Geburtsdatum,
                   Geschlecht und Nationalität bleiben dem Verband vorbehalten
                 </li>
                 <li>
@@ -8918,16 +8939,19 @@
               <div class="cap-head">
                 <div class="cap-icon">☑️</div>
                 <div>
-                  <h3>Meine Auswärtsspieltage</h3>
+                  <h3>Spieltagsbericht widersprechen</h3>
                   <div class="cap-sub">
-                    Ordnungsgemäße Durchführung bestätigen
+                    Reiter unter „Spieltagsaufgaben“ für Auswärtsspieltage
                   </div>
                 </div>
               </div>
               <ul>
                 <li>
-                  Spieltage bestätigen, die ein anderer Verein ausrichtet, und
-                  den Spieltagsbericht des Landesverbands ausfüllen
+                  Bei Spieltagen, die ein anderer Verein ausrichtet, die
+                  Angaben des Ausrichters prüfen. Stimmt etwas nicht,
+                  widersprechen und den Spieltagsbericht des Landesverbands
+                  selbst ausfüllen. Ab Beginn des letzten Spiels lässt sich der
+                  Spieltag auch vorher als ordnungsgemäß bestätigen
                 </li>
                 <li>
                   Erscheint nur, wenn der Landesverband des Spielbetriebs
@@ -8936,9 +8960,13 @@
                 <li>
                   Die Antworten des Ausrichters kommen mit dem Abschluss des
                   Spielberichts per Mail an die Teammanager der Gastmannschaft.
-                  Ohne Bestätigung gilt der Spieltag 48 Stunden nach dieser Mail
+                  Ohne Widerspruch gilt der Spieltag 48 Stunden nach dieser Mail
                   (frühestens nach dem Ende des Spieltags) automatisch als
-                  bestätigt
+                  bestätigt. Die genaue Frist steht am Spieltag im Reiter
+                </li>
+                <li>
+                  Die frühere Adresse <code>/verein/spieltage</code> aus Mails
+                  und Lesezeichen führt weiter direkt auf diesen Reiter
                 </li>
               </ul>
             </div>
@@ -9566,7 +9594,7 @@
           <p class="proc-text">
             Der Abschnitt <strong>Livestream-Overlays</strong> steht an drei
             Stellen. Am schnellsten dort, wo der Verein ohnehin seine Zugänge
-            ausgibt: unter <strong>Verein › Spielsekretariat</strong>, bei jedem
+            ausgibt: unter <strong>Spieltagsaufgaben › Zugang Spielsekretariat erzeugen</strong>, bei jedem
             Spieltag unterhalb des Sekretariats-Codes. Dafür brauchst du keinen
             Spielbericht zu öffnen und musst nichts über das Sekretariat holen.
             Im Spielbericht selbst gibt es ihn außerdem auf der Begrüßungsseite
@@ -10785,8 +10813,12 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                     <tr>
                       <td><strong>Matchstrafe</strong></td>
                       <td>
-                        nichts. Die Zeit sitzt ein anderer Spieler ab, und wer
-                        das ist, steht in keinem Feld des Spielberichts
+                        Restzeit wie bei 2+2 Minuten, mit „Team“ statt einer
+                        Nummer: Jede Matchstrafe zieht eine Bankstrafe 2+2
+                        nach sich, auch wenn die nicht eingetragen ist, und
+                        die Zeit sitzt ein anderer Spieler ab. Steht die 2+2
+                        zur selben Zeit selbst im Spielbericht, erscheint sie
+                        nur einmal
                       </td>
                     </tr>
                   </tbody>
@@ -11396,8 +11428,8 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
             Spiels. Die öffentliche Ansicht ist der Weg nach dem Spiel: Das
             Overlay-Token läuft am Tag nach dem Spieltag ab, ein Highlightvideo
             schneidest du oft später. Die Thumbnails aller Spiele auf einmal
-            holst du über das Bedienfeld oder, für eine ganze Saison, über die
-            Seite <strong>Spielsekretariat</strong>, siehe unten.
+            holst du über das Bedienfeld oder, für eine ganze Saison, über den
+            Reiter <strong>Zugang Spielsekretariat erzeugen</strong> unter <em>Spieltagsaufgaben</em>, siehe unten.
           </p>
           <details class="proc" open>
             <summary>
@@ -11437,7 +11469,7 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
               <div>
                 <div class="proc-title">Alle Thumbnails auf einmal</div>
                 <div class="proc-sub">
-                  Aus dem Bedienfeld für den Spieltag, im Spielsekretariat für
+                  Aus dem Bedienfeld für den Spieltag, unter Spieltagsaufgaben für
                   die Saison
                 </div>
               </div>
@@ -11458,8 +11490,8 @@ https://saisonmanager.de/overlay/index.html?token=DEIN_TOKEN&amp;only=fullscreen
                 Adresszeile.
               </p>
               <p class="proc-text">
-                <strong>Für die ganze Saison, im Spielsekretariat:</strong> Am
-                Ende der Seite <strong>Spielsekretariat</strong>, unter der
+                <strong>Für die ganze Saison, unter Spieltagsaufgaben:</strong> Am
+                Ende des Reiters <strong>Zugang Spielsekretariat erzeugen</strong>, unter der
                 Liste der Spieltage, steht die Karte
                 <em>YouTube-Thumbnails der Saison</em>. Sie umfasst die Spiele
                 an Spieltagen, die euer Verein in der gewählten Saison

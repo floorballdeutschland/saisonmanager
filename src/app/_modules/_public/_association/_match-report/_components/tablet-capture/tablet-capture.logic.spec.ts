@@ -268,6 +268,47 @@ describe('Tabletmodus: Rechenlogik', () => {
         'b',
       ]);
     });
+
+    it('bietet Eigentore und technische Tore nicht an', () => {
+      const ohneSchuss = [
+        {
+          event_id: 4,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'owngoal',
+        },
+        {
+          event_id: 5,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'technical',
+        },
+        {
+          event_id: 6,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'regular',
+        },
+        // Technisches Tor mit „nicht angegeben“ (2000): Torart verdrängt.
+        {
+          event_id: 7,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'not_assigned',
+          technical_goal: true,
+        },
+        {
+          event_id: 8,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'not_assigned',
+        },
+      ] as GameEvent[];
+      const candidates = goalLinkCandidates(ohneSchuss, [
+        shot({ client_uuid: 'c', team: 'home', result: 'goal' }),
+      ]);
+      expect(candidates.map((entry) => entry.goal.event_id)).toEqual([6, 8]);
+    });
   });
 
   it('erzeugt eindeutige UUIDs', () => {
@@ -345,7 +386,7 @@ describe('Freischläge (fe#589)', () => {
       expect(goaliePulled({ guest: 3 }, 'home', 3)).toBeFalse();
     });
 
-    it('leitet leeres Tor und 6 gegen 5 aus Sicht des schießenden Teams ab', () => {
+    it('leitet leeres Tor und ohne eigenen Torhüter aus Sicht des schießenden Teams ab', () => {
       expect(situationFor({ guest: 3 }, 'home', 3)).toEqual({
         empty_net: true,
         extra_attacker: false,

@@ -12,5 +12,6 @@
   "liveNow": "Live",
   "openStream": "Watch live stream",
   "watchStream": "Watch stream",
-  "watchVod": "Watch recording"
+  "watchVod": "Watch recording",
+  "watchHighlights": "Watch highlights"
 }
