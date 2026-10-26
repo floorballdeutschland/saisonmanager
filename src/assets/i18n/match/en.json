@@ -120,6 +120,8 @@
     "playAll": "Play all scenes",
     "assist": "Assist",
     "mark": "Scene",
-    "edit": "Edit highlights (offset and selection)"
+    "edit": "Edit highlights (offset and selection)",
+    "calibrationPending": "Calibration pending",
+    "calibrationPendingHint": "The scenes have not been aligned with the video yet and may start a few seconds early or late."
   }
 }

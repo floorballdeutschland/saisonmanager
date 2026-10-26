@@ -120,6 +120,8 @@
     "playAll": "Alle Szenen abspielen",
     "assist": "Vorlage",
     "mark": "Szene",
-    "edit": "Highlights bearbeiten (Versatz und Auswahl)"
+    "edit": "Highlights bearbeiten (Versatz und Auswahl)",
+    "calibrationPending": "Kalibrierung ausstehend",
+    "calibrationPendingHint": "Die Szenen sind noch nicht auf das Video abgestimmt und können ein paar Sekunden zu früh oder zu spät beginnen."
   }
 }
