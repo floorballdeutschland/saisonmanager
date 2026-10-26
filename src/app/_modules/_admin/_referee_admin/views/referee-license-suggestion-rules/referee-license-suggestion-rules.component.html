@@ -1,0 +1,150 @@
+<section class="mb-10" data-test="suggestion-rules">
+  <div class="flex items-center justify-between gap-4">
+    <h2 class="text-lg font-bold">
+      {{ "refereeAdmin.suggestionRules.title" | transloco }}
+    </h2>
+    <button
+      type="button"
+      data-test="add-rule"
+      class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black whitespace-nowrap"
+      [disabled]="busy || loading"
+      (click)="add()"
+    >
+      {{ "refereeAdmin.suggestionRules.add" | transloco }}
+    </button>
+  </div>
+  <p class="text-fb-gray-500 text-sm mb-4">
+    {{ "refereeAdmin.suggestionRules.intro" | transloco }}
+  </p>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm">
+      {{ "refereeAdmin.settings.loading" | transloco }}
+    </div>
+  }
+
+  <div class="flex flex-col gap-3">
+    @for (rule of rules; track rule) {
+      <div
+        class="p-4 border border-fb-gray-700 rounded-[5px] flex flex-col gap-3"
+        data-test="rule"
+      >
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.courseType" | transloco
+            }}</span>
+            <select
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [(ngModel)]="rule.course_type"
+            >
+              @for (t of courseTypes; track t) {
+                <option [ngValue]="t">
+                  {{ "refereeAdmin.suggestionRules.type." + t | transloco }}
+                </option>
+              }
+            </select>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.level" | transloco
+            }}</span>
+            <select
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [(ngModel)]="rule.referee_license_level_id"
+            >
+              <option [ngValue]="null">–</option>
+              @for (l of levels; track l.id) {
+                <option [ngValue]="l.id">{{ l.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.position" | transloco
+            }}</span>
+            <input
+              type="number"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [(ngModel)]="rule.position"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.minGames" | transloco
+            }}</span>
+            <input
+              type="number"
+              min="1"
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [placeholder]="
+                'refereeAdmin.suggestionRules.noCondition' | transloco
+              "
+              [(ngModel)]="rule.min_games"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-bold">{{
+              "refereeAdmin.suggestionRules.fieldSize" | transloco
+            }}</span>
+            <select
+              class="border border-fb-gray-600 rounded-[5px] px-2 py-1"
+              [disabled]="rule.min_games === null"
+              [(ngModel)]="rule.field_size"
+            >
+              @for (f of fieldSizes; track f) {
+                <option [ngValue]="f">
+                  {{ "refereeAdmin.suggestionRules.field." + f | transloco }}
+                </option>
+              }
+            </select>
+          </label>
+        </div>
+
+        @if (rule.min_games !== null) {
+          <fieldset class="text-sm">
+            <legend class="text-xs font-bold mb-1">
+              {{ "refereeAdmin.suggestionRules.ageGroups" | transloco }}
+            </legend>
+            <div class="flex flex-wrap gap-x-4 gap-y-1">
+              @for (ag of ageGroups; track ag) {
+                <label class="flex items-center gap-1">
+                  <input
+                    type="checkbox"
+                    [checked]="hasAgeGroup(rule, ag)"
+                    (change)="
+                      toggleAgeGroup(rule, ag, $any($event.target).checked)
+                    "
+                  />
+                  {{ ag }}
+                </label>
+              }
+            </div>
+            <p class="text-xs text-fb-gray-500 mt-1">
+              {{ "refereeAdmin.suggestionRules.ageGroupsHint" | transloco }}
+            </p>
+          </fieldset>
+        }
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="px-3 py-1 text-sm font-bold bg-black text-white rounded-[5px] disabled:opacity-50"
+            [disabled]="busy || !rule.referee_license_level_id"
+            (click)="save(rule)"
+          >
+            {{ "refereeAdmin.suggestionRules.save" | transloco }}
+          </button>
+          <button
+            type="button"
+            class="text-sm text-red-700 hover:underline"
+            [disabled]="busy"
+            (click)="remove(rule)"
+          >
+            {{ "refereeAdmin.suggestionRules.delete" | transloco }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</section>

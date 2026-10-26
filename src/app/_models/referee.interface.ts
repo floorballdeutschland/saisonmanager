@@ -766,3 +766,27 @@ export interface PublicLicenseList {
   guest_team_licenses: PublicLicenseEntry[];
   expires_at: string;
 }
+
+// Regel für den Lizenzvorschlag bei Kursen im System (api#861), nur Admin.
+// Je Kurstyp nach `position`: Die erste Regel, deren Stufe der Kurs vergibt
+// und deren Mindestzahl erreicht ist, wird vorgeschlagen. `min_games` null
+// heißt ohne Bedingung; `age_groups` leer heißt alle Altersklassen.
+export type RefereeLicenseSuggestionFieldSize = 'all' | 'KF' | 'GF';
+
+export interface RefereeLicenseSuggestionRule {
+  id?: number;
+  course_type: string;
+  referee_license_level_id: number | null;
+  lizenzstufe?: string | null;
+  position: number;
+  min_games: number | null;
+  field_size: RefereeLicenseSuggestionFieldSize;
+  age_groups: string[];
+}
+
+export interface RefereeLicenseSuggestionRulesResponse {
+  rules: RefereeLicenseSuggestionRule[];
+  course_types: string[];
+  field_sizes: RefereeLicenseSuggestionFieldSize[];
+  age_groups: string[];
+}

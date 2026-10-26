@@ -28,6 +28,8 @@ import {
   RefereeHistorySeason,
   PenaltyCode,
   RefereeLicenseLevel,
+  RefereeLicenseSuggestionRule,
+  RefereeLicenseSuggestionRulesResponse,
   RefereeMissingUserCount,
   RefereePartnerHistory,
   RefereeProfile,
@@ -403,6 +405,28 @@ export class RefereeService {
   }
 
   // License levels (admin/RSK)
+
+  // Regeln für den Lizenzvorschlag (nur Admin)
+  public adminGetLicenseSuggestionRules() {
+    return this.http.get<RefereeLicenseSuggestionRulesResponse>(
+      environment.apiURL + 'admin/referee_license_suggestion_rules'
+    );
+  }
+
+  public adminSaveLicenseSuggestionRule(rule: RefereeLicenseSuggestionRule) {
+    const url = environment.apiURL + 'admin/referee_license_suggestion_rules';
+    return rule.id
+      ? this.http.put<RefereeLicenseSuggestionRule>(url + '/' + rule.id, {
+          rule,
+        })
+      : this.http.post<RefereeLicenseSuggestionRule>(url, { rule });
+  }
+
+  public adminDeleteLicenseSuggestionRule(id: number) {
+    return this.http.delete(
+      environment.apiURL + 'admin/referee_license_suggestion_rules/' + id
+    );
+  }
 
   public adminGetLicenseLevels() {
     return this.http.get<RefereeLicenseLevel[]>(

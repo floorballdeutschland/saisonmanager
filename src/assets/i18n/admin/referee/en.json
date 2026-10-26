@@ -440,5 +440,38 @@
     "reloginHint": "The block applies immediately. Menu items change for affected users after their next login.",
     "lastChange": "Last changed on {{date}} by {{user}}.",
     "saved": "Course processes saved."
+  },
+  "suggestionRules": {
+    "title": "License suggestion for courses",
+    "intro": "For every passed participation in a course in the system, the licensing view suggests a level. Per course type the first rule in order wins whose level the course awards and whose minimum is reached. Games according to match reports are counted in the season that began in the calendar year before the course ended. FD still sets the level.",
+    "add": "+ Rule",
+    "courseType": "Course type",
+    "level": "Level",
+    "position": "Order",
+    "minGames": "Minimum games",
+    "noCondition": "no condition",
+    "fieldSize": "Counting",
+    "field": {
+      "all": "All",
+      "KF": "Small field",
+      "GF": "Large field"
+    },
+    "ageGroups": "Counted age groups",
+    "ageGroupsHint": "No selection means all age groups. Leagues without an age group always count. A newly created age group is unchecked here until someone selects it.",
+    "save": "Save",
+    "delete": "Delete",
+    "saved": "Rule saved.",
+    "type": {
+      "j": "J course",
+      "g": "G course",
+      "f": "F course",
+      "combined": "Combined course",
+      "module": "Module",
+      "refresher": "Refresher",
+      "n": "N course",
+      "a": "A course",
+      "retest": "Retest",
+      "other": "Other course"
+    }
   }
 }
