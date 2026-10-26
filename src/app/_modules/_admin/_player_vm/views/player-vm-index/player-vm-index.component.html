@@ -1,39 +1,243 @@
 <div class="p-4 lg:p-8">
-  <!-- Export und Import braucht ein Verein selten, das Anlegen dagegen
-       staendig. Beide liegen deshalb eingeklappt (Kopf „Export", Liste
-       „Weitere Aktionen fuer <Verein>"); der
-       Anlege-Knopf bleibt offen sichtbar. Der Export nimmt ALLE Vereine der
-       Seite in eine Datei (Spalte „Verein") und steht darum im Kopf. Der
-       Import laeuft dagegen je Verein, weil die API den Verein braucht, gegen
-       dessen Bestand die IDs geprueft werden, und steht darum an der
-       Vereinsliste. Zeilen eines anderen Vereins landen unter „nicht
-       gefunden" -- der Hinweis am Import benennt das. -->
-  <div class="flex items-start justify-between gap-4 mb-6">
-    <h1 class="text-2xl font-bold">
-      {{ "playerVm.index.title" | transloco }}
-    </h1>
-    <div class="shrink-0 max-w-xs" data-testid="export-section">
-      <fb-collapsible [label]="'playerVm.index.exportSection' | transloco">
-        <button
-          data-testid="export-csv"
-          type="button"
-          (click)="exportCsv()"
-          [disabled]="loading || exportablePlayerCount === 0"
-          class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {{ "playerVm.index.exportCsv" | transloco }}
-        </button>
-        <p class="mt-2 text-xs text-fb-gray-500">
-          {{
-            (clubLists.length > 1
-              ? "playerVm.index.exportHintAllClubs"
-              : "playerVm.index.exportHint"
-            ) | transloco
-          }}
-        </p>
-      </fb-collapsible>
+  <h1 class="text-2xl font-bold mb-6">
+    {{ "playerVm.index.title" | transloco }}
+  </h1>
+
+  <!-- Export und Import stehen nebeneinander und heissen auch so (fe#584).
+       Beide braucht ein Verein selten, das Anlegen dagegen staendig; sie
+       liegen deshalb eingeklappt, der Anlege-Knopf bleibt offen sichtbar.
+       Der Export nimmt ALLE Vereine der Seite in eine Datei (Spalte
+       „Verein"). Der Import laeuft dagegen je Verein, weil die API den
+       Verein braucht, gegen dessen Bestand die IDs geprueft werden; wer
+       mehrere Vereine betreut, waehlt ihn im Import-Bereich aus. Zeilen
+       eines anderen Vereins landen unter „nicht gefunden", der Hinweis am
+       Import benennt das. -->
+  @if (!loading && clubLists.length > 0) {
+    <div
+      class="mb-6 flex flex-wrap items-start gap-x-10 gap-y-4"
+      data-testid="export-import"
+    >
+      <div class="max-w-xs" data-testid="export-section">
+        <fb-collapsible [label]="'playerVm.index.exportSection' | transloco">
+          <button
+            data-testid="export-csv"
+            type="button"
+            (click)="exportCsv()"
+            [disabled]="loading || exportablePlayerCount === 0"
+            class="px-4 py-2 text-sm font-bold border border-fb-gray-600 rounded-[5px] hover:border-black disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {{ "playerVm.index.exportCsv" | transloco }}
+          </button>
+          <p class="mt-2 text-xs text-fb-gray-500">
+            {{
+              (clubLists.length > 1
+                ? "playerVm.index.exportHintAllClubs"
+                : "playerVm.index.exportHint"
+              ) | transloco
+            }}
+          </p>
+        </fb-collapsible>
+      </div>
+      <!-- Erscheint nur fuer Vereine, deren Liste die E-Mail-Adresse
+           mitliefert (siehe emailKnown): Ohne das Feld ist die API zu alt
+           fuer den Import. Der Zustand (Bericht, Fehler) haengt weiter am
+           Verein; wer zwischen zwei Vereinen wechselt, sieht je Verein
+           seinen eigenen Bericht. -->
+      @if (importLists.length > 0) {
+        <div class="max-w-3xl" data-testid="import-toggle">
+          <fb-collapsible
+            [label]="'playerVm.index.importSection' | transloco"
+            [open]="showImport"
+            (openChange)="setImportOpen($event)"
+          >
+            @if (showImport && importList; as list) {
+              @if (importLists.length > 1) {
+                <label class="block text-sm mb-3">
+                  <span class="font-bold mr-2">{{
+                    "playerVm.index.importClub" | transloco
+                  }}</span>
+                  <select
+                    data-testid="import-club"
+                    class="border border-fb-gray-600 rounded-[5px] px-2 py-1 text-sm bg-white"
+                    [ngModel]="list.club.id"
+                    (ngModelChange)="selectImportClub($event)"
+                  >
+                    @for (option of importLists; track option.club.id) {
+                      <option [ngValue]="option.club.id">
+                        {{ option.club.name }}
+                      </option>
+                    }
+                  </select>
+                </label>
+              }
+              <section
+                data-testid="import-panel"
+                class="max-w-3xl border border-fb-gray-700 rounded-[5px] p-4"
+              >
+                <h3 class="font-bold mb-2">
+                  {{
+                    "playerVm.index.importTitle"
+                      | transloco: { club: list.club.name }
+                  }}
+                </h3>
+                <p class="text-sm text-fb-gray-500 mb-4 whitespace-pre-line">
+                  {{ "playerVm.index.importHint" | transloco }}
+                </p>
+                <label
+                  class="inline-block px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500"
+                  [class.opacity-40]="list.importing"
+                >
+                  {{
+                    (list.importing
+                      ? "playerVm.index.importing"
+                      : "playerVm.index.importChooseFile"
+                    ) | transloco
+                  }}
+                  <input
+                    data-testid="import-file"
+                    type="file"
+                    accept=".csv,text/csv"
+                    class="hidden"
+                    [disabled]="list.importing"
+                    (change)="onImportFile(list, $event)"
+                  />
+                </label>
+
+                @if (list.importError) {
+                  <p
+                    data-testid="import-error"
+                    class="mt-4 rounded bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+                  >
+                    {{ list.importError }}
+                  </p>
+                }
+
+                @if (list.importReport; as report) {
+                  <div
+                    data-testid="import-report"
+                    class="mt-4 border-t border-fb-gray-700 pt-4"
+                  >
+                    <p class="text-sm font-bold mb-3">
+                      {{
+                        "playerVm.index.reportSummary"
+                          | transloco
+                            : {
+                                rows: report.total_rows,
+                                updated: report.updated.length,
+                                skipped: report.skipped.length,
+                                notFound: report.not_found.length,
+                                invalid: report.invalid.length,
+                              }
+                      }}
+                    </p>
+
+                    @if (report.updated.length) {
+                      <details class="mb-2" open>
+                        <summary class="text-sm font-bold cursor-pointer">
+                          {{
+                            "playerVm.index.reportUpdated"
+                              | transloco: { count: report.updated.length }
+                          }}
+                        </summary>
+                        <ul class="mt-2 text-sm">
+                          @for (entry of report.updated; track entry.row) {
+                            <li class="py-1 border-b border-fb-gray-800">
+                              <span class="text-fb-gray-500"
+                                >{{
+                                  "playerVm.index.reportRow"
+                                    | transloco: { row: entry.row }
+                                }} </span
+                              >{{ entry.name }}:
+                              {{ fieldSummary(entry.fields) }}
+                              @if (
+                                skippedFieldSummary(entry.skipped);
+                                as offen
+                              ) {
+                                <span class="text-fb-gray-500">
+                                  ({{ offen }})</span
+                                >
+                              }
+                            </li>
+                          }
+                        </ul>
+                      </details>
+                    }
+
+                    @if (report.skipped.length) {
+                      <details class="mb-2">
+                        <summary class="text-sm font-bold cursor-pointer">
+                          {{
+                            "playerVm.index.reportSkipped"
+                              | transloco: { count: report.skipped.length }
+                          }}
+                        </summary>
+                        <ul class="mt-2 text-sm">
+                          @for (entry of report.skipped; track entry.row) {
+                            <li class="py-1 border-b border-fb-gray-800">
+                              <span class="text-fb-gray-500"
+                                >{{
+                                  "playerVm.index.reportRow"
+                                    | transloco: { row: entry.row }
+                                }} </span
+                              >{{ entry.name }}:
+                              {{ skippedFieldSummary(entry.reasons) }}
+                            </li>
+                          }
+                        </ul>
+                      </details>
+                    }
+
+                    @if (report.not_found.length) {
+                      <details class="mb-2">
+                        <summary class="text-sm font-bold cursor-pointer">
+                          {{
+                            "playerVm.index.reportNotFound"
+                              | transloco: { count: report.not_found.length }
+                          }}
+                        </summary>
+                        <p class="mt-2 text-sm">
+                          {{ "playerVm.index.reportNotFoundHint" | transloco }}
+                        </p>
+                        <p class="mt-1 text-sm font-mono break-words">
+                          {{ notFoundIds(report) }}
+                        </p>
+                      </details>
+                    }
+
+                    @if (report.invalid.length) {
+                      <details open>
+                        <summary class="text-sm font-bold cursor-pointer">
+                          {{
+                            "playerVm.index.reportInvalid"
+                              | transloco: { count: report.invalid.length }
+                          }}
+                        </summary>
+                        <ul class="mt-2 text-sm">
+                          @for (entry of report.invalid; track $index) {
+                            <li class="py-1 border-b border-fb-gray-800">
+                              <span class="text-fb-gray-500"
+                                >{{
+                                  "playerVm.index.reportRow"
+                                    | transloco: { row: entry.row }
+                                }} </span
+                              >{{ entry.name || entry.value }}:
+                              <span class="text-red-600">{{
+                                entry.reason
+                              }}</span>
+                            </li>
+                          }
+                        </ul>
+                      </details>
+                    }
+                  </div>
+                }
+              </section>
+            }
+          </fb-collapsible>
+        </div>
+      }
     </div>
-  </div>
+  }
 
   @if (loading) {
     <div class="text-fb-gray-500 text-sm py-8">
@@ -164,184 +368,6 @@
         {{ "playerVm.index.playerStatsLink" | transloco }}
       </a>
     </div>
-    <!-- Der Import betrifft nur diesen Verein; die Beschriftung nennt ihn,
-         damit er nicht mit dem Export im Kopf (alle Vereine) verwechselt
-         wird. Er erscheint unter denselben Bedingungen wie bisher der
-         Umschalter in der Zahlenzeile. Anders als das fruehere Panel
-         verschwindet er damit auch, wenn alle Zeilen ausgeblendet sind; der
-         Zustand (showImport, Bericht) bleibt an der Liste und ist beim
-         Wiedereinblenden wieder da. -->
-    @if (emailKnown(list) && visiblePlayers(list).length > 0) {
-      <div class="mb-6" data-testid="import-toggle">
-        <fb-collapsible
-          [label]="
-            'playerVm.index.moreActionsClub'
-              | transloco: { club: list.club.name }
-          "
-          [open]="list.showImport"
-          (openChange)="setImportOpen(list, $event)"
-        >
-          @if (list.showImport) {
-            <section
-              data-testid="import-panel"
-              class="max-w-3xl border border-fb-gray-700 rounded-[5px] p-4"
-            >
-              <h3 class="font-bold mb-2">
-                {{
-                  "playerVm.index.importTitle"
-                    | transloco: { club: list.club.name }
-                }}
-              </h3>
-              <p class="text-sm text-fb-gray-500 mb-4 whitespace-pre-line">
-                {{ "playerVm.index.importHint" | transloco }}
-              </p>
-              <label
-                class="inline-block px-4 py-2 bg-black text-white text-sm font-bold rounded-[5px] cursor-pointer hover:bg-fb-gray-500"
-                [class.opacity-40]="list.importing"
-              >
-                {{
-                  (list.importing
-                    ? "playerVm.index.importing"
-                    : "playerVm.index.importChooseFile"
-                  ) | transloco
-                }}
-                <input
-                  data-testid="import-file"
-                  type="file"
-                  accept=".csv,text/csv"
-                  class="hidden"
-                  [disabled]="list.importing"
-                  (change)="onImportFile(list, $event)"
-                />
-              </label>
-
-              @if (list.importError) {
-                <p
-                  data-testid="import-error"
-                  class="mt-4 rounded bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
-                >
-                  {{ list.importError }}
-                </p>
-              }
-
-              @if (list.importReport; as report) {
-                <div
-                  data-testid="import-report"
-                  class="mt-4 border-t border-fb-gray-700 pt-4"
-                >
-                  <p class="text-sm font-bold mb-3">
-                    {{
-                      "playerVm.index.reportSummary"
-                        | transloco
-                          : {
-                              rows: report.total_rows,
-                              updated: report.updated.length,
-                              skipped: report.skipped.length,
-                              notFound: report.not_found.length,
-                              invalid: report.invalid.length,
-                            }
-                    }}
-                  </p>
-
-                  @if (report.updated.length) {
-                    <details class="mb-2" open>
-                      <summary class="text-sm font-bold cursor-pointer">
-                        {{
-                          "playerVm.index.reportUpdated"
-                            | transloco: { count: report.updated.length }
-                        }}
-                      </summary>
-                      <ul class="mt-2 text-sm">
-                        @for (entry of report.updated; track entry.row) {
-                          <li class="py-1 border-b border-fb-gray-800">
-                            <span class="text-fb-gray-500"
-                              >{{
-                                "playerVm.index.reportRow"
-                                  | transloco: { row: entry.row }
-                              }} </span
-                            >{{ entry.name }}: {{ fieldSummary(entry.fields) }}
-                            @if (skippedFieldSummary(entry.skipped); as offen) {
-                              <span class="text-fb-gray-500">
-                                ({{ offen }})</span
-                              >
-                            }
-                          </li>
-                        }
-                      </ul>
-                    </details>
-                  }
-
-                  @if (report.skipped.length) {
-                    <details class="mb-2">
-                      <summary class="text-sm font-bold cursor-pointer">
-                        {{
-                          "playerVm.index.reportSkipped"
-                            | transloco: { count: report.skipped.length }
-                        }}
-                      </summary>
-                      <ul class="mt-2 text-sm">
-                        @for (entry of report.skipped; track entry.row) {
-                          <li class="py-1 border-b border-fb-gray-800">
-                            <span class="text-fb-gray-500"
-                              >{{
-                                "playerVm.index.reportRow"
-                                  | transloco: { row: entry.row }
-                              }} </span
-                            >{{ entry.name }}:
-                            {{ skippedFieldSummary(entry.reasons) }}
-                          </li>
-                        }
-                      </ul>
-                    </details>
-                  }
-
-                  @if (report.not_found.length) {
-                    <details class="mb-2">
-                      <summary class="text-sm font-bold cursor-pointer">
-                        {{
-                          "playerVm.index.reportNotFound"
-                            | transloco: { count: report.not_found.length }
-                        }}
-                      </summary>
-                      <p class="mt-2 text-sm">
-                        {{ "playerVm.index.reportNotFoundHint" | transloco }}
-                      </p>
-                      <p class="mt-1 text-sm font-mono break-words">
-                        {{ notFoundIds(report) }}
-                      </p>
-                    </details>
-                  }
-
-                  @if (report.invalid.length) {
-                    <details open>
-                      <summary class="text-sm font-bold cursor-pointer">
-                        {{
-                          "playerVm.index.reportInvalid"
-                            | transloco: { count: report.invalid.length }
-                        }}
-                      </summary>
-                      <ul class="mt-2 text-sm">
-                        @for (entry of report.invalid; track $index) {
-                          <li class="py-1 border-b border-fb-gray-800">
-                            <span class="text-fb-gray-500"
-                              >{{
-                                "playerVm.index.reportRow"
-                                  | transloco: { row: entry.row }
-                              }} </span
-                            >{{ entry.name || entry.value }}:
-                            <span class="text-red-600">{{ entry.reason }}</span>
-                          </li>
-                        }
-                      </ul>
-                    </details>
-                  }
-                </div>
-              }
-            </section>
-          }
-        </fb-collapsible>
-      </div>
-    }
     @if (list.players.length > 0) {
       <table class="w-full text-sm mb-10">
         <thead>
