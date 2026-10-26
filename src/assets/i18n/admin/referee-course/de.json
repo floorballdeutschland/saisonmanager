@@ -34,7 +34,7 @@
     "colMaster": "Stammdaten",
     "colCourse": "Kurs / Stichtag",
     "colExistingLicense": "Bisherige Lizenz",
-    "colPreviousSeason": "Vorsaison (ab U15)",
+    "colPreviousSeason": "Vorsaison",
     "colLicenseLevel": "Lizenzstufe",
     "applied": "✓ Angewendet",
     "pendingLv": "⏳ Bei LV",
@@ -54,7 +54,7 @@
     "validUntil": "Gültig bis: {{ date }}",
     "snapshotUntil": "bis {{ date }}",
     "newReferee": "Neu",
-    "games": "{{ count }} Spiele",
+    "games": "{{ count }} Spiele gesamt",
     "selectLicenseLevel": "Lizenzstufe für Schiedsrichter:in",
     "selectPlaceholder": "— wählen —",
     "cancelTitle": "Import abbrechen",
@@ -96,7 +96,8 @@
     "clubReset": "kein Verein",
     "clubUnavailable": "Vereinsliste nicht verfügbar, Auswahl gesperrt.",
     "submitRow": "Einreichen",
-    "submitRowNeedsLevel": "Erst eine Lizenzstufe wählen"
+    "submitRowNeedsLevel": "Erst eine Lizenzstufe wählen",
+    "gamesGfU15Plus": "{{ count }} Großfeld ab U15"
   },
   "review": {
     "title": "Schiedsrichter-Kursergebnisse: Freigabe",
@@ -411,7 +412,10 @@
     "reject": "Ablehnen",
     "rejectPrompt": "Grund für die Ablehnung bei {{name}}:",
     "approvedMany": "{{count}} Lizenzen erteilt.",
-    "accountCreated": "{{name}} hat ein Benutzerkonto bekommen."
+    "accountCreated": "{{name}} hat ein Benutzerkonto bekommen.",
+    "suggestion": "Vorschlag: {{ level }}",
+    "suggestionGames": "({{ games }} Spiele in {{ season }}, ab {{ min }})",
+    "applySuggestion": "übernehmen"
   },
   "billing": {
     "title": "Abrechnung der Kurse",

@@ -10,3 +10,4 @@ export * from './referee-merge/referee-merge.component';
 export * from './referee-exclusion-requests/referee-exclusion-requests.component';
 export * from './referee-change-requests/referee-change-requests.component';
 export * from './referee-accounts/referee-accounts.component';
+export * from './referee-license-suggestion-rules/referee-license-suggestion-rules.component';

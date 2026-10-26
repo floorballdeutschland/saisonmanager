@@ -149,6 +149,19 @@
           <div class="bg-white my-[5px] py-[15px] px-[30px]">
             <div class="uppercase font-bold text-gray-400 text-sm mb-5">
               {{ team.name }}
+              <!-- Die API prueft keine Hoechstzahl je Mannschaft (reine
+                   Maedchenteams duerfen ganz aus Overage-Spielerinnen
+                   bestehen); gezaehlt wird hier fuer die SBK. -->
+              @if (femaleOverageCount(team); as overageCount) {
+                <span
+                  class="ml-2 normal-case font-normal"
+                  data-testid="overage-count"
+                  >{{
+                    "licenseAdmin.leagueDetail.overageCount"
+                      | transloco: { count: overageCount }
+                  }}</span
+                >
+              }
             </div>
             <div class="flex flex-col gap-2">
               <ul role="list" class="divide-y divide-gray-200">
@@ -173,6 +186,21 @@
                             }
                           </p>
                           <div class="ml-2 flex flex-shrink-0 items-end gap-1">
+                            @if (p.team_license.female_overage) {
+                              <span
+                                class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-purple-100 text-purple-800"
+                                data-testid="overage-badge"
+                                [title]="
+                                  'licenseAdmin.leagueDetail.overageTitle'
+                                    | transloco
+                                "
+                              >
+                                {{
+                                  "licenseAdmin.leagueDetail.overageBadge"
+                                    | transloco
+                                }}
+                              </span>
+                            }
                             @if (p.team_license.license?.express) {
                               <span
                                 class="inline-flex rounded-full px-2 text-[11px] font-semibold leading-5 bg-orange-100 text-orange-800"

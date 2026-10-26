@@ -9,6 +9,7 @@ import { getTranslocoTestingModule } from '@floorball/core';
 import { RefereeHistoryGame, RefereeHistorySeason } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 import {
+  RefereeSeasonStatsComponent,
   TabDirective,
   TabsComponent,
 } from 'src/app/_modules/_uikit/_common/components/molecules';
@@ -72,6 +73,9 @@ describe('RefereeHistoryComponent', () => {
       { season_id: 17, season_name: '2025/2026', games: [] },
     ]);
     httpMock.expectOne(environment.apiURL + 'referee/history/tests').flush([]);
+    httpMock
+      .expectOne(environment.apiURL + 'referee/history/season_stats')
+      .flush([]);
 
     expect(component.expandedSeasons.has(18)).toBeTrue();
     expect(component.expandedSeasons.has(17)).toBeTrue();
@@ -92,7 +96,12 @@ describe('RefereeHistoryComponent (Template)', () => {
         HttpClientTestingModule,
         RouterTestingModule,
       ],
-      declarations: [RefereeHistoryComponent, TabsComponent, TabDirective],
+      declarations: [
+        RefereeHistoryComponent,
+        TabsComponent,
+        TabDirective,
+        RefereeSeasonStatsComponent,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RefereeHistoryComponent);
@@ -101,7 +110,11 @@ describe('RefereeHistoryComponent (Template)', () => {
 
   afterEach(() => httpMock.verify());
 
-  function render(games: RefereeHistoryGame[], tests: unknown[] = []): void {
+  function render(
+    games: RefereeHistoryGame[],
+    tests: unknown[] = [],
+    seasonStats: unknown[] = []
+  ): void {
     fixture.detectChanges();
     const season: RefereeHistorySeason = {
       season_id: 18,
@@ -114,6 +127,9 @@ describe('RefereeHistoryComponent (Template)', () => {
     httpMock
       .expectOne(environment.apiURL + 'referee/history/tests')
       .flush(tests);
+    httpMock
+      .expectOne(environment.apiURL + 'referee/history/season_stats')
+      .flush(seasonStats);
     fixture.detectChanges();
   }
 
@@ -143,6 +159,28 @@ describe('RefereeHistoryComponent (Template)', () => {
     expect(cellLinks().length).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('Heim');
     expect(fixture.nativeElement.textContent).toContain('Gast');
+  });
+
+  it('zeigt die Einsatzzahlen der laufenden und der Vorsaison', () => {
+    render(
+      [game()],
+      [],
+      [
+        {
+          season_id: 18,
+          season_name: '2026/2027',
+          current: true,
+          games: 12,
+          games_gf_u15_plus: 8,
+        },
+      ]
+    );
+
+    const stats = fixture.nativeElement.querySelector(
+      'fb-referee-season-stats'
+    ) as HTMLElement | null;
+    expect(stats?.textContent).toContain('2026/2027');
+    expect(stats?.textContent).toContain('12');
   });
 
   it('oeffnet die gepfiffenen Spiele als Standardreiter', () => {

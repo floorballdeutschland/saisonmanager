@@ -28,6 +28,8 @@ import {
   RefereeHistorySeason,
   PenaltyCode,
   RefereeLicenseLevel,
+  RefereeLicenseSuggestionRule,
+  RefereeLicenseSuggestionRulesResponse,
   RefereeMissingUserCount,
   RefereePartnerHistory,
   RefereeProfile,
@@ -36,6 +38,7 @@ import {
   RefereeSortColumn,
   RefereeStatusFilter,
   RefereeTag,
+  RefereeSeasonGameStat,
   RefereeVm,
   RefereeFeedbackProfileResponse,
 } from '@floorball/types';
@@ -403,6 +406,28 @@ export class RefereeService {
 
   // License levels (admin/RSK)
 
+  // Regeln für den Lizenzvorschlag (nur Admin)
+  public adminGetLicenseSuggestionRules() {
+    return this.http.get<RefereeLicenseSuggestionRulesResponse>(
+      environment.apiURL + 'admin/referee_license_suggestion_rules'
+    );
+  }
+
+  public adminSaveLicenseSuggestionRule(rule: RefereeLicenseSuggestionRule) {
+    const url = environment.apiURL + 'admin/referee_license_suggestion_rules';
+    return rule.id
+      ? this.http.put<RefereeLicenseSuggestionRule>(url + '/' + rule.id, {
+          rule,
+        })
+      : this.http.post<RefereeLicenseSuggestionRule>(url, { rule });
+  }
+
+  public adminDeleteLicenseSuggestionRule(id: number) {
+    return this.http.delete(
+      environment.apiURL + 'admin/referee_license_suggestion_rules/' + id
+    );
+  }
+
   public adminGetLicenseLevels() {
     return this.http.get<RefereeLicenseLevel[]>(
       environment.apiURL + 'admin/referee_license_levels'
@@ -739,6 +764,14 @@ export class RefereeService {
     );
   }
 
+  // Einsatzzahlen der laufenden und der Vorsaison, wie in Verbands- und
+  // Vereinssicht.
+  public getHistorySeasonStats() {
+    return this.http.get<RefereeSeasonGameStat[]>(
+      environment.apiURL + 'referee/history/season_stats'
+    );
+  }
+
   public getHistoryTests() {
     return this.http.get<RefereeCourseResultSummary[]>(
       environment.apiURL + 'referee/history/tests'
@@ -749,5 +782,16 @@ export class RefereeService {
 
   public vmGetReferees() {
     return this.http.get<RefereeVm[]>(environment.apiURL + 'vm/referees');
+  }
+
+  public vmGetReferee(id: number) {
+    return this.http.get<RefereeVm>(environment.apiURL + 'vm/referees/' + id);
+  }
+
+  // Gesamte Einsatzhistorie laut Spielbericht, alle Saisons.
+  public vmGetGames(id: number) {
+    return this.http.get<RefereeAdminGame[]>(
+      environment.apiURL + 'vm/referees/' + id + '/games'
+    );
   }
 }

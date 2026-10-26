@@ -45,8 +45,6 @@
     "matchReportAdmin": "Match reports",
     "playerSearch": "Player search",
     "myPlayers": "My players",
-    "myTeamGameDays": "My away match days",
-    "refereeFeedback": "Referee feedback",
     "arenas": "Venues",
     "clubAdmin": "Club administration",
     "assignments": "Assignments",
@@ -83,7 +81,7 @@
     "feedbackComments": "Team feedback: individual",
     "refereeExclusions": "Club exclusions",
     "refereeChangeRequests": "Master data corrections",
-    "secretaryLinks": "Match secretariat",
+    "gameDayTasks": "Game day tasks",
     "liveToday": "Live today",
     "systemHealth": "System",
     "myObservations": "Observation forms",
@@ -163,5 +161,12 @@
     "title": "This page does not exist",
     "intro": "The address you requested is unknown. The link may be outdated or mistyped.",
     "home": "Go to the home page"
+  },
+  "refereeSeasonStats": {
+    "season": "Season",
+    "all": "All games",
+    "gfU15Plus": "Large field U15 and older",
+    "current": "(current)",
+    "hint": "Games according to match reports. Large field U15 and older means large-field leagues except U9, U11 and U13; playoffs without own settings count like their main round."
   }
 }

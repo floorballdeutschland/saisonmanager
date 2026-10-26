@@ -11,6 +11,31 @@
     "colValidity": "Gültigkeit",
     "colQualifications": "Zusatzqualifikationen",
     "validUntil": "(bis {{ date }})",
-    "empty": "Keine Schiedsrichter*innen für deinen Verein gefunden."
+    "empty": "Keine Schiedsrichter*innen für deinen Verein gefunden.",
+    "colEmail": "E-Mail",
+    "hasAccountBadge": "Konto",
+    "hasAccountTitle": "Hat ein Benutzerkonto"
+  },
+  "accountHint": "Ohne „Konto“ kann sich die Person noch nicht im Saisonmanager anmelden. Ein Benutzerkonto legt die Schiedsrichterkommission deines Landesverbands an, frag dort bitte an.",
+  "detail": {
+    "back": "← Schiedsrichter*innen des Vereins",
+    "loading": "Lade Schiedsrichter*in…",
+    "notFound": "Diese Schiedsrichter*in gehört nicht zu deinem Verein oder existiert nicht.",
+    "level": "Stufe",
+    "validity": "Gültigkeit",
+    "email": "E-Mail",
+    "account": "Benutzerkonto",
+    "accountYes": "Vorhanden",
+    "accountNo": "Nicht vorhanden",
+    "qualifications": "Zusatzqualifikationen",
+    "gameHistory": "Einsätze",
+    "gamesLoading": "Lade Einsätze…",
+    "gamesCount": "{{ count }} Einsätze laut Spielbericht, alle Saisons",
+    "noGames": "Noch keine Einsätze laut Spielbericht.",
+    "colDate": "Datum",
+    "colGame": "Spiel",
+    "colLeague": "Liga",
+    "colResult": "Ergebnis",
+    "seasonStats": "Einsätze je Saison"
   }
 }

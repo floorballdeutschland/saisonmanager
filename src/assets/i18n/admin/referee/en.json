@@ -130,7 +130,8 @@
       "courses": "Courses",
       "ratings": "Feedback & observations",
       "exclusions": "Exclusions"
-    }
+    },
+    "seasonStats": "Games per season"
   },
   "edit": {
     "back": "← Back",
@@ -439,5 +440,41 @@
     "reloginHint": "The block applies immediately. Menu items change for affected users after their next login.",
     "lastChange": "Last changed on {{date}} by {{user}}.",
     "saved": "Course processes saved."
+  },
+  "suggestionRules": {
+    "title": "Suggestion after courses",
+    "intro": "Each level shows after which course it is suggested in the licensing view. Games according to match reports are counted in the season that began in the calendar year before the course ended. Rules with a minimum are checked first, highest first, then those without condition. FD still sets the level.",
+    "add": "+ Suggestion rule",
+    "courseType": "Course type",
+    "minGames": "Minimum games",
+    "noCondition": "no condition",
+    "fieldSize": "Counting",
+    "field": {
+      "all": "All",
+      "KF": "Small field",
+      "GF": "Large field"
+    },
+    "ageGroups": "Counted age groups",
+    "ageGroupsHint": "Leagues without an age group always count. A newly created age group is unchecked here until someone selects it.",
+    "ageGroupsRequired": "Please select at least one age group. To count all age groups, check all of them.",
+    "save": "Save",
+    "delete": "Delete",
+    "saved": "Rule saved.",
+    "type": {
+      "j": "J course",
+      "g": "G course",
+      "f": "F course",
+      "combined": "Combined course",
+      "module": "Module",
+      "refresher": "Refresher",
+      "n": "N course",
+      "a": "A course",
+      "retest": "Retest",
+      "other": "Other course"
+    },
+    "suggestedAfter": "Suggested after",
+    "summaryCondition": "from {{ min }} games ({{ field }})",
+    "summaryFallback": "without condition",
+    "edit": "Edit"
   }
 }

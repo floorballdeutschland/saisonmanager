@@ -1,0 +1,34 @@
+<table class="text-sm">
+  <thead>
+    <tr class="border-b border-fb-gray-700 text-left">
+      <th class="py-2 pr-6 font-bold">
+        {{ "refereeSeasonStats.season" | transloco }}
+      </th>
+      <th class="py-2 pr-6 font-bold text-right">
+        {{ "refereeSeasonStats.all" | transloco }}
+      </th>
+      <th class="py-2 font-bold text-right">
+        {{ "refereeSeasonStats.gfU15Plus" | transloco }}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (s of stats; track s.season_id) {
+      <tr class="border-b border-fb-gray-800">
+        <td class="py-2 pr-6">
+          {{ s.season_name }}
+          @if (s.current) {
+            <span class="text-fb-gray-500">
+              {{ "refereeSeasonStats.current" | transloco }}</span
+            >
+          }
+        </td>
+        <td class="py-2 pr-6 text-right font-mono">{{ s.games }}</td>
+        <td class="py-2 text-right font-mono">{{ s.games_gf_u15_plus }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
+<p class="text-xs text-fb-gray-500 mt-2">
+  {{ "refereeSeasonStats.hint" | transloco }}
+</p>

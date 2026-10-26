@@ -451,6 +451,17 @@ export interface RegistrationLicenseState {
 }
 
 /** Eine Zeile der Lizenzvergabe durch FD. */
+// Lizenzvorschlag aus den Regeln (api#861). `games` ist nur bei einer Regel
+// mit Mindestzahl gesetzt; `season_*` ist die maßgebliche Saison zum Kursende.
+export interface CourseLicensingSuggestion {
+  lizenzstufe: string;
+  rule_id: number;
+  season_id: number | null;
+  season_name: string | null;
+  games: number | null;
+  min_games: number | null;
+}
+
 export interface CourseLicensingRow {
   id: number;
   status: 'pending_review' | 'applied' | 'rejected';
@@ -491,6 +502,7 @@ export interface CourseLicensingRow {
     stated_lizenznummer: string | null;
     source: string;
   } | null;
+  suggestion?: CourseLicensingSuggestion | null;
   license_mail?: string;
   account?: string;
 }

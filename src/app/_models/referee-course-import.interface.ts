@@ -198,7 +198,10 @@ export interface RefereeCourseResult {
     | 'alias_target_missing'
     | null;
   age_at_kursstichtag?: number | null;
+  // Vorsaison laut Spielbericht: gesamt und Großfeld ab U15. Die zweite Zahl
+  // entscheidet nach einem F-Kurs über L1 (mindestens vier Spiele) oder L2.
   previous_season_game_count?: number;
+  previous_season_game_count_gf_u15_plus?: number;
   state_association?: { id: number; name: string } | null;
 }
 

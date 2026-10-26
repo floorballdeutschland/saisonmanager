@@ -30,5 +30,10 @@ export interface HighlightScene {
 export interface Highlights {
   /** `null`: kein Stream oder dessen Start unbekannt. */
   video_id: string | null;
+  /**
+   * Ist die Aufzeichnung kalibriert? Unkalibriert liegen die Szenen nur
+   * ungefähr. `null` ohne Übertragung, fehlt bei älterer API.
+   */
+  calibrated?: boolean | null;
   scenes: HighlightScene[];
 }
