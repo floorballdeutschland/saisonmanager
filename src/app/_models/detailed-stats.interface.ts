@@ -18,6 +18,23 @@ export interface PersonRef {
   name: string;
 }
 
+/**
+ * Spielstärke eines Schusses ohne eigenen Torhüter (fe#610): Feldspieler des
+ * schießenden Teams gegen die des Gegners, so wie sie auf dem Feld stehen.
+ * Die API leitet sie aus den beim Schuss laufenden Strafen ab; Strafen
+ * beider Teams heben sich nicht auf (eine je Seite ist '5v4').
+ */
+export type ExtraAttackerStrength =
+  | '6v5'
+  | '6v4'
+  | '6v3'
+  | '5v5'
+  | '5v4'
+  | '5v3'
+  | '4v5'
+  | '4v4'
+  | '4v3';
+
 export interface DetailedStatsShot {
   team: ShotTeam;
   period: number;
@@ -37,7 +54,16 @@ export interface DetailedStatsShot {
   /** Seit Feedback #61, #63, #64; ältere API-Stände liefern die Felder nicht. */
   from_penalty_shot?: boolean;
   empty_net?: boolean;
+  /**
+   * Das schießende Team spielt ohne eigenen Torhüter. Das ist nicht immer 6
+   * gegen 5, siehe `extra_attacker_strength`.
+   */
   extra_attacker?: boolean;
+  /**
+   * Seit fe#610, nur bei `extra_attacker`. `null` ohne Kennung oder wenn der
+   * Schuss keine Spielzeit hat; ältere API-Stände liefern das Feld nicht.
+   */
+  extra_attacker_strength?: ExtraAttackerStrength | null;
 }
 
 /**
@@ -67,7 +93,17 @@ export interface TeamShotStats {
   penalty_shots?: number;
   goals_from_penalty_shot?: number;
   goals_empty_net?: number;
+  /** Alle Tore ohne eigenen Torhüter, Summe der vier Felder darunter. */
   goals_extra_attacker?: number;
+  /**
+   * Aufteilung nach Spielstärke (fe#610), ältere API-Stände ohne:
+   * `other` = jede andere bekannte Stärke (6 gegen 3, 5 gegen 4 usw., die
+   * genaue steht am Schuss), `unknown` = der Schuss hat keine Spielzeit.
+   */
+  goals_extra_attacker_6v5?: number;
+  goals_extra_attacker_6v4?: number;
+  goals_extra_attacker_other?: number;
+  goals_extra_attacker_unknown?: number;
 }
 
 export interface TeamDetailedStats extends TeamShotStats {

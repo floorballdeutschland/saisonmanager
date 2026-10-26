@@ -114,7 +114,14 @@ export class ShotChartComponent implements OnChanges {
     if (shot.from_penalty_shot) keys.push('penaltyShot');
     if (shot.from_free_hit) keys.push('fromFreeHit');
     if (shot.empty_net) keys.push('emptyNet');
-    if (shot.extra_attacker) keys.push('extraAttacker');
+    // Mit bekannter Spielstärke „6 gegen 4“ usw. (fe#610), sonst neutral.
+    if (shot.extra_attacker) {
+      keys.push(
+        shot.extra_attacker_strength
+          ? 'strength.' + shot.extra_attacker_strength
+          : 'extraAttacker'
+      );
+    }
     return keys
       .map(
         (key) =>
