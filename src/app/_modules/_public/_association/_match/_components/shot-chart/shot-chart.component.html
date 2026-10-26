@@ -3,7 +3,7 @@
     class="block w-full h-auto"
     [attr.viewBox]="viewBox"
     [attr.data-field-size]="field.size"
-    [attr.role]="hasLinked ? 'group' : 'img'"
+    role="img"
     [attr.aria-label]="
       'match.detailedStats.chart.ariaLabel'
         | transloco: { team: teamName, count: plotted.length }
@@ -35,19 +35,6 @@
           (point.shot.result === 'goal' ? 0.15 : 0.1) * dotScale
         "
         [attr.data-result]="point.shot.result"
-        [attr.data-linked]="point.linked || null"
-        [attr.role]="point.linked ? 'button' : null"
-        [attr.tabindex]="point.linked ? 0 : null"
-        [attr.aria-label]="
-          point.linked
-            ? ('match.highlights.goalAria'
-              | transloco: { time: point.shot.game_time })
-            : null
-        "
-        [class.cursor-pointer]="point.linked"
-        (click)="select(point)"
-        (keydown.enter)="select(point)"
-        (keydown.space)="$event.preventDefault(); select(point)"
       >
         <title>
           {{

@@ -119,8 +119,6 @@
     "finished": "alle Szenen gezeigt",
     "playAll": "Alle Szenen abspielen",
     "assist": "Vorlage",
-    "jumpHint": "Tipp auf ein Tor in der Schussgrafik springt zur Szene.",
-    "goalAria": "Tor {{ time }}, zur Szene springen",
     "mark": "Szene",
     "edit": "Highlights bearbeiten (Versatz und Auswahl)"
   }
