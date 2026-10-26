@@ -2,6 +2,7 @@ import {
   DetailedStats,
   DetailedStatsFreeHit,
   DetailedStatsShot,
+  GameEvent,
   GoalkeeperStats,
   PlayerShotStats,
 } from '@floorball/types';
@@ -18,6 +19,7 @@ import {
   sortPlayers,
   teamStatsFor,
   toFieldPoint,
+  uncapturedPeriods,
 } from './detailed-stats';
 import { FIELD_GEOMETRY } from 'src/app/_helpers/_utils/field-geometry';
 
@@ -316,5 +318,60 @@ describe('Freischläge (fe#589)', () => {
       };
       expect(hasSpecialSituations(withEmptyNet)).toBeTrue();
     });
+  });
+});
+
+describe('uncapturedPeriods (fe#623)', () => {
+  const goal = (period: number, goal_type = 'regular'): GameEvent =>
+    ({
+      event_id: period * 100,
+      event_type: 'goal',
+      event_team: 'guest',
+      period,
+      time: '06:35',
+      goal_type,
+    }) as GameEvent;
+
+  it('meldet Abschnitte mit Toren, aber ohne erfassten Schuss', () => {
+    // Spiel 58765: Erfassung erst ab dem 2. Drittel, Gegentor im 1.
+    const result = uncapturedPeriods(
+      [goal(1), goal(2), goal(3)],
+      stats({ shots: [shot({ period: 2 }), shot({ period: 3 })] })
+    );
+    expect(result).toEqual({ periods: [1], goals: 1 });
+  });
+
+  it('meldet auch eine Lücke in der Mitte und zählt die Tore', () => {
+    const result = uncapturedPeriods(
+      [goal(1), goal(2), goal(2), goal(3)],
+      stats({ shots: [shot({ period: 1 }), shot({ period: 3 })] })
+    );
+    expect(result).toEqual({ periods: [2], goals: 2 });
+  });
+
+  it('ist null, wenn jeder Abschnitt mit Tor Schüsse hat', () => {
+    expect(
+      uncapturedPeriods([goal(1)], stats({ shots: [shot({ period: 1 })] }))
+    ).toBeNull();
+  });
+
+  it('übergeht Strafen und Abschnitte ohne Tor', () => {
+    const penalty = { ...goal(1), event_type: 'penalty' } as GameEvent;
+    expect(
+      uncapturedPeriods([penalty], stats({ shots: [shot({ period: 2 })] }))
+    ).toBeNull();
+  });
+
+  it('übergeht Eigentore, technische Tore und das Penaltyschießen', () => {
+    expect(
+      uncapturedPeriods(
+        [goal(1, 'owngoal'), goal(2, 'technical'), goal(4, 'penalty_shots')],
+        stats({ shots: [shot({ period: 3 })] })
+      )
+    ).toBeNull();
+  });
+
+  it('kommt ohne Ereignisse aus', () => {
+    expect(uncapturedPeriods(undefined, stats())).toBeNull();
   });
 });

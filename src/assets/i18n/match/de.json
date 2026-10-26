@@ -27,6 +27,10 @@
     "loading": "Statistik wird geladen …",
     "failed": "Die Statistik konnte nicht geladen werden.",
     "incomplete": "Schüsse nicht vollständig erfasst. Die Zahlen zeigen nur die erfassten Schüsse.",
+    "uncaptured": {
+      "periods": "Keine Schüsse erfasst:",
+      "goals": "Tore daraus (hier {{ count }}) fehlen deshalb in den Schuss- und Torhüterwerten, die Teamsummen zählen weniger Tore als das Ergebnis."
+    },
     "periodN": "{{ n }}. Abschnitt",
     "name": "Name",
     "result": {
