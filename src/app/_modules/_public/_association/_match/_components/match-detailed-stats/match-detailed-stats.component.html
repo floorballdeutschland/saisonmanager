@@ -24,6 +24,26 @@
         {{ "match.detailedStats.incomplete" | transloco }}
       </div>
     }
+    @if (uncaptured; as gap) {
+      <div
+        class="border border-amber-300 bg-amber-50 text-amber-900 rounded-[5px] px-4 py-3 mb-6 text-sm"
+        role="note"
+        data-test="stats-uncaptured"
+      >
+        {{ "match.detailedStats.uncaptured.periods" | transloco }}
+        @for (period of gap.periods; track period; let last = $last) {
+          <span class="font-bold">{{
+            periodTitle(period) ??
+              ("match.detailedStats.periodN" | transloco: { n: period })
+          }}</span
+          >{{ last ? "." : "," }}
+        }
+        {{
+          "match.detailedStats.uncaptured.goals"
+            | transloco: { count: gap.goals }
+        }}
+      </div>
+    }
 
     <!-- Schussgrafik -->
     <section class="mb-10">

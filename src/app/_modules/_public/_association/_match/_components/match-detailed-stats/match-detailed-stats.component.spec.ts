@@ -4,7 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { DetailedStats, Game } from '@floorball/types';
+import { DetailedStats, Game, GameEvent } from '@floorball/types';
 import matchDe from '../../../../../../../assets/i18n/match/de.json';
 import { ShotChartComponent } from '../shot-chart/shot-chart.component';
 import { FreeHitChartComponent } from '../free-hit-chart/free-hit-chart.component';
@@ -282,6 +282,51 @@ describe('MatchDetailedStatsComponent', () => {
     it('erscheint auch, wenn die Frage nicht beantwortet ist (null)', () => {
       load(stats({ complete: null }));
       expect(el().querySelector('[data-test="stats-incomplete"]')).toBeTruthy();
+    });
+  });
+
+  describe('Hinweis auf Abschnitte ohne Schusserfassung (fe#623)', () => {
+    const goalIn = (period: number) =>
+      ({ event_id: period, event_type: 'goal', period }) as GameEvent;
+
+    it('nennt den Abschnitt mit Tor, aber ohne Schuss', () => {
+      const data = stats({
+        shots: [
+          {
+            team: 'home',
+            period: 2,
+            game_time: '25:00',
+            x: 0.8,
+            y: 0.5,
+            result: 'saved',
+            shooter: null,
+            event_id: null,
+          },
+        ],
+      });
+      load(data);
+      // Dasselbe Spiel mit neuen Daten lädt die Statistik still nach.
+      fixture.componentRef.setInput(
+        'game',
+        game(1, {
+          events: [goalIn(1), goalIn(2)],
+          period_titles: [{ period: 1, title: '1. Drittel' }],
+        } as Partial<Game>)
+      );
+      fixture.detectChanges();
+      http.expectOne(statsUrl(1)).flush(data);
+      fixture.detectChanges();
+
+      const text =
+        el().querySelector('[data-test="stats-uncaptured"]')?.textContent ?? '';
+      expect(text).toContain(matchDe.detailedStats.uncaptured.periods);
+      expect(text).toContain('1. Drittel');
+      expect(text).not.toContain('2. Abschnitt');
+    });
+
+    it('fehlt, wenn jeder Abschnitt mit Tor Schüsse hat', () => {
+      load(stats());
+      expect(el().querySelector('[data-test="stats-uncaptured"]')).toBeNull();
     });
   });
 
