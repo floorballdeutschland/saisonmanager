@@ -124,6 +124,8 @@ export interface RefereeAdmin {
   license_status?: RefereeLicenseStatus;
   qualifications?: RefereeQualificationEntry[];
   season_game_count?: number;
+  // Nur im Detail (admin/referees/:id): laufende Saison und Vorsaison.
+  season_game_stats?: RefereeSeasonGameStat[];
   // Konto-Badge. Nur fuer Rollen mit Zugriff auf Kontaktdaten (Admin, RSK,
   // Ansetzer). Ausgewertet wird es allein in der Liste; die Detailantwort
   // fuehrt es seit api#591 zwar mit, hat dafuer aber user_id/user_name.
@@ -223,6 +225,17 @@ export interface RefereeBulkUserResult {
   batch_size: number;
 }
 
+// Einsatzzahlen laut Spielbericht für die laufende Saison und die Vorsaison
+// (RefereeSeasonGameStats in der API). Großfeld ab U15: Feldgröße GF ohne
+// U9, U11 und U13.
+export interface RefereeSeasonGameStat {
+  season_id: number;
+  season_name: string;
+  current: boolean;
+  games: number;
+  games_gf_u15_plus: number;
+}
+
 export interface RefereeVm {
   id: number;
   lizenznummer: number | null;
@@ -239,6 +252,8 @@ export interface RefereeVm {
   email?: string | null;
   has_user: boolean;
   qualifications: { qualification_type_name: string; valid_until?: string }[];
+  // Nur im Detail (vm/referees/:id), nicht in der Liste.
+  season_game_stats?: RefereeSeasonGameStat[];
 }
 
 export interface RefereeProfile {

@@ -226,6 +226,14 @@
             }
           </div>
         }
+        @if (referee.season_game_stats?.length) {
+          <h2 class="text-lg font-bold mb-4">
+            {{ "refereeAdmin.detail.seasonStats" | transloco }}
+          </h2>
+          <div class="mb-8">
+            <fb-referee-season-stats [stats]="referee.season_game_stats!" />
+          </div>
+        }
       </ng-template>
       <ng-template
         fbTab="spiele"

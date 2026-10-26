@@ -161,5 +161,12 @@
     "title": "Diese Seite gibt es nicht",
     "intro": "Die aufgerufene Adresse ist unbekannt. Vielleicht ist der Link veraltet oder falsch geschrieben.",
     "home": "Zur Startseite"
+  },
+  "refereeSeasonStats": {
+    "season": "Saison",
+    "all": "Alle Spiele",
+    "gfU15Plus": "Großfeld ab U15",
+    "current": "(laufend)",
+    "hint": "Einsätze laut Spielbericht. Großfeld ab U15 heißt: Großfeldligen ohne U9, U11 und U13; Playoffs ohne eigene Angaben zählen wie ihre Hauptrunde."
   }
 }

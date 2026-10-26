@@ -35,6 +35,7 @@
     "colDate": "Date",
     "colGame": "Game",
     "colLeague": "League",
-    "colResult": "Result"
+    "colResult": "Result",
+    "seasonStats": "Games per season"
   }
 }
