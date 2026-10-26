@@ -45,6 +45,8 @@ import {
   SHOT_RESULTS,
   sortPlayers,
   teamStatsFor,
+  uncapturedPeriods,
+  UncapturedPeriods,
 } from '../../_utils/detailed-stats';
 import { SHOT_COLORS } from '../shot-chart/shot-chart.component';
 import { FREE_HIT_ZONE_COLORS } from '../free-hit-chart/free-hit-chart.component';
@@ -192,6 +194,11 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
 
   get incomplete(): boolean {
     return !!this.stats && this.stats.complete !== true;
+  }
+
+  /** Abschnitte mit Toren, aber ohne erfassten Schuss (fe#623). */
+  get uncaptured(): UncapturedPeriods | null {
+    return this.stats ? uncapturedPeriods(this.game?.events, this.stats) : null;
   }
 
   teamName(team: ShotTeam): string {

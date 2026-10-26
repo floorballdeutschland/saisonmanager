@@ -2,6 +2,7 @@ import {
   DetailedStats,
   DetailedStatsFreeHit,
   DetailedStatsShot,
+  GameEvent,
   GoalkeeperSaveStats,
   GoalkeeperStats,
   PlayerShotStats,
@@ -172,6 +173,45 @@ export function periodsOf(stats: DetailedStats): number[] {
     })
   );
   return [...periods].sort((a, b) => a - b);
+}
+
+/**
+ * Torarten ohne Schuss im Spielfluss: Ein Eigentor schießt niemand aufs
+ * gegnerische Tor, ein technisches Tor wird zugesprochen, und das
+ * Penaltyschießen erfasst das Tablet nicht. Ein Abschnitt, der nur solche
+ * Tore hat, ist also nicht unerfasst.
+ */
+const GOAL_TYPES_WITHOUT_SHOT = ['owngoal', 'technical', 'penalty_shots'];
+
+export interface UncapturedPeriods {
+  periods: number[];
+  /** Tore aus diesen Abschnitten, die in Schuss- und Torhüterwerten fehlen. */
+  goals: number;
+}
+
+/**
+ * Abschnitte mit Toren laut Spielbericht, aber ohne einen einzigen erfassten
+ * Schuss (fe#623). Typisch: Die Tablet-Erfassung begann erst im 2. Drittel,
+ * dann fehlen die Tore des 1. Drittels in Teamsummen und Fangquoten, und die
+ * Statistik passt scheinbar nicht zum Ergebnis. Abschnitte ohne Tor bleiben
+ * außen vor, dort fehlt kein Tor. `null`, wenn nichts fehlt.
+ */
+export function uncapturedPeriods(
+  events: GameEvent[] | null | undefined,
+  stats: DetailedStats
+): UncapturedPeriods | null {
+  const captured = new Set(stats.shots.map((shot) => shot.period));
+  const goals = (events ?? []).filter(
+    (event) =>
+      event.event_type === 'goal' &&
+      !GOAL_TYPES_WITHOUT_SHOT.includes(event.goal_type ?? '') &&
+      !captured.has(event.period)
+  );
+  if (!goals.length) return null;
+  const periods = [...new Set(goals.map((event) => event.period))].sort(
+    (a, b) => a - b
+  );
+  return { periods, goals: goals.length };
 }
 
 export const EMPTY_TEAM_STATS: TeamShotStats = {

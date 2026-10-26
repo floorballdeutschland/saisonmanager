@@ -27,6 +27,10 @@
     "loading": "Loading statistics …",
     "failed": "The statistics could not be loaded.",
     "incomplete": "Shots were not recorded completely. The figures only show the recorded shots.",
+    "uncaptured": {
+      "periods": "No shots recorded:",
+      "goals": "Goals from that time (here {{ count }}) are therefore missing from the shot and goalkeeper figures, so the team totals count fewer goals than the score."
+    },
     "periodN": "Period {{ n }}",
     "name": "Name",
     "result": {
