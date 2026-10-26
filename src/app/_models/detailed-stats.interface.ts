@@ -19,11 +19,21 @@ export interface PersonRef {
 }
 
 /**
- * Spielstärke eines Schusses ohne eigenen Torhüter (fe#610), Feldspieler des
- * schießenden Teams gegen die des Gegners. Die API leitet sie aus den beim
- * Schuss laufenden Strafen ab; Strafen beider Teams heben sich auf.
+ * Spielstärke eines Schusses ohne eigenen Torhüter (fe#610): Feldspieler des
+ * schießenden Teams gegen die des Gegners, so wie sie auf dem Feld stehen.
+ * Die API leitet sie aus den beim Schuss laufenden Strafen ab; Strafen
+ * beider Teams heben sich nicht auf (eine je Seite ist '5v4').
  */
-export type ExtraAttackerStrength = '6v5' | '6v4' | '6v3' | '5v5' | '4v5';
+export type ExtraAttackerStrength =
+  | '6v5'
+  | '6v4'
+  | '6v3'
+  | '5v5'
+  | '5v4'
+  | '5v3'
+  | '4v5'
+  | '4v4'
+  | '4v3';
 
 export interface DetailedStatsShot {
   team: ShotTeam;
@@ -83,17 +93,16 @@ export interface TeamShotStats {
   penalty_shots?: number;
   goals_from_penalty_shot?: number;
   goals_empty_net?: number;
-  /** Alle Tore ohne eigenen Torhüter, Summe der fünf Felder darunter. */
+  /** Alle Tore ohne eigenen Torhüter, Summe der vier Felder darunter. */
   goals_extra_attacker?: number;
   /**
    * Aufteilung nach Spielstärke (fe#610), ältere API-Stände ohne:
-   * `shorthanded` = das schießende Team war selbst in Unterzahl,
-   * `unknown` = der Schuss hat keine Spielzeit.
+   * `other` = jede andere bekannte Stärke (6 gegen 3, 5 gegen 4 usw., die
+   * genaue steht am Schuss), `unknown` = der Schuss hat keine Spielzeit.
    */
   goals_extra_attacker_6v5?: number;
   goals_extra_attacker_6v4?: number;
-  goals_extra_attacker_6v3?: number;
-  goals_extra_attacker_shorthanded?: number;
+  goals_extra_attacker_other?: number;
   goals_extra_attacker_unknown?: number;
 }
 

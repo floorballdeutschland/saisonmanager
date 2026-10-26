@@ -86,10 +86,9 @@
       "extraAttackerGoals": "Tore ohne eigenen Torhüter",
       "extraAttackerGoals6v5": "davon 6 gegen 5",
       "extraAttackerGoals6v4": "davon 6 gegen 4",
-      "extraAttackerGoals6v3": "davon 6 gegen 3",
       "extraAttackerGoalsOther": "davon sonstige",
       "hint": "Tore ins leere Tor: Der Gegner spielte ohne Torhüter. Tore ohne eigenen Torhüter: Das Team hatte den Torhüter für einen zusätzlichen Feldspieler herausgenommen. Ob 6 gegen 5 oder 6 gegen 4, ergibt sich aus den Strafen, die beim Schuss laufen. Schüsse aufs leere Tor zählen bei keinem Torhüter.",
-      "hintOther": "Sonstige: Das Team war selbst in Unterzahl, oder der Schuss hat keine Spielzeit.",
+      "hintOther": "Sonstige: andere Spielstärken, etwa 5 gegen 4 bei Strafen auf beiden Seiten oder 6 gegen 3 (die genaue steht am Schuss im Schussbild), oder Schüsse ohne Spielzeit.",
       "penaltyShot": "Strafschuss",
       "fromFreeHit": "aus Freischlag",
       "emptyNet": "leeres Tor",
@@ -99,7 +98,11 @@
         "6v4": "6 gegen 4",
         "6v3": "6 gegen 3",
         "5v5": "5 gegen 5",
-        "4v5": "4 gegen 5"
+        "5v4": "5 gegen 4",
+        "5v3": "5 gegen 3",
+        "4v5": "4 gegen 5",
+        "4v4": "4 gegen 4",
+        "4v3": "4 gegen 3"
       }
     }
   },

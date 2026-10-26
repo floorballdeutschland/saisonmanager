@@ -322,14 +322,11 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     );
   }
 
-  /** 6 gegen 3 ist selten, die Spalte erscheint nur, wenn es vorkam. */
-  get showExtraAttacker6v3(): boolean {
-    return this.teams.some(
-      (team) => !!this.stats?.teams?.[team]?.goals_extra_attacker_6v3
-    );
-  }
-
-  /** Eigene Unterzahl oder ohne Spielzeit, ebenfalls nur bei Bedarf. */
+  /**
+   * Andere Spielstärken (5 gegen 4, 6 gegen 3 usw.) oder ohne Spielzeit sind
+   * selten, die Spalte erscheint nur, wenn es sie gab. Die genaue Stärke
+   * steht am Schuss im Schussbild.
+   */
   get showExtraAttackerOther(): boolean {
     return this.teams.some((team) => {
       const stats = this.stats?.teams?.[team];

@@ -666,7 +666,7 @@ describe('MatchDetailedStatsComponent', () => {
               ...base.shots[0],
               result: 'goal',
               extra_attacker: true,
-              extra_attacker_strength: '6v4',
+              extra_attacker_strength: '5v4',
             },
             {
               ...base.shots[1],
@@ -698,14 +698,13 @@ describe('MatchDetailedStatsComponent', () => {
         );
       }
 
-      it('teilt die Summe in 6 gegen 5 und 6 gegen 4 auf, seltene Spalten nur bei Bedarf', () => {
+      it('teilt die Summe in 6 gegen 5 und 6 gegen 4 auf, sonstige nur bei Bedarf', () => {
         load(
           extraAttacker({
             goals_extra_attacker: 3,
             goals_extra_attacker_6v5: 1,
             goals_extra_attacker_6v4: 2,
-            goals_extra_attacker_6v3: 0,
-            goals_extra_attacker_shorthanded: 0,
+            goals_extra_attacker_other: 0,
             goals_extra_attacker_unknown: 0,
           })
         );
@@ -713,33 +712,28 @@ describe('MatchDetailedStatsComponent', () => {
         expect(header()).toContain('Tore ohne eigenen Torhüter');
         expect(header()).toContain('davon 6 gegen 5');
         expect(header()).toContain('davon 6 gegen 4');
-        expect(header()).not.toContain('6 gegen 3');
         expect(header()).not.toContain('sonstige');
         expect(totalRow()).toContain('Gesamt 0 0 0 3 1 2');
       });
 
-      it('zeigt 6 gegen 3 und sonstige, wenn es sie gab', () => {
+      it('fasst andere Stärken und unbekannte Spielzeit unter sonstige zusammen', () => {
         load(
           extraAttacker({
             goals_extra_attacker: 4,
             goals_extra_attacker_6v5: 0,
             goals_extra_attacker_6v4: 1,
-            goals_extra_attacker_6v3: 1,
-            goals_extra_attacker_shorthanded: 1,
+            goals_extra_attacker_other: 2,
             goals_extra_attacker_unknown: 1,
           })
         );
 
         expect(
-          el().querySelector('[data-test="extra-attacker-6v3-head"]')
-        ).toBeTruthy();
-        expect(
           el().querySelector('[data-test="extra-attacker-other-head"]')
         ).toBeTruthy();
-        expect(totalRow()).toContain('Gesamt 0 0 0 4 0 1 1 2');
+        expect(totalRow()).toContain('Gesamt 0 0 0 4 0 1 3');
         expect(
           el().querySelector('[data-test="special-situations"]')?.textContent
-        ).toContain('selbst in Unterzahl');
+        ).toContain('5 gegen 4 bei Strafen auf beiden Seiten');
       });
 
       it('ältere API ohne Aufteilung: nur die Summe', () => {
@@ -760,7 +754,7 @@ describe('MatchDetailedStatsComponent', () => {
             '[data-test="chart-home"] circle[data-result] title'
           )
         ).map((title) => title.textContent ?? '');
-        expect(titles.some((t) => t.includes('(6 gegen 4)'))).toBeTrue();
+        expect(titles.some((t) => t.includes('(5 gegen 4)'))).toBeTrue();
         expect(
           titles.some((t) => t.includes('(ohne eigenen Torhüter)'))
         ).toBeTrue();

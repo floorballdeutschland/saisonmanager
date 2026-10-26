@@ -303,13 +303,13 @@ describe('Freischläge (fe#589)', () => {
       ).toBeNull();
     });
 
-    it('extraAttackerOther zählt eigene Unterzahl und unbekannte Spielzeit (fe#610)', () => {
+    it('extraAttackerOther zählt andere Stärken und unbekannte Spielzeit (fe#610)', () => {
       expect(extraAttackerOther(EMPTY_TEAM_STATS)).toBe(0);
       expect(
         extraAttackerOther({
           ...EMPTY_TEAM_STATS,
           goals_extra_attacker_6v4: 3,
-          goals_extra_attacker_shorthanded: 1,
+          goals_extra_attacker_other: 1,
           goals_extra_attacker_unknown: 2,
         })
       ).toBe(3);

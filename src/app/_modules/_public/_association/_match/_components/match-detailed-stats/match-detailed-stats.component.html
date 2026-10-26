@@ -305,17 +305,6 @@
                               | transloco
                           }}
                         </th>
-                        @if (showExtraAttacker6v3) {
-                          <th
-                            class="text-right font-bold py-2 px-2"
-                            data-test="extra-attacker-6v3-head"
-                          >
-                            {{
-                              "match.detailedStats.situation.extraAttackerGoals6v3"
-                                | transloco
-                            }}
-                          </th>
-                        }
                         @if (showExtraAttackerOther) {
                           <th
                             class="text-right font-bold py-2 px-2"
@@ -366,11 +355,6 @@
                           <td class="text-right tabular-nums py-2 px-2">
                             {{ row.stats.goals_extra_attacker_6v4 ?? 0 }}
                           </td>
-                          @if (showExtraAttacker6v3) {
-                            <td class="text-right tabular-nums py-2 px-2">
-                              {{ row.stats.goals_extra_attacker_6v3 ?? 0 }}
-                            </td>
-                          }
                           @if (showExtraAttackerOther) {
                             <td class="text-right tabular-nums py-2 px-2">
                               {{ extraAttackerOther(row.stats) }}
