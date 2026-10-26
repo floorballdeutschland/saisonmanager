@@ -12,6 +12,7 @@ import { User } from '@floorball/types';
 import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
+import { PlayerChangeRequestSharedModule } from '@floorball/admin/player-change-requests';
 import { PlayerVmIndexComponent } from './player-vm-index.component';
 
 describe('PlayerVmIndexComponent', () => {
@@ -430,8 +431,8 @@ describe('PlayerVmIndexComponent (Vereinsentscheidungen)', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="missing-email-count"]')
     ).toBeNull();
-    // Der Import fuellt vor allem Adressen nach; ohne das Feld fehlt er
-    // samt seinem Bereich „Weitere Aktionen" je Verein.
+    // Der Import fuellt vor allem Adressen nach; ohne das Feld fehlt sein
+    // Bereich „Import" ganz.
     expect(
       fixture.nativeElement.querySelector('[data-testid="import-toggle"]')
     ).toBeNull();
@@ -501,8 +502,9 @@ describe('PlayerVmIndexComponent (CSV)', () => {
               index: {
                 emailMissingCount: '{{ count }} ohne E-Mail-Adresse',
                 emailAllPresent: 'Alle mit E-Mail-Adresse',
-                moreActionsClub: 'Weitere Aktionen für {{ club }}',
                 exportSection: 'Export',
+                importSection: 'Import',
+                importTitle: 'Import für {{ club }}',
                 colEmail: 'E-Mail',
                 colBirthdate: 'Geburtsdatum',
                 skipAlreadySet: 'war schon gefüllt',
@@ -666,7 +668,7 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     fixture.detectChanges();
 
     const list = component.clubLists[0];
-    component.setImportOpen(list, true);
+    component.setImportOpen(true);
     fixture.detectChanges();
 
     const file = new File(['ID;E-Mail\n1;neu@example.org\n'], 'spieler.csv', {
@@ -759,7 +761,7 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     fixture.detectChanges();
 
     const list = component.clubLists[0];
-    component.setImportOpen(list, true);
+    component.setImportOpen(true);
     fixture.detectChanges();
 
     const file = new File(['kaputt'], 'spieler.csv', { type: 'text/csv' });
@@ -784,84 +786,128 @@ describe('PlayerVmIndexComponent (CSV)', () => {
     ).toContain('Spalte "ID"');
   });
 
+  function zweiVereine(): void {
+    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
+      { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      { id: 114, name: 'SG Partner', teams: [], manage_players: true },
+    ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([{ id: 1, first_name: 'A', last_name: 'Eins', email: null }]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
+      .flush([{ id: 2, first_name: 'B', last_name: 'Zwei', email: null }]);
+  }
+
   // Der Import-Zustand haengt am Verein: Wer zwei betreut, darf den Bericht des
-  // einen nicht am anderen sehen.
-  it('haelt Bericht und Bereich je Verein getrennt', async () => {
+  // einen nicht am anderen sehen, und der Import geht an den gewaehlten Verein.
+  it('haelt den Bericht je Verein getrennt und importiert in den gewaehlten', async () => {
     await setup();
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     const component = fixture.componentInstance;
     fixture.detectChanges();
 
-    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
-      { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
-      { id: 114, name: 'SG Partner', teams: [], manage_players: true },
-    ]);
-    http
-      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
-      .flush([{ id: 1, first_name: 'A', last_name: 'Eins', email: null }]);
-    http
-      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
-      .flush([{ id: 2, first_name: 'B', last_name: 'Zwei', email: null }]);
+    zweiVereine();
     fixture.detectChanges();
 
-    component.setImportOpen(component.clubLists[0], true);
+    component.setImportOpen(true);
     fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelectorAll('[data-testid="import-panel"]').length).toBe(1);
+    expect(el.querySelector('[data-testid="import-panel"] h3')!.textContent)
+      .withContext('ohne Auswahl der erste Verein')
+      .toContain('Eigener Verein');
 
+    component.clubLists[0].importReport = {
+      total_rows: 0,
+      updated: [],
+      skipped: [],
+      not_found: [],
+      invalid: [],
+    };
+    component.selectImportClub(114);
+    fixture.detectChanges();
     expect(
-      fixture.nativeElement.querySelectorAll('[data-testid="import-panel"]')
-        .length
-    ).toBe(1);
-    expect(component.clubLists[1].showImport).toBeFalse();
+      el.querySelector('[data-testid="import-panel"] h3')!.textContent
+    ).toContain('SG Partner');
+    expect(el.querySelector('[data-testid="import-report"]')).toBeNull();
+
+    const input = {
+      files: [new File(['ID'], 'spieler.csv', { type: 'text/csv' })],
+      value: 'spieler.csv',
+    } as unknown as HTMLInputElement;
+    const fileInput = el.querySelector(
+      '[data-testid="import-file"]'
+    ) as HTMLInputElement;
+    Object.defineProperty(fileInput, 'files', { value: input.files });
+    fileInput.dispatchEvent(new Event('change'));
+
+    const req = http.expectOne(`${environment.apiURL}admin/vm/players/import`);
+    expect((req.request.body as FormData).get('club_id')).toBe('114');
+    req.flush({ message: 'kaputt' }, { status: 422, statusText: 'x' });
+    expect(component.clubLists[1].importError).toBe('kaputt');
+    expect(component.clubLists[0].importError).toBeNull();
   });
 
-  // Export und Import liegen eingeklappt („Export" im Kopf, „Weitere Aktionen
-  // fuer <Verein>" an der Liste). Der Export
-  // gilt fuer alle Vereine und steht im Kopf, der Import je Verein an dessen
-  // Liste; die Beschriftung des Imports nennt den Verein, damit beides nicht
-  // verwechselt wird.
-  it('legt den Export in den Kopf und den Import je Verein in einen eingeklappten Bereich', async () => {
+  // Export und Import stehen nebeneinander, eingeklappt und unter genau diesen
+  // Namen (fe#584). Der Import steht einmal da, nicht je Verein; bei mehreren
+  // Vereinen waehlt eine Auswahl darin den Verein.
+  it('legt Export und Import nebeneinander in eingeklappte Bereiche', async () => {
     await setup();
     const fixture = TestBed.createComponent(PlayerVmIndexComponent);
     fixture.detectChanges();
 
-    http.expectOne(`${environment.apiURL}vm/clubs_and_teams.json`).flush([
-      { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
-      { id: 114, name: 'SG Partner', teams: [], manage_players: true },
-    ]);
-    http
-      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
-      .flush([{ id: 1, first_name: 'A', last_name: 'Eins', email: null }]);
-    http
-      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=114`)
-      .flush([{ id: 2, first_name: 'B', last_name: 'Zwei', email: null }]);
+    zweiVereine();
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    const kopf = el.querySelector('[data-testid="export-section"]')!;
-    expect(kopf.querySelector('summary')!.textContent!.trim()).toBe('Export');
-    expect(kopf.querySelector('[data-testid="export-csv"]')).not.toBeNull();
-    expect(kopf.querySelector('details')!.open).toBeFalse();
-
-    const bereiche = Array.from(
-      el.querySelectorAll('[data-testid="import-toggle"]')
+    const block = el.querySelector('[data-testid="export-import"]')!;
+    const exportBereich = block.querySelector(
+      '[data-testid="export-section"]'
+    )!;
+    expect(exportBereich.querySelector('summary')!.textContent!.trim()).toBe(
+      'Export'
     );
-    expect(bereiche.length).toBe(2);
-    expect(bereiche[1].querySelector('summary')!.textContent).toContain(
-      'Weitere Aktionen für SG Partner'
+    expect(
+      exportBereich.querySelector('[data-testid="export-csv"]')
+    ).not.toBeNull();
+    expect(exportBereich.querySelector('details')!.open).toBeFalse();
+
+    const bereiche = el.querySelectorAll('[data-testid="import-toggle"]');
+    expect(bereiche.length).toBe(1);
+    expect(block.contains(bereiche[0])).toBeTrue();
+    expect(bereiche[0].querySelector('summary')!.textContent!.trim()).toBe(
+      'Import'
     );
     expect(el.querySelector('[data-testid="import-panel"]')).toBeNull();
 
     // Aufklappen wie im Browser: details.open setzen, toggle feuern.
-    const details = bereiche[1].querySelector('details')!;
+    const details = bereiche[0].querySelector('details')!;
     details.open = true;
     details.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();
 
-    const panels = el.querySelectorAll('[data-testid="import-panel"]');
-    expect(panels.length).toBe(1);
-    expect(bereiche[1].contains(panels[0])).toBeTrue();
-    expect(fixture.componentInstance.clubLists[1].showImport).toBeTrue();
-    expect(fixture.componentInstance.clubLists[0].showImport).toBeFalse();
+    expect(fixture.componentInstance.showImport).toBeTrue();
+    expect(el.querySelectorAll('[data-testid="import-panel"]').length).toBe(1);
+    const auswahl = el.querySelector(
+      '[data-testid="import-club"]'
+    ) as HTMLSelectElement;
+    expect(auswahl.options.length).toBe(2);
+  });
+
+  // Mit nur einem Verein gibt es nichts zu waehlen.
+  it('zeigt bei einem Verein keine Vereinsauswahl', async () => {
+    await setup();
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+
+    bestand([{ id: 1, first_name: 'Ohne', last_name: 'Adresse', email: null }]);
+    fixture.componentInstance.setImportOpen(true);
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[data-testid="import-panel"]')).not.toBeNull();
+    expect(el.querySelector('[data-testid="import-club"]')).toBeNull();
   });
 });
 
@@ -929,5 +975,100 @@ describe('PlayerVmIndexComponent (Spielerdaten-Einstieg)', () => {
       '/verwaltung/spieler-verein/113/spielerdaten',
       '/verwaltung/spieler-verein/114/spielerdaten',
     ]);
+  });
+});
+
+// fe#585: Die Korrekturantraege zu Spielerdaten stehen fuer Vereine als Reiter
+// auf dieser Seite statt als eigener Menuepunkt. Mit echter Vorlage und dem
+// echten geteilten Modul, weil die Zusage im Zusammenspiel steckt: Reiter nur
+// mit Recht, und der Reiter laedt die Liste wirklich.
+describe('PlayerVmIndexComponent (Reiter Korrekturen)', () => {
+  let http: HttpTestingController;
+
+  async function setup(permissions: Record<string, boolean>): Promise<void> {
+    await TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        FormsModule,
+        UikitCommonModule,
+        PlayerChangeRequestSharedModule,
+        getTranslocoTestingModule(),
+      ],
+      declarations: [PlayerVmIndexComponent],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            currentUser$: of({
+              permissions,
+            } as User) as Observable<User | null>,
+          },
+        },
+      ],
+    }).compileComponents();
+
+    http = TestBed.inject(HttpTestingController);
+  }
+
+  function einVerein(): void {
+    http
+      .expectOne(`${environment.apiURL}vm/clubs_and_teams.json`)
+      .flush([
+        { id: 113, name: 'Eigener Verein', teams: [], manage_players: true },
+      ]);
+    http
+      .expectOne(`${environment.apiURL}admin/vm/players.json?club_id=113`)
+      .flush([{ id: 1, first_name: 'A', last_name: 'Eins' }]);
+  }
+
+  afterEach(() => http.verify());
+
+  it('zeigt dem Vereinsmanager die Korrekturen als zweiten Reiter', async () => {
+    await setup({
+      menu_item_player_vm: true,
+      menu_item_player_change_requests: true,
+    });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+    einVerein();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[data-testid="tab-spieler"]')).not.toBeNull();
+    const reiter = el.querySelector(
+      '[data-testid="tab-korrekturen"]'
+    ) as HTMLButtonElement;
+    expect(reiter).not.toBeNull();
+    // Standard ist die Spielerliste, die Korrekturen laden erst beim Wechsel.
+    expect(el.querySelector('[data-testid="new-player-link"]')).not.toBeNull();
+    http.expectNone(`${environment.apiURL}admin/player_change_requests.json`);
+
+    reiter.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.apiURL}admin/player_change_requests.json`)
+      .flush([]);
+    fixture.detectChanges();
+    expect(
+      el.querySelector('[data-testid="tabpanel-korrekturen"]')
+    ).not.toBeNull();
+    // Eingebettet ohne eigene Seitenueberschrift; die stellt die Seite.
+    expect(el.querySelectorAll('h1').length).toBe(1);
+  });
+
+  it('laesst die Reiterleiste ohne das Recht weg (Teammanager)', async () => {
+    await setup({ menu_item_player_vm: true });
+    const fixture = TestBed.createComponent(PlayerVmIndexComponent);
+    fixture.detectChanges();
+    einVerein();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[role="tablist"]')).toBeNull();
+    expect(el.querySelector('[data-testid="new-player-link"]')).not.toBeNull();
   });
 });
