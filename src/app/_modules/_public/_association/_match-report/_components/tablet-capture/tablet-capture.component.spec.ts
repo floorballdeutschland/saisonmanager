@@ -94,18 +94,36 @@ describe('TabletCaptureComponent', () => {
     localStorage.clear();
   });
 
-  async function start(g: Game = game(4711), offsetMs = 0) {
-    fixture.componentRef.setInput('game', g);
+  // Die Specs ändern den Zustand meist per Methodenaufruf statt über ein
+  // DOM-Ereignis. Ohne Zone prüft `fixture.detectChanges()` dann nur, wenn
+  // die View als dirty gemeldet ist; sonst läuft allein `checkNoChanges` und
+  // wirft NG0100. Ob ein von `markForCheck` geplanter Tick vorher schon
+  // gelaufen ist, hängt am Timing, deshalb hier immer selbst markieren.
+  function render(): void {
+    (
+      component as unknown as { _cdr: { markForCheck(): void } }
+    )._cdr.markForCheck();
     fixture.detectChanges();
+  }
+
+  // Die Uhr steht während der Messung: Sonst liegt die Antwort je nach
+  // Laufzeit ein paar Millisekunden neben der Mitte des Round-Trips, und
+  // jeder Zeitpunkt in den Specs weicht um diesen Versatz ab.
+  async function start(g: Game = game(4711), offsetMs = 0) {
+    const now = Date.now();
+    const clock = spyOn(Date, 'now').and.returnValue(now);
+    fixture.componentRef.setInput('game', g);
+    render();
     http.expectOne(API + 'games/' + g.id + '/shots.json').flush({ shots: [] });
     for (let i = 0; i < 3; i++) {
       await settle();
       http
         .expectOne(API + 'server_time.json')
-        .flush({ now: new Date(Date.now() + offsetMs).toISOString() });
+        .flush({ now: new Date(now + offsetMs).toISOString() });
     }
     await settle();
-    fixture.detectChanges();
+    clock.and.callThrough();
+    render();
   }
 
   it('hält den Zeitpunkt beim Antippen fest, korrigiert um die Serverzeit', async () => {
@@ -135,7 +153,7 @@ describe('TabletCaptureComponent', () => {
     // Erst wählen, was es war.
     expect(component.draft).toBeNull();
     expect(component.pendingTap).toBeTruthy();
-    fixture.detectChanges();
+    render();
     fixture.nativeElement
       .querySelector('[data-testid="tablet-choice-shot"]')
       .click();
@@ -214,7 +232,7 @@ describe('TabletCaptureComponent', () => {
   it('korrigiert einen Tipp vor dem Ende der Uhrmessung mit dem gespeicherten Versatz', async () => {
     localStorage.setItem('tablet_clock_offset', '60000');
     fixture.componentRef.setInput('game', game(4711));
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
 
     // Messung läuft noch.
@@ -250,14 +268,14 @@ describe('TabletCaptureComponent', () => {
     expect(note).not.toBeNull();
 
     component.toggleFullscreen();
-    fixture.detectChanges();
+    render();
     expect(
       (fixture.nativeElement as HTMLElement).querySelector(
         '[data-testid="tablet-not-a-replacement"]'
       )
     ).not.toBeNull();
     component.toggleFullscreen();
-    fixture.detectChanges();
+    render();
   });
 
   it('räumt beim Zerstören Takt und online-Lauscher ab', async () => {
@@ -313,7 +331,7 @@ describe('TabletCaptureComponent', () => {
       .expectOne(API + 'games/4711/shots.json')
       .flush({}, { status: 403, statusText: 'Forbidden' });
     await settle();
-    fixture.detectChanges();
+    render();
 
     expect(component.syncForbidden).toBeTrue();
     expect(
@@ -446,7 +464,7 @@ describe('TabletCaptureComponent', () => {
       };
       field().dispatchEvent(new PointerEvent('pointerdown', at));
       field().dispatchEvent(new PointerEvent('pointerup', at));
-      fixture.detectChanges();
+      render();
       // Die Marke vor der Wahl sitzt schon an der Tippstelle.
       const tapRing = fixture.nativeElement.querySelector(
         '[data-testid="tablet-tap-marker"] circle'
@@ -455,7 +473,7 @@ describe('TabletCaptureComponent', () => {
       fixture.nativeElement
         .querySelector('[data-testid="tablet-choice-shot"]')
         .click();
-      fixture.detectChanges();
+      render();
 
       const draft = component.draft!;
       expect(draft.screenX).toBeCloseTo(0.8, 2);
@@ -592,7 +610,7 @@ describe('TabletCaptureComponent', () => {
     component.swapSides();
 
     fixture.componentRef.setInput('game', game(4712));
-    fixture.detectChanges();
+    render();
 
     expect(component.draft).toBeNull();
     expect(component.sides).toEqual({});
@@ -614,7 +632,7 @@ describe('TabletCaptureComponent', () => {
 
     // Rückkehr zum ersten Spiel: dessen Seitenwahl ist je Spiel gemerkt.
     fixture.componentRef.setInput('game', game(4711));
-    fixture.detectChanges();
+    render();
     expect(component.sides).toEqual({ '1': 'guest' });
     expect(component.serverShots).toEqual([]);
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
@@ -632,9 +650,9 @@ describe('TabletCaptureComponent', () => {
       result: 'goal',
     });
     fixture.componentRef.setInput('game', game(4711));
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [shot] });
-    fixture.detectChanges();
+    render();
     expect(
       fixture.nativeElement.querySelector('[data-testid="tablet-link-help"]')
     ).toBeNull();
@@ -653,9 +671,9 @@ describe('TabletCaptureComponent', () => {
       'game',
       game(4711, { events: [goal] } as Partial<Game>)
     );
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [shot] });
-    fixture.detectChanges();
+    render();
 
     expect(
       fixture.nativeElement.querySelector('[data-testid="tablet-link-help"]')
@@ -674,7 +692,7 @@ describe('TabletCaptureComponent', () => {
     // Nachladen der Spielseite: neues Objekt für dasselbe Spiel.
     function reload(g: Game): void {
       fixture.componentRef.setInput('game', g);
-      fixture.detectChanges();
+      render();
     }
 
     function query(testId: string): HTMLElement | null {
@@ -712,7 +730,7 @@ describe('TabletCaptureComponent', () => {
     it('lässt eine Handauswahl stehen, bis sich der Spielabschnitt ändert', async () => {
       await start(inPeriod(4711, 2));
       component.selectViewPeriod(1);
-      fixture.detectChanges();
+      render();
       expect(query('tablet-period-deviates')).not.toBeNull();
 
       // Nachladen ohne Abschnittswechsel: Nachtrag bleibt im 1. Abschnitt.
@@ -721,14 +739,14 @@ describe('TabletCaptureComponent', () => {
 
       reload(inPeriod(4711, 3));
       expect(component.viewPeriod).toBe(3);
-      fixture.detectChanges();
+      render();
       expect(query('tablet-period-deviates')).toBeNull();
     });
 
     it('führt zurück zum Spielabschnitt per Knopf', async () => {
       await start(inPeriod(4711, 2));
       component.selectViewPeriod(1);
-      fixture.detectChanges();
+      render();
       query('tablet-follow-game-period')!.click();
       expect(component.viewPeriod).toBe(2);
     });
@@ -741,7 +759,7 @@ describe('TabletCaptureComponent', () => {
       expect(component.viewPeriod).toBe(1);
       expect(component.draft!.period).toBe(1);
       expect(component.periodChangePending).toBeTrue();
-      fixture.detectChanges();
+      render();
       expect(query('tablet-period-pending')).not.toBeNull();
 
       component.setDraftResult('saved');
@@ -814,14 +832,14 @@ describe('TabletCaptureComponent', () => {
       };
       field.dispatchEvent(new PointerEvent('pointerdown', at));
       field.dispatchEvent(new PointerEvent('pointerup', at));
-      fixture.detectChanges();
+      render();
     }
 
     function click(testId: string): void {
       fixture.nativeElement
         .querySelector('[data-testid="' + testId + '"]')
         .click();
-      fixture.detectChanges();
+      render();
     }
 
     it('speichert einen Freischlag nach Tipp und Wahl mit Stelle und Tippzeitpunkt', async () => {
@@ -851,7 +869,7 @@ describe('TabletCaptureComponent', () => {
       ]);
       post.flush({ shots: [asShot(sent[0])] });
       await settle();
-      fixture.detectChanges();
+      render();
 
       expect(
         fixture.nativeElement.querySelectorAll(
@@ -1041,7 +1059,7 @@ describe('TabletCaptureComponent', () => {
       await settle();
 
       component.editShot(component.allShots[0]);
-      fixture.detectChanges();
+      render();
       expect(component.draft!.kind).toBe('free_hit');
       expect(
         fixture.nativeElement.querySelector(
@@ -1081,7 +1099,7 @@ describe('TabletCaptureComponent', () => {
         'game',
         game(4711, { events: [goal] as unknown as Game['events'] })
       );
-      fixture.detectChanges();
+      render();
       const freeHit: Shot = {
         client_uuid: 'f1',
         kind: 'free_hit',
@@ -1128,7 +1146,7 @@ describe('TabletCaptureComponent', () => {
       expect(component.draft).toBeNull();
       post.flush({ shots: [asShot(sent[0])] });
       await settle();
-      fixture.detectChanges();
+      render();
 
       expect(
         fixture.nativeElement.querySelector('[data-testid="tablet-last-mark"]')
@@ -1194,18 +1212,11 @@ describe('TabletCaptureComponent', () => {
     }
 
     // Methodenaufrufe markieren die Komponente nicht als geändert.
-    function render(): void {
-      (
-        component as unknown as { _cdr: { markForCheck(): void } }
-      )._cdr.markForCheck();
-      fixture.detectChanges();
-    }
-
     function click(testId: string): void {
       fixture.nativeElement
         .querySelector('[data-testid="' + testId + '"]')
         .click();
-      fixture.detectChanges();
+      render();
     }
 
     it('bietet keinen Schnellzähler für Paraden mehr an', async () => {
@@ -1219,7 +1230,7 @@ describe('TabletCaptureComponent', () => {
 
     it('zeigt ältere Paraden ohne Position in der Liste, ohne Feldmarke, und löscht sie', async () => {
       fixture.componentRef.setInput('game', inPeriod(4711, 2));
-      fixture.detectChanges();
+      render();
       const save: Shot = {
         client_uuid: 's1',
         kind: 'shot',
@@ -1275,7 +1286,7 @@ describe('TabletCaptureComponent', () => {
 
       // Der Schalter übersteht ein Neuladen, aber nicht den Abschnittswechsel.
       fixture.componentRef.setInput('game', inPeriod(4711, 2));
-      fixture.detectChanges();
+      render();
       expect(component.isGoaliePulled('guest')).toBeFalse();
     });
 
@@ -1391,7 +1402,7 @@ describe('TabletCaptureComponent', () => {
     it('schaltet „Torwart raus“ nur im laufenden Abschnitt', async () => {
       await start(inPeriod(4711, 2));
       component.selectViewPeriod(1);
-      fixture.detectChanges();
+      render();
 
       const toggle = fixture.nativeElement.querySelector(
         '[data-testid="tablet-goalie-pulled-guest"]'
@@ -1401,7 +1412,7 @@ describe('TabletCaptureComponent', () => {
       expect(component.pulledGoalies).toEqual({});
 
       component.followGamePeriod();
-      fixture.detectChanges();
+      render();
       click('tablet-goalie-pulled-guest');
       expect(component.pulledGoalies).toEqual({ guest: 2 });
       expect(component.isGoaliePulled('guest')).toBeTrue();
@@ -1436,14 +1447,7 @@ describe('TabletCaptureComponent', () => {
       fixture.nativeElement
         .querySelector('[data-testid="' + testId + '"]')
         .click();
-      fixture.detectChanges();
-    }
-
-    function render(): void {
-      (
-        component as unknown as { _cdr: { markForCheck(): void } }
-      )._cdr.markForCheck();
-      fixture.detectChanges();
+      render();
     }
 
     it('hält beim Tipp Stelle und Zeitpunkt fest und zeigt die Wahl', async () => {
@@ -1574,7 +1578,7 @@ describe('TabletCaptureComponent', () => {
       await start(inPeriod(4711, 1));
       component.tapField(0.8, 0.5, T0);
       fixture.componentRef.setInput('game', inPeriod(4711, 2));
-      fixture.detectChanges();
+      render();
 
       expect(component.viewPeriod).toBe(1);
       expect(component.periodChangePending).toBeTrue();
@@ -1645,7 +1649,7 @@ describe('TabletCaptureComponent', () => {
       await start();
       component.tapField(0.8, 0.5, T0);
       fixture.componentRef.setInput('game', game(4712));
-      fixture.detectChanges();
+      render();
       http.expectOne(API + 'games/4712/shots.json').flush({ shots: [] });
 
       expect(component.pendingTap).toBeNull();
@@ -1679,7 +1683,7 @@ describe('TabletCaptureComponent', () => {
       expect(toggle().getAttribute('aria-pressed')).toBe('false');
 
       toggle().click();
-      fixture.detectChanges();
+      render();
 
       expect(component.fullscreen).toBeTrue();
       expect(root().classList).toContain('fixed');
@@ -1695,7 +1699,7 @@ describe('TabletCaptureComponent', () => {
       ).toContain('tc-fs-body');
 
       toggle().click();
-      fixture.detectChanges();
+      render();
       expect(component.fullscreen).toBeFalse();
       expect(root().classList).not.toContain('fixed');
       expect(document.body.style.overflow).toBe('');
@@ -1705,10 +1709,10 @@ describe('TabletCaptureComponent', () => {
       await start();
       spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
       component.enterFullscreen();
-      fixture.detectChanges();
+      render();
 
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      fixture.detectChanges();
+      render();
 
       expect(component.fullscreen).toBeFalse();
       expect(root().classList).not.toContain('fixed');
@@ -1722,7 +1726,7 @@ describe('TabletCaptureComponent', () => {
       );
       component.enterFullscreen();
       await settle();
-      fixture.detectChanges();
+      render();
 
       expect(component.fullscreen).toBeTrue();
       expect(root().classList).toContain('fixed');
@@ -1738,7 +1742,7 @@ describe('TabletCaptureComponent', () => {
       (root() as unknown as { requestFullscreen: unknown }).requestFullscreen =
         undefined;
       component.enterFullscreen();
-      fixture.detectChanges();
+      render();
       expect(component.fullscreen).toBeTrue();
       expect(root().classList).toContain('fixed');
     });
@@ -1767,7 +1771,7 @@ describe('TabletCaptureComponent', () => {
       // Esc im Browser-Vollbild erreicht die Seite nicht, nur dieses Ereignis.
       current.and.returnValue(null);
       document.dispatchEvent(new Event('fullscreenchange'));
-      fixture.detectChanges();
+      render();
       expect(component.fullscreen).toBeFalse();
       expect(root().classList).not.toContain('fixed');
       expect(exit).not.toHaveBeenCalled();
@@ -1816,7 +1820,7 @@ describe('TabletCaptureComponent', () => {
       fixture.nativeElement
         .querySelector('[data-testid="tablet-feedback-toggle"]')
         .click();
-      fixture.detectChanges();
+      render();
       await fixture.whenStable();
       const textarea = () =>
         fixture.nativeElement.querySelector(
@@ -1824,14 +1828,14 @@ describe('TabletCaptureComponent', () => {
         ) as HTMLTextAreaElement;
       textarea().value = 'Spielfeld endlich groß';
       textarea().dispatchEvent(new Event('input'));
-      fixture.detectChanges();
+      render();
       expect(feedback().message).toBe('Spielfeld endlich groß');
 
       component.toggleFullscreen();
-      fixture.detectChanges();
+      render();
       expect(feedback()).toBe(firstFeedback);
       component.toggleFullscreen();
-      fixture.detectChanges();
+      render();
 
       expect(feedback()).toBe(firstFeedback);
       expect(highlight()).toBe(firstHighlight);
@@ -1857,30 +1861,30 @@ describe('TabletCaptureComponent', () => {
       // Nur die Ebene: Die Meldungen der Seite liegen darüber.
       component.enterFullscreen();
       notifications.error('Vorher');
-      fixture.detectChanges();
+      render();
       expect(notices().length).toBe(0);
 
       current.and.returnValue(root());
       document.dispatchEvent(new Event('fullscreenchange'));
       notifications.error('Keine Verbindung');
       notifications.error('Keine Verbindung');
-      fixture.detectChanges();
+      render();
       expect(notices().length).toBe(1);
       expect(notices()[0].textContent).toContain('Keine Verbindung');
 
       notifications.dismiss('Keine Verbindung');
-      fixture.detectChanges();
+      render();
       expect(notices().length).toBe(0);
 
       notifications.warning('Noch eine');
-      fixture.detectChanges();
+      render();
       notices()[0].querySelector('button').click();
-      fixture.detectChanges();
+      render();
       expect(notices().length).toBe(0);
 
       notifications.error('Zum Schluss');
       component.exitFullscreen();
-      fixture.detectChanges();
+      render();
       expect(component.fullscreenNotices).toEqual([]);
     });
 
@@ -1888,7 +1892,7 @@ describe('TabletCaptureComponent', () => {
       await start();
       spyOn(root(), 'requestFullscreen').and.returnValue(Promise.resolve());
       toggle().click();
-      fixture.detectChanges();
+      render();
 
       const field = fixture.nativeElement.querySelector(
         '[data-testid="tablet-field"]'
@@ -1905,11 +1909,11 @@ describe('TabletCaptureComponent', () => {
       };
       field.dispatchEvent(new PointerEvent('pointerdown', at));
       field.dispatchEvent(new PointerEvent('pointerup', at));
-      fixture.detectChanges();
+      render();
       fixture.nativeElement
         .querySelector('[data-testid="tablet-choice-shot"]')
         .click();
-      fixture.detectChanges();
+      render();
 
       expect(component.draft!.screenX).toBeCloseTo(0.75, 2);
       expect(
