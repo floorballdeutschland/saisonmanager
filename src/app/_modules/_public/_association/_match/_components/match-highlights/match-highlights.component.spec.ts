@@ -281,6 +281,69 @@ describe('MatchHighlightsComponent', () => {
     }
   });
 
+  describe('scrollbare Szenenliste', () => {
+    const list = () =>
+      el().querySelector('[data-test="highlights-scenes"]') as HTMLElement;
+    const more = () => el().querySelector('[data-test="highlights-more"]');
+
+    /** Wie ab lg: Die Liste ist niedriger als ihr Inhalt und scrollt. */
+    function makeScrollable() {
+      list().style.height = '100px';
+      list().style.overflowY = 'auto';
+      component.updateMoreBelow();
+      fixture.detectChanges();
+    }
+
+    it('zeigt den Verlauf nur, solange unten noch Szenen folgen', () => {
+      component.updateMoreBelow();
+      fixture.detectChanges();
+      expect(more()).toBeNull();
+
+      makeScrollable();
+      expect(more()).toBeTruthy();
+
+      list().scrollTop = list().scrollHeight;
+      list().dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      expect(more()).toBeNull();
+    });
+
+    it('scrollt beim Weiterschalten die laufende Szene ins Bild', async () => {
+      makeScrollable();
+      await consentAndReady();
+      expect(list().scrollTop).toBe(0);
+
+      at(110);
+      at(120);
+      at(400);
+      at(420);
+      fixture.detectChanges();
+
+      expect(component.currentIndex).toBe(2);
+      const listBox = list().getBoundingClientRect();
+      const itemBox = list().children[2].getBoundingClientRect();
+      expect(list().scrollTop).toBeGreaterThan(0);
+      expect(itemBox.bottom).toBeLessThanOrEqual(listBox.bottom + 1);
+    });
+
+    it('scrollt eine vor der Zustimmung gewählte Szene ins Bild', () => {
+      makeScrollable();
+      component.selectScene(2);
+      expect(list().scrollTop).toBeGreaterThan(0);
+    });
+
+    it('scrollt die Seite nicht mit', async () => {
+      makeScrollable();
+      const scrollIntoView = spyOn(
+        Element.prototype,
+        'scrollIntoView'
+      ).and.callThrough();
+      await consentAndReady();
+      component.selectScene(2);
+      expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Spielwechsel oder Abbau während des Ladens', () => {
     let resolvePlayer: (p: YtPlayer) => void;
 
