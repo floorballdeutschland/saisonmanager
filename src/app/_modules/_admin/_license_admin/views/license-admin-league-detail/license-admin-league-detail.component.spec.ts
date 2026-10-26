@@ -9,7 +9,7 @@ import {
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { getTranslocoTestingModule, SessionService } from '@floorball/core';
-import { PlayerWithLicense } from '@floorball/types';
+import { PlayerWithLicense, TeamWithPlayers } from '@floorball/types';
 
 describe('LicenseAdminLeagueDetailComponent', () => {
   beforeEach(async () => {
@@ -194,6 +194,33 @@ describe('LicenseAdminLeagueDetailComponent', () => {
       expect(component.needsParentalConsent(player(undefined))).toBe(false);
     });
   });
+  // Die API prueft keine Hoechstzahl je Mannschaft; die SBK zaehlt anhand der
+  // Markierung, die die API je Zeile setzt.
+  describe('femaleOverageCount', () => {
+    function player(femaleOverage?: boolean): PlayerWithLicense {
+      return {
+        team_license: { female_overage: femaleOverage },
+      } as unknown as PlayerWithLicense;
+    }
+
+    it('zaehlt nur die markierten Spielerinnen der Mannschaft', () => {
+      const component = TestBed.createComponent(
+        LicenseAdminLeagueDetailComponent
+      ).componentInstance;
+
+      const team = {
+        players: [player(true), player(false), player(undefined), player(true)],
+      } as unknown as TeamWithPlayers;
+
+      expect(component.femaleOverageCount(team)).toBe(2);
+      expect(
+        component.femaleOverageCount({
+          players: [player(false)],
+        } as unknown as TeamWithPlayers)
+      ).toBe(0);
+    });
+  });
+
   // Die Liga-Detailansicht liest den Zeitpunkt je Spieler aus der Zeile, nicht
   // aus einem Eintrag der Verbandsliste.
   describe('Uploadzeitpunkt der Dokumente', () => {

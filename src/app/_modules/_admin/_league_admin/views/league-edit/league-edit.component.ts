@@ -398,6 +398,10 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
+  // Overage-Regel fuer Spielerinnen: ein oder zwei Jahre decken die bekannten
+  // Regelungen ab; die API liesse bis 9 zu.
+  readonly femaleOverageOptions = [1, 2];
+
   @ViewChild('minimumAgeInput')
   private _minimumAgeInput?: ElementRef<HTMLInputElement>;
 
@@ -530,6 +534,16 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       (!Number.isInteger(minimumAge) || minimumAge < 1 || minimumAge > 99)
     ) {
       add('errMinimumAge', 'regeln');
+    }
+
+    // Die Overage-Regel lockert nur einen Stichtag "geboren ab"; bei "geboren
+    // bis" oder ohne Stichtag lehnt die API sie ab (gleiche Bedingung wie
+    // League#female_overage_needs_born_from_deadline).
+    if (
+      league.female_overage_years &&
+      (league.before_deadline || !league.deadline)
+    ) {
+      add('errFemaleOverage', 'regeln');
     }
 
     // Altliga: kein Feld, das man korrigieren koennte, also kein Reiter.

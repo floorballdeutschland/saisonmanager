@@ -135,8 +135,8 @@
   "situation": {
     "penaltyShot": "Penalty shot",
     "penaltyShotShort": "penalty shot",
-    "extraAttacker": "6 on 5",
-    "extraAttackerShort": "6 on 5",
+    "extraAttacker": "Goalie pulled",
+    "extraAttackerShort": "goalie pulled",
     "emptyNetShort": "empty net"
   },
   "fullscreen": {

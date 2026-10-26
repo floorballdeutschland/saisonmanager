@@ -32,10 +32,8 @@
   // Zwei-Minuten-Strafe ab, und die zehn Minuten sagen, wie lange der Spieler
   // noch fehlt.
   //
-  // NICHT dabei ist die Matchstrafe (`penalty_ms_*`): Der bestrafte Spieler
-  // ist fuer den Rest der Partie draussen, die Zeit sitzt ein ANDERER ab --
-  // und wer das ist, steht in keinem Feld des Spielberichts. Die Tafel wuerde
-  // eine Nummer nennen, die gar nicht auf der Strafbank sitzt.
+  // Die Matchstrafe (`penalty_ms_*`) steht nicht selbst in dieser Liste,
+  // sondern laeuft als ihre Bankstrafe 2+2 mit (siehe MATCHSTRAFE).
   //
   // `penalty_5` ist im Strafenkatalog inzwischen ausgeblendet (die grosse
   // Strafe gibt es im Regelwerk nicht mehr), steht aber in aelteren Spielen
@@ -57,6 +55,30 @@
   // steht dort weiter eine Zeit, obwohl die Mannschaft wieder vollzaehlig ist
   // -- denn beendet wurde die begleitende Zeitstrafe, nicht diese hier.
   var KLEINE_STRAFE = { penalty_2: true, penalty_2and2: true };
+
+  // Matchstrafen, alle Varianten des Katalogs (Setting#penalties): Volle und
+  // technische Matchstrafe sowie die ausgeblendeten Spielstrafen 1 bis 3.
+  //
+  // Eine Matchstrafe zieht IMMER eine Bankstrafe 2+2 nach sich, auch wenn die
+  // nicht als eigenes Ereignis im Spielbericht steht. Die Mannschaft spielt
+  // also ab diesem Zeitpunkt in Unterzahl, und diese Datei rechnet die
+  // Matchstrafe deshalb als 2+2. Die Zeit sitzt ein ANDERER Spieler ab, und
+  // wer das ist, steht in keinem Feld des Spielberichts: Die Tafel zeigt dort
+  // „Team" statt der Nummer des bestraften Spielers (siehe laufende).
+  //
+  // Steht beim selben Team im selben Abschnitt zur selben Zeit zusaetzlich
+  // eine 2+2 (oder in Altdaten eine 5), ist das genau diese Bankstrafe; dann
+  // laeuft die Matchstrafe nicht ein zweites Mal mit. Je eingetragener
+  // Strafe wird eine Matchstrafe aufgewogen.
+  var MATCHSTRAFE = {
+    penalty_ms_full: true,
+    penalty_ms_tech: true,
+    penalty_ms1: true,
+    penalty_ms2: true,
+    penalty_ms3: true,
+  };
+  var BANKSTRAFE = "penalty_2and2";
+  var ALS_BANKSTRAFE = { penalty_2and2: true, penalty_5: true };
 
   // Laenge einer einzelnen kleinen Strafe. Eine doppelte besteht aus zwei
   // solchen Teilen hintereinander, und genau so wird sie unten gerechnet.
@@ -156,6 +178,20 @@
     var strafen = [];
     var tore = [];
 
+    // Eingetragene Bankstrafen je Team und Zeit, gegen die Matchstrafen
+    // aufgewogen werden (siehe MATCHSTRAFE).
+    var bankstrafen = {};
+    for (var b = 0; b < events.length; b++) {
+      var kandidat = events[b];
+      if (abschnittVon(kandidat.period) !== abschnitt) continue;
+      if (kandidat.event_type !== "penalty") continue;
+      if (!ALS_BANKSTRAFE[kandidat.penalty_type]) continue;
+      var zeitpunkt = zeitMs(kandidat.time);
+      if (zeitpunkt === null) continue;
+      var schluessel = kandidat.event_team + "|" + zeitpunkt;
+      bankstrafen[schluessel] = (bankstrafen[schluessel] || 0) + 1;
+    }
+
     for (var i = 0; i < events.length; i++) {
       var event = events[i];
       if (abschnittVon(event.period) !== abschnitt) continue;
@@ -170,23 +206,35 @@
 
       if (event.event_type !== "penalty") continue;
 
-      var dauer = DAUER_MS[event.penalty_type];
+      var art = event.penalty_type;
+      var ausMatchstrafe = !!MATCHSTRAFE[art];
+      if (ausMatchstrafe) {
+        var key = event.event_team + "|" + zeit;
+        if (bankstrafen[key] > 0) {
+          bankstrafen[key] -= 1;
+          continue;
+        }
+        art = BANKSTRAFE;
+      }
+
+      var dauer = DAUER_MS[art];
       if (!dauer) continue;
 
-      var teile = KLEINE_STRAFE[event.penalty_type]
+      var teile = KLEINE_STRAFE[art]
         ? Math.max(1, Math.round(dauer / TEIL_MS))
         : 1;
 
       strafen.push({
         event: event,
+        ausMatchstrafe: ausMatchstrafe,
         seite: event.event_team,
         start: zeit,
         dauer: dauer,
         // Nur die kleine Strafe endet vorzeitig; die grosse und die
         // persoenliche laufen in jedem Fall ab.
-        kuerzbar: !!KLEINE_STRAFE[event.penalty_type],
+        kuerzbar: !!KLEINE_STRAFE[art],
         // Nur diese Arten bringen eine Mannschaft in Unterzahl.
-        unterzahl: !!UNTERZAHL_STRAFE[event.penalty_type],
+        unterzahl: !!UNTERZAHL_STRAFE[art],
         restTeile: teile,
         teilLaenge: teile > 1 ? TEIL_MS : dauer,
         ende: zeit + dauer,
@@ -282,8 +330,10 @@
       offen.push({
         event_id: event.event_id,
         side: event.event_team,
-        number: event.number,
-        name: event.scorer_name || null,
+        // Bei einer Matchstrafe sitzt ein anderer die Zeit ab: keine Nummer,
+        // nummerText macht daraus „Team".
+        number: strafe.ausMatchstrafe ? null : event.number,
+        name: strafe.ausMatchstrafe ? null : event.scorer_name || null,
         penalty_type: event.penalty_type,
         // Gedeckelt: Geht die Uhr des Bedienfelds der des Sekretariats
         // nach, stuende hier sonst mehr als die Strafe ueberhaupt dauert.

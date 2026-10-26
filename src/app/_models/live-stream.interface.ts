@@ -35,6 +35,11 @@ export interface LiveStreamGame {
   vod_link: string | null;
   result?: { home_goals: number; guest_goals: number } | null;
   result_string?: string | null;
+  /**
+   * Liefert die Spielseite mindestens eine Torszene (fe#612)? Ältere
+   * Antworten ohne das Feld zählen als nein.
+   */
+  has_highlights?: boolean;
 }
 
 export interface LiveStreamDay {

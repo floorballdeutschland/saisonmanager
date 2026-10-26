@@ -216,7 +216,10 @@
     "liftConfirmContent": "Die Sperre wird aufgehoben und die Lizenz gilt wieder. Der Vorgang bleibt im Lizenzverlauf stehen.",
     "liftConfirmSubmit": "Sperre aufheben",
     "liftedNotice": "Die Sperre wurde aufgehoben.",
-    "liftError": "Die Sperre konnte nicht aufgehoben werden."
+    "liftError": "Die Sperre konnte nicht aufgehoben werden.",
+    "overageBadge": "Overage",
+    "overageTitle": "Nur über die Overage-Regel der Liga spielberechtigt",
+    "overageCount": "Overage-Spielerinnen: {{ count }}"
   },
   "clubIndex": {
     "title": "Meine Lizenzen",
