@@ -429,6 +429,38 @@ describe('MatchComponent', () => {
       component.ngOnDestroy();
     });
 
+    // fe#611: Die Torszenen stehen oben in der Übersicht, vor dem Rest.
+    it('zeigt die Highlights in der Übersicht nur bei tablet_capture', () => {
+      const ohne = loadPublic({ id: 1 });
+      expect(
+        el(ohne.fixture).querySelector('fb-match-highlights-panel')
+      ).toBeNull();
+      ohne.component.ngOnDestroy();
+
+      const mit = loadPublic({ id: 1, tablet_capture: true });
+      const panel = el(mit.fixture).querySelector('fb-match-highlights-panel');
+      expect(panel).toBeTruthy();
+      expect(panel?.nextElementSibling?.tagName.toLowerCase()).toBe(
+        'fb-match-public'
+      );
+      mit.component.ngOnDestroy();
+    });
+
+    it('zeigt die Highlights nicht im Reiter Ausführliche Statistik', () => {
+      const { fixture, component, http } = loadPublic({
+        id: 1,
+        tablet_capture: true,
+      });
+      component.setTab('stats');
+      http
+        .expectOne((r) => r.url.endsWith('games/1.json'))
+        .flush({ id: 1, tablet_capture: true });
+      fixture.detectChanges();
+
+      expect(el(fixture).querySelector('fb-match-highlights-panel')).toBeNull();
+      component.ngOnDestroy();
+    });
+
     it('fällt beim Wechsel in ein Spiel ohne Tablet-Daten auf die Übersicht zurück', () => {
       const { fixture, component, http } = loadPublic({
         id: 1,
