@@ -442,12 +442,10 @@
     "saved": "Course processes saved."
   },
   "suggestionRules": {
-    "title": "License suggestion for courses",
-    "intro": "For every passed participation in a course in the system, the licensing view suggests a level. Per course type the first rule in order wins whose level the course awards and whose minimum is reached. Games according to match reports are counted in the season that began in the calendar year before the course ended. FD still sets the level.",
-    "add": "+ Rule",
+    "title": "Suggestion after courses",
+    "intro": "Each level shows after which course it is suggested in the licensing view. Games according to match reports are counted in the season that began in the calendar year before the course ended. Rules with a minimum are checked first, highest first, then those without condition. FD still sets the level.",
+    "add": "+ Suggestion rule",
     "courseType": "Course type",
-    "level": "Level",
-    "position": "Order",
     "minGames": "Minimum games",
     "noCondition": "no condition",
     "fieldSize": "Counting",
@@ -472,6 +470,10 @@
       "a": "A course",
       "retest": "Retest",
       "other": "Other course"
-    }
+    },
+    "suggestedAfter": "Suggested after",
+    "summaryCondition": "from {{ min }} games ({{ field }})",
+    "summaryFallback": "without condition",
+    "edit": "Edit"
   }
 }

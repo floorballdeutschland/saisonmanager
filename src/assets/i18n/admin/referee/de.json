@@ -442,12 +442,10 @@
     "saved": "Kursprozesse gespeichert."
   },
   "suggestionRules": {
-    "title": "Lizenzvorschlag bei Kursen",
-    "intro": "Für jede bestandene Teilnahme an einem Kurs im System schlägt die Lizenzvergabe eine Stufe vor. Je Kurstyp gewinnt die erste Regel in der Reihenfolge, deren Stufe der Kurs vergibt und deren Mindestzahl erreicht ist. Gezählt werden Spiele laut Spielbericht in der Saison, die im Kalenderjahr vor dem Kursende begann. Die Stufe setzt FD weiterhin selbst.",
-    "add": "+ Regel",
+    "title": "Vorschlag nach Kursen",
+    "intro": "Unter jeder Stufe steht, nach welchem Kurs sie in der Lizenzvergabe vorgeschlagen wird. Gezählt werden Spiele laut Spielbericht in der Saison, die im Kalenderjahr vor dem Kursende begann. Geprüft werden zuerst Regeln mit Mindestzahl, die höchste vorn, danach die ohne Bedingung. Die Stufe setzt FD weiterhin selbst.",
+    "add": "+ Vorschlagsregel",
     "courseType": "Kurstyp",
-    "level": "Stufe",
-    "position": "Reihenfolge",
     "minGames": "Mindestens Spiele",
     "noCondition": "ohne Bedingung",
     "fieldSize": "Wertung",
@@ -472,6 +470,10 @@
       "a": "A-Kurs",
       "retest": "Nachtest",
       "other": "Sonstiger Kurs"
-    }
+    },
+    "suggestedAfter": "Vorschlag nach",
+    "summaryCondition": "ab {{ min }} Spielen ({{ field }})",
+    "summaryFallback": "ohne Bedingung",
+    "edit": "Bearbeiten"
   }
 }

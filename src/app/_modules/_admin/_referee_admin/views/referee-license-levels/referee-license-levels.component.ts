@@ -12,7 +12,11 @@ import {
   RefereeService,
   SessionService,
 } from '@floorball/core';
-import { RefereeLicenseLevel } from '@floorball/types';
+import {
+  RefereeLicenseLevel,
+  RefereeLicenseSuggestionRule,
+  RefereeLicenseSuggestionRulesResponse,
+} from '@floorball/types';
 
 @Component({
   templateUrl: './referee-license-levels.component.html',
@@ -30,6 +34,11 @@ export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
   showNewForm = false;
   // Pflege ist Admin-only (bundesweiter Katalog) – Lesen bleibt RSK/SBK/Ansetzer erlaubt.
   isAdmin = false;
+  // Vorschlagsregeln je Stufe (api#861). Nur für Admin geladen: Die API
+  // sperrt sie für alle anderen, und ein 403 meldete der ErrorInterceptor
+  // auf einer Seite, die RSK und SBK zum Lesen öffnen.
+  suggestionRules?: RefereeLicenseSuggestionRulesResponse;
+  rulesByLevel = new Map<number, RefereeLicenseSuggestionRule[]>();
 
   private _destroy$ = new Subject<void>();
 
@@ -46,6 +55,7 @@ export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (user) => {
           this.isAdmin = !!user?.permissions?.['admin'];
+          if (this.isAdmin) this._loadSuggestionRules();
           this._cdr.markForCheck();
         },
       });
@@ -70,6 +80,32 @@ export class RefereeLicenseLevelsComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.loading = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  rulesFor(level: RefereeLicenseLevel): RefereeLicenseSuggestionRule[] {
+    return this.rulesByLevel.get(level.id) ?? [];
+  }
+
+  private _loadSuggestionRules(): void {
+    if (this.suggestionRules) return;
+    this._refereeService
+      .adminGetLicenseSuggestionRules()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (response) => {
+          this.suggestionRules = response;
+          this.rulesByLevel = new Map();
+          for (const rule of response.rules) {
+            const id = rule.referee_license_level_id;
+            if (id === null) continue;
+            this.rulesByLevel.set(id, [
+              ...(this.rulesByLevel.get(id) ?? []),
+              rule,
+            ]);
+          }
           this._cdr.markForCheck();
         },
       });

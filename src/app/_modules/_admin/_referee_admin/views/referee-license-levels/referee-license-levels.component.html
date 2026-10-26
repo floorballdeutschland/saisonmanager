@@ -195,9 +195,29 @@
               </td>
             </tr>
           }
+          @if (suggestionRules && editingId !== l.id) {
+            <tr class="border-b border-fb-gray-800">
+              <td colspan="5" class="pb-2 pl-4">
+                <fb-referee-license-suggestion-rules
+                  [levelId]="l.id"
+                  [options]="suggestionRules"
+                  [rules]="rulesFor(l)"
+                />
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>
+  }
+
+  @if (suggestionRules) {
+    <p class="text-xs text-fb-gray-500 mt-4" data-test="suggestion-intro">
+      <span class="font-bold">{{
+        "refereeAdmin.suggestionRules.title" | transloco
+      }}</span>
+      {{ "refereeAdmin.suggestionRules.intro" | transloco }}
+    </p>
   }
 
   @if (!loading && levels.length === 0) {

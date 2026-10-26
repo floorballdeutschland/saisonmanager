@@ -2,23 +2,26 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Input,
   OnDestroy,
-  OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { NotificationService, RefereeService } from '@floorball/core';
 import {
-  RefereeLicenseLevel,
-  RefereeLicenseSuggestionFieldSize,
   RefereeLicenseSuggestionRule,
+  RefereeLicenseSuggestionRulesResponse,
 } from '@floorball/types';
 
+type RuleOptions = Omit<RefereeLicenseSuggestionRulesResponse, 'rules'>;
+
 /**
- * Regeln für den Lizenzvorschlag bei Kursen im System (api#861). Steht in
- * den Schiri-Einstellungen (nur Admin). Der Vorschlag erscheint in der
- * Lizenzvergabe; die Stufe setzt FD dort weiterhin selbst.
+ * Wann diese Lizenzstufe nach einem Kurs vorgeschlagen wird (api#861). Steht
+ * unter jeder Stufe in der Maske der Lizenzstufen, nur für Admin. Der
+ * Vorschlag erscheint in der Lizenzvergabe; die Stufe setzt FD dort weiterhin
+ * selbst. Eine Reihenfolge der Regeln gibt es nicht, die ergibt die API aus
+ * der Mindestzahl (siehe RefereeLicenseSuggestion).
  */
 @Component({
   selector: 'fb-referee-license-suggestion-rules',
@@ -27,15 +30,12 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class RefereeLicenseSuggestionRulesComponent
-  implements OnInit, OnDestroy
-{
-  rules: RefereeLicenseSuggestionRule[] = [];
-  courseTypes: string[] = [];
-  fieldSizes: RefereeLicenseSuggestionFieldSize[] = [];
-  ageGroups: string[] = [];
-  levels: RefereeLicenseLevel[] = [];
-  loading = false;
+export class RefereeLicenseSuggestionRulesComponent implements OnDestroy {
+  @Input({ required: true }) levelId!: number;
+  @Input({ required: true }) options!: RuleOptions;
+  @Input() rules: RefereeLicenseSuggestionRule[] = [];
+
+  editing = new Set<RefereeLicenseSuggestionRule>();
   busy = false;
 
   private _destroy$ = new Subject<void>();
@@ -47,48 +47,25 @@ export class RefereeLicenseSuggestionRulesComponent
     private _cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.loading = true;
-    forkJoin({
-      rules: this._service.adminGetLicenseSuggestionRules(),
-      levels: this._service.adminGetLicenseLevels(),
-    })
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: ({ rules, levels }) => {
-          this.rules = rules.rules;
-          this.courseTypes = rules.course_types;
-          this.fieldSizes = rules.field_sizes;
-          this.ageGroups = rules.age_groups;
-          this.levels = levels.filter((l) => l.active);
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-      });
-  }
-
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
   }
 
   add(): void {
-    const last = this.rules[this.rules.length - 1];
-    this.rules = [
-      ...this.rules,
-      {
-        course_type: last?.course_type ?? 'f',
-        referee_license_level_id: null,
-        position: (last?.position ?? -1) + 1,
-        min_games: null,
-        field_size: 'all',
-        age_groups: [],
-      },
-    ];
+    const rule: RefereeLicenseSuggestionRule = {
+      course_type: this.options.course_types[0] ?? 'f',
+      referee_license_level_id: this.levelId,
+      min_games: null,
+      field_size: 'all',
+      age_groups: [],
+    };
+    this.rules = [...this.rules, rule];
+    this.editing.add(rule);
+  }
+
+  edit(rule: RefereeLicenseSuggestionRule): void {
+    this.editing.add(rule);
   }
 
   hasAgeGroup(rule: RefereeLicenseSuggestionRule, ageGroup: string): boolean {
@@ -113,6 +90,7 @@ export class RefereeLicenseSuggestionRulesComponent
       .subscribe({
         next: (saved) => {
           this.rules = this.rules.map((r) => (r === rule ? saved : r));
+          this.editing.delete(rule);
           this.busy = false;
           this._notify.success(
             this._transloco.translate('refereeAdmin.suggestionRules.saved')
@@ -130,6 +108,7 @@ export class RefereeLicenseSuggestionRulesComponent
   remove(rule: RefereeLicenseSuggestionRule): void {
     if (!rule.id) {
       this.rules = this.rules.filter((r) => r !== rule);
+      this.editing.delete(rule);
       return;
     }
     this.busy = true;
@@ -139,6 +118,7 @@ export class RefereeLicenseSuggestionRulesComponent
       .subscribe({
         next: () => {
           this.rules = this.rules.filter((r) => r !== rule);
+          this.editing.delete(rule);
           this.busy = false;
           this._cdr.markForCheck();
         },
