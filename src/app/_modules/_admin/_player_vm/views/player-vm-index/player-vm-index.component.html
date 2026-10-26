@@ -3,6 +3,32 @@
     {{ "playerVm.index.title" | transloco }}
   </h1>
 
+  <!-- Die Korrekturanträge zu Spielerdaten stehen fuer Vereine hier als
+       Reiter und nicht mehr als eigener Menuepunkt (fe#585). Der Reiter
+       erscheint nur mit `menu_item_player_change_requests`, also nicht fuer
+       den Teammanager; ohne ihn bleibt die Seite ohne Reiterleiste. Die
+       eigene Seite /verwaltung/spieler-korrekturen besteht weiter. -->
+  @if (showChangeRequests) {
+    <fb-tabs [label]="'playerVm.tabs.label' | transloco">
+      <ng-template
+        fbTab="spieler"
+        [fbTabLabel]="'playerVm.tabs.players' | transloco"
+      >
+        <ng-container *ngTemplateOutlet="playersContent" />
+      </ng-template>
+      <ng-template
+        fbTab="korrekturen"
+        [fbTabLabel]="'playerVm.tabs.changeRequests' | transloco"
+      >
+        <fb-player-change-request-list [embedded]="true" />
+      </ng-template>
+    </fb-tabs>
+  } @else {
+    <ng-container *ngTemplateOutlet="playersContent" />
+  }
+</div>
+
+<ng-template #playersContent>
   <!-- Export und Import stehen nebeneinander und heissen auch so (fe#584).
        Beide braucht ein Verein selten, das Anlegen dagegen staendig; sie
        liegen deshalb eingeklappt, der Anlege-Knopf bleibt offen sichtbar.
@@ -581,4 +607,4 @@
       </p>
     }
   }
-</div>
+</ng-template>
