@@ -92,54 +92,75 @@
       </div>
     </div>
 
-    <ol class="list-none p-0 m-0 min-w-0" data-test="highlights-scenes">
-      @for (scene of scenes; track scene.start + "-" + i; let i = $index) {
-        <li>
-          <button
-            type="button"
-            class="w-full text-left flex items-start gap-3 py-2 px-2 border-b border-fb-gray-200 hover:bg-fb-gray-800"
-            [class.bg-fb-gray-700]="i === currentIndex"
-            [attr.aria-current]="i === currentIndex ? 'true' : null"
-            (click)="selectScene(i)"
-            data-test="highlights-scene"
-          >
-            <span class="font-bold tabular-nums whitespace-nowrap min-w-[3rem]">
-              @if (isMark(scene)) {
-                <span class="text-violet-800">{{
-                  "match.highlights.mark" | transloco
-                }}</span>
-              } @else {
-                {{ scene.home_goals }}:{{ scene.guest_goals }}
-              }
-            </span>
-            <span class="min-w-0 flex-1">
-              @if (!isMark(scene)) {
-                <span class="block font-bold truncate">
-                  {{
-                    personLabel(scene.scorer) ||
-                      (scene.team === "home" ? homeName : guestName)
-                  }}
-                </span>
-              }
-              @if (scene.assist) {
-                <span class="block text-xs text-fb-gray-500 truncate">
-                  {{ "match.highlights.assist" | transloco }}:
-                  {{ personLabel(scene.assist) }}
-                </span>
-              }
-              <span class="block text-xs text-fb-gray-500">
-                @if (scene.team) {
-                  {{ scene.team === "home" ? homeName : guestName }} ·
+    <!--
+      Ab lg bestimmt der Player die Zeilenhöhe: Die Liste liegt absolut in
+      ihrer Zelle und scrollt in sich. Mobil steht sie wie bisher darunter.
+    -->
+    <div class="relative min-w-0">
+      <ol
+        #sceneList
+        class="list-none p-0 m-0 min-w-0 lg:absolute lg:inset-0 lg:overflow-y-auto"
+        (scroll)="updateMoreBelow()"
+        data-test="highlights-scenes"
+      >
+        @for (scene of scenes; track scene.start + "-" + i; let i = $index) {
+          <li>
+            <button
+              type="button"
+              class="w-full text-left flex items-start gap-3 py-2 px-2 border-b border-fb-gray-200 hover:bg-fb-gray-800"
+              [class.bg-fb-gray-700]="i === currentIndex"
+              [attr.aria-current]="i === currentIndex ? 'true' : null"
+              (click)="selectScene(i)"
+              data-test="highlights-scene"
+            >
+              <span
+                class="font-bold tabular-nums whitespace-nowrap min-w-[3rem]"
+              >
+                @if (isMark(scene)) {
+                  <span class="text-violet-800">{{
+                    "match.highlights.mark" | transloco
+                  }}</span>
+                } @else {
+                  {{ scene.home_goals }}:{{ scene.guest_goals }}
                 }
-                {{
-                  "match.detailedStats.periodN" | transloco: { n: scene.period }
-                }}
-                · {{ scene.game_time }}
               </span>
-            </span>
-          </button>
-        </li>
+              <span class="min-w-0 flex-1">
+                @if (!isMark(scene)) {
+                  <span class="block font-bold truncate">
+                    {{
+                      personLabel(scene.scorer) ||
+                        (scene.team === "home" ? homeName : guestName)
+                    }}
+                  </span>
+                }
+                @if (scene.assist) {
+                  <span class="block text-xs text-fb-gray-500 truncate">
+                    {{ "match.highlights.assist" | transloco }}:
+                    {{ personLabel(scene.assist) }}
+                  </span>
+                }
+                <span class="block text-xs text-fb-gray-500">
+                  @if (scene.team) {
+                    {{ scene.team === "home" ? homeName : guestName }} ·
+                  }
+                  {{
+                    "match.detailedStats.periodN"
+                      | transloco: { n: scene.period }
+                  }}
+                  · {{ scene.game_time }}
+                </span>
+              </span>
+            </button>
+          </li>
+        }
+      </ol>
+      @if (moreBelow) {
+        <!-- Zeigt, dass die Liste weitergeht; macOS blendet Scrollbalken aus. -->
+        <div
+          class="hidden lg:block pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white"
+          data-test="highlights-more"
+        ></div>
       }
-    </ol>
+    </div>
   </div>
 </section>
