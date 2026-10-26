@@ -670,6 +670,37 @@ describe('TabletCaptureComponent', () => {
     // Ausstehende Uhrmessung abräumen.
     http.match(API + 'server_time.json');
   });
+
+  it('lädt die Schüsse neu, wenn ein Tor zum Eigentor wird', () => {
+    const goal = {
+      event_id: 77,
+      event_type: 'goal',
+      event_team: 'guest',
+      period: 1,
+      time: '03:12',
+      home_goals: 0,
+      guest_goals: 1,
+      goal_type: 'regular',
+    };
+    fixture.componentRef.setInput(
+      'game',
+      game(4711, { events: [goal] } as Partial<Game>)
+    );
+    fixture.detectChanges();
+    http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
+
+    // Gleiche Tor-ID, andere Torart: Die API hat den Schuss gelöst.
+    fixture.componentRef.setInput(
+      'game',
+      game(4711, {
+        events: [{ ...goal, goal_type: 'owngoal' }],
+      } as Partial<Game>)
+    );
+    fixture.detectChanges();
+    http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
+
+    http.match(API + 'server_time.json');
+  });
   describe('Abschnitt folgt dem Spielstand', () => {
     // Nachladen der Spielseite: neues Objekt für dasselbe Spiel.
     function reload(g: Game): void {

@@ -402,10 +402,16 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     return this.viewPeriod === this.gamePeriod;
   }
 
+  // Team und Torart gehören dazu: Wird ein Tor nachträglich zum Eigentor oder
+  // technischen Tor oder wechselt es das Team, löst die API seinen Schuss
+  // (api#857). Ohne Nachladen hielte das Tablet die alte Verknüpfung fest.
   private _currentGoalSignature(): string {
     return (this.game?.events ?? [])
       .filter((event) => event.event_type === 'goal')
-      .map((event) => event.event_id)
+      .map(
+        (event) =>
+          `${event.event_id}:${event.event_team}:${event.goal_type ?? ''}`
+      )
       .join(',');
   }
 
