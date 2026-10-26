@@ -1254,7 +1254,7 @@ describe('TabletCaptureComponent', () => {
       await settle();
     });
 
-    it('belegt bei „Torwart raus“ leeres Tor und 6 gegen 5 vor, bis zum Abschnittsende', async () => {
+    it('belegt bei „Torwart raus“ leeres Tor und ohne eigenen Torhüter vor, bis zum Abschnittsende', async () => {
       await start();
       click('tablet-goalie-pulled-guest');
       expect(component.isGoaliePulled('guest')).toBeTrue();
@@ -1266,7 +1266,7 @@ describe('TabletCaptureComponent', () => {
       expect(component.draft!.extra_attacker).toBeFalse();
       expect(component.draft!.goalkeeper_player_id).toBeNull();
 
-      // Der Gast schießt mit 6 gegen 5 auf den Heimtorhüter.
+      // Der Gast schießt ohne eigenen Torhüter auf den Heimtorhüter.
       component.setDraftTeam('guest');
       expect(component.draft!.empty_net).toBeFalse();
       expect(component.draft!.extra_attacker).toBeTrue();

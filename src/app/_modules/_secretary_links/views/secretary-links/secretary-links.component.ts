@@ -39,6 +39,7 @@ import {
  * Saison zwölf Tage hinter dem Fensterende lag.
  */
 @Component({
+  selector: 'fb-secretary-links',
   templateUrl: './secretary-links.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -241,7 +241,7 @@ describe('MatchHighlightsComponent', () => {
   });
 
   it('beginnt nach der Zustimmung mit der vorher gewählten Szene', async () => {
-    component.jumpTo(1);
+    component.selectScene(1);
     await consentAndReady();
 
     expect(player.loadVideoById).toHaveBeenCalledOnceWith(

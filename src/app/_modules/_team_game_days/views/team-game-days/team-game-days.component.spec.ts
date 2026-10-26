@@ -181,4 +181,29 @@ describe('TeamGameDaysComponent', () => {
       expect(component.rejectComment).toBe('');
     });
   });
+
+  // Die Frist rechnet die Seite nicht selbst aus: Die API zaehlt ab dem
+  // spaeteren von Spieltagsende und Benachrichtigung (fe#586).
+  it('nennt am offenen Spieltag die Frist der API', () => {
+    const day = openGameDay(1, isoDaysFromToday(-1));
+    day.confirmable_until = '2026-10-28T23:59:59+01:00';
+    setup([day]);
+
+    const frist = fixture.nativeElement.querySelector(
+      '[data-testid="auto-confirm-deadline"]'
+    ) as HTMLElement;
+    expect(frist.textContent).toContain(
+      component.formatDateTime('2026-10-28T23:59:59+01:00')
+    );
+  });
+
+  it('laesst den Fristhinweis weg, wenn die API keine Frist kennt', () => {
+    setup([openGameDay(1, isoDaysFromToday(-1))]);
+
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="auto-confirm-deadline"]'
+      )
+    ).toBeNull();
+  });
 });

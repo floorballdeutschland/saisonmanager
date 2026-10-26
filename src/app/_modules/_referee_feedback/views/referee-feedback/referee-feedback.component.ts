@@ -18,6 +18,7 @@ import {
 } from '@floorball/types';
 
 @Component({
+  selector: 'fb-club-referee-feedback',
   templateUrl: './referee-feedback.component.html',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

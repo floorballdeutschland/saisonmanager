@@ -6,6 +6,8 @@ import {
   PlayerShotStats,
 } from '@floorball/types';
 import {
+  EMPTY_TEAM_STATS,
+  extraAttackerOther,
   filterFreeHits,
   filterShots,
   freeHitZone,
@@ -299,6 +301,18 @@ describe('Freischläge (fe#589)', () => {
       expect(
         goalkeeperPeriodStats({ ...gk, by_period: undefined }, 2)
       ).toBeNull();
+    });
+
+    it('extraAttackerOther zählt andere Stärken und unbekannte Spielzeit (fe#610)', () => {
+      expect(extraAttackerOther(EMPTY_TEAM_STATS)).toBe(0);
+      expect(
+        extraAttackerOther({
+          ...EMPTY_TEAM_STATS,
+          goals_extra_attacker_6v4: 3,
+          goals_extra_attacker_other: 1,
+          goals_extra_attacker_unknown: 2,
+        })
+      ).toBe(3);
     });
 
     it('hasSpecialSituations nur bei Strafschüssen oder Toren ohne Torhüter', () => {
