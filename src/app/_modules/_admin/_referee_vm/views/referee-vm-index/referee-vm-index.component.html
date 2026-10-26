@@ -31,6 +31,9 @@
                 {{ "refereeVm.index.colName" | transloco }}
               </th>
               <th class="py-2 pr-4 font-bold">
+                {{ "refereeVm.index.colEmail" | transloco }}
+              </th>
+              <th class="py-2 pr-4 font-bold">
                 {{ "refereeVm.index.colLevel" | transloco }}
               </th>
               <th class="py-2 pr-4 font-bold">
@@ -48,8 +51,32 @@
                   {{ r.lizenznummer_display }}
                 </td>
                 <td class="py-2 pr-4 font-medium">
-                  {{ r.nachname }}, {{ r.vorname }}
+                  <a
+                    [routerLink]="[
+                      '/',
+                      'verwaltung',
+                      'schiedsrichter-verein',
+                      r.id,
+                    ]"
+                    class="hover:underline"
+                  >
+                    {{ r.nachname }}, {{ r.vorname }}
+                  </a>
+                  @if (r.has_user) {
+                    <span
+                      [attr.title]="
+                        'refereeVm.index.hasAccountTitle' | transloco
+                      "
+                      [attr.aria-label]="
+                        'refereeVm.index.hasAccountTitle' | transloco
+                      "
+                      class="ml-1 inline-block align-middle bg-black text-white text-[10px] font-bold px-1 rounded"
+                    >
+                      {{ "refereeVm.index.hasAccountBadge" | transloco }}
+                    </span>
+                  }
                 </td>
+                <td class="py-2 pr-4 break-all">{{ r.email || "–" }}</td>
                 <td class="py-2 pr-4">{{ r.lizenzstufe || "–" }}</td>
                 <td class="py-2 pr-4">
                   @if (r.gueltigkeit) {
@@ -90,6 +117,11 @@
             }
           </tbody>
         </table>
+        @if (withoutAccount > 0) {
+          <p class="text-xs text-fb-gray-500 mt-3">
+            {{ "refereeVm.accountHint" | transloco }}
+          </p>
+        }
       }
       @if (referees.length === 0) {
         <p class="text-fb-gray-500 text-sm py-8 text-center">

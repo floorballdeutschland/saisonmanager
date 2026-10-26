@@ -11,6 +11,30 @@
     "colValidity": "Validity",
     "colQualifications": "Additional qualifications",
     "validUntil": "(until {{ date }})",
-    "empty": "No referees found for your club."
+    "empty": "No referees found for your club.",
+    "colEmail": "E-mail",
+    "hasAccountBadge": "Account",
+    "hasAccountTitle": "Has a user account"
+  },
+  "accountHint": "Without an “Account” the person cannot log in to Saisonmanager yet. User accounts are created by the referee committee of your state association, please contact them.",
+  "detail": {
+    "back": "← Club referees",
+    "loading": "Loading referee…",
+    "notFound": "This referee does not belong to your club or does not exist.",
+    "level": "Level",
+    "validity": "Validity",
+    "email": "E-mail",
+    "account": "User account",
+    "accountYes": "Yes",
+    "accountNo": "No",
+    "qualifications": "Additional qualifications",
+    "gameHistory": "Games",
+    "gamesLoading": "Loading games…",
+    "gamesCount": "{{ count }} games according to match reports, all seasons",
+    "noGames": "No games according to match reports yet.",
+    "colDate": "Date",
+    "colGame": "Game",
+    "colLeague": "League",
+    "colResult": "Result"
   }
 }

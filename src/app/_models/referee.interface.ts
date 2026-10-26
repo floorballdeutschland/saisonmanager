@@ -234,6 +234,10 @@ export interface RefereeVm {
   active: boolean;
   club_name?: string;
   landesverband?: string;
+  // Die Adresse meldet der Verein selbst für die Kursanmeldung; das Konto
+  // legt die Schiedsrichterkommission des Landesverbands an.
+  email?: string | null;
+  has_user: boolean;
   qualifications: { qualification_type_name: string; valid_until?: string }[];
 }
 

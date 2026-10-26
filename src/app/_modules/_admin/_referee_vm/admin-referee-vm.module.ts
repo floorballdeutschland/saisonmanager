@@ -7,7 +7,7 @@ import * as Views from './views';
 
 @NgModule({
   imports: [CommonModule, AdminRefereeVmRoutingModule, UikitCommonModule],
-  declarations: [Views.RefereeVmIndexComponent],
+  declarations: [Views.RefereeVmIndexComponent, Views.RefereeVmDetailComponent],
   providers: [
     {
       provide: TRANSLOCO_SCOPE,

@@ -1,0 +1,162 @@
+<div class="p-4 lg:p-8">
+  <a
+    [routerLink]="['/', 'verwaltung', 'schiedsrichter-verein']"
+    class="text-fb-gray-500 hover:text-black text-sm"
+    >{{ "refereeVm.detail.back" | transloco }}</a
+  >
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeVm.detail.loading" | transloco }}
+    </div>
+  }
+
+  @if (notFound) {
+    <p class="text-fb-gray-500 text-sm py-8">
+      {{ "refereeVm.detail.notFound" | transloco }}
+    </p>
+  }
+
+  @if (!loading && referee) {
+    <h1 class="text-2xl font-bold mt-1">
+      {{ referee.nachname }}, {{ referee.vorname }}
+    </h1>
+    <p class="text-fb-gray-500 font-mono text-sm mt-0.5 mb-6">
+      {{ referee.lizenznummer_display }}
+    </p>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          {{ "refereeVm.detail.level" | transloco }}
+        </p>
+        <p class="font-medium">{{ referee.lizenzstufe || "–" }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          {{ "refereeVm.detail.validity" | transloco }}
+        </p>
+        <p
+          class="font-medium"
+          [class.text-green-600]="referee.gueltigkeit && referee.active"
+          [class.text-red-500]="referee.gueltigkeit && !referee.active"
+        >
+          {{ referee.gueltigkeit || "–" }}
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          {{ "refereeVm.detail.email" | transloco }}
+        </p>
+        <p class="font-medium break-all">
+          @if (referee.email) {
+            <a [href]="'mailto:' + referee.email" class="hover:underline">{{
+              referee.email
+            }}</a>
+          } @else {
+            –
+          }
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          {{ "refereeVm.detail.account" | transloco }}
+        </p>
+        <p class="font-medium">
+          {{
+            (referee.has_user
+              ? "refereeVm.detail.accountYes"
+              : "refereeVm.detail.accountNo"
+            ) | transloco
+          }}
+        </p>
+        @if (!referee.has_user) {
+          <p class="text-xs text-fb-gray-500 mt-1">
+            {{ "refereeVm.accountHint" | transloco }}
+          </p>
+        }
+      </div>
+      <div class="col-span-2 lg:col-span-4">
+        <p class="text-xs text-fb-gray-500 uppercase font-bold mb-1">
+          {{ "refereeVm.detail.qualifications" | transloco }}
+        </p>
+        @if (referee.qualifications.length > 0) {
+          <ul>
+            @for (q of referee.qualifications; track $index) {
+              <li>
+                {{ q.qualification_type_name }}
+                @if (q.valid_until) {
+                  <span class="text-fb-gray-500">{{
+                    "refereeVm.index.validUntil"
+                      | transloco: { date: q.valid_until }
+                  }}</span>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p>–</p>
+        }
+      </div>
+    </div>
+
+    <h2 class="text-lg font-bold mb-4">
+      {{ "refereeVm.detail.gameHistory" | transloco }}
+    </h2>
+    @if (gamesLoading) {
+      <div class="text-fb-gray-500 text-sm py-4">
+        {{ "refereeVm.detail.gamesLoading" | transloco }}
+      </div>
+    } @else {
+      <p class="text-sm text-fb-gray-500 mb-3">
+        {{ "refereeVm.detail.gamesCount" | transloco: { count: games.length } }}
+      </p>
+      @if (games.length > 0) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-fb-gray-700 text-left">
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeVm.detail.colDate" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeVm.detail.colGame" | transloco }}
+                </th>
+                <th class="py-2 pr-4 font-bold">
+                  {{ "refereeVm.detail.colLeague" | transloco }}
+                </th>
+                <th class="py-2 font-bold">
+                  {{ "refereeVm.detail.colResult" | transloco }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of games; track g.id) {
+                <tr class="border-b border-fb-gray-800 hover:bg-fb-gray-900">
+                  <td class="py-2 pr-4 whitespace-nowrap">
+                    {{ g.date | date: "dd.MM.yyyy" }}
+                  </td>
+                  <td class="py-2 pr-4">
+                    @if (matchLink(g); as link) {
+                      <a [routerLink]="link" class="hover:underline"
+                        >{{ g.home_team }} – {{ g.guest_team }}</a
+                      >
+                    } @else {
+                      {{ g.home_team }} – {{ g.guest_team }}
+                    }
+                  </td>
+                  <td class="py-2 pr-4 text-fb-gray-500">{{ g.league }}</td>
+                  <td class="py-2 font-mono">{{ g.result || "–" }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="text-fb-gray-500 text-sm">
+          {{ "refereeVm.detail.noGames" | transloco }}
+        </p>
+      }
+    }
+  }
+</div>
