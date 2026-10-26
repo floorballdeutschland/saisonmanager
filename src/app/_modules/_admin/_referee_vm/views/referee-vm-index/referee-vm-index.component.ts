@@ -45,6 +45,11 @@ export class RefereeVmIndexComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Steuert den Hinweis unter der Liste, wie ein Konto zustande kommt.
+  get withoutAccount(): number {
+    return this.referees.filter((r) => !r.has_user).length;
+  }
+
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
