@@ -412,7 +412,10 @@
     "reject": "Reject",
     "rejectPrompt": "Reason for rejecting {{name}}:",
     "approvedMany": "{{count}} licenses granted.",
-    "accountCreated": "{{name}} received a user account."
+    "accountCreated": "{{name}} received a user account.",
+    "suggestion": "Suggestion: {{ level }}",
+    "suggestionGames": "({{ games }} games in {{ season }}, from {{ min }})",
+    "applySuggestion": "apply"
   },
   "billing": {
     "title": "Course billing",
