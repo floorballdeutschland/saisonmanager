@@ -704,7 +704,7 @@ describe('TabletCaptureComponent', () => {
       'game',
       game(4711, { events: [goal] } as Partial<Game>)
     );
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
 
     // Gleiche Tor-ID, andere Torart: Die API hat den Schuss gelöst.
@@ -714,7 +714,7 @@ describe('TabletCaptureComponent', () => {
         events: [{ ...goal, goal_type: 'owngoal' }],
       } as Partial<Game>)
     );
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
 
     // Torart bleibt „not_assigned“, nur die Markierung kommt hinzu (2000).
@@ -724,7 +724,7 @@ describe('TabletCaptureComponent', () => {
         events: [{ ...goal, goal_type: 'not_assigned' }],
       } as Partial<Game>)
     );
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
     fixture.componentRef.setInput(
       'game',
@@ -732,7 +732,7 @@ describe('TabletCaptureComponent', () => {
         events: [{ ...goal, goal_type: 'not_assigned', technical_goal: true }],
       } as Partial<Game>)
     );
-    fixture.detectChanges();
+    render();
     http.expectOne(API + 'games/4711/shots.json').flush({ shots: [] });
 
     http.match(API + 'server_time.json');
