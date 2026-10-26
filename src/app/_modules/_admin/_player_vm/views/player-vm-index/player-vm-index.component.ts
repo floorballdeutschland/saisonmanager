@@ -44,6 +44,9 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   // Feld, siehe canManagePlayers.
   vmClubIds: number[] = [];
   private _isAssociationRole = false;
+  // Reiter „Korrekturanträge" (fe#585): nur mit dem Recht auf die Liste,
+  // also nicht fuer den Teammanager.
+  showChangeRequests = false;
   actionError: string | null = null;
   confirmDeactivateId: number | null = null;
   deactivateReason = '';
@@ -72,6 +75,8 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       .subscribe((user) => {
         this.vmClubIds = user?.club_ids ?? [];
         this._isAssociationRole = !!user?.permissions?.['update_player'];
+        this.showChangeRequests =
+          !!user?.permissions?.['menu_item_player_change_requests'];
         this._cdr.markForCheck();
       });
 

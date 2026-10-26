@@ -60,6 +60,23 @@ export class MetanavigationComponent implements OnInit {
     return false;
   }
 
+  /**
+   * Spielerdaten-Korrekturen als eigener Menuepunkt nur fuer die pruefende
+   * Seite (Admin, SBK) und fuer Konten ohne Vereinsspielerliste. Ein Verein
+   * erreicht seine Antraege als Reiter unter „Meine Spieler*innen" (fe#585);
+   * ein zweiter Weg im Menue waere doppelt. Wer Vereinsmanager UND SBK ist,
+   * behaelt den Menuepunkt, weil er dort Antraege anderer Vereine entscheidet.
+   * Die Seite /verwaltung/spieler-korrekturen selbst bleibt fuer alle
+   * erreichbar, die `menu_item_player_change_requests` haben.
+   */
+  public showPlayerChangeRequestsItem(): boolean {
+    return (
+      !!this.showItem('menu_item_player_change_requests') &&
+      (!!this.showItem('approve_player_change_request') ||
+        !this.showItem('menu_item_player_vm'))
+    );
+  }
+
   public logout() {
     this._sessionService.logout();
     this.router.navigate(['/login']);
