@@ -268,6 +268,33 @@ describe('Tabletmodus: Rechenlogik', () => {
         'b',
       ]);
     });
+
+    it('bietet Eigentore und technische Tore nicht an', () => {
+      const ohneSchuss = [
+        {
+          event_id: 4,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'owngoal',
+        },
+        {
+          event_id: 5,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'technical',
+        },
+        {
+          event_id: 6,
+          event_type: 'goal',
+          event_team: 'home',
+          goal_type: 'regular',
+        },
+      ] as GameEvent[];
+      const candidates = goalLinkCandidates(ohneSchuss, [
+        shot({ client_uuid: 'c', team: 'home', result: 'goal' }),
+      ]);
+      expect(candidates.map((entry) => entry.goal.event_id)).toEqual([6]);
+    });
   });
 
   it('erzeugt eindeutige UUIDs', () => {
