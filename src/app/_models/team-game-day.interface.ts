@@ -42,6 +42,10 @@ export interface TeamGameDay {
   club?: string;
   auto_confirmed: boolean;
   confirmable_from?: string | null;
+  // Ende der Frist, nach dem der Spieltag automatisch als bestaetigt gilt
+  // (GameDay#team_confirmation_deadline in der API). Fehlt, wenn die API
+  // sie nicht bestimmen kann.
+  confirmable_until?: string | null;
   checklist_required: boolean;
   checklist_items: TeamGameDayChecklistItem[];
   my_teams: TeamGameDayTeam[];
