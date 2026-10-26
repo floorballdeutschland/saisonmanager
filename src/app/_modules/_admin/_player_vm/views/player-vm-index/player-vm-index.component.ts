@@ -24,7 +24,6 @@ interface ClubPlayerList {
   showDeactivated: boolean;
   // Der Import laeuft je Verein, also auch sein Zustand: Wer zwei Vereine
   // betreut, soll den Bericht des einen nicht am anderen sehen.
-  showImport: boolean;
   importing: boolean;
   importReport: PlayerImportReport | null;
   importError: string | null;
@@ -52,6 +51,10 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
   confirmDeactivateId: number | null = null;
   deactivateReason = '';
   deactivateReasonOther = '';
+  // Der Import-Bereich steht einmal neben dem Export (fe#584); welcher
+  // Verein importiert, waehlt bei mehreren Vereinen eine Auswahl darin.
+  showImport = false;
+  importClubId: number | null = null;
 
   private _destroy$ = new Subject<void>();
 
@@ -104,7 +107,6 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
                   club,
                   players: playerLists[i],
                   showDeactivated: false,
-                  showImport: false,
                   importing: false,
                   importReport: null,
                   importError: null,
@@ -352,9 +354,35 @@ export class PlayerVmIndexComponent implements OnInit, OnDestroy {
       : value;
   }
 
-  /** Der Import-Bereich klappt je Verein auf; der Zustand haengt an der Liste. */
-  setImportOpen(list: ClubPlayerList, open: boolean): void {
-    list.showImport = open;
+  /**
+   * Die Vereine, fuer die der Import angeboten wird: nur die, deren Liste die
+   * E-Mail-Adresse mitliefert. Fehlt das Feld, ist die API zu alt fuer den
+   * Import (siehe emailKnown); eine leere Liste liefert es ebenfalls nicht.
+   */
+  get importLists(): ClubPlayerList[] {
+    return this.clubLists.filter((list) => this.emailKnown(list));
+  }
+
+  /**
+   * Der Verein, in den gerade importiert wird. Ohne Auswahl (oder wenn der
+   * gewaehlte Verein nicht mehr importierbar ist) der erste.
+   */
+  get importList(): ClubPlayerList | null {
+    const lists = this.importLists;
+    return (
+      lists.find((list) => list.club.id === this.importClubId) ??
+      lists[0] ??
+      null
+    );
+  }
+
+  setImportOpen(open: boolean): void {
+    this.showImport = open;
+    this._cdr.markForCheck();
+  }
+
+  selectImportClub(clubId: number): void {
+    this.importClubId = clubId;
     this._cdr.markForCheck();
   }
 
