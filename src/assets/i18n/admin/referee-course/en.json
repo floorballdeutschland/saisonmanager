@@ -34,7 +34,7 @@
     "colMaster": "Master data",
     "colCourse": "Course / deadline",
     "colExistingLicense": "Existing license",
-    "colPreviousSeason": "Previous season (U15+)",
+    "colPreviousSeason": "Previous season",
     "colLicenseLevel": "License level",
     "applied": "✓ Applied",
     "pendingLv": "⏳ At state association",
@@ -54,7 +54,7 @@
     "validUntil": "Valid until: {{ date }}",
     "snapshotUntil": "until {{ date }}",
     "newReferee": "New",
-    "games": "{{ count }} games",
+    "games": "{{ count }} games in total",
     "selectLicenseLevel": "License level for referee",
     "selectPlaceholder": "— choose —",
     "cancelTitle": "Cancel import",
@@ -96,7 +96,8 @@
     "clubReset": "no club",
     "clubUnavailable": "Club list unavailable, selection disabled.",
     "submitRow": "Submit",
-    "submitRowNeedsLevel": "Choose a license level first"
+    "submitRowNeedsLevel": "Choose a license level first",
+    "gamesGfU15Plus": "{{ count }} large field U15+"
   },
   "review": {
     "title": "Referee course results: approval",
