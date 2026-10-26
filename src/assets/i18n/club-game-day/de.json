@@ -1,0 +1,9 @@
+{
+  "title": "Spieltagsaufgaben",
+  "intro": "Was dein Verein rund um einen Spieltag erledigt: vorher den Zugang für das Spielsekretariat erzeugen, danach als Gastmannschaft dem Spieltagsbericht des Ausrichters widersprechen, falls nötig, und Feedback zum Schiedsrichtergespann abgeben.",
+  "tabs": {
+    "secretary": "Zugang Spielsekretariat erzeugen",
+    "away": "Spieltagsbericht widersprechen",
+    "feedback": "Schiri-Feedback abgeben"
+  }
+}

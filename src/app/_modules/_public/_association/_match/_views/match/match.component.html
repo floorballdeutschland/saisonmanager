@@ -93,6 +93,13 @@
   }
   <div class="h-[10px] bg-fb-gray-200"></div>
   @if (isTabActive("public")) {
+    <!--
+      Highlights oben in der Übersicht, vor Spielverlauf und Aufstellung
+      (fe#611): Wer über „Highlights ansehen“ kommt, landet direkt davor.
+    -->
+    @if (game.tablet_capture) {
+      <fb-match-highlights-panel [game]="game"></fb-match-highlights-panel>
+    }
     <fb-match-public
       [game]="game"
       [additionalFields]="additionalFields"

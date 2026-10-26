@@ -386,7 +386,7 @@ describe('Freischläge (fe#589)', () => {
       expect(goaliePulled({ guest: 3 }, 'home', 3)).toBeFalse();
     });
 
-    it('leitet leeres Tor und 6 gegen 5 aus Sicht des schießenden Teams ab', () => {
+    it('leitet leeres Tor und ohne eigenen Torhüter aus Sicht des schießenden Teams ab', () => {
       expect(situationFor({ guest: 3 }, 'home', 3)).toEqual({
         empty_net: true,
         extra_attacker: false,

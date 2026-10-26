@@ -739,7 +739,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     this.draft.team = team;
     this.draft.shooter_player_id = null;
     // Die Torwartsituation hängt am Team: Wer eben aufs leere Tor schoss,
-    // schießt nach dem Tausch mit 6 gegen 5 und umgekehrt.
+    // schießt nach dem Tausch ohne eigenen Torhüter und umgekehrt.
     if (this.draft.kind === 'shot' && !this.draft.from_penalty_shot) {
       Object.assign(
         this.draft,
@@ -793,7 +793,11 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  /** 6 gegen 5 für diesen Schuss (Feedback #64). */
+  /**
+   * Ohne eigenen Torhüter für diesen Schuss (Feedback #64). Die Spielstärke
+   * (6 gegen 5 oder 6 gegen 4) kennt das Tablet nicht, die rechnet die API
+   * aus den laufenden Strafen (fe#610).
+   */
   public toggleDraftExtraAttacker(): void {
     const draft = this.draft;
     if (!draft || draft.kind !== 'shot') return;

@@ -19,6 +19,7 @@ import { PublicAssociationMatchRoutingModule } from './public-association-match-
     Views.MatchPublicComponent,
     Components.MatchDetailedStatsComponent,
     Components.MatchHighlightsComponent,
+    Components.MatchHighlightsPanelComponent,
     Components.ShotChartComponent,
     Components.FreeHitChartComponent,
     Components.RinkMarkingsComponent,

@@ -6,11 +6,9 @@ import {
   OnChanges,
   OnDestroy,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
 import {
   catchError,
-  forkJoin,
   interval,
   map,
   of,
@@ -26,7 +24,6 @@ import {
   Game,
   GoalkeeperSaveStats,
   GoalkeeperStats,
-  Highlights,
   PlayerShotStats,
   ShotResult,
   ShotTeam,
@@ -40,6 +37,7 @@ import {
   filterShots,
   freeHitZoneCounts,
   goalkeeperPeriodStats,
+  extraAttackerOther,
   hasSpecialSituations,
   isPlacedShot,
   periodsOf,
@@ -47,12 +45,9 @@ import {
   SHOT_RESULTS,
   sortPlayers,
   teamStatsFor,
+  uncapturedPeriods,
+  UncapturedPeriods,
 } from '../../_utils/detailed-stats';
-import {
-  hasPlayableHighlights,
-  sceneIndexForShot,
-} from '../../_utils/highlights';
-import { MatchHighlightsComponent } from '../match-highlights/match-highlights.component';
 import { SHOT_COLORS } from '../shot-chart/shot-chart.component';
 import { FREE_HIT_ZONE_COLORS } from '../free-hit-chart/free-hit-chart.component';
 
@@ -64,7 +59,6 @@ interface LoadRequest {
 interface LoadResult {
   gameId: number;
   stats: DetailedStats | null;
-  highlights: Highlights | null;
 }
 
 export interface TeamStatsRow {
@@ -104,16 +98,6 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
   selectedPeriod: number | null = null;
   periods: number[] = [];
 
-  /** Torszenen (fe#555), `undefined` solange nicht geladen. */
-  highlights?: Highlights;
-  /** YouTube hat das Video abgelehnt (privat, gelöscht): Szenen still weg. */
-  highlightsUnavailable = false;
-  /** Tore der Schussgrafik, zu denen es eine Szene gibt. */
-  linkedShots: ReadonlySet<DetailedStatsShot> = new Set();
-
-  @ViewChild(MatchHighlightsComponent)
-  highlightsPlayer?: MatchHighlightsComponent;
-
   readonly teams: ShotTeam[] = ['home', 'guest'];
   readonly results = SHOT_RESULTS;
   readonly colors = SHOT_COLORS;
@@ -131,17 +115,12 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
       .pipe(
         // switchMap bricht den Abruf für das vorige Spiel ab; die Prüfung im
         // subscribe fängt zusätzlich eine Antwort, die schon unterwegs war.
-        // Statistik und Szenen scheitern unabhängig voneinander: Ohne Szenen
-        // bleibt die Statistik vollständig.
+        // Die Torszenen lädt die Übersicht selbst (fe#611).
         switchMap(({ gameId, silent }) =>
-          forkJoin({
-            stats: this._statsService
-              .getDetailedStats(gameId, silent)
-              .pipe(catchError(() => of(null))),
-            highlights: this._statsService
-              .getHighlights(gameId, silent)
-              .pipe(catchError(() => of(null))),
-          }).pipe(map((result): LoadResult => ({ gameId, ...result })))
+          this._statsService.getDetailedStats(gameId, silent).pipe(
+            catchError(() => of(null)),
+            map((stats): LoadResult => ({ gameId, stats }))
+          )
         ),
         takeUntil(this._destroy$)
       )
@@ -166,9 +145,6 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
       this.periods = [];
       this.selectedPeriod = null;
       this.failed = false;
-      this.highlights = undefined;
-      this.highlightsUnavailable = false;
-      this.linkedShots = new Set();
       this.loading = true;
       this._load$.next({ gameId: this.game.id, silent: false });
     } else if (this.game.ended) {
@@ -190,11 +166,8 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
-  private applyResult({ gameId, stats, highlights }: LoadResult): void {
+  private applyResult({ gameId, stats }: LoadResult): void {
     if (gameId !== this.game?.id) return;
-
-    // Wie die Statistik: Ein Aussetzer beim Nachladen lässt die Szenen stehen.
-    if (highlights) this.highlights = highlights;
 
     this.loading = false;
     if (stats) {
@@ -211,46 +184,7 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
       // Ein Aussetzer beim Nachladen lässt den bisherigen Stand stehen.
       this.failed = true;
     }
-    this.updateLinkedShots();
     this._cdr.markForCheck();
-  }
-
-  get showHighlights(): boolean {
-    return (
-      !this.highlightsUnavailable && hasPlayableHighlights(this.highlights)
-    );
-  }
-
-  /**
-   * Admin und SBK des Spielbetriebs dürfen Versatz und Auswahl der Highlights
-   * jederzeit ändern (api#838). Dieselbe Grenze wie `check_game`.
-   */
-  get canEditHighlights(): boolean {
-    return !!this.game?.permission?.includes('check_game');
-  }
-
-  onHighlightsUnavailable(): void {
-    this.highlightsUnavailable = true;
-    this.updateLinkedShots();
-    this._cdr.markForCheck();
-  }
-
-  /** Klick auf ein Tor der Schussgrafik: zur Szene springen. */
-  onGoalSelected(shot: DetailedStatsShot): void {
-    if (!this.showHighlights || !this.highlights) return;
-    const index = sceneIndexForShot(shot, this.highlights.scenes);
-    if (index >= 0) this.highlightsPlayer?.jumpTo(index);
-  }
-
-  private updateLinkedShots(): void {
-    const scenes = this.showHighlights ? (this.highlights?.scenes ?? []) : [];
-    this.linkedShots = new Set(
-      scenes.length
-        ? (this.stats?.shots ?? []).filter(
-            (shot) => sceneIndexForShot(shot, scenes) >= 0
-          )
-        : []
-    );
   }
 
   selectPeriod(period: number | null): void {
@@ -262,17 +196,15 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
     return !!this.stats && this.stats.complete !== true;
   }
 
+  /** Abschnitte mit Toren, aber ohne erfassten Schuss (fe#623). */
+  get uncaptured(): UncapturedPeriods | null {
+    return this.stats ? uncapturedPeriods(this.game?.events, this.stats) : null;
+  }
+
   teamName(team: ShotTeam): string {
     return team === 'home'
       ? this.game.home_team_name
       : this.game.guest_team_name;
-  }
-
-  /** Kurzname für die Szenenliste, voller Name als Rückfall. */
-  teamShortName(team: ShotTeam): string {
-    return team === 'home'
-      ? this.game.home_team_short_name || this.game.home_team_name
-      : this.game.guest_team_short_name || this.game.guest_team_name;
   }
 
   /** Titel eines Abschnitts aus dem Spiel, sonst „n. Abschnitt“. */
@@ -308,6 +240,33 @@ export class MatchDetailedStatsComponent implements OnChanges, OnDestroy {
 
   get hasPenaltyShots(): boolean {
     return !!this.stats?.shots.some((shot) => shot.from_penalty_shot);
+  }
+
+  /**
+   * Liefert die API die Aufteilung der Tore ohne eigenen Torhüter nach
+   * Spielstärke (fe#610)? Ältere Stände haben nur die Summe.
+   */
+  get hasExtraAttackerStrength(): boolean {
+    return this.teams.some(
+      (team) =>
+        this.stats?.teams?.[team]?.goals_extra_attacker_6v5 !== undefined
+    );
+  }
+
+  /**
+   * Andere Spielstärken (5 gegen 4, 6 gegen 3 usw.) oder ohne Spielzeit sind
+   * selten, die Spalte erscheint nur, wenn es sie gab. Die genaue Stärke
+   * steht am Schuss im Schussbild.
+   */
+  get showExtraAttackerOther(): boolean {
+    return this.teams.some((team) => {
+      const stats = this.stats?.teams?.[team];
+      return !!stats && extraAttackerOther(stats) > 0;
+    });
+  }
+
+  extraAttackerOther(stats: TeamShotStats): number {
+    return extraAttackerOther(stats);
   }
 
   rowsFor(team: ShotTeam): TeamStatsRow[] {

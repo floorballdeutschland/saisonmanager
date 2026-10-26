@@ -266,6 +266,64 @@ describe('LiveComponent', () => {
     expect(el.textContent).toContain('Heim – Gast');
   });
 
+  // fe#612: Der Button führt auf die Spielseite, deren Standardreiter die
+  // Highlights oben zeigt. Ohne Szenen oder ohne Spiellink wäre er eine Sackgasse.
+  describe('Button Highlights ansehen', () => {
+    const button = () =>
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-test="highlights-link"]'
+      );
+
+    it('führt mit has_highlights auf die Spielseite ohne Reiter-Parameter', () => {
+      serviceSpy.getToday.and.returnValue(
+        of({
+          date: '2026-08-10',
+          games: [game({ game_id: 42, status: 'ended', has_highlights: true })],
+        })
+      );
+      create();
+
+      expect(button()?.getAttribute('href')).toBe('/fd/5/spiel/42');
+      expect(button()?.textContent?.trim()).toBe('live.watchHighlights');
+    });
+
+    it('fehlt ohne has_highlights oder bei false', () => {
+      serviceSpy.getToday.and.returnValue(
+        of({
+          date: '2026-08-10',
+          games: [
+            game({ game_id: 1 }),
+            game({ game_id: 2, has_highlights: false }),
+          ],
+        })
+      );
+      create();
+
+      expect(button()).toBeNull();
+    });
+
+    it('fehlt ohne Verbands-Slug, auch mit has_highlights', () => {
+      serviceSpy.getToday.and.returnValue(
+        of({
+          date: '2026-08-10',
+          games: [
+            game({
+              has_highlights: true,
+              league: {
+                id: 5,
+                name: '1. Bundesliga Herren',
+                short_name: '1BL',
+              },
+            }),
+          ],
+        })
+      );
+      create();
+
+      expect(button()).toBeNull();
+    });
+  });
+
   // `current_period_title` ist serverseitig ein HASH und kein Text: Die API gibt
   // den ganzen Eintrag aus `League#period_titles` zurueck. Wer das Feld direkt
   // ausgibt, schreibt "[object Object]" auf eine oeffentliche Seite. Vorher fiel

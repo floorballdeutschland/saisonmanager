@@ -110,6 +110,32 @@ describe('MatchHighlightsComponent', () => {
     expect(rows[1].textContent).not.toContain('Schütze');
   });
 
+  describe('Kalibrierung', () => {
+    const pending = () =>
+      el().querySelector('[data-test="highlights-calibration-pending"]');
+
+    it('zeigt „Kalibrierung ausstehend“, solange die Aufzeichnung unkalibriert ist', () => {
+      fixture.componentRef.setInput('highlights', {
+        ...highlights(),
+        calibrated: false,
+      });
+      fixture.detectChanges();
+
+      expect(pending()?.textContent?.trim()).toBe('Kalibrierung ausstehend');
+    });
+
+    it('zeigt nichts, wenn kalibriert oder das Feld fehlt (ältere API)', () => {
+      expect(pending()).toBeNull();
+
+      fixture.componentRef.setInput('highlights', {
+        ...highlights(),
+        calibrated: true,
+      });
+      fixture.detectChanges();
+      expect(pending()).toBeNull();
+    });
+  });
+
   it('lädt vor dem Klick nichts von YouTube und zeigt den Hinweis', () => {
     expect(youtube.createPlayer).not.toHaveBeenCalled();
     expect(
@@ -215,7 +241,7 @@ describe('MatchHighlightsComponent', () => {
   });
 
   it('beginnt nach der Zustimmung mit der vorher gewählten Szene', async () => {
-    component.jumpTo(1);
+    component.selectScene(1);
     await consentAndReady();
 
     expect(player.loadVideoById).toHaveBeenCalledOnceWith(

@@ -124,6 +124,16 @@ export class LiveComponent implements OnInit, OnDestroy {
     return ['/', slug, game.league.id, 'spiel', game.game_id];
   }
 
+  /**
+   * Ziel des Buttons „Highlights ansehen“ (fe#612): die Spielseite im Reiter
+   * Übersicht, dort stehen die Szenen oben. Der Reiter ist der Standard der
+   * Seite und braucht keinen Parameter. Ohne Szenen oder ohne Spiellink kein
+   * Button, er wäre eine Sackgasse.
+   */
+  public highlightsLink(game: LiveStreamGame): (string | number)[] | null {
+    return game.has_highlights === true ? this.matchLink(game) : null;
+  }
+
   public period(game: LiveStreamGame): string {
     return game.current_period_title?.title ?? '';
   }
