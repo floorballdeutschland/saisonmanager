@@ -405,6 +405,38 @@
                         {{ "leagueAdmin.edit.years" | transloco }}
                       </span>
                     </div>
+                    <div>
+                      <div class="font-bold">
+                        {{ "leagueAdmin.edit.femaleOverage" | transloco }}
+                      </div>
+                      <div class="text-sm text-fb-gray-400 mt-1">
+                        {{ "leagueAdmin.edit.femaleOverageHint" | transloco }}
+                      </div>
+                    </div>
+                    <div>
+                      <!-- Auswahl statt Zahlenfeld: leer heisst hier "keine
+                           Ausnahme", und ein Zahlenfeld speichert eine
+                           unlesbare Eingabe still als leer (siehe
+                           minimumAgeBadInput). -->
+                      <select
+                        class="w-full"
+                        name="female_overage_years"
+                        id="female_overage_years"
+                        [(ngModel)]="league.female_overage_years"
+                      >
+                        <option [ngValue]="null">
+                          {{ "leagueAdmin.edit.femaleOverageNone" | transloco }}
+                        </option>
+                        @for (years of femaleOverageOptions; track years) {
+                          <option [ngValue]="years">
+                            {{
+                              "leagueAdmin.edit.femaleOverageYears"
+                                | transloco: { count: years }
+                            }}
+                          </option>
+                        }
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div class="bg-white my-[5px] py-[15px] px-[30px]">
