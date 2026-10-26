@@ -84,8 +84,7 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
   constructor(
     private _youtube: YoutubeIframeApiService,
     private _zone: NgZone,
-    private _cdr: ChangeDetectorRef,
-    private _host: ElementRef<HTMLElement>
+    private _cdr: ChangeDetectorRef
   ) {}
 
   get scenes(): HighlightScene[] {
@@ -205,7 +204,10 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  /** Klick auf eine Szene in der Liste oder ein Tor in der Schussgrafik. */
+  /**
+   * Klick auf eine Szene in der Liste. Vor der Zustimmung wird nichts
+   * geladen, die Szene startet dann mit dem Klick auf „Szenen laden“.
+   */
   selectScene(index: number): void {
     if (index < 0 || index >= this.scenes.length) return;
     if (this._player && this._playerReady) {
@@ -214,19 +216,6 @@ export class MatchHighlightsComponent implements OnChanges, OnDestroy {
       this.pendingIndex = index;
       this._cdr.markForCheck();
     }
-  }
-
-  /**
-   * Sprung von außen (Schussgrafik): Szene wählen und den Player ins Bild
-   * holen. Vor der Zustimmung wird nichts geladen, die Szene startet dann mit
-   * dem Klick auf „Szenen laden“.
-   */
-  jumpTo(index: number): void {
-    this.selectScene(index);
-    this._host.nativeElement.scrollIntoView?.({
-      behavior: 'smooth',
-      block: 'start',
-    });
   }
 
   playAll(): void {
