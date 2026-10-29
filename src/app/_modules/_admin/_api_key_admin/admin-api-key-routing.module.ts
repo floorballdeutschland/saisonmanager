@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import * as Views from './views';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'verwaltung/api-keys',
     pathMatch: 'full',
@@ -16,6 +16,15 @@ const routes: Routes = [
     pathMatch: 'full',
     component: Views.ApiKeyApplicationIndexComponent,
     data: { scrollTop: true },
+  },
+  {
+    // Zugriffe der Website-Besucher ohne Anmeldung (anonyme Sitzung), dieselbe
+    // Ansicht wie für einen Key. Vor ':id/nutzung', sonst hielte der Router
+    // 'website' für eine Key-Id.
+    path: 'verwaltung/api-keys/website/nutzung',
+    pathMatch: 'full',
+    component: Views.ApiKeyUsageComponent,
+    data: { scrollTop: true, publicUsage: true },
   },
   {
     // Muss nach 'antraege' stehen, sonst schluckt :id das Segment.

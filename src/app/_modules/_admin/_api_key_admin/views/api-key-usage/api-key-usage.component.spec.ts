@@ -30,8 +30,14 @@ describe('ApiKeyUsageComponent', () => {
     ...overrides,
   });
 
-  function setup(params: Record<string, string> = { id: '7' }) {
-    service = jasmine.createSpyObj('ApiKeyService', ['getUsage']);
+  function setup(
+    params: Record<string, string> = { id: '7' },
+    data: Record<string, unknown> = {}
+  ) {
+    service = jasmine.createSpyObj('ApiKeyService', [
+      'getUsage',
+      'getPublicUsage',
+    ]);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, getTranslocoTestingModule()],
@@ -41,7 +47,9 @@ describe('ApiKeyUsageComponent', () => {
         { provide: ApiKeyService, useValue: service },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap(params) } },
+          useValue: {
+            snapshot: { paramMap: convertToParamMap(params), data },
+          },
         },
       ],
     });
@@ -118,6 +126,18 @@ describe('ApiKeyUsageComponent', () => {
 
     expect(component.loadError).toBe('apiKeys.usage.loadError');
     expect(component.loading).toBeFalse();
+  });
+
+  it('lädt auf der Website-Route die Zugriffe ohne Anmeldung', () => {
+    setup({}, { publicUsage: true });
+    service.getPublicUsage.and.returnValue(of(usage({ name: null })));
+
+    component.ngOnInit();
+
+    expect(service.getPublicUsage).toHaveBeenCalled();
+    expect(service.getUsage).not.toHaveBeenCalled();
+    expect(component.loadError).toBeNull();
+    expect(component.publicUsage).toBeTrue();
   });
 
   it('ruft ohne Key-Id nichts ab', () => {

@@ -1,5 +1,4 @@
 import {
-  HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
   withXsrfConfiguration,
@@ -27,10 +26,7 @@ import { AppComponent } from './app.component';
 import { UikitShellModule } from './_modules/_uikit/_common/uikit-shell.module';
 import { provideTranslocoRoot, readInitialLang } from '@floorball/core';
 import { SessionService } from './_modules/_core/_services';
-import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
-import { ApiKeyInterceptor } from './_helpers/_interceptors/api-key.interceptor';
-import { SecretaryTokenInterceptor } from './_helpers/_interceptors/secretary-token.interceptor';
-import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
+import { HTTP_INTERCEPTOR_PROVIDERS } from './_helpers/_interceptors/http-interceptor-providers';
 
 @NgModule({
   declarations: [AppComponent],
@@ -50,14 +46,7 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
       provide: Sentry.TraceService,
       deps: [Router],
     },
-    { provide: HTTP_INTERCEPTORS, useClass: ApiKeyInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: CsrfInterceptor, multi: true },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: SecretaryTokenInterceptor,
-      multi: true,
-    },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    ...HTTP_INTERCEPTOR_PROVIDERS,
     {
       provide: APP_INITIALIZER,
       useFactory: () => () => {},

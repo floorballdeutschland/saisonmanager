@@ -7,11 +7,10 @@ import { environment } from 'src/environments/environment';
 /**
  * Die Livestreams des Tages.
  *
- * Ein gewöhnlicher öffentlicher Abruf: Der ApiKeyInterceptor hängt den
- * Frontend-Schlüssel an, und der hat Echtzeit-Freigabe. Für Zwischenstände
- * laufender Partien gilt damit auf der eigenen Website keine Verzögerung — für
- * fremde Zugänge sehr wohl, das entscheidet aber der Server und nicht diese
- * Stelle.
+ * Ein gewöhnlicher öffentlicher Abruf über die anonyme Website-Sitzung
+ * (PublicSessionInterceptor). Die API verzögert Zwischenstände laufender
+ * Partien nur für API-Keys ohne Echtzeit-Freigabe, auf der eigenen Website gilt
+ * also keine Verzögerung — das entscheidet der Server und nicht diese Stelle.
  */
 @Injectable({
   providedIn: 'root',

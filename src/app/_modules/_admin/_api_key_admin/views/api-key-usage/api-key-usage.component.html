@@ -8,9 +8,18 @@
   </p>
 
   <h1 class="text-2xl font-bold mb-1">
-    {{ "apiKeys.usage.title" | transloco }}
+    {{
+      (publicUsage ? "apiKeys.usage.publicTitle" : "apiKeys.usage.title")
+        | transloco
+    }}
   </h1>
-  @if (data) {
+  @if (data && publicUsage) {
+    <p class="text-sm text-fb-gray-500 mb-6">
+      {{
+        "apiKeys.usage.publicRateLimit" | transloco: { limit: data.rate_limit }
+      }}
+    </p>
+  } @else if (data) {
     <p class="text-sm text-fb-gray-500 mb-6">
       {{ data.name }} ·
       @if (data.rate_limit) {
@@ -148,7 +157,12 @@
     </div>
 
     <p class="text-xs text-fb-gray-500 mt-3">
-      {{ "apiKeys.usage.footnote" | transloco }}
+      {{
+        (publicUsage
+          ? "apiKeys.usage.publicFootnote"
+          : "apiKeys.usage.footnote"
+        ) | transloco
+      }}
     </p>
   }
 </div>
