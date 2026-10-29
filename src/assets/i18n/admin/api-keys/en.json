@@ -97,7 +97,10 @@
     "colCount": "Requests",
     "colShare": "Share",
     "noEndpoints": "No requests yet.",
-    "footnote": "Only requests made with an API key are counted, not those from the signed-in interface. The endpoint is recorded, not the individual request."
+    "footnote": "Only requests made with an API key are counted, not those from the signed-in interface. The endpoint is recorded, not the individual request.",
+    "publicTitle": "Website visitor requests",
+    "publicRateLimit": "Visitors without sign-in, via an anonymous session · Limit per session: {{ limit }} requests per minute",
+    "publicFootnote": "Counts the website’s requests without sign-in. Signed-in users and requests with an API key are not included. The endpoint is recorded, not the individual request."
   },
   "notifications": {
     "loadError": "API keys could not be loaded.",
@@ -106,5 +109,6 @@
     "genericError": "Error: {{ detail }}",
     "deleted": "\"{{ name }}\" deleted.",
     "deleteError": "Error while deleting: {{ detail }}"
-  }
+  },
+  "publicUsageLink": "Requests from website visitors without sign-in"
 }

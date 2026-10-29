@@ -49,3 +49,4 @@ export * from './youtube.service';
 export * from './game-stats.service';
 export * from './highlight-editor.service';
 export * from './youtube-iframe-api.service';
+export * from './public-session.service';

@@ -13,8 +13,8 @@ import { environment } from 'src/environments/environment';
  * Antrag auf einen API-Zugang: öffentliche Einreichung und Abholung des Keys
  * sowie die Entscheidung in der Verwaltung.
  *
- * Die öffentlichen Aufrufe brauchen keine Anmeldung; den API-Key hängt der
- * ApiKeyInterceptor an.
+ * Die öffentlichen Aufrufe brauchen keine Anmeldung; sie laufen über die
+ * anonyme Website-Sitzung (PublicSessionInterceptor).
  */
 @Injectable({
   providedIn: 'root',

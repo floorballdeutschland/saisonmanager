@@ -97,7 +97,10 @@
     "colCount": "Anfragen",
     "colShare": "Anteil",
     "noEndpoints": "Noch keine Zugriffe.",
-    "footnote": "Gezählt werden nur Zugriffe mit API-Key, nicht die der angemeldeten Oberfläche. Erfasst wird der Endpunkt, nicht die einzelne Anfrage."
+    "footnote": "Gezählt werden nur Zugriffe mit API-Key, nicht die der angemeldeten Oberfläche. Erfasst wird der Endpunkt, nicht die einzelne Anfrage.",
+    "publicTitle": "Zugriffe der Website-Besucher",
+    "publicRateLimit": "Besucher ohne Anmeldung, über eine anonyme Sitzung · Grenze je Sitzung: {{ limit }} Anfragen pro Minute",
+    "publicFootnote": "Gezählt werden die Zugriffe der Website ohne Anmeldung. Angemeldete Nutzer und Zugriffe mit API-Key stehen hier nicht. Erfasst wird der Endpunkt, nicht die einzelne Anfrage."
   },
   "notifications": {
     "loadError": "API-Keys konnten nicht geladen werden.",
@@ -106,5 +109,6 @@
     "genericError": "Fehler: {{ detail }}",
     "deleted": "\"{{ name }}\" gelöscht.",
     "deleteError": "Fehler beim Löschen: {{ detail }}"
-  }
+  },
+  "publicUsageLink": "Zugriffe der Website-Besucher ohne Anmeldung"
 }
