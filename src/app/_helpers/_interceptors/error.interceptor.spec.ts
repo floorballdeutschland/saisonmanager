@@ -268,6 +268,33 @@ describe('ErrorInterceptor', () => {
     );
   });
 
+  // Eine fehlende anonyme Sitzung ist keine abgelaufene Anmeldung. Hier kommt
+  // das 401 nur an, wenn auch das Holen der Sitzung scheiterte, und das hat
+  // der Interceptor dann schon gemeldet. Ein Zuschauer darf dabei nicht auf
+  // /login landen.
+  it('does not log out on a missing anonymous session', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate');
+    const logoutSpy = spyOn(TestBed.inject(SessionService), 'logout');
+    const scheduleUrl = `${environment.apiURL}leagues/1/schedule.json`;
+
+    http
+      .get(scheduleUrl)
+      .subscribe({ next: () => undefined, error: () => undefined });
+    httpMock.expectOne(scheduleUrl).flush(
+      {
+        success: false,
+        message: 'API key required',
+        code: 'public_session_required',
+      },
+      { status: 401, statusText: 'Error' }
+    );
+
+    expect(logoutSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   it('still reports a 404 on a background refresh', () => {
     http
       .get(uploadUrl, { context: refreshContext(true) })

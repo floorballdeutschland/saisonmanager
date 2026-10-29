@@ -41,6 +41,9 @@ export class ApiKeyUsageComponent implements OnInit, OnDestroy {
 
   sortKey: SortKey = 'count';
 
+  /** Website-Besucher ohne Anmeldung statt eines einzelnen Keys. */
+  publicUsage = false;
+
   private _keyId = 0;
   private _destroy$ = new Subject<void>();
 
@@ -52,6 +55,7 @@ export class ApiKeyUsageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.publicUsage = this._route.snapshot.data?.['publicUsage'] === true;
     this._keyId = Number(this._route.snapshot.paramMap.get('id') ?? 0);
     this.load();
   }
@@ -62,28 +66,28 @@ export class ApiKeyUsageComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
-    if (!this._keyId) {
+    if (!this.publicUsage && !this._keyId) {
       this.loadError = this._transloco.translate('apiKeys.usage.loadError');
       return;
     }
 
     this.loading = true;
     this.loadError = null;
-    this._apiKeyService
-      .getUsage(this._keyId)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (result) => {
-          this.data = result;
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.loadError = this._transloco.translate('apiKeys.usage.loadError');
-          this.loading = false;
-          this._cdr.markForCheck();
-        },
-      });
+    const request$ = this.publicUsage
+      ? this._apiKeyService.getPublicUsage()
+      : this._apiKeyService.getUsage(this._keyId);
+    request$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (result) => {
+        this.data = result;
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.loadError = this._transloco.translate('apiKeys.usage.loadError');
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   get last30Days(): ApiKeyDailyCount[] {

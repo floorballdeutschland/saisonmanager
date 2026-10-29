@@ -29,6 +29,7 @@ import { provideTranslocoRoot, readInitialLang } from '@floorball/core';
 import { SessionService } from './_modules/_core/_services';
 import { ErrorInterceptor } from './_helpers/_interceptors/error.interceptor';
 import { ApiKeyInterceptor } from './_helpers/_interceptors/api-key.interceptor';
+import { PublicSessionInterceptor } from './_helpers/_interceptors/public-session.interceptor';
 import { SecretaryTokenInterceptor } from './_helpers/_interceptors/secretary-token.interceptor';
 import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
 
@@ -58,6 +59,12 @@ import { CsrfInterceptor } from './_helpers/_interceptors/csrf.interceptor';
       multi: true,
     },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    // Muss nach dem ErrorInterceptor stehen, siehe PublicSessionInterceptor.
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: PublicSessionInterceptor,
+      multi: true,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: () => () => {},

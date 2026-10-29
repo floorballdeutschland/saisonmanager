@@ -18,6 +18,15 @@ const routes: Routes = [
     data: { scrollTop: true },
   },
   {
+    // Zugriffe der Website-Besucher ohne Anmeldung (anonyme Sitzung), dieselbe
+    // Ansicht wie für einen Key. Vor ':id/nutzung', sonst hielte der Router
+    // 'website' für eine Key-Id.
+    path: 'verwaltung/api-keys/website/nutzung',
+    pathMatch: 'full',
+    component: Views.ApiKeyUsageComponent,
+    data: { scrollTop: true, publicUsage: true },
+  },
+  {
     // Muss nach 'antraege' stehen, sonst schluckt :id das Segment.
     path: 'verwaltung/api-keys/:id/nutzung',
     pathMatch: 'full',

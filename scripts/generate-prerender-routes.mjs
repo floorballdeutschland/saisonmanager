@@ -3,7 +3,7 @@
  * Seiten: alle Ligen eines Spielbetriebs in der laufenden Saison.
  *
  * Aufruf (aus build-deploy.sh, vor `ng build`):
- *   FRONTEND_API_KEY=<key> node scripts/generate-prerender-routes.mjs
+ *   PRERENDER_API_KEY=<key> node scripts/generate-prerender-routes.mjs
  *
  * Optionale Env-Variablen: API_URL, PRERENDER_GO_PATH (Vorgabewert siehe unten).
  *
@@ -47,7 +47,7 @@ const API_URL = (
   process.env.API_URL ?? "https://saisonmanager.de/api/v2/"
 ).replace(/\/?$/, "/");
 const GO_PATH = process.env.PRERENDER_GO_PATH ?? "fd";
-const API_KEY = process.env.FRONTEND_API_KEY ?? "";
+const API_KEY = process.env.PRERENDER_API_KEY ?? "";
 // Am Skript festgemacht und nicht an `process.cwd()`: Aus einem anderen
 // Verzeichnis aufgerufen schrieb das Skript sonst eine Datei ins Leere und
 // meldete Erfolg, waehrend der Build die alte Liste aus der Workspace-Wurzel

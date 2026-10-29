@@ -15,6 +15,7 @@ import {
   SILENT_REFRESH,
 } from '@floorball/core';
 import { Router } from '@angular/router';
+import { isPublicSessionRequired } from './public-session.interceptor';
 
 // Anzeigen und Zurücknehmen müssen denselben Text benutzen: `dismiss` sucht die
 // stehende Meldung über Textgleichheit.
@@ -120,6 +121,15 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (!isPlatformBrowser(this.platformId)) {
           const serverError = this.errorDetail(err) || err.statusText;
           return throwError(() => new Error(serverError));
+        }
+
+        // Fehlende anonyme Sitzung: Der PublicSessionInterceptor hat sie schon
+        // zu holen versucht. Hier landet das 401 nur, wenn auch das scheiterte,
+        // und dann hat dieser Interceptor den Fehler des Holens bereits
+        // gemeldet. Wer hier ankommt, ist nicht angemeldet; Abmelden und
+        // Weiterleiten auf /login trüge nur Zuschauer von der Seite.
+        if (isPublicSessionRequired(err)) {
+          return throwError(() => err);
         }
 
         // Die Bestätigungsseite für E-Mail-Änderungen (/email-bestaetigen)

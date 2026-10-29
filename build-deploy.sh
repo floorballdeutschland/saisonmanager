@@ -6,10 +6,17 @@ set -e
 # wirkungslos gewesen.
 set -o pipefail
 
-# API-Key aus gitignorierter lokaler Datei lesen
+# Prerender-Key aus gitignorierter lokaler Datei lesen.
+#
+# Er dient NUR dem Vorrendern auf diesem Rechner (Routen-Generator und
+# Server-Rendering, siehe app.server.module.ts) und gelangt nicht mehr ins
+# Bundle: Der Browser holt sich eine anonyme Sitzung (PublicSessionService).
+# Bis 2026-10 stand hier der Frontend-Key, der per Platzhalter in
+# environment.prod.ts landete und damit fuer jeden lesbar im ausgelieferten
+# JavaScript stand.
 if [ ! -f "src/environments/.api-key" ]; then
   echo "Fehler: src/environments/.api-key nicht gefunden." >&2
-  echo "Datei anlegen und den Frontend-API-Key eintragen:" >&2
+  echo "Datei anlegen und den Prerender-API-Key eintragen:" >&2
   echo "  echo \"<key>\" > src/environments/.api-key" >&2
   exit 1
 fi
@@ -22,26 +29,6 @@ fi
 # Backup anlegen; trap stellt die Datei nach dem Build immer wieder her
 cp src/environments/environment.prod.ts src/environments/environment.prod.ts.bak
 trap 'mv src/environments/environment.prod.ts.bak src/environments/environment.prod.ts' EXIT
-
-# Sicherstellen dass der Platzhalter noch vorhanden ist
-if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.prod.ts; then
-  echo "Fehler: FRONTEND_API_KEY_PLACEHOLDER nicht in environment.prod.ts gefunden." >&2
-  exit 1
-fi
-
-# Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
-#
-# `sed -i.sedbak` statt `sed -i`: BSD-sed (macOS) verlangt hinter -i zwingend
-# eine Endung und nimmt sonst den Ausdruck dafür, danach die Datei als Ausdruck.
-# Das bricht mit "bad flag in substitute command" ab, bevor irgendetwas ersetzt
-# ist. Mit Endung verhalten sich BSD und GNU gleich.
-#
-# NICHT `.bak`: Diese Endung gehoert der Sicherung oben, die der trap nach dem
-# Build zurueckspielt. sed wuerde sie ueberschreiben und das anschliessende
-# Aufraeumen sie loeschen -- der trap fände dann nichts mehr vor und liesse den
-# echten Schluessel in der Arbeitskopie stehen.
-sed -i.sedbak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.prod.ts
-rm -f src/environments/environment.prod.ts.sedbak
 
 # Sentry-DSN einsetzen, sofern hinterlegt. Anders als beim API-Key ist das
 # optional: Ohne die Datei bleibt der Platzhalter stehen, und initSentry()
@@ -67,6 +54,16 @@ if [ -f "src/environments/.sentry-dsn" ]; then
     exit 1
   fi
   # @ und / im DSN kollidieren mit gängigen sed-Delimitern, | kommt darin nicht vor.
+  #
+  # `sed -i.sedbak` statt `sed -i`: BSD-sed (macOS) verlangt hinter -i zwingend
+  # eine Endung und nimmt sonst den Ausdruck dafür, danach die Datei als
+  # Ausdruck. Das bricht mit "bad flag in substitute command" ab, bevor
+  # irgendetwas ersetzt ist. Mit Endung verhalten sich BSD und GNU gleich.
+  #
+  # NICHT `.bak`: Diese Endung gehoert der Sicherung oben, die der trap nach dem
+  # Build zurueckspielt. sed wuerde sie ueberschreiben und das anschliessende
+  # Aufraeumen sie loeschen; der trap fände dann nichts mehr vor und liesse die
+  # eingesetzten Werte in der Arbeitskopie stehen.
   sed -i.sedbak "s|SENTRY_DSN_PLACEHOLDER|${SENTRY_DSN}|" src/environments/environment.prod.ts
   rm -f src/environments/environment.prod.ts.sedbak
   echo "Sentry-DSN eingesetzt."
@@ -110,12 +107,26 @@ export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
 # Ist die API nicht erreichbar oder hat die laufende Saison noch keine Ligen,
 # bleibt die eingecheckte prerender-routes.txt erhalten (Warnung). Ein falscher
 # Slug oder ein abgelehnter Key bricht dagegen ab, siehe Kopf des Skripts.
-FRONTEND_API_KEY="${API_KEY}" node scripts/generate-prerender-routes.mjs
+PRERENDER_API_KEY="${API_KEY}" node scripts/generate-prerender-routes.mjs
 
 # Prerender (SSG) läuft nur hier beim Deploy – nur jetzt liegen API-Key und
 # Routenliste vor. Die CI baut bewusst ohne Prerender (Config "production"),
 # da ihr beides fehlt und der Render sonst an 401ern hängenbliebe.
-./node_modules/.bin/ng build --configuration production,prerender
+#
+# Der Key geht als Umgebungsvariable an den Build und wird nur im
+# Server-Rendering gelesen (app.server.module.ts).
+PRERENDER_API_KEY="${API_KEY}" ./node_modules/.bin/ng build --configuration production,prerender
+
+# Der Key darf in keiner ausgelieferten Datei stehen, weder im JavaScript noch
+# in einer vorgerenderten Seite. Diese Pruefung ist der Grund, warum der Umbau
+# auf die anonyme Sitzung ueberhaupt etwas bringt; ein spaeterer Import an der
+# falschen Stelle faellt hier auf statt erst im Live-Bundle.
+if grep -rqF "$API_KEY" dist/saisonmanager/browser; then
+  echo "Fehler: Der Prerender-Key steht in der Build-Ausgabe:" >&2
+  grep -rlF "$API_KEY" dist/saisonmanager/browser >&2
+  echo "Nichts hochgeladen." >&2
+  exit 1
+fi
 
 # Gegenprobe VOR dem Upload, zwei Stufen.
 #

@@ -28,6 +28,7 @@
   "confirmDelete": "API-Key \"{{ name }}\" wirklich löschen?",
   "manuallyCreated": "manuell angelegt",
   "publicLinkHint": "Außenstehende beantragen einen Zugang selbst unter",
+  "publicUsageLink": "Zugriffe der Website-Besucher ohne Anmeldung",
   "footnote": "<strong>Echtzeit</strong>: Livescores und Spielereignisse ungefiltert. Ohne Echtzeit: Scores laufender Spiele ausgeblendet. <strong>Limit/Min</strong>: Max. Requests pro Minute (leer = unbegrenzt).",
   "tabs": {
     "keys": "Keys",
@@ -91,7 +92,10 @@
     "colCount": "Anfragen",
     "colShare": "Anteil",
     "noEndpoints": "Noch keine Zugriffe.",
-    "footnote": "Gezählt werden nur Zugriffe mit API-Key, nicht die der angemeldeten Oberfläche. Erfasst wird der Endpunkt, nicht die einzelne Anfrage."
+    "footnote": "Gezählt werden nur Zugriffe mit API-Key, nicht die der angemeldeten Oberfläche. Erfasst wird der Endpunkt, nicht die einzelne Anfrage.",
+    "publicTitle": "Zugriffe der Website-Besucher",
+    "publicRateLimit": "Besucher ohne Anmeldung, über eine anonyme Sitzung · Grenze je Sitzung: {{ limit }} Anfragen pro Minute",
+    "publicFootnote": "Gezählt werden die Zugriffe der Website ohne Anmeldung. Angemeldete Nutzer und Zugriffe mit API-Key stehen hier nicht. Erfasst wird der Endpunkt, nicht die einzelne Anfrage."
   },
   "notifications": {
     "loadError": "API-Keys konnten nicht geladen werden.",

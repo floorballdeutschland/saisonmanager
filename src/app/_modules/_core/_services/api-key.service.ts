@@ -19,9 +19,13 @@ export interface ApiKeyEndpointCount {
   count: number;
 }
 
-/** Nutzung eines einzelnen Keys, im Aufbau wie die allgemeine Auswertung. */
+/**
+ * Nutzung eines einzelnen Keys, im Aufbau wie die allgemeine Auswertung.
+ * Dieselbe Form liefert die Auswertung der Website-Besucher ohne Anmeldung;
+ * dort ist `name` leer und `rate_limit` die Grenze je Besuchersitzung.
+ */
 export interface ApiKeyUsageData {
-  name: string;
+  name: string | null;
   rate_limit: number | null;
   last_30_days: ApiKeyDailyCount[];
   last_year: ApiKeyMonthlyCount[];
@@ -64,6 +68,13 @@ export class ApiKeyService {
   public getUsage(id: number) {
     return this.http.get<ApiKeyUsageData>(
       environment.apiURL + 'admin/api_keys/' + id + '/usage'
+    );
+  }
+
+  /** Zugriffe der Website-Besucher ohne Anmeldung (anonyme Sitzung). */
+  public getPublicUsage() {
+    return this.http.get<ApiKeyUsageData>(
+      environment.apiURL + 'admin/api_keys/public_usage'
     );
   }
 }

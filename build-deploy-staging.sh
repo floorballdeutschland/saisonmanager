@@ -4,41 +4,15 @@ set -e
 # Staging-Build + Deploy nach saisonmanager.dev.
 #
 # Wie build-deploy.sh, aber:
-#   - ersetzt den API-Key-Platzhalter in environment.staging.ts
 #   - baut mit Konfiguration "staging" (ohne Prerender/SSG – analog CI)
+#   - braucht deshalb keinen API-Key: Der Browser holt sich wie in Prod eine
+#     anonyme Sitzung (PublicSessionService), und ohne Prerender gibt es kein
+#     Server-Rendering, das einen Key braeuchte
 #   - deployt nach /opt/saisonmanager/saisonmanager-frontend-staging/
-#
-# Der Frontend-API-Key ist derselbe wie in Prod: die Staging-DB ist ein
-# (anonymisierter) Klon der Prod-DB, die ApiKey-Tabelle bleibt dabei gültig.
-
-# API-Key aus gitignorierter lokaler Datei lesen
-if [ ! -f "src/environments/.api-key" ]; then
-  echo "Fehler: src/environments/.api-key nicht gefunden." >&2
-  echo "Datei anlegen und den Frontend-API-Key eintragen:" >&2
-  echo "  echo \"<key>\" > src/environments/.api-key" >&2
-  exit 1
-fi
-API_KEY=$(tr -d '[:space:]' < src/environments/.api-key)
-if [ -z "$API_KEY" ]; then
-  echo "Fehler: src/environments/.api-key ist leer." >&2
-  exit 1
-fi
 
 # Backup anlegen; trap stellt die Datei nach dem Build immer wieder her
 cp src/environments/environment.staging.ts src/environments/environment.staging.ts.bak
 trap 'mv src/environments/environment.staging.ts.bak src/environments/environment.staging.ts' EXIT
-
-# Sicherstellen dass der Platzhalter noch vorhanden ist
-if ! grep -q "FRONTEND_API_KEY_PLACEHOLDER" src/environments/environment.staging.ts; then
-  echo "Fehler: FRONTEND_API_KEY_PLACEHOLDER nicht in environment.staging.ts gefunden." >&2
-  exit 1
-fi
-
-# Platzhalter durch echten Key ersetzen (| als Delimiter, sicher für Hex-Keys)
-# `sed -i.sedbak` wegen BSD-sed auf macOS, und NICHT `.bak`, weil die Endung
-# der Sicherung des traps gehoert. Begruendung steht in build-deploy.sh.
-sed -i.sedbak "s|FRONTEND_API_KEY_PLACEHOLDER|${API_KEY}|" src/environments/environment.staging.ts
-rm -f src/environments/environment.staging.ts.sedbak
 
 # Sentry-DSN einsetzen, sofern hinterlegt (optional, siehe build-deploy.sh).
 # Derselbe DSN wie Prod; getrennt werden die Ereignisse über environment: 'staging'.
