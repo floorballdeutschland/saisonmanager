@@ -295,6 +295,20 @@ describe('ErrorInterceptor', () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
+  // Das Holen der Sitzung wartet ein 429 selbst ab (PublicSessionService).
+  it('shows no toast for a throttled anonymous session request', () => {
+    const sessionUrl = `${environment.apiURL}public_session`;
+
+    http
+      .post(sessionUrl, {})
+      .subscribe({ next: () => undefined, error: () => undefined });
+    httpMock
+      .expectOne(sessionUrl)
+      .flush({ error: 'Zu viele Anfragen' }, { status: 429, statusText: '' });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   it('still reports a 404 on a background refresh', () => {
     http
       .get(uploadUrl, { context: refreshContext(true) })

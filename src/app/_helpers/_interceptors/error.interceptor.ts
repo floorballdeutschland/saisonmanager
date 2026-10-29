@@ -15,6 +15,7 @@ import {
   SILENT_REFRESH,
 } from '@floorball/core';
 import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
 import { isPublicSessionRequired } from './public-session.interceptor';
 
 // Anzeigen und Zurücknehmen müssen denselben Text benutzen: `dismiss` sucht die
@@ -129,6 +130,16 @@ export class ErrorInterceptor implements HttpInterceptor {
         // gemeldet. Wer hier ankommt, ist nicht angemeldet; Abmelden und
         // Weiterleiten auf /login trüge nur Zuschauer von der Seite.
         if (isPublicSessionRequired(err)) {
+          return throwError(() => err);
+        }
+
+        // Ein 429 beim Holen der Sitzung wartet PublicSessionService still ab
+        // und versucht es erneut. Ein Toast je Versuch zeigte Zuschauern in
+        // einer vollen Halle einen Fehler, wo die Seite nur später lädt.
+        if (
+          err.status === 429 &&
+          request.url.startsWith(environment.apiURL + 'public_session')
+        ) {
           return throwError(() => err);
         }
 

@@ -100,7 +100,7 @@ describe('PublicSessionInterceptor', () => {
     httpMock.expectOne(scheduleUrl).flush(sessionRequiredBody, sessionRequired);
     httpMock
       .expectOne(sessionUrl)
-      .flush({ error: 'Zu viele Anfragen' }, { status: 429, statusText: '' });
+      .flush({ message: 'Server-Fehler.' }, { status: 500, statusText: '' });
 
     expect(error?.status).toBe(401);
     expect(error?.error.code).toBe('public_session_required');
