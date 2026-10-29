@@ -31,8 +31,10 @@ describe('ApiKeyIndexComponent', () => {
     service.getAll.and.returnValue(of(keys));
     // Wie die API: der geänderte Key, ohne Nutzung und Antrag.
     service.update.and.callFake((id, patch) => {
-      const { usage_30_days, application, ...rest } = keys[0];
-      return of({ ...rest, ...patch } as ApiKey);
+      const updated: Partial<ApiKey> = { ...keys[0], ...patch };
+      delete updated.usage_30_days;
+      delete updated.application;
+      return of(updated as ApiKey);
     });
 
     TestBed.configureTestingModule({
