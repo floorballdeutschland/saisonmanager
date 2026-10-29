@@ -9,7 +9,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ApiKeyService, NotificationService } from '@floorball/core';
-import { ApiKey } from '@floorball/types';
+import { API_KEY_FEATURES, ApiKey, ApiKeyFeature } from '@floorball/types';
 
 @Component({
   templateUrl: './api-key-index.component.html',
@@ -25,6 +25,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   creating = false;
   togglingIds = new Set<number>();
   rateLimitEdits: Record<number, string> = {};
+  readonly features = API_KEY_FEATURES;
 
   private _destroy$ = new Subject<void>();
 
@@ -95,6 +96,18 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
     this._patch(key.id, { realtime: !key.realtime });
   }
 
+  hasFeature(key: ApiKey, feature: ApiKeyFeature): boolean {
+    return (key.features ?? []).includes(feature);
+  }
+
+  toggleFeature(key: ApiKey, feature: ApiKeyFeature): void {
+    const current = key.features ?? [];
+    const features = current.includes(feature)
+      ? current.filter((f) => f !== feature)
+      : [...current, feature];
+    this._patch(key.id, { features });
+  }
+
   rateLimitInput(key: ApiKey): string {
     return this.rateLimitEdits[key.id] ?? key.rate_limit?.toString() ?? '';
   }
@@ -129,15 +142,30 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
       .update(id, patch)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: () => {
+        // Die Zeile sofort durch den Stand der Antwort ersetzen, nicht erst
+        // nach dem Neuladen: `features` geht als ganze Liste hinaus, ein
+        // zweiter Klick auf den alten Stand würde die erste Freigabe wieder
+        // entziehen. Die Antwort trägt weder Nutzung noch Antrag, daher
+        // gemischt.
+        next: (updated) => {
           this.togglingIds.delete(id);
-          this.load();
+          this._replaceRow(id, updated);
         },
+        // Neues Zeilenobjekt auch im Fehlerfall: Ein Häkchen hat der Browser
+        // schon umgeschaltet, und `[checked]` schreibt nur bei geändertem
+        // Wert zurück. Erst das neu aufgebaute Zeilenobjekt setzt es zurück.
         error: () => {
           this.togglingIds.delete(id);
-          this._cdr.markForCheck();
+          this._replaceRow(id, {});
         },
       });
+  }
+
+  private _replaceRow(id: number, changes: Partial<ApiKey>): void {
+    this.apiKeys = this.apiKeys.map((k) =>
+      k.id === id ? { ...k, ...changes } : k
+    );
+    this._cdr.markForCheck();
   }
 
   delete(key: ApiKey): void {
