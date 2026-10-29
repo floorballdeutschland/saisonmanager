@@ -114,14 +114,14 @@ describe('MatchHighlightsComponent', () => {
     const pending = () =>
       el().querySelector('[data-test="highlights-calibration-pending"]');
 
-    it('zeigt „Kalibrierung ausstehend“, solange die Aufzeichnung unkalibriert ist', () => {
+    it('zeigt „Kalibrierung durch Ausrichter ausstehend“, solange die Aufzeichnung unkalibriert ist', () => {
       fixture.componentRef.setInput('highlights', {
         ...highlights(),
         calibrated: false,
       });
       fixture.detectChanges();
 
-      expect(pending()?.textContent?.trim()).toBe('Kalibrierung ausstehend');
+      expect(pending()?.textContent?.trim()).toBe('Kalibrierung durch Ausrichter ausstehend');
     });
 
     it('zeigt nichts, wenn kalibriert oder das Feld fehlt (ältere API)', () => {
