@@ -142,15 +142,30 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
       .update(id, patch)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: () => {
+        // Die Zeile sofort durch den Stand der Antwort ersetzen, nicht erst
+        // nach dem Neuladen: `features` geht als ganze Liste hinaus, ein
+        // zweiter Klick auf den alten Stand würde die erste Freigabe wieder
+        // entziehen. Die Antwort trägt weder Nutzung noch Antrag, daher
+        // gemischt.
+        next: (updated) => {
           this.togglingIds.delete(id);
-          this.load();
+          this._replaceRow(id, updated);
         },
+        // Neues Zeilenobjekt auch im Fehlerfall: Ein Häkchen hat der Browser
+        // schon umgeschaltet, und `[checked]` schreibt nur bei geändertem
+        // Wert zurück. Erst das neu aufgebaute Zeilenobjekt setzt es zurück.
         error: () => {
           this.togglingIds.delete(id);
-          this._cdr.markForCheck();
+          this._replaceRow(id, {});
         },
       });
+  }
+
+  private _replaceRow(id: number, changes: Partial<ApiKey>): void {
+    this.apiKeys = this.apiKeys.map((k) =>
+      k.id === id ? { ...k, ...changes } : k
+    );
+    this._cdr.markForCheck();
   }
 
   delete(key: ApiKey): void {

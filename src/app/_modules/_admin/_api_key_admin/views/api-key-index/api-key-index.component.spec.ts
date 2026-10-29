@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { getTranslocoTestingModule } from 'src/app/_modules/_core/_i18n/transloco-testing';
 import { ApiKeyService, NotificationService } from '@floorball/core';
 import { ApiKey } from '@floorball/types';
@@ -28,7 +29,11 @@ describe('ApiKeyIndexComponent', () => {
   function setup(keys: ApiKey[]) {
     service = jasmine.createSpyObj('ApiKeyService', ['getAll', 'update']);
     service.getAll.and.returnValue(of(keys));
-    service.update.and.returnValue(of(keys[0]));
+    // Wie die API: der geänderte Key, ohne Nutzung und Antrag.
+    service.update.and.callFake((id, patch) => {
+      const { usage_30_days, application, ...rest } = keys[0];
+      return of({ ...rest, ...patch } as ApiKey);
+    });
 
     TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule()],
@@ -72,6 +77,36 @@ describe('ApiKeyIndexComponent', () => {
 
     checkbox('detailed_stats').click();
     expect(service.update).toHaveBeenCalledWith(7, { features: [] });
+  });
+
+  it('übernimmt die Antwort sofort, ein zweiter Klick baut auf dem neuen Stand auf', () => {
+    setup([key({ features: [], usage_30_days: 42 })]);
+    service.getAll.calls.reset();
+
+    checkbox('detailed_stats').click();
+    fixture.detectChanges();
+    checkbox('league_shot_stats').click();
+
+    expect(service.update.calls.mostRecent().args).toEqual([
+      7,
+      { features: ['detailed_stats', 'league_shot_stats'] },
+    ]);
+    expect(service.getAll).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.apiKeys[0].usage_30_days).toBe(42);
+  });
+
+  it('setzt das Häkchen zurück, wenn das Speichern scheitert', () => {
+    setup([key()]);
+    service.update.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 422 }))
+    );
+
+    checkbox('league_shot_stats').click();
+    expect(checkbox('league_shot_stats').checked).toBeTrue();
+    fixture.detectChanges();
+
+    expect(checkbox('league_shot_stats').checked).toBeFalse();
+    expect(checkbox('detailed_stats').checked).toBeTrue();
   });
 
   it('kommt mit einer API ohne features aus', () => {
