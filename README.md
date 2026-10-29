@@ -73,7 +73,8 @@ Run a single spec file with `ng test --no-watch --include='**/foo.component.spec
 src/app/
 ├── _helpers/
 │   └── _interceptors/          # HTTP interceptors
-│       ├── api-key.interceptor.ts   # adds X-Api-Key header
+│       ├── api-key.interceptor.ts   # adds X-Api-Key, only while prerendering
+│       ├── public-session.interceptor.ts # anonymous session for public calls
 │       └── error.interceptor.ts     # handles 401/403/404
 ├── _models/                    # TypeScript interfaces
 ├── _modules/
@@ -116,7 +117,7 @@ Permission keys are booleans like `menu_item_league_admin`, `update_player`, etc
 
 > **After backend permission changes**, users must log out and back in to pick up updated permissions from localStorage.
 
-**API key auth:** Public endpoints require an `X-Api-Key` header. The `ApiKeyInterceptor` automatically adds `environment.frontendApiKey` to all outgoing requests. After rotating the key in the admin UI, update `environment.prod.ts` and redeploy.
+**Public API access:** The browser sends no API key. When a public call is rejected with `401` and `code: public_session_required`, the `PublicSessionInterceptor` fetches an anonymous session (`POST public_session`, httponly cookie) and retries once. Only the prerender build uses a key: `build-deploy.sh` reads it from `src/environments/.api-key` and passes it as `PRERENDER_API_KEY` to the server rendering (`app.server.module.ts`), then aborts if the key shows up anywhere in `dist/`.
 
 ## Adding a New Admin Module
 

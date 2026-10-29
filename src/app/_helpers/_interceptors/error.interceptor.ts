@@ -125,9 +125,9 @@ export class ErrorInterceptor implements HttpInterceptor {
         }
 
         // Fehlende anonyme Sitzung: Der PublicSessionInterceptor hat sie schon
-        // zu holen versucht. Hier landet das 401 nur, wenn auch das scheiterte,
-        // und dann hat dieser Interceptor den Fehler des Holens bereits
-        // gemeldet. Wer hier ankommt, ist nicht angemeldet; Abmelden und
+        // zu holen versucht. Hier landet das 401 nur, wenn das nicht gereicht
+        // hat; was dann zu melden ist, entscheidet er (nur er kennt den
+        // Grund). Wer hier ankommt, ist nicht angemeldet; Abmelden und
         // Weiterleiten auf /login trüge nur Zuschauer von der Seite.
         if (isPublicSessionRequired(err)) {
           return throwError(() => err);
@@ -135,7 +135,8 @@ export class ErrorInterceptor implements HttpInterceptor {
 
         // Ein 429 beim Holen der Sitzung wartet PublicSessionService still ab
         // und versucht es erneut. Ein Toast je Versuch zeigte Zuschauern in
-        // einer vollen Halle einen Fehler, wo die Seite nur später lädt.
+        // einer vollen Halle einen Fehler, wo die Seite nur später lädt. Reicht
+        // alles Warten nicht, meldet das der PublicSessionInterceptor.
         if (
           err.status === 429 &&
           request.url.startsWith(environment.apiURL + 'public_session')

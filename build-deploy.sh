@@ -118,9 +118,9 @@ PRERENDER_API_KEY="${API_KEY}" node scripts/generate-prerender-routes.mjs
 PRERENDER_API_KEY="${API_KEY}" ./node_modules/.bin/ng build --configuration production,prerender
 
 # Der Key darf in keiner ausgelieferten Datei stehen, weder im JavaScript noch
-# in einer vorgerenderten Seite. Diese Pruefung ist der Grund, warum der Umbau
-# auf die anonyme Sitzung ueberhaupt etwas bringt; ein spaeterer Import an der
-# falschen Stelle faellt hier auf statt erst im Live-Bundle.
+# in einer vorgerenderten Seite. Diese Pruefung sichert ab, dass der Umbau auf
+# die anonyme Sitzung wirksam bleibt: Ein spaeterer Import an der falschen
+# Stelle faellt hier auf statt erst im Live-Bundle.
 if grep -rqF "$API_KEY" dist/saisonmanager/browser; then
   echo "Fehler: Der Prerender-Key steht in der Build-Ausgabe:" >&2
   grep -rlF "$API_KEY" dist/saisonmanager/browser >&2

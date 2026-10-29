@@ -15,9 +15,14 @@ import { PRERENDER_API_KEY } from './_helpers/_interceptors/api-key.interceptor'
  * Dateisystem-Variante umgestellt, damit der Bootstrap beim Prerendering nicht
  * an HTTP-Requests für Übersetzungen scheitert.
  *
- * Der API-Key wird zur Laufzeit des Renderns aus der Umgebung gelesen und
- * nicht beim Build eingesetzt, damit er in keiner Datei landet, die
- * ausgeliefert wird. `build-deploy.sh` prüft das nach dem Build.
+ * Der API-Key wird nicht per Platzhalter in den Code geschrieben, sondern im
+ * Prerender-Worker aus `process.env` gelesen, damit er in keiner
+ * ausgelieferten Datei landet. `build-deploy.sh` setzt die Variable und
+ * prüft nach dem Build, dass der Key nirgends in der Ausgabe steht.
+ *
+ * Fehlt die Variable, bricht das Rendern ab. Ohne Key lieferte die API jedem
+ * Abruf ein 401, und Seiten, deren Komponenten den Fehler selbst abfangen,
+ * würden still leer vorgerendert.
  */
 @NgModule({
   imports: [AppModule, ServerModule],
@@ -25,7 +30,15 @@ import { PRERENDER_API_KEY } from './_helpers/_interceptors/api-key.interceptor'
     { provide: TRANSLOCO_LOADER, useClass: TranslocoServerLoader },
     {
       provide: PRERENDER_API_KEY,
-      useFactory: () => process.env['PRERENDER_API_KEY'] ?? '',
+      useFactory: () => {
+        const key = process.env['PRERENDER_API_KEY'];
+        if (!key) {
+          throw new Error(
+            'PRERENDER_API_KEY fehlt. Vorrendern nur über build-deploy.sh.'
+          );
+        }
+        return key;
+      },
     },
   ],
   bootstrap: [AppComponent],

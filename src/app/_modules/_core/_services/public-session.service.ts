@@ -76,7 +76,9 @@ export class PublicSessionService {
         .pipe(
           // Nur ein 429 wird abgewartet; jeder andere Fehler geht sofort
           // weiter. Der Abruf, der die Sitzung brauchte, bleibt so lange
-          // offen, die Seite lädt also nur etwas später.
+          // offen, die Seite lädt also nur etwas später. Reichen alle
+          // Versuche nicht, scheitert er; die Meldung dazu zeigt der
+          // PublicSessionInterceptor.
           retry({
             count: PUBLIC_SESSION_MAX_RETRIES,
             delay: (err: unknown) =>

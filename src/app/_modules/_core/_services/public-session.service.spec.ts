@@ -47,6 +47,19 @@ describe('PublicSessionService', () => {
     httpMock.expectOne(url).flush({ success: true });
   });
 
+  // Haengte `_pending` nach einem Fehler fest, lieferte jedes weitere
+  // ensure() denselben Fehler, und der Tab bliebe bis zum Neuladen ohne Daten.
+  it('holt nach einem Fehlschlag beim naechsten Bedarf neu', () => {
+    service.ensure().subscribe({ error: () => undefined });
+    httpMock.expectOne(url).flush({}, { status: 500, statusText: '' });
+
+    let done = false;
+    service.ensure().subscribe(() => (done = true));
+    httpMock.expectOne(url).flush({ success: true });
+
+    expect(done).toBeTrue();
+  });
+
   // Volle Halle: Die Grenze je Adresse ist erreicht. Statt eines Fehlers
   // wartet das Holen ab und klappt im naechsten Zaehlfenster.
   it('wartet ein 429 still ab und versucht es erneut', fakeAsync(() => {

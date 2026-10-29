@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import {
   HTTP_INTERCEPTORS,
@@ -10,7 +10,14 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { environment } from 'src/environments/environment';
-import { PublicSessionInterceptor } from './public-session.interceptor';
+import {
+  NotificationService,
+  PUBLIC_SESSION_MAX_RETRIES,
+} from '@floorball/core';
+import {
+  PUBLIC_SESSION_BUSY_MESSAGE,
+  PublicSessionInterceptor,
+} from './public-session.interceptor';
 
 describe('PublicSessionInterceptor', () => {
   let http: HttpClient;
@@ -105,6 +112,43 @@ describe('PublicSessionInterceptor', () => {
     expect(error?.status).toBe(401);
     expect(error?.error.code).toBe('public_session_required');
   });
+
+  // Volle Halle, und auch alles Warten reicht nicht: Dann muss es eine
+  // Meldung geben, einmal, und sie verschwindet, sobald es doch klappt.
+  it('meldet ein ausgeschoepftes 429 einmal und nimmt die Meldung zurueck', fakeAsync(() => {
+    setup();
+    const notifications = TestBed.inject(NotificationService);
+    const warningSpy = spyOn(notifications, 'warning');
+    const dismissSpy = spyOn(notifications, 'dismiss');
+    let error: HttpErrorResponse | undefined;
+    http.get(scheduleUrl).subscribe({ error: (e) => (error = e) });
+
+    httpMock.expectOne(scheduleUrl).flush(sessionRequiredBody, sessionRequired);
+    for (let i = 0; i <= PUBLIC_SESSION_MAX_RETRIES; i++) {
+      httpMock.expectOne(sessionUrl).flush(
+        {},
+        {
+          status: 429,
+          statusText: 'Too Many Requests',
+          headers: { 'Retry-After': '1' },
+        }
+      );
+      tick(11_000);
+    }
+
+    expect(error?.status).toBe(401);
+    expect(warningSpy).toHaveBeenCalledOnceWith(
+      PUBLIC_SESSION_BUSY_MESSAGE,
+      jasmine.anything()
+    );
+
+    http.get(scheduleUrl).subscribe();
+    httpMock.expectOne(scheduleUrl).flush(sessionRequiredBody, sessionRequired);
+    httpMock.expectOne(sessionUrl).flush({ success: true });
+    httpMock.expectOne(scheduleUrl).flush([]);
+
+    expect(dismissSpy).toHaveBeenCalledWith(PUBLIC_SESSION_BUSY_MESSAGE);
+  }));
 
   it('wiederholt hoechstens einmal', () => {
     setup();
