@@ -53,7 +53,9 @@ export class ApiKeyService {
 
   public update(
     id: number,
-    patch: Partial<Pick<ApiKey, 'active' | 'rate_limit' | 'realtime'>>
+    patch: Partial<
+      Pick<ApiKey, 'active' | 'rate_limit' | 'realtime' | 'features'>
+    >
   ) {
     return this.http.patch<ApiKey>(
       environment.apiURL + 'admin/api_keys/' + id,

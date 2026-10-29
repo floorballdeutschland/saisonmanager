@@ -17,6 +17,8 @@
   "colRealtimeTitle": "Real-time access: live scores and events are delivered unfiltered",
   "colLimit": "Limit/min",
   "colLimitTitle": "Max. requests per minute (empty = unlimited)",
+  "colFeatures": "Add-on packages",
+  "colFeaturesTitle": "Individually agreed data packages, not available through the application form",
   "statusActive": "Active",
   "statusInactive": "Disabled",
   "realtimeActiveTitle": "Real-time active – click to disable",
@@ -28,8 +30,11 @@
   "confirmDelete": "Really delete API key \"{{ name }}\"?",
   "manuallyCreated": "created manually",
   "publicLinkHint": "External parties request access themselves at",
-  "publicUsageLink": "Requests from website visitors without sign-in",
-  "footnote": "<strong>Real-time</strong>: live scores and game events unfiltered. Without real-time: scores of ongoing games are hidden. <strong>Limit/min</strong>: max. requests per minute (empty = unlimited).",
+  "footnote": "<strong>Real-time</strong>: live scores and game events unfiltered. Without real-time: scores of ongoing games are hidden. <strong>Limit/min</strong>: max. requests per minute (empty = unlimited). <strong>Add-on packages</strong>: enable only after an individual agreement; without it the API responds with 403.",
+  "features": {
+    "detailed_stats": "Detailed game statistics",
+    "league_shot_stats": "League shot statistics"
+  },
   "tabs": {
     "keys": "Keys",
     "applications": "Applications"
@@ -59,7 +64,7 @@
     "termsAccepted": "Agreement version {{ version }} accepted on {{ date }}",
     "decisionNote": "Note",
     "approve": "Approve",
-    "approveHint": "Approving does not create a key yet: the applicant receives a collection link that shows the key exactly once. Access starts with the default limit for requested access and without real-time data; the limit can be changed at any time in the key list.",
+    "approveHint": "Approving does not create a key yet: the applicant receives a collection link that shows the key exactly once. Access starts with the default limit for requested access and without real-time data or add-on packages; the limit can be changed at any time in the key list.",
     "reject": "Reject",
     "rejectReasonLabel": "Reason for rejection (sent to the applicant by email)",
     "confirmReject": "Send rejection",
@@ -104,5 +109,6 @@
     "genericError": "Error: {{ detail }}",
     "deleted": "\"{{ name }}\" deleted.",
     "deleteError": "Error while deleting: {{ detail }}"
-  }
+  },
+  "publicUsageLink": "Requests from website visitors without sign-in"
 }

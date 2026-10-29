@@ -117,6 +117,12 @@
             >
               {{ "apiKeys.colLimit" | transloco }}
             </th>
+            <th
+              class="py-2 pr-4 font-bold"
+              [title]="'apiKeys.colFeaturesTitle' | transloco"
+            >
+              {{ "apiKeys.colFeatures" | transloco }}
+            </th>
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -197,6 +203,22 @@
                   />
                 </div>
               </td>
+              <td class="py-2 pr-4">
+                @for (feature of features; track feature) {
+                  <label
+                    class="flex items-center gap-1 text-xs whitespace-nowrap"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="hasFeature(key, feature)"
+                      [disabled]="togglingIds.has(key.id)"
+                      (change)="toggleFeature(key, feature)"
+                      [attr.data-test]="'feature-' + feature + '-' + key.id"
+                    />
+                    {{ "apiKeys.features." + feature | transloco }}
+                  </label>
+                }
+              </td>
               <td class="py-2 text-right flex gap-3 justify-end">
                 <button
                   (click)="toggleActive(key)"
@@ -219,7 +241,7 @@
           }
           @if (apiKeys.length === 0) {
             <tr>
-              <td colspan="8" class="py-8 text-center text-fb-gray-500">
+              <td colspan="9" class="py-8 text-center text-fb-gray-500">
                 {{ "apiKeys.empty" | transloco }}
               </td>
             </tr>

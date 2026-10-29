@@ -17,6 +17,8 @@
   "colRealtimeTitle": "Echtzeit-Zugriff: Livescores und Events werden ungefiltert geliefert",
   "colLimit": "Limit/Min",
   "colLimitTitle": "Max. Requests pro Minute (leer = unbegrenzt)",
+  "colFeatures": "Zusatzpakete",
+  "colFeaturesTitle": "Individuell vereinbarte Datenpakete, nicht über den Antrag buchbar",
   "statusActive": "Aktiv",
   "statusInactive": "Deaktiviert",
   "realtimeActiveTitle": "Echtzeit aktiv – klicken zum Deaktivieren",
@@ -28,8 +30,11 @@
   "confirmDelete": "API-Key \"{{ name }}\" wirklich löschen?",
   "manuallyCreated": "manuell angelegt",
   "publicLinkHint": "Außenstehende beantragen einen Zugang selbst unter",
-  "publicUsageLink": "Zugriffe der Website-Besucher ohne Anmeldung",
-  "footnote": "<strong>Echtzeit</strong>: Livescores und Spielereignisse ungefiltert. Ohne Echtzeit: Scores laufender Spiele ausgeblendet. <strong>Limit/Min</strong>: Max. Requests pro Minute (leer = unbegrenzt).",
+  "footnote": "<strong>Echtzeit</strong>: Livescores und Spielereignisse ungefiltert. Ohne Echtzeit: Scores laufender Spiele ausgeblendet. <strong>Limit/Min</strong>: Max. Requests pro Minute (leer = unbegrenzt). <strong>Zusatzpakete</strong>: nur nach individueller Vereinbarung freischalten; ohne Freigabe antwortet die API mit 403.",
+  "features": {
+    "detailed_stats": "Ausführliche Statistik je Spiel",
+    "league_shot_stats": "Schussstatistik je Liga"
+  },
   "tabs": {
     "keys": "Keys",
     "applications": "Anträge"
@@ -59,7 +64,7 @@
     "termsAccepted": "Vereinbarung in der Fassung {{ version }} bestätigt am {{ date }}",
     "decisionNote": "Notiz",
     "approve": "Annehmen",
-    "approveHint": "Beim Annehmen entsteht noch kein Key: Der Antragsteller bekommt einen Abhol-Link, über den der Key genau einmal angezeigt wird. Der Zugang startet mit dem Standard-Limit für beantragte Zugänge und ohne Echtzeit-Zugriff; das Limit lässt sich in der Key-Liste jederzeit ändern.",
+    "approveHint": "Beim Annehmen entsteht noch kein Key: Der Antragsteller bekommt einen Abhol-Link, über den der Key genau einmal angezeigt wird. Der Zugang startet mit dem Standard-Limit für beantragte Zugänge und ohne Echtzeit-Zugriff und ohne Zusatzpakete; das Limit lässt sich in der Key-Liste jederzeit ändern.",
     "reject": "Ablehnen",
     "rejectReasonLabel": "Begründung für die Ablehnung (geht per Mail an den Antragsteller)",
     "confirmReject": "Ablehnung abschicken",
@@ -104,5 +109,6 @@
     "genericError": "Fehler: {{ detail }}",
     "deleted": "\"{{ name }}\" gelöscht.",
     "deleteError": "Fehler beim Löschen: {{ detail }}"
-  }
+  },
+  "publicUsageLink": "Zugriffe der Website-Besucher ohne Anmeldung"
 }
