@@ -9,7 +9,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ApiKeyService, NotificationService } from '@floorball/core';
-import { ApiKey } from '@floorball/types';
+import { API_KEY_FEATURES, ApiKey, ApiKeyFeature } from '@floorball/types';
 
 @Component({
   templateUrl: './api-key-index.component.html',
@@ -25,6 +25,7 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
   creating = false;
   togglingIds = new Set<number>();
   rateLimitEdits: Record<number, string> = {};
+  readonly features = API_KEY_FEATURES;
 
   private _destroy$ = new Subject<void>();
 
@@ -93,6 +94,18 @@ export class ApiKeyIndexComponent implements OnInit, OnDestroy {
 
   toggleRealtime(key: ApiKey): void {
     this._patch(key.id, { realtime: !key.realtime });
+  }
+
+  hasFeature(key: ApiKey, feature: ApiKeyFeature): boolean {
+    return (key.features ?? []).includes(feature);
+  }
+
+  toggleFeature(key: ApiKey, feature: ApiKeyFeature): void {
+    const current = key.features ?? [];
+    const features = current.includes(feature)
+      ? current.filter((f) => f !== feature)
+      : [...current, feature];
+    this._patch(key.id, { features });
   }
 
   rateLimitInput(key: ApiKey): string {
