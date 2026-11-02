@@ -13,7 +13,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { Location } from '@angular/common';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, defer, of, throwError } from 'rxjs';
 
 // Ein Spieltag mit einem Spiel. Mehr liest die Komponente nicht: Sie nimmt die
 // Spieltagsnummer aus der ersten Zeile und das Datum für die Bereichsanzeige.
@@ -51,11 +51,23 @@ class LeagueServiceStub {
   // ein Fehlschlag gemeldet wird, siehe SILENT_REFRESH.
   silentFlags: boolean[] = [];
 
+  // Ab dem wievielten Aufruf der aktuelle Spieltag scheitert (Netz weg, 429).
+  // Gezählt werden Abonnements, nicht Aufrufe: Ein Abonnement ist ein
+  // HTTP-Abruf, und genau die vervielfachten sich (SAISONMANAGER-2D).
+  failCurrentFromCall?: number;
+  currentGameDayFetches = 0;
+
   getGameScheduleForCurrentGameDay(leagueId: number, silent = false) {
     this.currentGameDayCalls += 1;
     this.requestedLeagueIds.push(leagueId);
     this.silentFlags.push(silent);
-    return of(scheduleFor(2));
+    const fail =
+      this.failCurrentFromCall !== undefined &&
+      this.currentGameDayCalls >= this.failCurrentFromCall;
+    return defer(() => {
+      this.currentGameDayFetches += 1;
+      return fail ? throwError(() => new Error('429')) : of(scheduleFor(2));
+    });
   }
 
   getGameScheduleForGameDay(
@@ -222,6 +234,50 @@ describe('OverviewComponent', () => {
     fixture.componentInstance.selectMatchDay(4, league);
 
     expect(leagueService.silentFlags).toEqual([false]);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // SAISONMANAGER-2D: Der Rückfall griff auf das vorige Observable zurück, und
+  // `shareReplay` hält keine Fehler fest. War noch kein Abruf geglückt (Tab
+  // ohne Netz geöffnet, erster Abruf mit 429), abonnierte jeder Takt die ganze
+  // Kette seiner gescheiterten Vorgänger neu: Takt n schickte n Abrufe los.
+  it('schickt ohne geglückten Abruf genau einen Abruf je Takt', fakeAsync(() => {
+    leagueService.failCurrentFromCall = 1;
+    // Ohne Template: Dessen async-Pipe würfe den gescheiterten lauten
+    // Erstaufruf (gewollt) in den Test. Die Schleife unten abonniert statt ihrer.
+    TestBed.overrideTemplate(OverviewComponent, '');
+    const fixture = startWith(leagueWith(1));
+
+    for (let takt = 0; takt < 5; takt++) {
+      tick(30000);
+      // Wie die async-Pipe im Template: die jeweils aktuelle Liste abonnieren.
+      fixture.componentInstance.matches$?.subscribe({ error: () => undefined });
+    }
+
+    // Erstaufruf plus fünf Takte, je ein Abruf. Vorher waren es 1 + 2 + ... + 6.
+    expect(leagueService.currentGameDayFetches).toBe(6);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  it('zeigt nach gescheitertem Takt die zuletzt geladene Liste', fakeAsync(() => {
+    leagueService.failCurrentFromCall = 2;
+    const fixture = startWith(leagueWith(1));
+    const shown: (GameScheduleEntry[] | null)[] = [];
+
+    for (let takt = 0; takt < 3; takt++) {
+      tick(30000);
+      fixture.componentInstance.matches$?.subscribe((games) =>
+        shown.push(games)
+      );
+    }
+
+    expect(leagueService.currentGameDayFetches).toBe(4);
+    expect(shown.length).toBe(3);
+    expect(shown.every((games) => games?.[0]?.game_day === 2)).toBeTrue();
 
     fixture.componentInstance.ngOnDestroy();
     discardPeriodicTasks();
