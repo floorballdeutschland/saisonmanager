@@ -1,4 +1,5 @@
 import {
+  CHUNK_RELOAD_COUNT,
   CHUNK_RELOAD_MARKER,
   CHUNK_RELOAD_WINDOW_MS,
   ChunkRecoveryEnv,
@@ -113,6 +114,21 @@ describe('recoverFromChunkLoadError', () => {
     expect(reloaded).toBeTrue();
     expect(reload).toHaveBeenCalledTimes(1);
     expect(storage.values[CHUNK_RELOAD_MARKER]).toBe('5000');
+  });
+
+  it('zählt die Neuladungen des Tabs und meldet sie vor dem Neuladen', () => {
+    const reihenfolge: string[] = [];
+    const reload = jasmine
+      .createSpy('reload')
+      .and.callFake(() => reihenfolge.push('neu geladen'));
+    const storage = fakeStorage({ [CHUNK_RELOAD_COUNT]: '1' });
+
+    recoverFromChunkLoadError(env({ reload, storage, now: () => 5000 }), (n) =>
+      reihenfolge.push(`vorher ${n}`)
+    );
+
+    expect(storage.values[CHUNK_RELOAD_COUNT]).toBe('2');
+    expect(reihenfolge).toEqual(['vorher 2', 'neu geladen']);
   });
 
   // Der Kern des Schutzes: Fehlt die Datei wirklich — abgebrochenes Deploy —,
