@@ -13,7 +13,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { Location } from '@angular/common';
 import { AssociationService, LeagueService } from '@floorball/core';
 import { GameScheduleEntry, League } from '@floorball/types';
-import { BehaviorSubject, defer, of, throwError } from 'rxjs';
+import { BehaviorSubject, config, defer, of, throwError } from 'rxjs';
 
 // Ein Spieltag mit einem Spiel. Mehr liest die Komponente nicht: Sie nimmt die
 // Spieltagsnummer aus der ersten Zeile und das Datum für die Bereichsanzeige.
@@ -56,14 +56,18 @@ class LeagueServiceStub {
   // HTTP-Abruf, und genau die vervielfachten sich (SAISONMANAGER-2D).
   failCurrentFromCall?: number;
   currentGameDayFetches = 0;
+  // Ligen bzw. Spieltage, deren Abruf immer scheitert.
+  failLeagueIds: number[] = [];
+  failGameDays: number[] = [];
 
   getGameScheduleForCurrentGameDay(leagueId: number, silent = false) {
     this.currentGameDayCalls += 1;
     this.requestedLeagueIds.push(leagueId);
     this.silentFlags.push(silent);
     const fail =
-      this.failCurrentFromCall !== undefined &&
-      this.currentGameDayCalls >= this.failCurrentFromCall;
+      this.failLeagueIds.includes(leagueId) ||
+      (this.failCurrentFromCall !== undefined &&
+        this.currentGameDayCalls >= this.failCurrentFromCall);
     return defer(() => {
       this.currentGameDayFetches += 1;
       return fail ? throwError(() => new Error('429')) : of(scheduleFor(2));
@@ -78,6 +82,10 @@ class LeagueServiceStub {
     this.requestedGameDays.push(gameDayNumber);
     this.requestedLeagueIds.push(leagueId);
     this.silentFlags.push(silent);
+
+    if (this.failGameDays.includes(gameDayNumber)) {
+      return throwError(() => new Error('429'));
+    }
 
     return of(
       this.emptyGameDays.includes(gameDayNumber)
@@ -117,6 +125,22 @@ describe('OverviewComponent', () => {
   function withQueryParams(values: Record<string, string>) {
     route.snapshot.queryParamMap = convertToParamMap(values);
   }
+
+  // Laute Fehler (Erstaufruf, Spieltagswechsel) laufen absichtlich unbehandelt
+  // durch, damit Sentry sie sieht. RxJS wirft sie per Timer; hier werden sie
+  // stattdessen gesammelt.
+  let unhandled: unknown[];
+  let previousOnUnhandledError: typeof config.onUnhandledError;
+
+  beforeEach(() => {
+    unhandled = [];
+    previousOnUnhandledError = config.onUnhandledError;
+    config.onUnhandledError = (err) => unhandled.push(err);
+  });
+
+  afterEach(() => {
+    config.onUnhandledError = previousOnUnhandledError;
+  });
 
   beforeEach(async () => {
     leagueService = new LeagueServiceStub();
@@ -258,6 +282,8 @@ describe('OverviewComponent', () => {
 
     // Erstaufruf plus fünf Takte, je ein Abruf. Vorher waren es 1 + 2 + ... + 6.
     expect(leagueService.currentGameDayFetches).toBe(6);
+    // Gemeldet wird nur der laute Erstaufruf, nicht jeder stille Takt.
+    expect(unhandled.length).toBe(1);
 
     fixture.componentInstance.ngOnDestroy();
     discardPeriodicTasks();
@@ -278,6 +304,55 @@ describe('OverviewComponent', () => {
     expect(leagueService.currentGameDayFetches).toBe(4);
     expect(shown.length).toBe(3);
     expect(shown.every((games) => games?.[0]?.game_day === 2)).toBeTrue();
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Review zu fe#645: Der Rückfall darf nach einem Ligawechsel nicht die Liste
+  // der vorigen Liga unter der neuen Überschrift zeigen.
+  it('zeigt nach einem Ligawechsel nie die Spiele der vorigen Liga', fakeAsync(() => {
+    TestBed.overrideTemplate(OverviewComponent, '');
+    const fixture = startWith(leagueWith(1));
+    leagueService.failLeagueIds = [2];
+
+    leagueService.selectedLeague$.next(leagueWith(2));
+    tick(30000);
+    const shown: (GameScheduleEntry[] | null)[] = [];
+    fixture.componentInstance.matches$?.subscribe((games) => shown.push(games));
+
+    expect(shown).toEqual([]);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  it('zeigt nach gescheitertem Spieltagswechsel nicht den vorigen Spieltag', fakeAsync(() => {
+    TestBed.overrideTemplate(OverviewComponent, '');
+    const league = leagueWith(1);
+    const fixture = startWith(league);
+    leagueService.failGameDays = [4];
+
+    fixture.componentInstance.selectMatchDay(4, league);
+    tick(30000);
+    const shown: (GameScheduleEntry[] | null)[] = [];
+    fixture.componentInstance.matches$?.subscribe((games) => shown.push(games));
+
+    expect(shown).toEqual([]);
+
+    fixture.componentInstance.ngOnDestroy();
+    discardPeriodicTasks();
+  }));
+
+  // Auch wo das Template `matches$` nicht abonniert (Liga-Typ `champ`), muss
+  // ein lauter Fehler gemeldet werden.
+  it('meldet einen lauten Fehler weiterhin', fakeAsync(() => {
+    TestBed.overrideTemplate(OverviewComponent, '');
+    leagueService.failCurrentFromCall = 1;
+    const fixture = startWith(leagueWith(1));
+    tick();
+
+    expect(unhandled.length).toBe(1);
 
     fixture.componentInstance.ngOnDestroy();
     discardPeriodicTasks();

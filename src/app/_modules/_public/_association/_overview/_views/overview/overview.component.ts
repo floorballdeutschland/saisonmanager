@@ -62,8 +62,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<boolean>();
 
   // Die zuletzt erfolgreich geladene Liste, Rückfall für einen gescheiterten
-  // stillen Takt (siehe getMatches).
-  private _lastMatches?: GameScheduleEntry[] | null;
+  // stillen Takt (siehe getMatches). Mit dem Schlüssel der Anfrage, damit nach
+  // einem Wechsel der Liga oder des Spieltags nie die Liste der vorigen
+  // Auswahl unter der neuen Überschrift erscheint.
+  private _lastMatches?: { key: string; games: GameScheduleEntry[] | null };
 
   // Der per zurück/weiter gewählte Spieltag. Solange nichts gewählt ist, sucht
   // die API den Spieltag aus (game_days/current). Ohne diese Merkung holte das
@@ -233,10 +235,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
     // dessen Rückfall wieder den seines Vorgängers. Takt n feuerte so n Abrufe
     // auf einmal, riss die Grenze von 300 Abrufen pro Minute je Sitzung, und
     // die 429-Antworten hielten die Kette am Leben (SAISONMANAGER-2D).
-    const fallback = this._lastMatches;
+    const key = `${league.id}:${requestedMatchDay ?? 'aktuell'}`;
+    const fallback =
+      this._lastMatches?.key === key ? this._lastMatches.games : undefined;
 
     this.matches$ = games$.pipe(
-      tap((games) => (this._lastMatches = games)),
+      tap((games) => (this._lastMatches = { key, games })),
       catchError((err) => {
         if (!silent) return throwError(() => err);
         // Ohne geladene Liste gibt es nichts stehen zu lassen; ein Wurf hier
@@ -295,9 +299,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
           this._cdr.markForCheck();
         }),
-        // Nur Nebenwirkungen; den Fehler zeigt schon der ErrorInterceptor
-        // (bzw. die async-Pipe). Unbehandelt ginge er zusätzlich nach Sentry.
-        catchError(() => EMPTY),
+        // Einen stillen Fehler schlucken: Er hat hier oben schon seinen Rückfall,
+        // und unbehandelt landete jeder gescheiterte Takt in Sentry. Ein lauter
+        // Fehler (Erstaufruf, Spieltagswechsel) läuft weiter durch und wird
+        // gemeldet, auch dort, wo das Template `matches$` nicht abonniert.
+        catchError((err) => (silent ? EMPTY : throwError(() => err))),
         takeUntil(this._destroy$)
       )
       .subscribe();
