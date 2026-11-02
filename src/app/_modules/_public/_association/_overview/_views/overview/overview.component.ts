@@ -26,8 +26,10 @@ import {
 } from '@floorball/types';
 import {
   catchError,
+  EMPTY,
   interval,
   Observable,
+  of,
   shareReplay,
   Subject,
   Subscription,
@@ -58,6 +60,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
   intervalSub?: Subscription;
 
   private _destroy$ = new Subject<boolean>();
+
+  // Die zuletzt erfolgreich geladene Liste, Rückfall für einen gescheiterten
+  // stillen Takt (siehe getMatches). Mit dem Schlüssel der Anfrage, damit nach
+  // einem Wechsel der Liga oder des Spieltags nie die Liste der vorigen
+  // Auswahl unter der neuen Überschrift erscheint.
+  private _lastMatches?: { key: string; games: GameScheduleEntry[] | null };
 
   // Der per zurück/weiter gewählte Spieltag. Solange nichts gewählt ist, sucht
   // die API den Spieltag aus (game_days/current). Ohne diese Merkung holte das
@@ -219,12 +227,26 @@ export class OverviewComponent implements OnInit, OnDestroy {
     // Ohne diesen Rückfall wäre das Schweigen eine Zumutung: `matches$` wird
     // bei jedem Takt neu gesetzt, die `async`-Pipe verwirft dabei ihren Wert,
     // und der Spielplan verschwände wortlos bis zum nächsten Takt.
-    const previous$ = this.matches$;
+    //
+    // Zurückgegriffen wird auf den zuletzt geladenen WERT, nicht auf das
+    // vorige Observable. `shareReplay` hält keine Fehler fest: Solange noch
+    // kein Abruf geglückt war (Tab ohne Netz geöffnet, erster Abruf mit 429),
+    // schickte ein Abonnieren des Vorgängers dessen Abruf erneut los, und
+    // dessen Rückfall wieder den seines Vorgängers. Takt n feuerte so n Abrufe
+    // auf einmal, riss die Grenze von 300 Abrufen pro Minute je Sitzung, und
+    // die 429-Antworten hielten die Kette am Leben (SAISONMANAGER-2D).
+    const key = `${league.id}:${requestedMatchDay ?? 'aktuell'}`;
+    const fallback =
+      this._lastMatches?.key === key ? this._lastMatches.games : undefined;
 
     this.matches$ = games$.pipe(
-      catchError((err) =>
-        silent && previous$ ? previous$ : throwError(() => err)
-      ),
+      tap((games) => (this._lastMatches = { key, games })),
+      catchError((err) => {
+        if (!silent) return throwError(() => err);
+        // Ohne geladene Liste gibt es nichts stehen zu lassen; ein Wurf hier
+        // landete je Takt als unbehandelter Fehler in Sentry.
+        return fallback !== undefined ? of(fallback) : EMPTY;
+      }),
       shareReplay()
     );
 
@@ -277,6 +299,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
           this._cdr.markForCheck();
         }),
+        // Einen stillen Fehler schlucken: Er hat hier oben schon seinen Rückfall,
+        // und unbehandelt landete jeder gescheiterte Takt in Sentry. Ein lauter
+        // Fehler (Erstaufruf, Spieltagswechsel) läuft weiter durch und wird
+        // gemeldet, auch dort, wo das Template `matches$` nicht abonniert.
+        catchError((err) => (silent ? EMPTY : throwError(() => err))),
         takeUntil(this._destroy$)
       )
       .subscribe();
