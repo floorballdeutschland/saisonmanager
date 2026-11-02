@@ -88,8 +88,8 @@ describe('FilteringErrorHandler', () => {
 
 // Der häufigste Fehler des Frontends (SAISONMANAGER-2B, rund 18.600 Ereignisse)
 // endet für den Nutzer in einer weißen Seite. Geprüft wird hier die
-// Verdrahtung: dass der Handler das Neuladen anstößt UND die Meldung trotzdem
-// abschickt. Die Entscheidungslogik selbst steht in chunk-load-recovery.spec.
+// Verdrahtung: dass der Handler das Neuladen anstößt und nur meldet, wenn es
+// nicht hilft. Die Entscheidungslogik selbst steht in chunk-load-recovery.spec.
 describe('FilteringErrorHandler beim Chunk-Ladefehler', () => {
   let delegate: jasmine.SpyObj<ErrorHandler>;
   let reload: jasmine.Spy;
@@ -122,27 +122,82 @@ describe('FilteringErrorHandler beim Chunk-Ladefehler', () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
-  // Das Neuladen darf die Meldung nicht verschlucken: Ein Chunk-Ladefehler ist
-  // der wichtigste Hinweis auf ein schiefgegangenes Deploy, und ohne ihn wäre
-  // eine weiße Seite gegen einen blinden Fleck getauscht.
-  it('meldet den Ladefehler trotz Neuladen an Sentry', () => {
+  // Behebt das Neuladen den Fehler, ist er keine Meldung wert: Fast alle
+  // Fälle waren Ladeabbrüche in iOS-WebViews bei vorhandener Datei, über 1000
+  // Meldungen in vier Tagen.
+  it('meldet einen Ladefehler nicht, wenn neu geladen wird', () => {
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(delegate.handleError).not.toHaveBeenCalled();
+  });
+
+  // Der Hinweis auf ein kaputtes Deploy bleibt: Fehlt die Datei wirklich,
+  // scheitert der Tab nach dem Neuladen erneut, und das wird gemeldet.
+  it('meldet den zweiten Ladefehler kurz nach dem Neuladen', () => {
     const handler = new FilteringErrorHandler(delegate, recovery);
     const boom = new TypeError('Importing a module script failed.');
 
+    handler.handleError(new TypeError('Importing a module script failed.'));
     handler.handleError(boom);
 
+    expect(reload).toHaveBeenCalledTimes(1);
     expect(delegate.handleError).toHaveBeenCalledOnceWith(boom);
   });
 
-  it('meldet vor dem Neuladen, nicht danach', () => {
+  // Review zu fe#646: Ein gescheiterter Klick ins Menü lädt die Ausgangsseite
+  // neu. Klickt der Nutzer erst nach Ablauf des Fensters erneut, muss das
+  // zweite Neuladen trotzdem gemeldet werden, sonst bliebe ein fehlendes
+  // Modul für immer still.
+  it('meldet das zweite Neuladen im selben Tab auch nach Ablauf des Fensters', () => {
+    let jetzt = 1_000_000;
+    recovery.now = () => jetzt;
+    const handler = new FilteringErrorHandler(delegate, recovery);
+    const boom = new TypeError('Importing a module script failed.');
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+    jetzt += 5 * 60_000;
+    handler.handleError(boom);
+
+    expect(reload).toHaveBeenCalledTimes(2);
+    expect(delegate.handleError).toHaveBeenCalledOnceWith(boom);
+  });
+
+  it('meldet das zweite Neuladen, bevor neu geladen wird', () => {
+    let jetzt = 1_000_000;
+    recovery.now = () => jetzt;
     const reihenfolge: string[] = [];
     delegate.handleError.and.callFake(() => reihenfolge.push('gemeldet'));
     reload.and.callFake(() => reihenfolge.push('neu geladen'));
     const handler = new FilteringErrorHandler(delegate, recovery);
 
     handler.handleError(new TypeError('Importing a module script failed.'));
+    jetzt += 5 * 60_000;
+    handler.handleError(new TypeError('Importing a module script failed.'));
 
-    expect(reihenfolge).toEqual(['gemeldet', 'neu geladen']);
+    expect(reihenfolge).toEqual(['neu geladen', 'gemeldet', 'neu geladen']);
+  });
+
+  it('meldet einen Ladefehler, wenn ohne Speicher nicht neu geladen wird', () => {
+    recovery.storage = null;
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(delegate.handleError).toHaveBeenCalledTimes(1);
+  });
+
+  it('meldet einen Ladefehler, wenn offline nicht neu geladen wird', () => {
+    recovery.online = () => false;
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(delegate.handleError).toHaveBeenCalledTimes(1);
   });
 
   it('lädt bei einem gewöhnlichen Fehler nicht neu', () => {
@@ -163,16 +218,6 @@ describe('FilteringErrorHandler beim Chunk-Ladefehler', () => {
 
     expect(reload).not.toHaveBeenCalled();
     expect(delegate.handleError).not.toHaveBeenCalled();
-  });
-
-  it('lädt beim zweiten Ladefehler kurz danach nicht erneut', () => {
-    const handler = new FilteringErrorHandler(delegate, recovery);
-
-    handler.handleError(new TypeError('Importing a module script failed.'));
-    handler.handleError(new TypeError('Importing a module script failed.'));
-
-    expect(reload).toHaveBeenCalledTimes(1);
-    expect(delegate.handleError).toHaveBeenCalledTimes(2);
   });
 });
 

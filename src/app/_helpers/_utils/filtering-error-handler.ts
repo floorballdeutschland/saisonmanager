@@ -98,15 +98,34 @@ export class FilteringErrorHandler implements ErrorHandler {
   handleError(error: unknown): void {
     if (isHandledHttpNoise(error)) return;
 
-    // Erst melden, dann neu laden – nicht umgekehrt. Das Neuladen bricht
-    // laufende Anfragen ab, und ein Chunk-Ladefehler ist der wichtigste
-    // Hinweis auf ein schiefgegangenes Deploy (Begründung in sentry-init.ts).
-    // Ginge er dabei verloren, tauschte der Fix eine weiße Seite gegen einen
-    // blinden Fleck im Monitoring.
-    this.delegate.handleError(error);
-
+    // Ein Chunk-Ladefehler wird beim ERSTEN Neuladen eines Tabs nicht gemeldet.
+    //
+    // Früher wurde jeder gemeldet, als Hinweis auf ein schiefgegangenes Deploy.
+    // In der Praxis lagen die Dateien aber fast immer auf dem Server (`scp`
+    // löscht nichts): Es waren Ladeabbrüche in iOS-WebViews, Apple Mail und
+    // Safari nach dem Aufwachen, über 1000 Meldungen in vier Tagen
+    // (SAISONMANAGER-2B), die das Sentry-Kontingent aufbrauchten. Einmal neu
+    // laden behebt sie.
+    //
+    // Gemeldet wird, was das nicht behebt:
+    // - Ein Tab lädt deswegen zum zweiten Mal neu, gleich wann. Das trifft
+    //   auch den Klick ins Menü auf ein wirklich fehlendes Modul: Der Router
+    //   setzt die Adresse erst nach dem Laden, das Neuladen landet auf der
+    //   Ausgangsseite, und erst der nächste Klick scheitert wieder.
+    // - Der Fehler kommt innerhalb des Zeitfensters erneut (z. B. ein
+    //   Direktaufruf einer Adresse, deren Modul fehlt), dann wird nicht neu
+    //   geladen.
+    // - Es wird gar nicht neu geladen (offline, kein Speicher).
     if (isChunkLoadError(error)) {
-      recoverFromChunkLoadError(this.recovery);
+      const reloaded = recoverFromChunkLoadError(
+        this.recovery,
+        (reloadsInTab) => {
+          if (reloadsInTab > 1) this.delegate.handleError(error);
+        }
+      );
+      if (reloaded) return;
     }
+
+    this.delegate.handleError(error);
   }
 }
