@@ -98,15 +98,23 @@ export class FilteringErrorHandler implements ErrorHandler {
   handleError(error: unknown): void {
     if (isHandledHttpNoise(error)) return;
 
-    // Erst melden, dann neu laden – nicht umgekehrt. Das Neuladen bricht
-    // laufende Anfragen ab, und ein Chunk-Ladefehler ist der wichtigste
-    // Hinweis auf ein schiefgegangenes Deploy (Begründung in sentry-init.ts).
-    // Ginge er dabei verloren, tauschte der Fix eine weiße Seite gegen einen
-    // blinden Fleck im Monitoring.
-    this.delegate.handleError(error);
-
-    if (isChunkLoadError(error)) {
-      recoverFromChunkLoadError(this.recovery);
+    // Ein Chunk-Ladefehler, den das Neuladen behebt, wird NICHT gemeldet.
+    //
+    // Früher wurde jeder gemeldet, als Hinweis auf ein schiefgegangenes Deploy.
+    // In der Praxis lagen die Dateien aber fast immer auf dem Server (`scp`
+    // löscht nichts): Es waren Ladeabbrüche in iOS-WebViews, Apple Mail und
+    // Safari nach dem Aufwachen, über 1000 Meldungen in vier Tagen
+    // (SAISONMANAGER-2B), die das Sentry-Kontingent aufbrauchten.
+    //
+    // Der Hinweis auf ein kaputtes Deploy bleibt trotzdem erhalten: Fehlt die
+    // Datei wirklich, scheitert der Tab nach dem Neuladen erneut, und dann ist
+    // das Fenster gegen Endlosschleifen noch zu – `recoverFromChunkLoadError`
+    // lädt nicht neu, und dieser zweite Fehler wird gemeldet. Ebenso jeder
+    // Fall, in dem gar nicht neu geladen wird (offline, kein Speicher).
+    if (isChunkLoadError(error) && recoverFromChunkLoadError(this.recovery)) {
+      return;
     }
+
+    this.delegate.handleError(error);
   }
 }

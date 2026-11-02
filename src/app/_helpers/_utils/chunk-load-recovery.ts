@@ -119,10 +119,9 @@ export interface ChunkRecoveryEnv {
 /**
  * Lädt die Seite neu, wenn das im aktuellen Tab noch nicht kürzlich geschah.
  *
- * Gibt zurück, ob neu geladen wurde. Der Aufrufer meldet den Fehler in jedem
- * Fall an Sentry: Ein Chunk-Ladefehler ist der wichtigste Hinweis darauf, dass
- * ein Deploy schiefgegangen ist (siehe die Begründung in sentry-init.ts), und
- * diese Meldung soll das Neuladen nicht verschlucken.
+ * Gibt zurück, ob neu geladen wurde. Der Aufrufer meldet den Fehler nur, wenn
+ * nicht: Ein zweiter Fehler innerhalb des Fensters ist der Hinweis auf ein
+ * schiefgegangenes Deploy (siehe FilteringErrorHandler).
  *
  * Ohne Netz wird ebenfalls NICHT neu geladen, siehe die Begründung unten.
  *

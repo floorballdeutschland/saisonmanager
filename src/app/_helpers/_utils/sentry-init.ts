@@ -43,9 +43,10 @@ const IGNORED_ERRORS = [
 // Gewichtung durch den Nutzer im Dashboard.
 //
 // Behoben wird ein solcher Fehler seit chunk-load-recovery.ts durch ein
-// einmaliges Neuladen. Die Meldung läuft davor, nicht danach — sonst wäre der
-// Hinweis auf ein schiefgegangenes Deploy genau dann weg, wenn er gebraucht
-// wird.
+// einmaliges Neuladen. Gemeldet wird nur, was das Neuladen NICHT behebt (zweiter
+// Fehler innerhalb einer Minute, offline, kein Speicher); Begründung im
+// FilteringErrorHandler. Ein fehlender Chunk nach kaputtem Deploy scheitert
+// auch nach dem Neuladen und kommt damit weiter an.
 
 // Fehler, deren Stacktrace ausschließlich aus fremdem Code besteht: Erweiterungen,
 // injizierte Skripte, Übersetzungsdienste. Nichts davon können wir beheben.
