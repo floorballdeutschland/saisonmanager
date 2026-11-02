@@ -98,21 +98,32 @@ export class FilteringErrorHandler implements ErrorHandler {
   handleError(error: unknown): void {
     if (isHandledHttpNoise(error)) return;
 
-    // Ein Chunk-Ladefehler, den das Neuladen behebt, wird NICHT gemeldet.
+    // Ein Chunk-Ladefehler wird beim ERSTEN Neuladen eines Tabs nicht gemeldet.
     //
     // Früher wurde jeder gemeldet, als Hinweis auf ein schiefgegangenes Deploy.
     // In der Praxis lagen die Dateien aber fast immer auf dem Server (`scp`
     // löscht nichts): Es waren Ladeabbrüche in iOS-WebViews, Apple Mail und
     // Safari nach dem Aufwachen, über 1000 Meldungen in vier Tagen
-    // (SAISONMANAGER-2B), die das Sentry-Kontingent aufbrauchten.
+    // (SAISONMANAGER-2B), die das Sentry-Kontingent aufbrauchten. Einmal neu
+    // laden behebt sie.
     //
-    // Der Hinweis auf ein kaputtes Deploy bleibt trotzdem erhalten: Fehlt die
-    // Datei wirklich, scheitert der Tab nach dem Neuladen erneut, und dann ist
-    // das Fenster gegen Endlosschleifen noch zu – `recoverFromChunkLoadError`
-    // lädt nicht neu, und dieser zweite Fehler wird gemeldet. Ebenso jeder
-    // Fall, in dem gar nicht neu geladen wird (offline, kein Speicher).
-    if (isChunkLoadError(error) && recoverFromChunkLoadError(this.recovery)) {
-      return;
+    // Gemeldet wird, was das nicht behebt:
+    // - Ein Tab lädt deswegen zum zweiten Mal neu, gleich wann. Das trifft
+    //   auch den Klick ins Menü auf ein wirklich fehlendes Modul: Der Router
+    //   setzt die Adresse erst nach dem Laden, das Neuladen landet auf der
+    //   Ausgangsseite, und erst der nächste Klick scheitert wieder.
+    // - Der Fehler kommt innerhalb des Zeitfensters erneut (z. B. ein
+    //   Direktaufruf einer Adresse, deren Modul fehlt), dann wird nicht neu
+    //   geladen.
+    // - Es wird gar nicht neu geladen (offline, kein Speicher).
+    if (isChunkLoadError(error)) {
+      const reloaded = recoverFromChunkLoadError(
+        this.recovery,
+        (reloadsInTab) => {
+          if (reloadsInTab > 1) this.delegate.handleError(error);
+        }
+      );
+      if (reloaded) return;
     }
 
     this.delegate.handleError(error);

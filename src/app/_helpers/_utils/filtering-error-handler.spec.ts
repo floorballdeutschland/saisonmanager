@@ -147,6 +147,49 @@ describe('FilteringErrorHandler beim Chunk-Ladefehler', () => {
     expect(delegate.handleError).toHaveBeenCalledOnceWith(boom);
   });
 
+  // Review zu fe#646: Ein gescheiterter Klick ins Menü lädt die Ausgangsseite
+  // neu. Klickt der Nutzer erst nach Ablauf des Fensters erneut, muss das
+  // zweite Neuladen trotzdem gemeldet werden, sonst bliebe ein fehlendes
+  // Modul für immer still.
+  it('meldet das zweite Neuladen im selben Tab auch nach Ablauf des Fensters', () => {
+    let jetzt = 1_000_000;
+    recovery.now = () => jetzt;
+    const handler = new FilteringErrorHandler(delegate, recovery);
+    const boom = new TypeError('Importing a module script failed.');
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+    jetzt += 5 * 60_000;
+    handler.handleError(boom);
+
+    expect(reload).toHaveBeenCalledTimes(2);
+    expect(delegate.handleError).toHaveBeenCalledOnceWith(boom);
+  });
+
+  it('meldet das zweite Neuladen, bevor neu geladen wird', () => {
+    let jetzt = 1_000_000;
+    recovery.now = () => jetzt;
+    const reihenfolge: string[] = [];
+    delegate.handleError.and.callFake(() => reihenfolge.push('gemeldet'));
+    reload.and.callFake(() => reihenfolge.push('neu geladen'));
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+    jetzt += 5 * 60_000;
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reihenfolge).toEqual(['neu geladen', 'gemeldet', 'neu geladen']);
+  });
+
+  it('meldet einen Ladefehler, wenn ohne Speicher nicht neu geladen wird', () => {
+    recovery.storage = null;
+    const handler = new FilteringErrorHandler(delegate, recovery);
+
+    handler.handleError(new TypeError('Importing a module script failed.'));
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(delegate.handleError).toHaveBeenCalledTimes(1);
+  });
+
   it('meldet einen Ladefehler, wenn offline nicht neu geladen wird', () => {
     recovery.online = () => false;
     const handler = new FilteringErrorHandler(delegate, recovery);

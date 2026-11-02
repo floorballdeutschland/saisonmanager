@@ -44,6 +44,19 @@ export const CHUNK_RELOAD_MARKER = 'sm:chunk-reload';
 export const CHUNK_RELOAD_WINDOW_MS = 60_000;
 
 /**
+ * Zähler im sessionStorage: wie oft dieser Tab schon wegen eines
+ * Chunk-Ladefehlers neu geladen hat.
+ *
+ * Das Zeitfenster allein reicht als Hinweis auf ein kaputtes Deploy nicht. Der
+ * Router setzt die Adresse erst nach erfolgreichem Laden, ein gescheiterter
+ * Klick ins Menü lädt also die AUSGANGSSEITE neu. Klickt der Nutzer erst nach
+ * einer Minute erneut, wäre jeder Versuch ein stilles Neuladen ohne Meldung.
+ * Ab dem zweiten Neuladen im selben Tab meldet der FilteringErrorHandler
+ * deshalb, gleich wie viel Zeit dazwischen lag.
+ */
+export const CHUNK_RELOAD_COUNT = 'sm:chunk-reload-count';
+
+/**
  * Textbausteine, mit denen die Browser ein fehlgeschlagenes Modul melden.
  *
  * Je Browser eine eigene Formulierung, und keine davon ist stabil dokumentiert
@@ -119,9 +132,9 @@ export interface ChunkRecoveryEnv {
 /**
  * Lädt die Seite neu, wenn das im aktuellen Tab noch nicht kürzlich geschah.
  *
- * Gibt zurück, ob neu geladen wurde. Der Aufrufer meldet den Fehler nur, wenn
- * nicht: Ein zweiter Fehler innerhalb des Fensters ist der Hinweis auf ein
- * schiefgegangenes Deploy (siehe FilteringErrorHandler).
+ * Gibt zurück, ob neu geladen wurde. `beforeReload` erhält unmittelbar vor dem
+ * Neuladen die Zahl der Neuladungen dieses Tabs, diese eingeschlossen. Wann
+ * gemeldet wird, entscheidet der FilteringErrorHandler.
  *
  * Ohne Netz wird ebenfalls NICHT neu geladen, siehe die Begründung unten.
  *
@@ -131,7 +144,10 @@ export interface ChunkRecoveryEnv {
  * sich im Sekundentakt selbst neu lädt, ist deutlich schlimmer als eine weiße
  * Seite, die ein Neuladen von Hand behebt.
  */
-export function recoverFromChunkLoadError(env: ChunkRecoveryEnv): boolean {
+export function recoverFromChunkLoadError(
+  env: ChunkRecoveryEnv,
+  beforeReload?: (reloadsInTab: number) => void
+): boolean {
   if (!env.storage) return false;
 
   // Offline NICHT neu laden. Chrome meldet ein Funkloch beim Nachladen mit
@@ -150,18 +166,24 @@ export function recoverFromChunkLoadError(env: ChunkRecoveryEnv): boolean {
   if (!env.online()) return false;
 
   const now = env.now();
+  let reloadsInTab: number;
 
   try {
     const previous = Number(env.storage.getItem(CHUNK_RELOAD_MARKER));
     if (previous && now - previous < CHUNK_RELOAD_WINDOW_MS) return false;
 
     env.storage.setItem(CHUNK_RELOAD_MARKER, String(now));
+    reloadsInTab = (Number(env.storage.getItem(CHUNK_RELOAD_COUNT)) || 0) + 1;
+    env.storage.setItem(CHUNK_RELOAD_COUNT, String(reloadsInTab));
   } catch {
     // Speicher vorhanden, aber Schreiben abgelehnt (Kontingent voll, Zugriff
     // gesperrt). Ohne verlässlichen Merker gilt dasselbe wie ohne Speicher.
     return false;
   }
 
+  // Vor dem Neuladen, das laufende Anfragen abbricht: Hier kann der Aufrufer
+  // noch melden (siehe CHUNK_RELOAD_COUNT).
+  beforeReload?.(reloadsInTab);
   env.reload();
   return true;
 }
