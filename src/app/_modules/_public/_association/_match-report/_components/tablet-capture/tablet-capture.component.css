@@ -49,3 +49,18 @@
     width: min(100cqw, 100cqh * var(--field-aspect));
   }
 }
+
+/*
+  Ausgewählte Knöpfe (fe#650): zusätzlich zur Füllung ein Ring mit Abstand.
+  Android dunkelt die helle Seite im Dunkelmodus selbst ab (die App hat keinen
+  eigenen); dabei wurden das frühere Schwarz für „ausgewählt“ und das Weiß für
+  „nicht ausgewählt“ beide dunkel und kaum unterscheidbar. Füllfarbe plus Ring
+  überstehen das Abdunkeln. Geprüft mit chrome-headless-shell und
+  `--blink-settings=forceDarkModeEnabled=true`; `color-scheme: only light`
+  verhindert das Abdunkeln dort nicht.
+*/
+button[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 5px #1d4ed8;
+}
