@@ -363,6 +363,11 @@ export class MatchHighlightsComponent
     return scene.kind === 'mark';
   }
 
+  /** Aluminiumtreffer, Latte oder Pfosten (fe#651). */
+  isPost(scene: HighlightScene): boolean {
+    return scene.kind === 'post';
+  }
+
   private reset(): void {
     this.destroyPlayer();
     this.consented = false;

@@ -85,6 +85,8 @@ export interface TeamShotStats {
   goals: number;
   blocked: number;
   missed: number;
+  /** Aluminium (Latte/Pfosten), ab api#885; ältere Antworten haben das Feld nicht. */
+  posts?: number;
   /** Ab api#837; ältere Antworten haben die Felder nicht. */
   free_hits?: number;
   shots_from_free_hit?: number;

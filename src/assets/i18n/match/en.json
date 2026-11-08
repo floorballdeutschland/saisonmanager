@@ -37,7 +37,8 @@
       "goal": "Goal",
       "saved": "Saved",
       "blocked": "Blocked",
-      "missed": "Missed"
+      "missed": "Missed",
+      "post": "Post/Crossbar"
     },
     "filter": {
       "label": "Select period",
@@ -57,7 +58,8 @@
       "onGoal": "On goal",
       "goals": "Goals",
       "blocked": "Blocked",
-      "missed": "Missed"
+      "missed": "Missed",
+      "posts": "Post"
     },
     "goalkeepers": {
       "title": "Goalkeepers",
@@ -124,6 +126,7 @@
     "playAll": "Play all scenes",
     "assist": "Assist",
     "mark": "Scene",
+    "post": "Post",
     "edit": "Edit highlights (offset and selection)",
     "calibrationPending": "Calibration by host club pending",
     "calibrationPendingHint": "The scenes have not been aligned with the video yet and may start a few seconds early or late."

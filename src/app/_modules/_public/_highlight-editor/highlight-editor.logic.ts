@@ -148,7 +148,7 @@ export function hasChanges(update: HighlightEditorUpdate): boolean {
   );
 }
 
-/** Nur Tore und Marken kommen in die Highlights; ein Schuss ohne Tor nie. */
+/** Nur Tore, Aluminium und Marken kommen in die Highlights; ein Schuss ohne Tor nie. */
 export function isSelectable(scene: HighlightEditorScene): boolean {
   return scene.kind !== 'unlinked';
 }
@@ -162,6 +162,7 @@ export const NO_GOAL_RESULTS: HighlightEditorNoGoalResult[] = [
   'saved',
   'missed',
   'blocked',
+  'post',
 ];
 
 /**

@@ -10,7 +10,9 @@
 
 export type ShotTeam = 'home' | 'guest';
 
-export type ShotResult = 'goal' | 'saved' | 'missed' | 'blocked';
+// 'post': Aluminium, Treffer an Latte oder Pfosten (fe#651, api#885). Zählt
+// als Schuss, aber nicht aufs Tor, und wird eine Highlight-Szene.
+export type ShotResult = 'goal' | 'saved' | 'missed' | 'blocked' | 'post';
 
 // Ein Eintrag ist ein Schuss, ein Freischlag (fe#589, api#837) oder eine
 // vorgemerkte Szene (api#838). Fehlt `kind`, ist es ein Schuss. Freischläge

@@ -242,7 +242,9 @@
                 <span class="min-w-0">
                   <span
                     class="block font-bold truncate"
-                    [class.text-violet-800]="scene.kind === 'mark'"
+                    [class.text-violet-800]="
+                      scene.kind === 'mark' || scene.kind === 'post'
+                    "
                     [class.text-amber-700]="scene.kind === 'unlinked'"
                   >
                     {{ scene.label }}
@@ -331,7 +333,12 @@
                     'editor-no-goal-warning-' + scene.client_uuid
                   "
                 >
-                  {{ "highlightEditor.assignment.noGoalWarning" | transloco }}
+                  {{
+                    (assignment[scene.client_uuid] === "none:post"
+                      ? "highlightEditor.assignment.noGoalWarningPost"
+                      : "highlightEditor.assignment.noGoalWarning"
+                    ) | transloco
+                  }}
                 </p>
               }
             </li>

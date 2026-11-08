@@ -34,6 +34,7 @@ export const SHOT_COLORS: Record<ShotResult, string> = {
   saved: '#2563eb',
   blocked: '#f59e0b',
   missed: '#9ca3af',
+  post: '#7c3aed',
 };
 
 /**

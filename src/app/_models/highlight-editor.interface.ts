@@ -17,8 +17,8 @@ export interface HighlightEditorScene {
    * `unlinked`: Tor-Schuss ohne Tor im Bericht. Steht nur hier, nie in den
    * öffentlichen Highlights, und lässt sich nur zuordnen, nicht auswählen.
    */
-  kind: 'goal' | 'mark' | 'unlinked';
-  /** „1:0 Müller (Schmidt)“, „Vorgemerkte Szene“ oder „Tor-Schuss ohne Tor im Bericht“. */
+  kind: 'goal' | 'mark' | 'post' | 'unlinked';
+  /** „1:0 Müller (Schmidt)“, „Aluminium“, „Vorgemerkte Szene“ oder „Tor-Schuss ohne Tor im Bericht“. */
   label: string;
   /** Das Tor des Berichts, an dem der Schuss hängt; `null` bei Marken und `unlinked`. */
   event_id?: number | null;
@@ -43,7 +43,11 @@ export interface HighlightEditorGoal {
 }
 
 /** Was ein Tor-Schuss werden kann, der doch keiner war. */
-export type HighlightEditorNoGoalResult = 'saved' | 'missed' | 'blocked';
+export type HighlightEditorNoGoalResult =
+  | 'saved'
+  | 'missed'
+  | 'blocked'
+  | 'post';
 
 export type HighlightEditorAssignment =
   | { client_uuid: string; event_id: number }

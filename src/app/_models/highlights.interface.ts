@@ -8,11 +8,12 @@ import { ShotTeam } from './game-shot.interface';
  * 8 s danach, api#838).
  *
  * `kind` 'goal' ist ein Tor mit verknüpftem Schuss, 'mark' eine am Tablet
- * vorgemerkte Szene ohne Tor (dann ohne Spielstand und Personen). Fehlt
- * `kind` (ältere API), ist es ein Tor.
+ * vorgemerkte Szene ohne Tor (dann ohne Spielstand und Personen), 'post' ein
+ * Aluminiumtreffer (fe#651, mit `shooter`, ohne Spielstand). Fehlt `kind`
+ * (ältere API), ist es ein Tor.
  */
 export interface HighlightScene {
-  kind?: 'goal' | 'mark';
+  kind?: 'goal' | 'mark' | 'post';
   event_id: number | null;
   start: number;
   end: number;
@@ -24,6 +25,8 @@ export interface HighlightScene {
   game_time: string;
   scorer?: PersonRef | null;
   assist?: PersonRef | null;
+  /** Nur bei 'post': der Schütze, falls erfasst. */
+  shooter?: PersonRef | null;
 }
 
 /** `GET games/:id/highlights.json`, nur für Tablet-Spiele (sonst 404). */
