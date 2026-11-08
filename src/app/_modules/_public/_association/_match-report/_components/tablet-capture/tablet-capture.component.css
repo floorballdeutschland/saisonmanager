@@ -28,6 +28,9 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Platz für den Ring ausgewählter Knöpfe (siehe unten), den die
+     scrollende Spalte sonst an den Rändern abschneidet. */
+  padding: 5px;
 }
 
 @media (orientation: landscape) {
@@ -52,6 +55,8 @@
 
 /*
   Ausgewählte Knöpfe (fe#650): zusätzlich zur Füllung ein Ring mit Abstand.
+  Gilt für jeden gedrückten Knopf der Erfassung, bewusst auch für den
+  Vollbild-Umschalter, der aktiv schwarz bleibt.
   Android dunkelt die helle Seite im Dunkelmodus selbst ab (die App hat keinen
   eigenen); dabei wurden das frühere Schwarz für „ausgewählt“ und das Weiß für
   „nicht ausgewählt“ beide dunkel und kaum unterscheidbar. Füllfarbe plus Ring
