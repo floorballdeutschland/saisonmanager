@@ -72,8 +72,8 @@ export type EditorState =
  * das Tor“ drückt, legt den Versatz fest: Abspielposition minus Sekunde des
  * Antippens. Feinkorrektur mit ±1 s und ±5 s, Prüfen mit der 20-s-Szene.
  *
- * AUSWAHL: Jede Szene (Tor mit Tablet-Schuss, vorgemerkte Szene) hat einen
- * Haken „in den Highlights“. Abspielen nutzt immer den eingestellten, auch
+ * AUSWAHL: Jede Szene (Tor mit Tablet-Schuss, Aluminiumtreffer, vorgemerkte
+ * Szene) hat einen Haken „in den Highlights“. Abspielen nutzt immer den eingestellten, auch
  * den noch nicht gespeicherten Versatz.
  *
  * Datenschutz wie im Szenen-Player der Spielseite: Bis zum Klick auf „Video
@@ -241,7 +241,8 @@ export class HighlightEditorComponent implements OnInit, OnDestroy {
 
   /**
    * Wird der Schuss gerade zu „Kein Tor“? Danach ist er kein Tor-Schuss mehr
-   * und verschwindet aus dem Editor; zurück geht es nur über Tablet oder SBK.
+   * und verschwindet aus dem Editor, außer als Aluminium (bleibt als Szene);
+   * zurück geht es nur über Tablet oder SBK.
    */
   public marksNoGoal(scene: HighlightEditorScene): boolean {
     const value = this.assignment[scene.client_uuid];

@@ -148,7 +148,10 @@ export function hasChanges(update: HighlightEditorUpdate): boolean {
   );
 }
 
-/** Nur Tore, Aluminium und Marken kommen in die Highlights; ein Schuss ohne Tor nie. */
+/**
+ * Tore, Aluminium und Marken kommen in die Highlights; ein Tor-Schuss ohne Tor
+ * im Bericht (`unlinked`) nie.
+ */
 export function isSelectable(scene: HighlightEditorScene): boolean {
   return scene.kind !== 'unlinked';
 }

@@ -22,7 +22,8 @@ import { HighlightScene, Highlights } from '@floorball/types';
 import { nextSceneIndex, personLabel } from '../../_utils/highlights';
 
 /**
- * Szenen-Player für die Tore eines Tablet-Spiels (fe#555). Spielt die Szenen
+ * Szenen-Player für Tore, Aluminiumtreffer und vorgemerkte Szenen eines
+ * Tablet-Spiels (fe#555). Spielt die Szenen
  * der Stream-Aufzeichnung nacheinander über `start`/`end` ab, ohne ein Video zu
  * schneiden.
  *

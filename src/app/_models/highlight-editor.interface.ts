@@ -20,7 +20,7 @@ export interface HighlightEditorScene {
   kind: 'goal' | 'mark' | 'post' | 'unlinked';
   /** „1:0 Müller (Schmidt)“, „Aluminium“, „Vorgemerkte Szene“ oder „Tor-Schuss ohne Tor im Bericht“. */
   label: string;
-  /** Das Tor des Berichts, an dem der Schuss hängt; `null` bei Marken und `unlinked`. */
+  /** Das Tor des Berichts, an dem der Schuss hängt; `null` bei Marken, Aluminium und `unlinked`. */
   event_id?: number | null;
   team: ShotTeam | null;
   period: number;
@@ -82,6 +82,6 @@ export interface HighlightEditorUpdate {
   /** Fehlt der Schlüssel, bleibt der Versatz; `null` nimmt ihn zurück. */
   offset_seconds?: number | null;
   scenes?: { client_uuid: string; in_highlights: boolean }[];
-  /** Tor-Schüsse umhängen oder zum Fehlschuss machen. */
+  /** Tor-Schüsse umhängen oder ihnen das Tor nehmen (gehalten, vorbei, geblockt, Aluminium). */
   assignments?: HighlightEditorAssignment[];
 }

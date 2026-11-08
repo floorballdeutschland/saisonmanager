@@ -360,6 +360,18 @@ describe('MatchDetailedStatsComponent', () => {
     expect(rows[0].textContent).toContain('Gesamt');
   });
 
+  it('zeigt Aluminium als letzte Spalte, bei älterer API ohne Feld als 0 (fe#651)', () => {
+    const s = stats();
+    s.teams.home = { ...s.teams.home, posts: 2 };
+    load(s);
+    const letzte = (team: string) =>
+      Array.from(
+        el().querySelectorAll(`[data-test="shots-${team}"] tbody tr`)
+      ).map((row) => row.querySelector('td:last-child')?.textContent?.trim());
+    expect(letzte('home')[0]).toBe('2');
+    expect(letzte('guest')[0]).toBe('0');
+  });
+
   it('zeigt die Fangquote aus Paraden und Schüssen aufs Tor', () => {
     load(stats());
     expect(
