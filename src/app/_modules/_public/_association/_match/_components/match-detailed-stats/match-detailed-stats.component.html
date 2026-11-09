@@ -180,8 +180,11 @@
                     <th class="text-right font-bold py-2 px-2">
                       {{ "match.detailedStats.shots.blocked" | transloco }}
                     </th>
-                    <th class="text-right font-bold py-2 pl-2">
+                    <th class="text-right font-bold py-2 px-2">
                       {{ "match.detailedStats.shots.missed" | transloco }}
+                    </th>
+                    <th class="text-right font-bold py-2 pl-2">
+                      {{ "match.detailedStats.shots.posts" | transloco }}
                     </th>
                   </tr>
                 </thead>
@@ -214,8 +217,11 @@
                       <td class="text-right tabular-nums py-2 px-2">
                         {{ row.stats.blocked }}
                       </td>
-                      <td class="text-right tabular-nums py-2 pl-2">
+                      <td class="text-right tabular-nums py-2 px-2">
                         {{ row.stats.missed }}
+                      </td>
+                      <td class="text-right tabular-nums py-2 pl-2">
+                        {{ row.stats.posts ?? 0 }}
                       </td>
                     </tr>
                   }

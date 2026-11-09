@@ -189,6 +189,7 @@ export class TabletCaptureComponent implements OnInit, OnChanges, OnDestroy {
     'saved',
     'missed',
     'blocked',
+    'post',
   ];
 
   public buffer: ShotBuffer | null = null;

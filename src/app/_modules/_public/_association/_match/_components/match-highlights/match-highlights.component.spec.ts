@@ -110,6 +110,33 @@ describe('MatchHighlightsComponent', () => {
     expect(rows[1].textContent).not.toContain('Schütze');
   });
 
+  it('zeigt einen Aluminiumtreffer als „Alu“ mit Schütze, ohne Spielstand (fe#651)', () => {
+    const alu: HighlightScene = {
+      kind: 'post',
+      event_id: null,
+      start: 1500,
+      end: 1520,
+      team: 'home',
+      period: 2,
+      game_time: '04:00',
+      shooter: { trikot_number: 7, name: 'Max Müller' },
+    };
+    fixture.componentRef.setInput('highlights', {
+      ...highlights(),
+      scenes: [scene(1, 100), alu],
+    });
+    fixture.detectChanges();
+
+    const rows = el().querySelectorAll('[data-test="highlights-scene"]');
+    expect(
+      rows[1]
+        .querySelector('[data-test="highlights-post"]')
+        ?.textContent?.trim()
+    ).toBe(matchDe.highlights.post);
+    expect(rows[1].textContent).toContain('Max Müller');
+    expect(rows[1].textContent).not.toContain('undefined');
+  });
+
   describe('Kalibrierung', () => {
     const pending = () =>
       el().querySelector('[data-test="highlights-calibration-pending"]');
@@ -121,7 +148,9 @@ describe('MatchHighlightsComponent', () => {
       });
       fixture.detectChanges();
 
-      expect(pending()?.textContent?.trim()).toBe('Kalibrierung durch Ausrichter ausstehend');
+      expect(pending()?.textContent?.trim()).toBe(
+        'Kalibrierung durch Ausrichter ausstehend'
+      );
     });
 
     it('zeigt nichts, wenn kalibriert oder das Feld fehlt (ältere API)', () => {

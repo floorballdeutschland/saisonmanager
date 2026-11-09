@@ -337,6 +337,7 @@ describe('HighlightEditorComponent', () => {
         'none:saved',
         'none:missed',
         'none:blocked',
+        'none:post',
       ]);
       expect(options('lose')[0]).toBe('');
       expect((el('editor-scene-assign-tor') as HTMLSelectElement).value).toBe(
@@ -393,6 +394,15 @@ describe('HighlightEditorComponent', () => {
 
       choose('tor', 'goal:1');
       expect(el('editor-no-goal-warning-tor')).toBeNull();
+    });
+
+    it('sagt bei „Kein Tor: Aluminium“, dass die Szene bleibt (fe#651)', () => {
+      load(mitFehltipper());
+
+      choose('tor', 'none:post');
+      expect(el('editor-no-goal-warning-tor')?.textContent?.trim()).toBe(
+        'highlightEditor.assignment.noGoalWarningPost'
+      );
     });
 
     it('zeigt ohne goals (ältere API) kein Auswahlfeld', () => {

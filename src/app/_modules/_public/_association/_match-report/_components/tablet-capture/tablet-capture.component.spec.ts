@@ -374,6 +374,25 @@ describe('TabletCaptureComponent', () => {
     await settle();
   });
 
+  it('erfasst Aluminium als Ergebnis post (fe#651)', async () => {
+    await start();
+    component.startDraft(0.8, 0.5);
+    render();
+    const knopf = fixture.nativeElement.querySelector(
+      '[data-testid="tablet-result-post"]'
+    ) as HTMLButtonElement;
+    expect(knopf.textContent?.trim()).toBe('tablet.result.post');
+
+    knopf.click();
+    render();
+    component.saveDraft();
+
+    const post = http.expectOne(API + 'games/4711/shots.json');
+    expect(post.request.body.shots[0].result).toBe('post');
+    post.flush({ shots: [] });
+    await settle();
+  });
+
   it('hebt die Auswahl farbig hervor, nicht schwarz (fe#650, Android-Dunkelmodus)', async () => {
     await start();
     component.startDraft(0.8, 0.5);

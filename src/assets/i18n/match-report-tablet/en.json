@@ -30,7 +30,8 @@
     "goal": "Goal",
     "saved": "Saved",
     "missed": "Missed",
-    "blocked": "Blocked"
+    "blocked": "Blocked",
+    "post": "Post/Crossbar"
   },
   "draft": {
     "tappedAt": "Tapped at {{ time }}",

@@ -30,7 +30,8 @@
     "goal": "Tor",
     "saved": "Gehalten",
     "missed": "Vorbei",
-    "blocked": "Geblockt"
+    "blocked": "Geblockt",
+    "post": "Aluminium"
   },
   "draft": {
     "tappedAt": "Angetippt um {{ time }}",
