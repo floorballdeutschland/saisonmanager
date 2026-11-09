@@ -403,6 +403,7 @@
                 [class.fill-blue-600]="marker.result === 'saved'"
                 [class.fill-fb-gray-400]="marker.result === 'missed'"
                 [class.fill-orange-500]="marker.result === 'blocked'"
+                [class.fill-violet-600]="marker.result === 'post'"
               />
             }
           }
@@ -662,6 +663,7 @@
                 <button
                   type="button"
                   class="min-h-[64px] rounded-[5px] border-2 px-2 text-xl font-bold"
+                  [class.col-span-2]="result === 'post'"
                   [class.bg-green-600]="
                     draft.result === result && result === 'goal'
                   "

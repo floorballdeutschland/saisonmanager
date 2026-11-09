@@ -37,7 +37,8 @@
       "goal": "Tor",
       "saved": "Gehalten",
       "blocked": "Geblockt",
-      "missed": "Vorbei"
+      "missed": "Vorbei",
+      "post": "Aluminium"
     },
     "filter": {
       "label": "Abschnitt auswählen",
@@ -57,7 +58,8 @@
       "onGoal": "Aufs Tor",
       "goals": "Tore",
       "blocked": "Geblockt",
-      "missed": "Vorbei"
+      "missed": "Vorbei",
+      "posts": "Alu"
     },
     "goalkeepers": {
       "title": "Torhüter",
@@ -124,6 +126,7 @@
     "playAll": "Alle Szenen abspielen",
     "assist": "Vorlage",
     "mark": "Szene",
+    "post": "Alu",
     "edit": "Highlights bearbeiten (Versatz und Auswahl)",
     "calibrationPending": "Kalibrierung durch Ausrichter ausstehend",
     "calibrationPendingHint": "Die Szenen sind noch nicht auf das Video abgestimmt und können ein paar Sekunden zu früh oder zu spät beginnen."

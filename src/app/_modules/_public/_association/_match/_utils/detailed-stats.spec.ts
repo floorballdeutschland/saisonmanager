@@ -160,6 +160,7 @@ describe('detailed-stats utils', () => {
       goals: 0,
       blocked: 0,
       missed: 0,
+      posts: 0,
     });
   });
 

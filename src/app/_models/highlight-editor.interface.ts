@@ -17,10 +17,10 @@ export interface HighlightEditorScene {
    * `unlinked`: Tor-Schuss ohne Tor im Bericht. Steht nur hier, nie in den
    * öffentlichen Highlights, und lässt sich nur zuordnen, nicht auswählen.
    */
-  kind: 'goal' | 'mark' | 'unlinked';
-  /** „1:0 Müller (Schmidt)“, „Vorgemerkte Szene“ oder „Tor-Schuss ohne Tor im Bericht“. */
+  kind: 'goal' | 'mark' | 'post' | 'unlinked';
+  /** „1:0 Müller (Schmidt)“, „Aluminium“, „Vorgemerkte Szene“ oder „Tor-Schuss ohne Tor im Bericht“. */
   label: string;
-  /** Das Tor des Berichts, an dem der Schuss hängt; `null` bei Marken und `unlinked`. */
+  /** Das Tor des Berichts, an dem der Schuss hängt; `null` bei Marken, Aluminium und `unlinked`. */
   event_id?: number | null;
   team: ShotTeam | null;
   period: number;
@@ -43,7 +43,11 @@ export interface HighlightEditorGoal {
 }
 
 /** Was ein Tor-Schuss werden kann, der doch keiner war. */
-export type HighlightEditorNoGoalResult = 'saved' | 'missed' | 'blocked';
+export type HighlightEditorNoGoalResult =
+  | 'saved'
+  | 'missed'
+  | 'blocked'
+  | 'post';
 
 export type HighlightEditorAssignment =
   | { client_uuid: string; event_id: number }
@@ -78,6 +82,6 @@ export interface HighlightEditorUpdate {
   /** Fehlt der Schlüssel, bleibt der Versatz; `null` nimmt ihn zurück. */
   offset_seconds?: number | null;
   scenes?: { client_uuid: string; in_highlights: boolean }[];
-  /** Tor-Schüsse umhängen oder zum Fehlschuss machen. */
+  /** Tor-Schüsse umhängen oder ihnen das Tor nehmen (gehalten, vorbei, geblockt, Aluminium). */
   assignments?: HighlightEditorAssignment[];
 }

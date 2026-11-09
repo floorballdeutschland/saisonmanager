@@ -120,12 +120,22 @@
                   <span class="text-violet-800">{{
                     "match.highlights.mark" | transloco
                   }}</span>
+                } @else if (isPost(scene)) {
+                  <span class="text-violet-800" data-test="highlights-post">{{
+                    "match.highlights.post" | transloco
+                  }}</span>
                 } @else {
                   {{ scene.home_goals }}:{{ scene.guest_goals }}
                 }
               </span>
               <span class="min-w-0 flex-1">
-                @if (!isMark(scene)) {
+                @if (isPost(scene)) {
+                  @if (scene.shooter) {
+                    <span class="block font-bold truncate">
+                      {{ personLabel(scene.shooter) }}
+                    </span>
+                  }
+                } @else if (!isMark(scene)) {
                   <span class="block font-bold truncate">
                     {{
                       personLabel(scene.scorer) ||

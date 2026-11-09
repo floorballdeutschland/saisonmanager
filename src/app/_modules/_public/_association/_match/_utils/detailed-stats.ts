@@ -20,6 +20,7 @@ export const SHOT_RESULTS: readonly ShotResult[] = [
   'saved',
   'blocked',
   'missed',
+  'post',
 ];
 
 export interface FieldPoint {
@@ -220,6 +221,7 @@ export const EMPTY_TEAM_STATS: TeamShotStats = {
   goals: 0,
   blocked: 0,
   missed: 0,
+  posts: 0,
 };
 
 /** Werte eines Teams für einen Abschnitt oder (`null`) das ganze Spiel. */
