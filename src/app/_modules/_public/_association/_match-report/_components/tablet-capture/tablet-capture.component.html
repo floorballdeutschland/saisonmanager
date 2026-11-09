@@ -191,9 +191,9 @@
           <button
             type="button"
             class="min-h-[48px] min-w-[48px] rounded-[5px] border px-3 text-lg font-bold"
-            [class.bg-black]="period === viewPeriod"
+            [class.bg-blue-700]="period === viewPeriod"
             [class.text-white]="period === viewPeriod"
-            [class.border-black]="period === viewPeriod"
+            [class.border-blue-700]="period === viewPeriod"
             [class.border-fb-gray-600]="period !== viewPeriod"
             [attr.aria-pressed]="period === viewPeriod"
             (click)="selectViewPeriod(period)"
@@ -644,9 +644,9 @@
               <button
                 type="button"
                 class="min-h-[56px] rounded-[5px] border-2 px-2 text-lg font-bold"
-                [class.bg-black]="draft.team === team"
+                [class.bg-blue-700]="draft.team === team"
                 [class.text-white]="draft.team === team"
-                [class.border-black]="draft.team === team"
+                [class.border-blue-700]="draft.team === team"
                 [class.border-fb-gray-600]="draft.team !== team"
                 [attr.aria-pressed]="draft.team === team"
                 (click)="setDraftTeam($any(team))"
@@ -665,11 +665,16 @@
                   [class.bg-green-600]="
                     draft.result === result && result === 'goal'
                   "
-                  [class.bg-black]="
+                  [class.border-green-600]="
+                    draft.result === result && result === 'goal'
+                  "
+                  [class.bg-blue-700]="
+                    draft.result === result && result !== 'goal'
+                  "
+                  [class.border-blue-700]="
                     draft.result === result && result !== 'goal'
                   "
                   [class.text-white]="draft.result === result"
-                  [class.border-black]="draft.result === result"
                   [class.border-fb-gray-600]="draft.result !== result"
                   [attr.aria-pressed]="draft.result === result"
                   [attr.data-testid]="'tablet-result-' + result"
@@ -697,9 +702,9 @@
               <button
                 type="button"
                 class="min-h-[56px] rounded-[5px] border-2 px-2 text-base font-bold"
-                [class.bg-black]="draft.from_penalty_shot"
+                [class.bg-blue-700]="draft.from_penalty_shot"
                 [class.text-white]="draft.from_penalty_shot"
-                [class.border-black]="draft.from_penalty_shot"
+                [class.border-blue-700]="draft.from_penalty_shot"
                 [class.border-fb-gray-600]="!draft.from_penalty_shot"
                 [attr.aria-pressed]="draft.from_penalty_shot"
                 data-testid="tablet-penalty-shot"
@@ -734,7 +739,10 @@
                   <button
                     type="button"
                     class="min-h-[48px] rounded-[5px] border text-lg font-bold"
-                    [class.bg-black]="
+                    [class.bg-blue-700]="
+                      draft.shooter_player_id === player.player_id
+                    "
+                    [class.border-blue-700]="
                       draft.shooter_player_id === player.player_id
                     "
                     [class.text-white]="
@@ -783,6 +791,9 @@
                       type="button"
                       class="min-h-[48px] rounded-[5px] border text-lg font-bold"
                       [class.bg-blue-700]="
+                        draft.goalkeeper_player_id === player.player_id
+                      "
+                      [class.border-blue-700]="
                         draft.goalkeeper_player_id === player.player_id
                       "
                       [class.text-white]="

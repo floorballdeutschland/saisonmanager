@@ -374,6 +374,30 @@ describe('TabletCaptureComponent', () => {
     await settle();
   });
 
+  it('hebt die Auswahl farbig hervor, nicht schwarz (fe#650, Android-Dunkelmodus)', async () => {
+    await start();
+    component.startDraft(0.8, 0.5);
+    component.setDraftTeam('home');
+    component.setDraftResult('saved');
+    component.setDraftShooter(101);
+    render();
+
+    const gedrueckt = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'button[aria-pressed="true"]'
+      ) as NodeListOf<HTMLButtonElement>
+    ).filter((b) => b.dataset['testid'] !== 'tablet-fullscreen-toggle');
+    expect(gedrueckt.length).toBeGreaterThanOrEqual(4);
+    for (const knopf of gedrueckt) {
+      expect(knopf.classList).not.toContain('bg-black');
+    }
+    const gehalten = fixture.nativeElement.querySelector(
+      '[data-testid="tablet-result-saved"]'
+    ) as HTMLButtonElement;
+    expect(gehalten.classList).toContain('bg-blue-700');
+    expect(getComputedStyle(gehalten).boxShadow).not.toBe('none');
+  });
+
   it('behält den Zeitpunkt, wenn die Stelle nachgebessert wird', async () => {
     await start();
     component.startDraft(0.7, 0.5, Date.UTC(2026, 9, 16, 12, 0, 0));
