@@ -10,11 +10,15 @@ import { GameAdditionalFields } from '@floorball/types';
  */
 export const SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH = 50;
 
-/** Zeichen der Beschreibung, wie die API sie zählt: ohne Leerraum am Rand. */
+/**
+ * Zeichen der Beschreibung, wie die API sie zählt: ohne Leerraum am Rand und
+ * in Unicode-Zeichen. `.length` zählte UTF-16-Einheiten, ein Emoji also
+ * doppelt, und gäbe den Knopf frei, den die API dann mit 49 Zeichen ablehnt.
+ */
 export function specialEventDescriptionLength(
   text: string | null | undefined
 ): number {
-  return (text ?? '').trim().length;
+  return [...(text ?? '').trim()].length;
 }
 
 /** Ist ein besonderes Ereignis angehakt, aber nicht ausreichend beschrieben? */
@@ -25,5 +29,29 @@ export function specialEventDescriptionMissing(
   return (
     specialEventDescriptionLength(fields.special_event_string) <
     SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH
+  );
+}
+
+/**
+ * Die Ablehnung für Vereine, wie die API sie formuliert, oder null. Für die
+ * Rückfrage und die Meldung in der Statusnavigation, die vor Checkliste und
+ * Tablet-Frage abweist (MatchReportComponent#closeMatchRecord).
+ */
+export function specialEventDescriptionProblem(
+  fields: GameAdditionalFields | null | undefined
+): string | null {
+  if (!specialEventDescriptionMissing(fields)) return null;
+  const min = SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH;
+  const length = specialEventDescriptionLength(fields?.special_event_string);
+  if (length === 0) {
+    return (
+      'Es ist ein besonderes Ereignis angehakt, aber noch nicht beschrieben. ' +
+      `Beschreibe unter „Spiel nachbereiten“ bei „Sonstige Ereignisse“, was passiert ist (mindestens ${min} Zeichen).`
+    );
+  }
+  return (
+    `Die Beschreibung des besonderen Ereignisses ist mit ${length} Zeichen zu kurz, ` +
+    `nötig sind mindestens ${min} (es fehlen noch ${min - length}). ` +
+    'Ergänze sie unter „Spiel nachbereiten“ bei „Sonstige Ereignisse“.'
   );
 }
