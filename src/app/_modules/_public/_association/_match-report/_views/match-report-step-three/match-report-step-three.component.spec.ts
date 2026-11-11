@@ -288,8 +288,9 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
     const hint = fixture.debugElement.query(
       By.css('[data-testid="special-event-description-missing"]')
     );
-    expect(hint.nativeElement.textContent).toContain('mindestens');
-    expect(hint.nativeElement.textContent).toContain('50');
+    const text = hint.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('ist zu kurz: 7 von mindestens 50 Zeichen');
+    expect(text).toContain('um mindestens 43 Zeichen');
     expect(
       fixture.debugElement.query(By.css('[data-testid="signatures-missing"]'))
     ).toBeNull();
@@ -324,5 +325,15 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
     expect(closeButtons()[0].nativeElement.textContent).toContain(
       'Spiel trotzdem abschließen'
     );
+  });
+  it('sagt ohne Beschreibung, dass noch nichts eingetragen ist', () => {
+    render([], false, '   ');
+
+    const text = fixture.debugElement
+      .query(By.css('[data-testid="special-event-description-missing"]'))
+      .nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('angehakt, aber noch nicht beschrieben');
+    expect(text).toContain('mindestens 50 Zeichen');
+    expect(text).not.toContain('zu kurz');
   });
 });

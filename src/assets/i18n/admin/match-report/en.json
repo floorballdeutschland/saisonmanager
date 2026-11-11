@@ -53,8 +53,10 @@
     "colUpdatedBy": "Edited by",
     "colClosedAt": "Closed",
     "colComment": "Note for the committee",
+    "colSpecialEvent": "Special incident",
     "colScanUploadedAt": "Paper sheet uploaded",
     "filterStatusWithObjection": "With objection to the game day report",
+    "filterStatusWithSpecialEvent": "With special incident",
     "objectionBadge": "Objection",
     "colObjections": "Objections to the game day report",
     "filterReview": "Processing",
@@ -80,6 +82,7 @@
     "forfait": "Game awarded (forfait)",
     "severePenalties": "{{count}} match penalty/penalties",
     "specialEvent": "Special incident",
+    "specialEventNoText": "no description",
     "missingReferee2": "No second referee entered",
     "missingAudience": "No attendance figure entered",
     "missingSignatures": "Signatures incomplete"

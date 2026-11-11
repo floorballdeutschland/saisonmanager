@@ -492,10 +492,26 @@
             class="mb-4 text-red-600"
             data-testid="special-event-description-missing"
           >
-            <strong>Das besondere Ereignis ist noch nicht beschrieben.</strong>
-            Beschreibe es oben unter „Sonstige Ereignisse“ in mindestens
-            {{ specialEventDescriptionMinLength }} Zeichen, dann kannst du das
-            Spiel abschließen.
+            @if (specialEventDescriptionLength === 0) {
+              <strong
+                >Das besondere Ereignis ist angehakt, aber noch nicht
+                beschrieben.</strong
+              >
+              Beschreibe oben unter „Sonstige Ereignisse“, was passiert ist
+              (mindestens {{ specialEventDescriptionMinLength }} Zeichen), dann
+              kannst du das Spiel abschließen.
+            } @else {
+              <strong
+                >Die Beschreibung des besonderen Ereignisses ist zu kurz:
+                {{ specialEventDescriptionLength }} von mindestens
+                {{ specialEventDescriptionMinLength }} Zeichen.</strong
+              >
+              Ergänze sie oben unter „Sonstige Ereignisse“ um mindestens
+              {{
+                specialEventDescriptionMinLength - specialEventDescriptionLength
+              }}
+              Zeichen, dann kannst du das Spiel abschließen.
+            }
           </p>
         }
         <fb-button

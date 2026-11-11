@@ -21,6 +21,7 @@ import {
 } from 'src/app/_helpers/_utils/missing-signatures';
 import {
   SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH,
+  specialEventDescriptionLength,
   specialEventDescriptionMissing,
 } from 'src/app/_helpers/_utils/special-event-description';
 
@@ -133,6 +134,14 @@ export class MatchReportStepThreeComponent {
 
   public get specialEventDescriptionMissing(): boolean {
     return specialEventDescriptionMissing(this.additionalFields);
+  }
+
+  // Gespeicherte Länge, wie die API sie zählt. Die Maske tippt im Kindfeld,
+  // hier kommt der Stand erst nach dem Speichern an.
+  public get specialEventDescriptionLength(): number {
+    return specialEventDescriptionLength(
+      this.additionalFields?.special_event_string
+    );
   }
 
   public get canCloseWithoutOverride(): boolean {

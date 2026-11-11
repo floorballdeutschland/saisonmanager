@@ -344,6 +344,60 @@ describe('MatchReportIndexComponent', () => {
     expect(component.rows.map((r) => r.id)).toEqual([2, 3]);
   });
 
+  describe('Besonderes Ereignis', () => {
+    function withEvent(
+      id: number,
+      special_event: boolean | undefined,
+      special_event_string: string | null
+    ): GameDayReportRow {
+      const base = row();
+      return row({
+        id,
+        flags: { ...base.flags, special_event, special_event_string },
+      });
+    }
+
+    it('zählt den Haken auch ohne Text als Auffälligkeit', () => {
+      const r = withEvent(1, true, null);
+      expect(component.hasSpecialEvent(r)).toBeTrue();
+      expect(component.hasFlags(r)).toBeTrue();
+    });
+
+    it('zählt einen Text ohne Haken weiter mit (Altbestand, ältere API)', () => {
+      expect(
+        component.hasSpecialEvent(withEvent(1, undefined, 'Hallenlicht'))
+      ).toBeTrue();
+      expect(component.hasSpecialEvent(withEvent(1, false, null))).toBeFalse();
+    });
+
+    it('filtert auf Spiele mit besonderem Ereignis', () => {
+      component.filterStatus = 'withSpecialEvent';
+      loadWith([
+        withEvent(1, true, null),
+        withEvent(2, false, null),
+        withEvent(3, true, 'Spielunterbrechung wegen Hallenlicht'),
+      ]);
+
+      expect(component.rows.map((r) => r.id)).toEqual([1, 3]);
+    });
+
+    it('schreibt den Text einzeilig in die CSV und vermerkt einen fehlenden', () => {
+      spyOn(TestBed.inject(TranslocoService), 'translate').and.callFake(
+        ((key: string) => key) as never
+      );
+
+      expect(
+        component['_specialEventCell'](withEvent(1, true, 'Licht aus.\nPause.'))
+      ).toBe('Licht aus. Pause.');
+      expect(component['_specialEventCell'](withEvent(2, true, null))).toBe(
+        'matchReportAdmin.flags.specialEventNoText'
+      );
+      expect(component['_specialEventCell'](withEvent(3, false, null))).toBe(
+        ''
+      );
+    });
+  });
+
   it('nimmt die Anmerkung zum Einspruch einzeilig in die CSV-Zelle auf', () => {
     spyOn(TestBed.inject(TranslocoService), 'translate').and.callFake(((
       key: string,
@@ -974,6 +1028,40 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
       )
     );
   }
+
+  // OnPush: je Test nur EIN Rendern, ein zweites `show` griffe nicht.
+  it('zeigt das besondere Ereignis mit seinem Text', () => {
+    const base = row();
+    show(
+      row({
+        flags: {
+          ...base.flags,
+          special_event: true,
+          special_event_string: 'Licht ging aus.\nZehn Minuten Pause.',
+        },
+      })
+    );
+    const item = element.querySelector('[data-testid="flag-special-event"]');
+    expect(item?.textContent).toContain('Licht ging aus.');
+    expect(item?.querySelector('.whitespace-pre-line')).not.toBeNull();
+    expect(item?.querySelector('.text-red-600')).toBeNull();
+  });
+
+  it('zeigt ein besonderes Ereignis ohne Text mit Vermerk', () => {
+    const base = row();
+    show(
+      row({
+        flags: {
+          ...base.flags,
+          special_event: true,
+          special_event_string: null,
+        },
+      })
+    );
+    const item = element.querySelector('[data-testid="flag-special-event"]');
+    expect(item).not.toBeNull();
+    expect(item?.querySelector('.text-red-600')).not.toBeNull();
+  });
 
   it('verlinkt den Uploader des Papierbogens per Mail', () => {
     show(
