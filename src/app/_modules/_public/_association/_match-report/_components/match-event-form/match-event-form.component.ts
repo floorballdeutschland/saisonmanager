@@ -35,6 +35,10 @@ import {
 } from './event-time-validation';
 import { countRewrittenGoalScores } from './goal-order';
 import { personName, splitPersonName } from './person-name';
+import {
+  SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH,
+  specialEventDescriptionLength,
+} from 'src/app/_helpers/_utils/special-event-description';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -151,6 +155,18 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   protest?: boolean;
   specialevent?: boolean;
   specialEventString?: string;
+  readonly specialEventDescriptionMinLength =
+    SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH;
+
+  get specialEventDescriptionLength(): number {
+    return specialEventDescriptionLength(this.specialEventString);
+  }
+
+  get specialEventDescriptionTooShort(): boolean {
+    return (
+      this.specialEventDescriptionLength < SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH
+    );
+  }
   overtime?: boolean;
 
   timekeepersigned?: boolean;
