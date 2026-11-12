@@ -118,6 +118,56 @@ describe('MatchReportStepThreeComponent: Unterschriften als Pflicht', () => {
   });
 });
 
+describe('MatchReportStepThreeComponent: Beschreibung des besonderen Ereignisses', () => {
+  function withSpecialEvent(
+    description: string,
+    missing: string[] = []
+  ): MatchReportStepThreeComponent {
+    const component = build();
+    component.additionalFields = {
+      missing_signatures: missing,
+      special_event: true,
+      special_event_string: description,
+    } as unknown as GameAdditionalFields;
+    return component;
+  }
+
+  it('schließt mit zu kurzer Beschreibung nicht ab', () => {
+    const component = withSpecialEvent('x'.repeat(49));
+    const emitted = spyOn(component.closeMatchRecord, 'emit');
+
+    component.handleFinalize();
+
+    expect(component.specialEventDescriptionMissing).toBeTrue();
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('schließt mit 50 Zeichen ab', () => {
+    const component = withSpecialEvent('x'.repeat(50));
+    const emitted = spyOn(component.closeMatchRecord, 'emit');
+
+    component.handleFinalize();
+
+    expect(emitted).toHaveBeenCalled();
+  });
+
+  it('lässt die SBK auch ohne Beschreibung abschließen und nennt es in der Rückfrage', () => {
+    const component = withSpecialEvent('');
+    component.canOverrideSignatures = true;
+    const emitted = spyOn(component.closeMatchRecord, 'emit');
+
+    component.handleFinalize();
+
+    expect(emitted).toHaveBeenCalled();
+    expect(component.overrideConfirmationContent).toContain(
+      'besondere Ereignis'
+    );
+    expect(component.overrideConfirmationContent).not.toContain(
+      'Unterschriften'
+    );
+  });
+});
+
 // Das Template selbst: welche Markierungen und welcher Knopf erscheinen. Die
 // Kindkomponenten (Haken, Bestätigung, Knopf) stehen als unbekannte Elemente
 // da (NO_ERRORS_SCHEMA); geprüft werden ihre Bindungen, nicht ihr Innenleben.
@@ -136,6 +186,7 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
   function render(
     missing: string[],
     canOverride = false,
+    specialEvent?: string,
     protest?: { parties: string[] }
   ): void {
     fixture = TestBed.createComponent(MatchReportStepThreeComponent);
@@ -146,6 +197,8 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
     } as unknown as Game);
     fixture.componentRef.setInput('additionalFields', {
       missing_signatures: missing,
+      special_event: specialEvent !== undefined,
+      special_event_string: specialEvent ?? '',
       protest: !!protest,
       protest_parties: protest?.parties ?? [],
       protest_party_options: [
@@ -236,8 +289,62 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
       'lassen sie sich nicht mehr nachtragen'
     );
   });
+  it('sperrt den Knopf für den Verein, solange das besondere Ereignis nicht beschrieben ist', () => {
+    render([], false, 'zu kurz');
+
+    const hint = fixture.debugElement.query(
+      By.css('[data-testid="special-event-description-missing"]')
+    );
+    const text = hint.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('ist zu kurz: 7 von mindestens 50 Zeichen');
+    expect(text).toContain('um mindestens 43 Zeichen');
+    expect(
+      fixture.debugElement.query(By.css('[data-testid="signatures-missing"]'))
+    ).toBeNull();
+    expect(fixture.debugElement.query(By.css('fb-confirmation'))).toBeNull();
+    expect(closeButtons()[0].properties['disabled']).toBeTrue();
+  });
+
+  it('bietet mit ausreichender Beschreibung den normalen Abschluss an', () => {
+    render([], false, 'x'.repeat(50));
+
+    expect(
+      fixture.debugElement.query(
+        By.css('[data-testid="special-event-description-missing"]')
+      )
+    ).toBeNull();
+    expect(closeButtons()[0].properties['disabled']).toBeFalsy();
+  });
+
+  it('warnt die SBK bei fehlender Beschreibung, statt zu sperren', () => {
+    render([], true, '');
+
+    expect(
+      fixture.debugElement.query(
+        By.css('[data-testid="special-event-description-missing-sbk"]')
+      )
+    ).not.toBeNull();
+    expect(
+      fixture.debugElement.query(
+        By.css('[data-testid="signatures-missing-sbk"]')
+      )
+    ).toBeNull();
+    expect(closeButtons()[0].nativeElement.textContent).toContain(
+      'Spiel trotzdem abschließen'
+    );
+  });
+  it('sagt ohne Beschreibung, dass noch nichts eingetragen ist', () => {
+    render([], false, '   ');
+
+    const text = fixture.debugElement
+      .query(By.css('[data-testid="special-event-description-missing"]'))
+      .nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('angehakt, aber noch nicht beschrieben');
+    expect(text).toContain('mindestens 50 Zeichen');
+    expect(text).not.toContain('zu kurz');
+  });
   it('sperrt den Abschluss für den Verein bei Protest ohne Partei', () => {
-    render([], false, { parties: [] });
+    render([], false, undefined, { parties: [] });
 
     expect(
       fixture.debugElement.query(
@@ -249,7 +356,7 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
   });
 
   it('schließt mit gewählter Partei normal ab', () => {
-    render([], false, { parties: ['other'] });
+    render([], false, undefined, { parties: ['other'] });
 
     expect(
       fixture.debugElement.query(
@@ -260,7 +367,7 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
   });
 
   it('warnt die SBK bei Protest ohne Partei, statt zu sperren', () => {
-    render([], true, { parties: [] });
+    render([], true, undefined, { parties: [] });
 
     expect(
       fixture.debugElement.query(

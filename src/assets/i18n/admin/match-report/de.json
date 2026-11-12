@@ -53,8 +53,10 @@
     "colUpdatedBy": "Bearbeitet von",
     "colClosedAt": "Abgeschlossen",
     "colComment": "Hinweis an die SBK",
+    "colSpecialEvent": "Besonderes Ereignis",
     "colScanUploadedAt": "Papierbogen hochgeladen",
     "filterStatusWithObjection": "Mit Einspruch zum Spieltagsbericht",
+    "filterStatusWithSpecialEvent": "Mit besonderem Ereignis",
     "objectionBadge": "Einspruch",
     "colObjections": "Einsprüche zum Spieltagsbericht",
     "filterReview": "Bearbeitung",
@@ -80,6 +82,7 @@
     "forfait": "Spiel gewertet (Forfait)",
     "severePenalties": "{{count}} Matchstrafe(n)",
     "specialEvent": "Besonderes Ereignis",
+    "specialEventNoText": "ohne Beschreibung",
     "missingReferee2": "Kein zweiter Schiedsrichter eingetragen",
     "missingAudience": "Keine Zuschauerzahl eingetragen",
     "missingSignatures": "Unterschriften unvollständig"

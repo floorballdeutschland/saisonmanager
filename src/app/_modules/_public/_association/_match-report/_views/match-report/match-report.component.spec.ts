@@ -607,6 +607,74 @@ describe('MatchReportComponent', () => {
       );
     });
 
+    describe('Beschreibung des besonderen Ereignisses', () => {
+      function specialEvent(text: string) {
+        component.additionalFields = {
+          missing_signatures: [],
+          special_event: true,
+          special_event_string: text,
+        } as unknown as GameAdditionalFields;
+      }
+
+      it('weist den Verein aus der Navigation ab, bevor die Checkliste kommt', () => {
+        create({ permission: ['edit_game_report'] });
+        specialEvent('zu kurz');
+        const setStatus = spyOn(gameService, 'setGameStatus');
+        const error = spyOn(notifications, 'error');
+
+        component.requestGameStatusChange('match_record_closed');
+
+        expect(error).toHaveBeenCalledWith(
+          jasmine.stringContaining('mit 7 Zeichen zu kurz')
+        );
+        expect(component.checklistVisible).toBeFalse();
+        expect(setStatus).not.toHaveBeenCalled();
+        expect(component.appGameStatus).toBe('aftergame');
+      });
+
+      it('sagt ohne Text, dass noch nichts beschrieben ist', () => {
+        create({ permission: ['edit_game_report'] });
+        specialEvent('');
+        const error = spyOn(notifications, 'error');
+
+        component.closeMatchRecord();
+
+        expect(error).toHaveBeenCalledWith(
+          jasmine.stringContaining('noch nicht beschrieben')
+        );
+      });
+
+      it('lässt die SBK weiter zur Checkliste und warnt in der Rückfrage', () => {
+        create({ permission: ['check_game'] });
+        specialEvent('');
+        const error = spyOn(notifications, 'error');
+        const option = component.gameStatusOptions[3];
+
+        component.closeMatchRecord();
+
+        expect(error).not.toHaveBeenCalled();
+        expect(component.checklistVisible).toBeTrue();
+        expect(component.statusConfirmationContent(option)).toContain(
+          'besondere Ereignis ist nicht mit mindestens 50 Zeichen'
+        );
+      });
+
+      it('nennt dem Verein die fehlende Beschreibung schon in der Rückfrage', () => {
+        create({ permission: ['edit_game_report'] });
+        specialEvent('');
+        const option = component.gameStatusOptions[3];
+
+        expect(component.statusConfirmationContent(option)).toContain(
+          'noch nicht beschrieben'
+        );
+
+        specialEvent('x'.repeat(50));
+        expect(component.statusConfirmationContent(option)).toBe(
+          option.confirmationContent as string
+        );
+      });
+    });
+
     it('weist einen Protest ohne Partei vor der Checkliste ab', () => {
       create({ permission: ['edit_game_report'] });
       component.additionalFields = {

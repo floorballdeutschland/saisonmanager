@@ -6,6 +6,7 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -36,6 +37,10 @@ import {
 } from './event-time-validation';
 import { countRewrittenGoalScores } from './goal-order';
 import { personName, splitPersonName } from './person-name';
+import {
+  SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH,
+  specialEventDescriptionLength,
+} from 'src/app/_helpers/_utils/special-event-description';
 
 @Component({
   selector: 'fb-match-event-form',
@@ -43,7 +48,9 @@ import { personName, splitPersonName } from './person-name';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class MatchEventFormComponent implements OnInit, AfterViewInit {
+export class MatchEventFormComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @ViewChild('minutefield')
   minutefieldElement!: ElementRef<HTMLInputElement>;
 
@@ -194,6 +201,89 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
   protest?: boolean;
   specialevent?: boolean;
   specialEventString?: string;
+  readonly specialEventDescriptionMinLength =
+    SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH;
+
+  get specialEventDescriptionLength(): number {
+    return specialEventDescriptionLength(this.specialEventString);
+  }
+
+  get specialEventDescriptionTooShort(): boolean {
+    return (
+      this.specialEventDescriptionLength < SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH
+    );
+  }
+
+  // Autospeichern der Beschreibung. Bisher nur beim Verlassen des Feldes: Der
+  // Zähler stand schon auf 50, Schritt 3 darunter meldete noch „zu kurz", und
+  // wer die Seite ohne Fokuswechsel verließ, verlor den Text. Jetzt wird kurz
+  // nach dem Tippen gespeichert, beim Verlassen sofort. Der Stand steht am
+  // Feld statt in einer Meldung je Speichern, die sich sonst stapeln würden.
+  // Ein Neuladen des Spiels überschreibt das Feld nicht (nur ngOnInit liest
+  // `fieldValue`), Tippen während des Speicherns geht also nicht verloren.
+  static readonly SPECIAL_EVENT_SAVE_DELAY_MS = 1200;
+  specialEventSaveState: 'idle' | 'pending' | 'saving' | 'saved' | 'error' =
+    'idle';
+  private _specialEventSaved = '';
+  private _specialEventSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  public onSpecialEventInput(): void {
+    this._clearSpecialEventTimer();
+    this.specialEventSaveState =
+      (this.specialEventString ?? '') === this._specialEventSaved
+        ? 'idle'
+        : 'pending';
+    this._specialEventSaveTimer = setTimeout(
+      () => this.saveSpecialEventString(),
+      MatchEventFormComponent.SPECIAL_EVENT_SAVE_DELAY_MS
+    );
+  }
+
+  public saveSpecialEventString(): void {
+    this._clearSpecialEventTimer();
+    const text = this.specialEventString ?? '';
+    if (text === this._specialEventSaved) {
+      if (this.specialEventSaveState === 'pending') {
+        this.specialEventSaveState = 'idle';
+      }
+      return;
+    }
+    this.specialEventSaveState = 'saving';
+    this._cdr.markForCheck();
+    this._gameService
+      .setGameField(this.match.id, { special_event_string: text })
+      .subscribe({
+        next: () => {
+          this._specialEventSaved = text;
+          // Weitergetippt, während die Anfrage lief? Dann steht der neue
+          // Stand noch aus, der Zeitgeber läuft bereits.
+          this.specialEventSaveState =
+            (this.specialEventString ?? '') === text ? 'saved' : 'pending';
+          this._cdr.markForCheck();
+          this.updateGame.emit();
+        },
+        // Sichtbar am Feld, damit niemand einen nicht gespeicherten Text für
+        // gespeichert hält. Der Fehler läuft weiter an den globalen
+        // ErrorHandler (Sentry); eine 4xx-Begründung zeigt der Interceptor.
+        error: (err) => {
+          this.specialEventSaveState = 'error';
+          this._cdr.markForCheck();
+          this._errorHandler.handleError(err);
+        },
+      });
+  }
+
+  public ngOnDestroy(): void {
+    // Steht beim Verlassen noch ein Speichern aus, jetzt nachholen.
+    if (this._specialEventSaveTimer) this.saveSpecialEventString();
+  }
+
+  private _clearSpecialEventTimer(): void {
+    if (this._specialEventSaveTimer) {
+      clearTimeout(this._specialEventSaveTimer);
+      this._specialEventSaveTimer = null;
+    }
+  }
   overtime?: boolean;
 
   timekeepersigned?: boolean;
@@ -315,6 +405,7 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
       switch (this.type) {
         case 'specialevent':
           this.specialEventString = this.fieldValue || '';
+          this._specialEventSaved = this.specialEventString;
           break;
         case 'comment':
           this.comment = this.fieldValue || '';
@@ -1000,9 +1091,8 @@ export class MatchEventFormComponent implements OnInit, AfterViewInit {
           });
         break;
       case 'specialevent':
-        fields = { special_event_string: this.specialEventString || '' };
-        saveMessage = 'Besonderes Ereignis gespeichert';
-        break;
+        this.saveSpecialEventString();
+        return;
       case 'comment':
         fields = { record_comment: this.comment?.toString() || '' };
         saveMessage = 'Kommentar gespeichert';

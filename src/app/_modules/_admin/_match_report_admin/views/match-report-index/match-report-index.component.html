@@ -88,6 +88,11 @@
         <option value="withObjection">
           {{ "matchReportAdmin.index.filterStatusWithObjection" | transloco }}
         </option>
+        <option value="withSpecialEvent">
+          {{
+            "matchReportAdmin.index.filterStatusWithSpecialEvent" | transloco
+          }}
+        </option>
       </select>
     </div>
     <div class="flex flex-col gap-1">
@@ -655,10 +660,21 @@
                   }}
                 </li>
               }
-              @if (row.flags.special_event_string) {
-                <li>
-                  {{ "matchReportAdmin.flags.specialEvent" | transloco }}:
-                  {{ row.flags.special_event_string }}
+              @if (hasSpecialEvent(row)) {
+                <li data-testid="flag-special-event">
+                  <span class="font-bold">{{
+                    "matchReportAdmin.flags.specialEvent" | transloco
+                  }}</span
+                  >:
+                  @if (row.flags.special_event_string) {
+                    <span class="whitespace-pre-line break-words">{{
+                      row.flags.special_event_string
+                    }}</span>
+                  } @else {
+                    <span class="italic text-red-600">{{
+                      "matchReportAdmin.flags.specialEventNoText" | transloco
+                    }}</span>
+                  }
                 </li>
               }
               @if (row.flags.missing_referee2) {

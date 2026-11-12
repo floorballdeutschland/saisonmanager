@@ -68,15 +68,61 @@
         >
         @if (specialevent) {
           <div class="mt-2">
+            <label
+              for="specialeventstring"
+              class="block text-sm text-fb-gray-500 mb-1"
+              >Beschreibung (Pflichtfeld, mindestens
+              {{ specialEventDescriptionMinLength }} Zeichen)</label
+            >
             <textarea
-              class="w-full p-2 border border-fb-gray-600 rounded-[5px]"
+              id="specialeventstring"
+              class="w-full p-2 border rounded-[5px]"
+              [class.border-fb-gray-600]="!specialEventDescriptionTooShort"
+              [class.border-red-400]="specialEventDescriptionTooShort"
               placeholder="Beschreibung des Ereignisses (z.B. Spielverzögerung wegen defektem Hallenlicht)"
               rows="3"
-              (change)="submitField()"
+              (change)="saveSpecialEventString()"
+              (ngModelChange)="onSpecialEventInput()"
               [(ngModel)]="specialEventString"
             ></textarea>
-            <p class="text-fb-gray-400 text-xs">
-              Dieses Feld wird automatisch gespeichert.
+            <p
+              class="text-xs"
+              data-testid="special-event-description-counter"
+              [class.text-red-600]="specialEventDescriptionTooShort"
+              [class.text-fb-gray-400]="!specialEventDescriptionTooShort"
+            >
+              {{ specialEventDescriptionLength }} von mindestens
+              {{ specialEventDescriptionMinLength }} Zeichen.
+              @if (specialEventDescriptionTooShort) {
+                Ohne ausreichende Beschreibung kann der Spielbericht nicht
+                abgeschlossen werden.
+              }
+            </p>
+            <p
+              class="text-xs"
+              data-testid="special-event-save-state"
+              [class.text-red-600]="specialEventSaveState === 'error'"
+              [class.text-fb-gray-400]="specialEventSaveState !== 'error'"
+            >
+              @switch (specialEventSaveState) {
+                @case ("pending") {
+                  Noch nicht gespeichert …
+                }
+                @case ("saving") {
+                  Wird gespeichert …
+                }
+                @case ("saved") {
+                  Gespeichert.
+                }
+                @case ("error") {
+                  Konnte nicht gespeichert werden. Bitte prüfe die Verbindung
+                  und klicke danach kurz außerhalb des Feldes, um es erneut zu
+                  versuchen.
+                }
+                @default {
+                  Dieses Feld wird automatisch gespeichert.
+                }
+              }
             </p>
           </div>
         }

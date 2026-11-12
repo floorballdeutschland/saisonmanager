@@ -38,6 +38,9 @@ export interface GameReportProtest {
 export interface GameReportFlags {
   protest: boolean;
   forfait: boolean;
+  // Der Haken; kann ohne Text gesetzt sein (SBK schloss trotzdem ab). Fehlt
+  // bei einer API vor api#896, dann zählt allein der Text.
+  special_event?: boolean;
   special_event_string: string | null;
   // Nur Matchstrafen; Zeitstrafen (auch 5 und 10 Minuten) zählen nicht.
   severe_penalty_count: number;

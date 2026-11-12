@@ -28,6 +28,7 @@ import {
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
 import { missingSignatureLabels } from 'src/app/_helpers/_utils/missing-signatures';
+import { specialEventDescriptionProblem } from 'src/app/_helpers/_utils/special-event-description';
 import {
   PROTEST_PARTIES_MISSING_MESSAGE,
   protestPartiesMissing,
@@ -344,10 +345,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
     confirmationContent?: string;
   }): string {
     const missing = missingSignatureLabels(this.additionalFields);
+    const specialEvent = specialEventDescriptionProblem(this.additionalFields);
     const noParty = protestPartiesMissing(this.additionalFields);
     if (
       option.key !== this.MATCH_RECORD_CLOSED ||
-      (missing.length === 0 && !noParty)
+      (missing.length === 0 && !specialEvent && !noParty)
     ) {
       return option.confirmationContent ?? '';
     }
@@ -357,6 +359,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
         problems.push(
           `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
             'Die Haken bleiben dabei leer.'
+        );
+      }
+      if (specialEvent) {
+        problems.push(
+          'Das besondere Ereignis ist nicht mit mindestens 50 Zeichen beschrieben.'
         );
       }
       if (noParty) {
@@ -376,6 +383,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
           '„Spiel nachbereiten“ ab.'
       );
     }
+    if (specialEvent) problems.push(specialEvent);
     if (noParty) problems.push(PROTEST_PARTIES_MISSING_MESSAGE);
     return `${problems.join(' ')} Erst dann kann der Spielbericht abgeschlossen werden.`;
   }
@@ -398,6 +406,14 @@ export class MatchReportComponent implements OnInit, OnChanges {
         `Es fehlen noch Unterschriften: ${missing.join(', ')}. ` +
           'Erst wenn alle Unterschriften abgehakt sind, kann der Spielbericht abgeschlossen werden.'
       );
+      this.appGameStatus = this.AFTERGAME;
+      this._cdr.markForCheck();
+      return;
+    }
+    // Dasselbe für die Beschreibung des besonderen Ereignisses (api#896).
+    const specialEvent = specialEventDescriptionProblem(this.additionalFields);
+    if (specialEvent && !this.canCheckGame()) {
+      this._notificationService.error(specialEvent);
       this.appGameStatus = this.AFTERGAME;
       this._cdr.markForCheck();
       return;

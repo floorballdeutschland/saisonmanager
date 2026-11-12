@@ -20,6 +20,11 @@ import {
   missingSignatures,
 } from 'src/app/_helpers/_utils/missing-signatures';
 import {
+  SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH,
+  specialEventDescriptionLength,
+  specialEventDescriptionMissing,
+} from 'src/app/_helpers/_utils/special-event-description';
+import {
   PROTEST_PARTIES_MISSING_MESSAGE,
   protestPartiesMissing,
 } from 'src/app/_helpers/_utils/protest-parties';
@@ -41,8 +46,9 @@ export class MatchReportStepThreeComponent {
   nextStatusOption!: GameStatusOption;
 
   // Darf die SBK des Spielbetriebs (oder ein Admin) den Bericht abschließen?
-  // Dann übergeht die API die fehlenden Unterschriften, und der Knopf warnt
-  // nur, statt zu sperren (MatchReportComponent#canCheckGame).
+  // Dann übergeht die API die fehlenden Unterschriften und eine zu kurze
+  // Beschreibung des besonderen Ereignisses, und der Knopf warnt nur, statt
+  // zu sperren (MatchReportComponent#canCheckGame).
   @Input()
   canOverrideSignatures = false;
 
@@ -121,6 +127,27 @@ export class MatchReportStepThreeComponent {
     return missingSignatureLabels(this.additionalFields);
   }
 
+  // ── Beschreibung des besonderen Ereignisses als Pflicht ──────────────────
+  //
+  // Ein besonderes Ereignis verlangt kein Berichtsformular mehr, es wird im
+  // Spielbericht beschrieben. Ist der Haken gesetzt, sperrt die API den
+  // Abschluss, bis die Beschreibung lang genug ist (für die SBK nicht).
+
+  public readonly specialEventDescriptionMinLength =
+    SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH;
+
+  public get specialEventDescriptionMissing(): boolean {
+    return specialEventDescriptionMissing(this.additionalFields);
+  }
+
+  // Gespeicherte Länge, wie die API sie zählt. Die Maske tippt im Kindfeld,
+  // hier kommt der Stand erst nach dem Speichern an.
+  public get specialEventDescriptionLength(): number {
+    return specialEventDescriptionLength(
+      this.additionalFields?.special_event_string
+    );
+  }
+
   // Protest ohne gewählte Partei: Die API lehnt den Abschluss für den Verein
   // ab, die SBK wird nur gewarnt.
   public readonly protestPartiesMissingMessage =
@@ -131,7 +158,11 @@ export class MatchReportStepThreeComponent {
   }
 
   public get canCloseWithoutOverride(): boolean {
-    return this.signaturesComplete && !this.protestPartiesMissing;
+    return (
+      this.signaturesComplete &&
+      !this.specialEventDescriptionMissing &&
+      !this.protestPartiesMissing
+    );
   }
 
   public get overrideConfirmationContent(): string {
@@ -140,6 +171,12 @@ export class MatchReportStepThreeComponent {
       problems.push(
         `Auf dem Spielbericht fehlen Unterschriften: ${this.missingSignatureLabels.join(', ')}. ` +
           'Die Haken bleiben dabei leer.'
+      );
+    }
+    if (this.specialEventDescriptionMissing) {
+      problems.push(
+        'Das besondere Ereignis ist nicht mit mindestens ' +
+          `${SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH} Zeichen beschrieben.`
       );
     }
     if (this.protestPartiesMissing) {
