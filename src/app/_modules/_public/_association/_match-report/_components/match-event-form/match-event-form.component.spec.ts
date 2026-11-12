@@ -1296,3 +1296,134 @@ describe('MatchEventFormComponent startOrEndGame', () => {
     expect(errorToast).not.toHaveBeenCalled();
   });
 });
+
+describe('MatchEventFormComponent: Beschreibung des besonderen Ereignisses', () => {
+  let fixture: ComponentFixture<MatchEventFormComponent>;
+  let component: MatchEventFormComponent;
+  let gameService: GameService;
+  let errorHandler: ErrorHandler;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, FormsModule],
+      declarations: [MatchEventFormComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MatchEventFormComponent);
+    component = fixture.componentInstance;
+    component.type = 'specialevent';
+    component.team = 'both';
+    component.fieldChecked = true;
+    component.fieldValue = 'gespeichert';
+    component.match = { id: 7, league_id: 1 } as unknown as Game;
+    gameService = TestBed.inject(GameService);
+    errorHandler = TestBed.inject(ErrorHandler);
+    fixture.detectChanges();
+  });
+
+  function counter(): string {
+    return fixture.nativeElement
+      .querySelector('[data-testid="special-event-description-counter"]')
+      .textContent.replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function saveState(): string {
+    return fixture.nativeElement
+      .querySelector('[data-testid="special-event-save-state"]')
+      .textContent.replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function type(text: string): void {
+    const area: HTMLTextAreaElement = fixture.nativeElement.querySelector(
+      '#specialeventstring'
+    );
+    area.value = text;
+    area.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+  }
+
+  it('zählt beim Tippen mit und warnt unter 50 Zeichen', fakeAsync(() => {
+    spyOn(gameService, 'setGameField').and.returnValue(of([]));
+    fixture.detectChanges();
+    tick();
+
+    type('  sieben ');
+    expect(counter()).toContain('6 von mindestens 50 Zeichen');
+    expect(counter()).toContain('nicht abgeschlossen werden');
+
+    type('x'.repeat(50));
+    expect(counter()).toContain('50 von mindestens 50 Zeichen');
+    expect(counter()).not.toContain('nicht abgeschlossen werden');
+
+    tick(MatchEventFormComponent.SPECIAL_EVENT_SAVE_DELAY_MS);
+  }));
+
+  it('speichert kurz nach dem Tippen, ohne Meldung je Speichern', fakeAsync(() => {
+    const save = spyOn(gameService, 'setGameField').and.returnValue(of([]));
+    const updated = spyOn(component.updateGame, 'emit');
+
+    component.specialEventString = 'neuer Text';
+    component.onSpecialEventInput();
+    fixture.detectChanges();
+    expect(saveState()).toContain('Noch nicht gespeichert');
+    expect(save).not.toHaveBeenCalled();
+
+    tick(MatchEventFormComponent.SPECIAL_EVENT_SAVE_DELAY_MS);
+    fixture.detectChanges();
+
+    expect(save).toHaveBeenCalledOnceWith(7, {
+      special_event_string: 'neuer Text',
+    });
+    expect(updated).toHaveBeenCalled();
+    expect(saveState()).toContain('Gespeichert.');
+  }));
+
+  it('speichert beim Verlassen sofort und denselben Stand nicht zweimal', fakeAsync(() => {
+    const save = spyOn(gameService, 'setGameField').and.returnValue(of([]));
+
+    component.specialEventString = 'neuer Text';
+    component.onSpecialEventInput();
+    component.saveSpecialEventString();
+    tick(MatchEventFormComponent.SPECIAL_EVENT_SAVE_DELAY_MS);
+    component.saveSpecialEventString();
+
+    expect(save).toHaveBeenCalledTimes(1);
+  }));
+
+  it('speichert den unveränderten Stand nicht', () => {
+    const save = spyOn(gameService, 'setGameField');
+
+    component.saveSpecialEventString();
+
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('zeigt einen gescheiterten Speicherversuch am Feld und meldet ihn weiter', () => {
+    spyOn(gameService, 'setGameField').and.returnValue(
+      throwError(() => new Error('offline'))
+    );
+    const handled = spyOn(errorHandler, 'handleError');
+
+    component.specialEventString = 'neuer Text';
+    component.saveSpecialEventString();
+    fixture.detectChanges();
+
+    expect(saveState()).toContain('Konnte nicht gespeichert werden');
+    expect(handled).toHaveBeenCalled();
+  });
+
+  it('holt ein ausstehendes Speichern beim Verlassen der Seite nach', fakeAsync(() => {
+    const save = spyOn(gameService, 'setGameField').and.returnValue(of([]));
+
+    component.specialEventString = 'neuer Text';
+    component.onSpecialEventInput();
+    fixture.destroy();
+
+    expect(save).toHaveBeenCalledTimes(1);
+    tick(MatchEventFormComponent.SPECIAL_EVENT_SAVE_DELAY_MS);
+    expect(save).toHaveBeenCalledTimes(1);
+  }));
+});
