@@ -143,6 +143,11 @@
     "invited": "Link sent on {{date}}, no form yet",
     "noAddress": "no address on file, link not delivered",
     "pending": "link is sent when the report is closed",
-    "noParty": "no protesting party selected"
+    "noParty": "no protesting party selected",
+    "resend": "Resend link",
+    "resendPlaceholder": "other address (optional)",
+    "resendSubmit": "Send",
+    "resendCancel": "Cancel",
+    "resent": "New upload link sent. The old link is no longer valid."
   }
 }

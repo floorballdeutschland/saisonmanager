@@ -143,6 +143,11 @@
     "invited": "Link am {{date}} verschickt, noch kein Formular",
     "noAddress": "keine Adresse hinterlegt, Link nicht zugestellt",
     "pending": "Link geht beim Abschluss raus",
-    "noParty": "keine Protestpartei ausgewählt"
+    "noParty": "keine Protestpartei ausgewählt",
+    "resend": "Link erneut senden",
+    "resendPlaceholder": "andere Adresse (optional)",
+    "resendSubmit": "Senden",
+    "resendCancel": "Abbrechen",
+    "resent": "Neuer Upload-Link verschickt. Der alte Link gilt nicht mehr."
   }
 }

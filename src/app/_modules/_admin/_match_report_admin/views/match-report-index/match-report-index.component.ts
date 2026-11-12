@@ -459,6 +459,55 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
 
   // --- Aktionen -------------------------------------------------------------
 
+  // „Link erneut senden": offenes Eingabefeld (`gameId:party`), eingegebene
+  // Adresse und laufender Versand.
+  protestResendKey: string | null = null;
+  protestResendEmail = '';
+  protestResending = false;
+
+  openProtestResend(row: GameDayReportRow, protest: GameReportProtest): void {
+    this.protestResendKey = `${row.id}:${protest.party}`;
+    this.protestResendEmail = '';
+    this._cdr.markForCheck();
+  }
+
+  cancelProtestResend(): void {
+    this.protestResendKey = null;
+    this._cdr.markForCheck();
+  }
+
+  // Ohne Adresse geht der Link an die hinterlegten Adressen der Partei. Eine
+  // Absage (ungültige oder fehlende Adresse) zeigt der Interceptor an, das
+  // Eingabefeld bleibt dann offen.
+  resendProtestLink(row: GameDayReportRow, protest: GameReportProtest): void {
+    if (this.protestResending) return;
+    this.protestResending = true;
+    this._gameService
+      .resendProtestLink(
+        row.id,
+        protest.party,
+        this.protestResendEmail.trim() || undefined
+      )
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          row.protests = (row.protests ?? []).map((p) =>
+            p.party === updated.party ? updated : p
+          );
+          this.protestResending = false;
+          this.protestResendKey = null;
+          this._notificationService.success(
+            this._transloco.translate('matchReportAdmin.protests.resent')
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.protestResending = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
   // Protestformular einer Partei, wie der Papierbogen erst beim Klick geholt.
   openProtest(row: GameDayReportRow, protest: GameReportProtest): void {
     if (this.protestLoadingKey !== null) return;

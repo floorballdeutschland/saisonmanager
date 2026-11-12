@@ -32,6 +32,7 @@ import {
   AwardPlayer,
   RefereeReportStatus,
   ProtestUpload,
+  GameReportProtest,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -692,6 +693,20 @@ export class GameService {
     return this.http.post<ProtestUpload>(
       environment.apiURL + 'protests/' + encodeURIComponent(token),
       formData
+    );
+  }
+
+  // Neuer Upload-Link für eine Protestpartei, optional an eine andere Adresse.
+  // Der alte Link wird ungültig.
+  public resendProtestLink(gameId: number, party: string, email?: string) {
+    return this.http.post<GameReportProtest>(
+      environment.apiURL +
+        'admin/games/' +
+        gameId +
+        '/protests/' +
+        encodeURIComponent(party) +
+        '/resend',
+      email ? { email } : {}
     );
   }
 

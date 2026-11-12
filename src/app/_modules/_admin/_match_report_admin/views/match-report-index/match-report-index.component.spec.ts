@@ -470,6 +470,76 @@ describe('MatchReportIndexComponent', () => {
     expect(component.protestLoadingKey).toBeNull();
   });
 
+  describe('Protest-Link erneut senden', () => {
+    const referees = {
+      party: 'referees',
+      label: 'Schiedsrichter*innen',
+      selected: true,
+      manual: false,
+      invited_at: '2026-11-08T20:00:00Z',
+      recipient_count: 0,
+      submitted_at: null,
+      filename: null,
+    };
+
+    it('schickt die eingegebene Adresse und übernimmt den neuen Stand', () => {
+      const r = row({ id: 42, protests: [referees] });
+      const success = spyOn(TestBed.inject(NotificationService), 'success');
+
+      component.openProtestResend(r, referees);
+      expect(component.protestResendKey).toBe('42:referees');
+      component.protestResendEmail = ' schiri@example.de ';
+      component.resendProtestLink(r, referees);
+
+      const req = httpMock.expectOne(
+        environment.apiURL + 'admin/games/42/protests/referees/resend'
+      );
+      expect(req.request.body).toEqual({ email: 'schiri@example.de' });
+      req.flush({
+        ...referees,
+        recipient_count: 1,
+        invited_at: '2026-11-12T09:00:00Z',
+      });
+
+      expect(r.protests?.[0].recipient_count).toBe(1);
+      expect(component.protestResendKey).toBeNull();
+      expect(success).toHaveBeenCalled();
+    });
+
+    it('schickt ohne Eingabe keinen Adresswert mit', () => {
+      const r = row({ id: 42, protests: [referees] });
+
+      component.openProtestResend(r, referees);
+      component.resendProtestLink(r, referees);
+
+      const req = httpMock.expectOne(
+        environment.apiURL + 'admin/games/42/protests/referees/resend'
+      );
+      expect(req.request.body).toEqual({});
+      req.flush(referees);
+    });
+
+    it('lässt das Feld bei einer Absage offen', () => {
+      const r = row({ id: 42, protests: [referees] });
+
+      component.openProtestResend(r, referees);
+      component.protestResendEmail = 'kaputt';
+      component.resendProtestLink(r, referees);
+      httpMock
+        .expectOne(
+          environment.apiURL + 'admin/games/42/protests/referees/resend'
+        )
+        .flush(
+          { message: 'Bitte gib eine gültige E-Mail-Adresse an.' },
+          { status: 422, statusText: 'Unprocessable' }
+        );
+
+      expect(component.protestResendKey).toBe('42:referees');
+      expect(component.protestResending).toBeFalse();
+      expect(r.protests?.[0].recipient_count).toBe(0);
+    });
+  });
+
   it('schließt den Tab und meldet, wenn das Protestformular fehlt', () => {
     const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
     spyOn(window, 'open').and.returnValue(tab as unknown as Window);
@@ -1074,6 +1144,12 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
       element.querySelector(`[data-protest="${party}"]`) as HTMLElement;
     expect(item('guest').querySelector('button')).not.toBeNull();
     expect(item('referees').querySelector('.text-red-600')).not.toBeNull();
+    expect(
+      item('referees').querySelector('[data-testid="protest-resend"]')
+    ).not.toBeNull();
+    expect(
+      item('guest').querySelector('[data-testid="protest-resend"]')
+    ).toBeNull();
     expect(item('other').textContent).toContain('Andere');
     expect(item('other').querySelector('button')).toBeNull();
   });
