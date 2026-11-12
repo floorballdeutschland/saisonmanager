@@ -120,7 +120,8 @@
     "scanMissing": "Zu diesem Spiel liegt kein Papierspielberichtsbogen vor.",
     "scanError": "Der Papierspielberichtsbogen konnte nicht geöffnet werden.",
     "reviewed": "Der Spielbericht ist als erledigt markiert.",
-    "reviewCleared": "Der Erledigt-Vermerk wurde zurückgenommen."
+    "reviewCleared": "Der Erledigt-Vermerk wurde zurückgenommen.",
+    "protestError": "Das Protestformular konnte nicht geöffnet werden."
   },
   "review": {
     "button": "Als erledigt markieren",
@@ -138,5 +139,19 @@
     "reopenTitle": "Erledigt-Vermerk zurücknehmen",
     "reopenContent": "Soll der Vermerk zurückgenommen werden? Der Kommentar geht dabei verloren.",
     "reopenSubmit": "Zurücknehmen"
+  },
+  "protests": {
+    "manual": "manuell (Andere)",
+    "submitted": "Formular vom {{date}} öffnen",
+    "invited": "Link am {{date}} verschickt, noch kein Formular",
+    "noAddress": "keine Adresse hinterlegt, Link nicht zugestellt",
+    "pending": "Link geht beim Abschluss raus",
+    "noParty": "keine Protestpartei ausgewählt",
+    "resend": "Link erneut senden",
+    "resendPlaceholder": "andere Adresse (optional)",
+    "resendSubmit": "Senden",
+    "resendCancel": "Abbrechen",
+    "resent": "Neuer Upload-Link verschickt. Der alte Link gilt nicht mehr.",
+    "notSent": "kein Link verschickt"
   }
 }

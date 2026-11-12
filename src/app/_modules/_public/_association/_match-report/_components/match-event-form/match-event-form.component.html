@@ -26,6 +26,32 @@
         <label for="protest" class="font-medium text-base text-fb-gray-500"
           >Protest</label
         >
+        @if (protest && protestPartyOptions.length) {
+          <fieldset class="mt-2 ml-7" data-testid="protest-parties">
+            <legend class="text-sm text-fb-gray-500 mb-1">
+              Wer hat Protest eingelegt? (Pflichtfeld, Mehrfachauswahl)
+            </legend>
+            @for (option of protestPartyOptions; track option.key) {
+              <label class="flex items-center gap-2 text-sm py-0.5">
+                <input
+                  type="checkbox"
+                  [attr.data-party]="option.key"
+                  [checked]="protestParties.includes(option.key)"
+                  [disabled]="protestPartiesSaving"
+                  (change)="toggleProtestParty(option.key)"
+                />
+                {{ option.label }}
+              </label>
+            }
+            <p class="text-xs text-fb-gray-400 mt-1">
+              Beim Abschluss des Spielberichts bekommt jede ausgewählte Partei
+              außer „Andere“ eine E-Mail mit einem Link, über den sie das
+              Protestformular hochlädt; die SBK kann den Link später erneut
+              senden. Es geht dann direkt an die SBK. Bei „Andere“ läuft der
+              Vorgang wie bisher außerhalb des Saisonmanagers.
+            </p>
+          </fieldset>
+        }
       </div>
     }
     @if (type === "specialevent") {

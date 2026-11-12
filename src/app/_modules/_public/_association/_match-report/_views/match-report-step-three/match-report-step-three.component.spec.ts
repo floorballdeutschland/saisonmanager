@@ -186,7 +186,8 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
   function render(
     missing: string[],
     canOverride = false,
-    specialEvent?: string
+    specialEvent?: string,
+    protest?: { parties: string[] }
   ): void {
     fixture = TestBed.createComponent(MatchReportStepThreeComponent);
     fixture.componentRef.setInput('game', {
@@ -198,6 +199,12 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
       missing_signatures: missing,
       special_event: specialEvent !== undefined,
       special_event_string: specialEvent ?? '',
+      protest: !!protest,
+      protest_parties: protest?.parties ?? [],
+      protest_party_options: [
+        { key: 'guest', label: 'Gastteam' },
+        { key: 'other', label: 'Andere' },
+      ],
     } as unknown as GameAdditionalFields);
     fixture.componentRef.setInput('nextStatusOption', {
       key: 'match_record_closed',
@@ -335,5 +342,44 @@ describe('MatchReportStepThreeComponent: Template der Unterschriften', () => {
     expect(text).toContain('angehakt, aber noch nicht beschrieben');
     expect(text).toContain('mindestens 50 Zeichen');
     expect(text).not.toContain('zu kurz');
+  });
+  it('sperrt den Abschluss für den Verein bei Protest ohne Partei', () => {
+    render([], false, undefined, { parties: [] });
+
+    expect(
+      fixture.debugElement.query(
+        By.css('[data-testid="protest-parties-missing"]')
+      ).nativeElement.textContent
+    ).toContain('keine Protestpartei ausgewählt');
+    expect(fixture.debugElement.query(By.css('fb-confirmation'))).toBeNull();
+    expect(closeButtons()[0].properties['disabled']).toBeTrue();
+  });
+
+  it('schließt mit gewählter Partei normal ab', () => {
+    render([], false, undefined, { parties: ['other'] });
+
+    expect(
+      fixture.debugElement.query(
+        By.css('[data-testid="protest-parties-missing"]')
+      )
+    ).toBeNull();
+    expect(closeButtons()[0].properties['disabled']).toBeFalsy();
+  });
+
+  it('warnt die SBK bei Protest ohne Partei, statt zu sperren', () => {
+    render([], true, undefined, { parties: [] });
+
+    expect(
+      fixture.debugElement.query(
+        By.css('[data-testid="protest-parties-missing-sbk"]')
+      )
+    ).not.toBeNull();
+    const confirmation = fixture.debugElement.query(By.css('fb-confirmation'));
+    expect(confirmation.properties['content']).toContain(
+      'keine Protestpartei ausgewählt'
+    );
+    expect(closeButtons()[0].nativeElement.textContent).toContain(
+      'Spiel trotzdem abschließen'
+    );
   });
 });

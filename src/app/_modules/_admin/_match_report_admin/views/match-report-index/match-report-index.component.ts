@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { Observable, Subject, finalize, takeUntil } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   GameOperationService,
@@ -18,6 +18,7 @@ import {
   ChecklistObjection,
   GameDayReportOverview,
   GameDayReportRow,
+  GameReportProtest,
   GameOperation,
   GameReportReview,
   GameReportStatus,
@@ -126,6 +127,8 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   reviewSavingGameId: number | null = null;
   readonly reviewCommentMaxLength = 2000;
   scanLoadingGameId: number | null = null;
+  // Protest, dessen Formular gerade geholt wird (`gameId:party`).
+  protestLoadingKey: string | null = null;
 
   readonly pageSize = 25;
   currentPage = 1;
@@ -475,11 +478,104 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
 
   // --- Aktionen -------------------------------------------------------------
 
+  // „Link erneut senden": offenes Eingabefeld (`gameId:party`), eingegebene
+  // Adresse und laufender Versand.
+  protestResendKey: string | null = null;
+  protestResendEmail = '';
+  protestResending = false;
+
+  isReportClosed(row: GameDayReportRow): boolean {
+    return (
+      row.game_status === 'match_record_closed' ||
+      row.game_status === 'finalized'
+    );
+  }
+
+  // Neu senden geht für jede noch gewählte Partei mit Link, außer „Andere"
+  // und nach dem Upload. Ohne Link nur bei abgeschlossenem Bericht: Dann ist
+  // der Versand beim Abschluss gescheitert, und der Knopf legt ihn an.
+  canResendProtest(row: GameDayReportRow, protest: GameReportProtest): boolean {
+    if (protest.manual || protest.submitted_at || !protest.selected) {
+      return false;
+    }
+    return !!protest.invited_at || this.isReportClosed(row);
+  }
+
+  openProtestResend(row: GameDayReportRow, protest: GameReportProtest): void {
+    this.protestResendKey = `${row.id}:${protest.party}`;
+    this.protestResendEmail = '';
+    this._cdr.markForCheck();
+  }
+
+  cancelProtestResend(): void {
+    this.protestResendKey = null;
+    this._cdr.markForCheck();
+  }
+
+  // Ohne Adresse geht der Link an die hinterlegten Adressen der Partei. Eine
+  // Absage (ungültige oder fehlende Adresse) zeigt der Interceptor an, das
+  // Eingabefeld bleibt dann offen.
+  resendProtestLink(row: GameDayReportRow, protest: GameReportProtest): void {
+    if (this.protestResending) return;
+    this.protestResending = true;
+    this._gameService
+      .resendProtestLink(
+        row.id,
+        protest.party,
+        this.protestResendEmail.trim() || undefined
+      )
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (updated) => {
+          row.protests = (row.protests ?? []).map((p) =>
+            p.party === updated.party ? updated : p
+          );
+          this.protestResending = false;
+          this.protestResendKey = null;
+          this._notificationService.success(
+            this._transloco.translate('matchReportAdmin.protests.resent')
+          );
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.protestResending = false;
+          this._cdr.markForCheck();
+        },
+      });
+  }
+
+  // Protestformular einer Partei, wie der Papierbogen erst beim Klick geholt.
+  openProtest(row: GameDayReportRow, protest: GameReportProtest): void {
+    if (this.protestLoadingKey !== null) return;
+    this.protestLoadingKey = `${row.id}:${protest.party}`;
+    this._openInTab(
+      this._gameService.getProtestFile(row.id, protest.party),
+      () => (this.protestLoadingKey = null),
+      'matchReportAdmin.notifications.protestError'
+    );
+  }
+
   // Der Papierbogen-Link wird erst beim Klick geholt: Die Übersicht liefert nur
   // die Metadaten, damit nicht für jede Zeile eine signierte Blob-URL entsteht.
   openScan(row: GameDayReportRow): void {
     if (this.scanLoadingGameId !== null) return;
     this.scanLoadingGameId = row.id;
+    this._openInTab(
+      this._gameService.getGameScan(row.id),
+      () => (this.scanLoadingGameId = null),
+      'matchReportAdmin.notifications.scanError',
+      'matchReportAdmin.notifications.scanMissing'
+    );
+  }
+
+  // Öffnet die signierte Adresse eines Dokuments in einer neuen Registerkarte.
+  // `done` setzt den Ladezustand zurück, auf jedem Weg.
+  private _openInTab(
+    request$: Observable<{ url?: string | null } | null>,
+    done: () => void,
+    errorKey: string,
+    missingKey: string = errorKey
+  ): void {
     // Das Fenster muss synchron im Klick-Handler geöffnet werden. Erst im
     // HTTP-Callback zu öffnen, kostet die Nutzerinteraktion – der Popup-Blocker
     // schluckt den Aufruf dann kommentarlos, und der Knopf tut scheinbar nichts.
@@ -503,8 +599,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     // zusätzlich den Fall ab, dass jemand später einen weiteren Ausstieg
     // einbaut und den Aufräumschritt vergisst.
     let tabHandedOver = false;
-    this._gameService
-      .getGameScan(row.id)
+    request$
       .pipe(
         takeUntil(this._destroy$),
         finalize(() => {
@@ -512,33 +607,27 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe({
-        next: (scan) => {
-          this.scanLoadingGameId = null;
-          if (scan?.url) {
+        next: (doc) => {
+          done();
+          if (doc?.url) {
             if (tab) {
               tabHandedOver = true;
-              tab.location.href = scan.url;
+              tab.location.href = doc.url;
             } else {
               // Popup-Blocker war schneller: im selben Tab öffnen.
-              window.location.href = scan.url;
+              window.location.href = doc.url;
             }
           } else {
             // Schliessen uebernimmt finalize oben, auf allen Wegen gleich.
             this._notificationService.error(
-              this._transloco.translate(
-                'matchReportAdmin.notifications.scanMissing'
-              )
+              this._transloco.translate(missingKey)
             );
           }
           this._cdr.markForCheck();
         },
         error: () => {
-          this.scanLoadingGameId = null;
-          this._notificationService.error(
-            this._transloco.translate(
-              'matchReportAdmin.notifications.scanError'
-            )
-          );
+          done();
+          this._notificationService.error(this._transloco.translate(errorKey));
           this._cdr.markForCheck();
         },
       });

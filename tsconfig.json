@@ -79,6 +79,9 @@
       "@floorball/public/checklist-veto": [
         "src/app/_modules/_public/_checklist-veto"
       ],
+      "@floorball/public/protest-upload": [
+        "src/app/_modules/_public/_protest-upload"
+      ],
       "@floorball/public/transfer-confirmation": [
         "src/app/_modules/_public/_transfer-confirmation"
       ],

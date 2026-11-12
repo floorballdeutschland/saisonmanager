@@ -28,6 +28,7 @@ import {
   PenaltyCode,
   PeriodTitles,
   RefereeEntry,
+  ProtestPartyOption,
 } from '@floorball/types';
 import {
   formatSecondsAsGameTime,
@@ -151,6 +152,48 @@ export class MatchEventFormComponent
   timekeeperLastname?: string;
   selectedReferee1: RefereeEntry | null = null;
   selectedReferee2: RefereeEntry | null = null;
+
+  // Protestparteien (Mehrfachauswahl unter dem Haken „Protest").
+  protestParties: string[] = [];
+  protestPartiesSaving = false;
+
+  get protestPartyOptions(): ProtestPartyOption[] {
+    return this.additionalFields?.protest_party_options ?? [];
+  }
+
+  // Gespeichert wird je Klick die ganze Auswahl. Scheitert das Speichern,
+  // springt die Auswahl zurück; die Begründung zeigt der Interceptor.
+  public toggleProtestParty(key: string): void {
+    const before = this.protestParties;
+    const order = this.protestPartyOptions.map((option) => option.key);
+    const next = before.includes(key)
+      ? before.filter((party) => party !== key)
+      : [...before, key];
+    this.protestParties = order.filter((party) => next.includes(party));
+    this.protestPartiesSaving = true;
+    this._gameService
+      .setGameFlags(this.match.id, {
+        protest: true,
+        protest_parties: this.protestParties,
+      })
+      .subscribe({
+        next: () => {
+          this.protestPartiesSaving = false;
+          this._notificationService.success('Protestparteien gespeichert', {
+            autoClose: true,
+            keepAfterRouteChange: true,
+          });
+          this._cdr.markForCheck();
+          this.updateGame.emit();
+        },
+        error: (err) => {
+          this.protestParties = before;
+          this.protestPartiesSaving = false;
+          this._cdr.markForCheck();
+          this._errorHandler.handleError(err);
+        },
+      });
+  }
 
   // Der Stand vor der laufenden Auswahl, siehe _revertRefereeSelection.
   private _refereeBeforeEdit: RefereeEntry | null = null;
@@ -410,6 +453,9 @@ export class MatchEventFormComponent
           break;
         case 'protest':
           this.protest = this.fieldChecked;
+          this.protestParties = [
+            ...(this.additionalFields?.protest_parties ?? []),
+          ];
           break;
         case 'overtime':
           this.overtime = this.fieldChecked;
@@ -1149,6 +1195,8 @@ export class MatchEventFormComponent
       case 'protest':
         flags = { protest: this.protest };
         saveMessage = 'Protest gespeichert';
+        // Ohne Protest leert die API die Parteien, hier ebenso.
+        if (!this.protest) this.protestParties = [];
         break;
       case 'specialevent':
         flags = { special_event: this.specialevent };

@@ -31,6 +31,8 @@ import {
   AwardDefinitions,
   AwardPlayer,
   RefereeReportStatus,
+  ProtestUpload,
+  GameReportProtest,
 } from '@floorball/types';
 import { environment } from 'src/environments/environment';
 
@@ -674,6 +676,49 @@ export class GameService {
     return this.http.post<{ success: boolean; filename: string }>(
       environment.apiURL + 'games/' + gameId + '/referee_report',
       formData
+    );
+  }
+
+  // Upload des Protestformulars über den Link an eine Protestpartei. Der Token
+  // ist die einzige Berechtigung, ein Konto gibt es dazu nicht.
+  public getProtest(token: string) {
+    return this.http.get<ProtestUpload>(
+      environment.apiURL + 'protests/' + encodeURIComponent(token)
+    );
+  }
+
+  public uploadProtest(token: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ProtestUpload>(
+      environment.apiURL + 'protests/' + encodeURIComponent(token),
+      formData
+    );
+  }
+
+  // Neuer Upload-Link für eine Protestpartei, optional an eine andere Adresse.
+  // Der alte Link wird ungültig.
+  public resendProtestLink(gameId: number, party: string, email?: string) {
+    return this.http.post<GameReportProtest>(
+      environment.apiURL +
+        'admin/games/' +
+        gameId +
+        '/protests/' +
+        encodeURIComponent(party) +
+        '/resend',
+      email ? { email } : {}
+    );
+  }
+
+  // Signierte Adresse eines Protestformulars für die SBK-Übersicht.
+  public getProtestFile(gameId: number, party: string) {
+    return this.http.get<{ url: string; filename: string }>(
+      environment.apiURL +
+        'admin/games/' +
+        gameId +
+        '/protests/' +
+        encodeURIComponent(party) +
+        '/file'
     );
   }
 }
