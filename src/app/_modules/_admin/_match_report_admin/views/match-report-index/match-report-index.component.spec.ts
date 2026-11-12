@@ -1,4 +1,7 @@
-import { getTranslocoTestingModule } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+} from '@floorball/core';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
@@ -437,6 +440,58 @@ describe('MatchReportIndexComponent', () => {
     expect(target.game_status).toBe('finalized');
     expect(component.groups[0].closedCount).toBe(1);
     expect(component.finalizingGameId).toBeNull();
+  });
+
+  it('öffnet das Protestformular einer Partei im neuen Tab', () => {
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+    const protest = {
+      party: 'guest',
+      label: 'Gastteam',
+      selected: true,
+      manual: false,
+      invited_at: '2026-11-08T20:00:00Z',
+      recipient_count: 1,
+      submitted_at: '2026-11-09T10:00:00Z',
+      filename: 'protest.pdf',
+    };
+
+    component.openProtest(row({ id: 42 }), protest);
+    expect(component.protestLoadingKey).toBe('42:guest');
+
+    httpMock
+      .expectOne(environment.apiURL + 'admin/games/42/protests/guest/file')
+      .flush({
+        url: 'https://example.test/protest.pdf',
+        filename: 'protest.pdf',
+      });
+
+    expect(tab.location.href).toBe('https://example.test/protest.pdf');
+    expect(component.protestLoadingKey).toBeNull();
+  });
+
+  it('schließt den Tab und meldet, wenn das Protestformular fehlt', () => {
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+    const error = spyOn(TestBed.inject(NotificationService), 'error');
+
+    component.openProtest(row({ id: 42 }), {
+      party: 'guest',
+      label: 'Gastteam',
+      selected: true,
+      manual: false,
+      invited_at: null,
+      recipient_count: 1,
+      submitted_at: '2026-11-09T10:00:00Z',
+      filename: 'protest.pdf',
+    });
+    httpMock
+      .expectOne(environment.apiURL + 'admin/games/42/protests/guest/file')
+      .flush({ message: 'fehlt' }, { status: 404, statusText: 'Not Found' });
+
+    expect(tab.close).toHaveBeenCalled();
+    expect(error).toHaveBeenCalled();
+    expect(component.protestLoadingKey).toBeNull();
   });
 
   it('öffnet den Tab synchron und füllt die Scan-URL nach', () => {
@@ -974,6 +1029,62 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
       )
     );
   }
+
+  it('zeigt je Protestpartei den Stand', () => {
+    const base = row();
+    show(
+      row({
+        flags: { ...base.flags, protest: true },
+        protests: [
+          {
+            party: 'guest',
+            label: 'Gastteam (Gast)',
+            selected: true,
+            manual: false,
+            invited_at: '2026-11-08T20:00:00Z',
+            recipient_count: 1,
+            submitted_at: '2026-11-09T10:00:00Z',
+            filename: 'protest.pdf',
+          },
+          {
+            party: 'referees',
+            label: 'Schiedsrichter*innen',
+            selected: true,
+            manual: false,
+            invited_at: '2026-11-08T20:00:00Z',
+            recipient_count: 0,
+            submitted_at: null,
+            filename: null,
+          },
+          {
+            party: 'other',
+            label: 'Andere',
+            selected: true,
+            manual: true,
+            invited_at: null,
+            recipient_count: null,
+            submitted_at: null,
+            filename: null,
+          },
+        ],
+      })
+    );
+
+    const item = (party: string) =>
+      element.querySelector(`[data-protest="${party}"]`) as HTMLElement;
+    expect(item('guest').querySelector('button')).not.toBeNull();
+    expect(item('referees').querySelector('.text-red-600')).not.toBeNull();
+    expect(item('other').textContent).toContain('Andere');
+    expect(item('other').querySelector('button')).toBeNull();
+  });
+
+  it('vermerkt einen Protest ohne Partei', () => {
+    const base = row();
+    show(row({ flags: { ...base.flags, protest: true }, protests: [] }));
+
+    const item = element.querySelector('[data-testid="flag-protest"]');
+    expect(item?.querySelector('.text-red-600')).not.toBeNull();
+  });
 
   it('verlinkt den Uploader des Papierbogens per Mail', () => {
     show(

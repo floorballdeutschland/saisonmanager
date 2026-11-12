@@ -28,6 +28,10 @@ import {
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
 import { missingSignatureLabels } from 'src/app/_helpers/_utils/missing-signatures';
+import {
+  PROTEST_PARTIES_MISSING_MESSAGE,
+  protestPartiesMissing,
+} from 'src/app/_helpers/_utils/protest-parties';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import {
   checkPdfUpload,
@@ -340,20 +344,40 @@ export class MatchReportComponent implements OnInit, OnChanges {
     confirmationContent?: string;
   }): string {
     const missing = missingSignatureLabels(this.additionalFields);
-    if (option.key !== this.MATCH_RECORD_CLOSED || missing.length === 0) {
+    const noParty = protestPartiesMissing(this.additionalFields);
+    if (
+      option.key !== this.MATCH_RECORD_CLOSED ||
+      (missing.length === 0 && !noParty)
+    ) {
       return option.confirmationContent ?? '';
     }
     if (this.canCheckGame()) {
+      const problems: string[] = [];
+      if (missing.length > 0) {
+        problems.push(
+          `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
+            'Die Haken bleiben dabei leer.'
+        );
+      }
+      if (noParty) {
+        problems.push(
+          'Beim Protest ist keine Protestpartei ausgewählt, es geht also kein Upload-Link raus.'
+        );
+      }
       return (
-        `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
-        'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
-        'dabei leer. Möchtest du wirklich fortfahren?'
+        `${problems.join(' ')} Als SBK kannst du den Bericht trotzdem ` +
+        'abschließen. Möchtest du wirklich fortfahren?'
       );
     }
-    return (
-      `Es fehlen noch Unterschriften: ${missing.join(', ')}. Hake sie unter ` +
-      '„Spiel nachbereiten“ ab, erst dann kann der Spielbericht abgeschlossen werden.'
-    );
+    const problems: string[] = [];
+    if (missing.length > 0) {
+      problems.push(
+        `Es fehlen noch Unterschriften: ${missing.join(', ')}. Hake sie unter ` +
+          '„Spiel nachbereiten“ ab.'
+      );
+    }
+    if (noParty) problems.push(PROTEST_PARTIES_MISSING_MESSAGE);
+    return `${problems.join(' ')} Erst dann kann der Spielbericht abgeschlossen werden.`;
   }
 
   private _advancesTo(newStatus: string): boolean {
@@ -374,6 +398,13 @@ export class MatchReportComponent implements OnInit, OnChanges {
         `Es fehlen noch Unterschriften: ${missing.join(', ')}. ` +
           'Erst wenn alle Unterschriften abgehakt sind, kann der Spielbericht abgeschlossen werden.'
       );
+      this.appGameStatus = this.AFTERGAME;
+      this._cdr.markForCheck();
+      return;
+    }
+    // Ebenso ein Protest ohne gewählte Partei.
+    if (protestPartiesMissing(this.additionalFields) && !this.canCheckGame()) {
+      this._notificationService.error(PROTEST_PARTIES_MISSING_MESSAGE);
       this.appGameStatus = this.AFTERGAME;
       this._cdr.markForCheck();
       return;

@@ -19,6 +19,10 @@ import {
   missingSignatureLabels,
   missingSignatures,
 } from 'src/app/_helpers/_utils/missing-signatures';
+import {
+  PROTEST_PARTIES_MISSING_MESSAGE,
+  protestPartiesMissing,
+} from 'src/app/_helpers/_utils/protest-parties';
 
 @Component({
   selector: 'fb-match-report-step-three',
@@ -95,7 +99,7 @@ export class MatchReportStepThreeComponent {
   }
 
   handleFinalize() {
-    if (!this.signaturesComplete && !this.canOverrideSignatures) return;
+    if (!this.canCloseWithoutOverride && !this.canOverrideSignatures) return;
     this.closeMatchRecord.emit();
   }
 
@@ -117,11 +121,35 @@ export class MatchReportStepThreeComponent {
     return missingSignatureLabels(this.additionalFields);
   }
 
+  // Protest ohne gewählte Partei: Die API lehnt den Abschluss für den Verein
+  // ab, die SBK wird nur gewarnt.
+  public readonly protestPartiesMissingMessage =
+    PROTEST_PARTIES_MISSING_MESSAGE;
+
+  public get protestPartiesMissing(): boolean {
+    return protestPartiesMissing(this.additionalFields);
+  }
+
+  public get canCloseWithoutOverride(): boolean {
+    return this.signaturesComplete && !this.protestPartiesMissing;
+  }
+
   public get overrideConfirmationContent(): string {
+    const problems: string[] = [];
+    if (!this.signaturesComplete) {
+      problems.push(
+        `Auf dem Spielbericht fehlen Unterschriften: ${this.missingSignatureLabels.join(', ')}. ` +
+          'Die Haken bleiben dabei leer.'
+      );
+    }
+    if (this.protestPartiesMissing) {
+      problems.push(
+        'Beim Protest ist keine Protestpartei ausgewählt, es geht also kein Upload-Link raus.'
+      );
+    }
     return (
-      `Auf dem Spielbericht fehlen Unterschriften: ${this.missingSignatureLabels.join(', ')}. ` +
-      'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
-      'dabei leer. Möchtest du wirklich fortfahren?'
+      `${problems.join(' ')} Als SBK kannst du den Bericht trotzdem ` +
+      'abschließen. Möchtest du wirklich fortfahren?'
     );
   }
 

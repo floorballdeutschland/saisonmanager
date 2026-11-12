@@ -110,6 +110,27 @@ describe('ErrorInterceptor', () => {
     );
   });
 
+  // Die Upload-Seite für das Protestformular zeigt Fehler selbst an.
+  it('leaves the protest upload page alone', () => {
+    failWith(
+      { message: 'Nur PDF-Dateien bis 5 MB sind zulässig.' },
+      422,
+      `${environment.apiURL}protests/abc`
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('still reports errors when the SBK opens a protest form', () => {
+    failWith(
+      { message: 'Zu diesem Protest liegt kein Formular vor.' },
+      422,
+      `${environment.apiURL}admin/games/1/protests/guest/file`
+    );
+
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
   it('reads the error key as well, not only message', () => {
     failWith({ error: 'Kein Bild angefügt' }, 422);
 

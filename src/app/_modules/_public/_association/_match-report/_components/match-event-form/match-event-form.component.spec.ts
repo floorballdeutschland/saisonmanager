@@ -1296,3 +1296,115 @@ describe('MatchEventFormComponent startOrEndGame', () => {
     expect(errorToast).not.toHaveBeenCalled();
   });
 });
+
+describe('MatchEventFormComponent: Protestparteien', () => {
+  let fixture: ComponentFixture<MatchEventFormComponent>;
+  let component: MatchEventFormComponent;
+  let gameService: GameService;
+
+  function create(protest: boolean, parties: string[] = []) {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, FormsModule],
+      declarations: [MatchEventFormComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    });
+    fixture = TestBed.createComponent(MatchEventFormComponent);
+    component = fixture.componentInstance;
+    component.type = 'protest';
+    component.team = 'both';
+    component.fieldChecked = protest;
+    component.match = { id: 7, league_id: 1 } as unknown as Game;
+    component.additionalFields = {
+      protest,
+      protest_parties: parties,
+      protest_party_options: [
+        { key: 'host', label: 'Ausrichter (Hallenverein)' },
+        { key: 'home', label: 'Heimteam (Heim)' },
+        { key: 'guest', label: 'Gastteam (Gast)' },
+        { key: 'referees', label: 'Schiedsrichter*innen' },
+        { key: 'other', label: 'Andere' },
+      ],
+    } as unknown as GameAdditionalFields;
+    gameService = TestBed.inject(GameService);
+    fixture.detectChanges();
+  }
+
+  function boxes(): HTMLInputElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('[data-party]')
+    ) as HTMLInputElement[];
+  }
+
+  it('zeigt die Parteien erst mit dem Protest-Haken', fakeAsync(() => {
+    create(false);
+    spyOn(gameService, 'setGameFlags').and.returnValue(of({} as Game));
+    tick();
+    expect(boxes().length).toBe(0);
+
+    (
+      fixture.nativeElement.querySelector('#protest') as HTMLInputElement
+    ).click();
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(boxes().map((b) => b.getAttribute('data-party'))).toEqual([
+      'host',
+      'home',
+      'guest',
+      'referees',
+      'other',
+    ]);
+    expect(fixture.nativeElement.textContent).toContain('Schiedsrichter*innen');
+  }));
+
+  it('übernimmt die gespeicherte Auswahl', () => {
+    create(true, ['guest', 'other']);
+
+    expect(
+      boxes()
+        .filter((b) => b.checked)
+        .map((b) => b.dataset['party'])
+    ).toEqual(['guest', 'other']);
+  });
+
+  it('speichert die ganze Auswahl in der Reihenfolge der Maske', () => {
+    create(true, ['referees']);
+    const save = spyOn(gameService, 'setGameFlags').and.returnValue(
+      of({} as Game)
+    );
+
+    component.toggleProtestParty('guest');
+
+    expect(save).toHaveBeenCalledWith(7, {
+      protest: true,
+      protest_parties: ['guest', 'referees'],
+    });
+
+    component.toggleProtestParty('referees');
+    expect(component.protestParties).toEqual(['guest']);
+  });
+
+  it('nimmt die Auswahl zurück, wenn das Speichern scheitert', () => {
+    create(true, ['guest']);
+    spyOn(gameService, 'setGameFlags').and.returnValue(
+      throwError(() => new Error('offline'))
+    );
+    spyOn(TestBed.inject(ErrorHandler), 'handleError');
+
+    component.toggleProtestParty('other');
+
+    expect(component.protestParties).toEqual(['guest']);
+    expect(component.protestPartiesSaving).toBeFalse();
+  });
+
+  it('leert die Auswahl, wenn der Protest-Haken entfernt wird', () => {
+    create(true, ['guest']);
+    spyOn(gameService, 'setGameFlags').and.returnValue(of({} as Game));
+
+    component.protest = false;
+    component.submitFlag();
+
+    expect(component.protestParties).toEqual([]);
+  });
+});

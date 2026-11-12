@@ -1,0 +1,84 @@
+<div class="p-4 lg:p-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold mb-2">Protestformular hochladen</h1>
+
+  @if (loading) {
+    <div class="text-fb-gray-500 text-sm py-4">Lade…</div>
+  }
+
+  @if (!loading && invalid) {
+    <p class="text-sm text-fb-gray-500 py-4" data-testid="protest-invalid">
+      Dieser Link ist ungültig. Bitte prüfe, ob du ihn vollständig aus der
+      E-Mail übernommen hast, oder wende dich an die zuständige
+      Spielbetriebskommission.
+    </p>
+  }
+
+  @if (!loading && !invalid && protest) {
+    <div class="border border-fb-gray-600 rounded-[5px] p-4 mb-6">
+      <div class="font-bold text-sm">
+        {{ protest.home_team }}
+        <span class="text-fb-gray-500 font-normal">gegen</span>
+        {{ protest.guest_team }}
+      </div>
+      <div class="text-xs text-fb-gray-500 mt-0.5">
+        {{ formatDate(protest.date) }}
+        @if (protest.game_number) {
+          <span> · Spiel {{ protest.game_number }}</span>
+        }
+        @if (protest.league) {
+          <span> · {{ protest.league }}</span>
+        }
+      </div>
+      <div class="text-sm mt-2">
+        Protestpartei: <strong>{{ protest.party_label }}</strong>
+      </div>
+    </div>
+
+    @if (protest.status === "submitted") {
+      <p
+        class="text-sm text-green-600 font-medium py-2"
+        data-testid="protest-submitted"
+      >
+        ✓ Das Protestformular ist eingegangen
+        @if (protest.submitted_at) {
+          ({{ formatDateTime(protest.submitted_at) }} Uhr)
+        }
+      </p>
+      <p class="text-sm text-fb-gray-500">
+        Es liegt im Saisonmanager und wurde an die zuständige SBK geschickt. Ein
+        separater Versand per E-Mail ist nicht nötig. Der Link ist damit
+        verbraucht.
+      </p>
+    } @else {
+      <p class="text-sm text-fb-gray-500 mb-4">
+        Lade hier das ausgefüllte und unterschriebene Protestformular als PDF
+        hoch (höchstens 5 MB). Es wird im Saisonmanager gespeichert und geht
+        direkt an die zuständige SBK.
+        <strong>Pro Link ist genau ein Upload möglich.</strong>
+      </p>
+
+      @if (errorMessage) {
+        <p class="text-sm text-red-600 mb-4" data-testid="protest-error">
+          {{ errorMessage }}
+        </p>
+      }
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <input
+          type="file"
+          accept="application/pdf,.pdf"
+          class="text-sm"
+          data-testid="protest-file"
+          [disabled]="uploading"
+          (change)="selectFile($event)"
+        />
+        <fb-button
+          [variant]="'success'"
+          [disabled]="!selectedFile || uploading"
+          (handleClick)="upload()"
+          >{{ uploading ? "Wird hochgeladen …" : "Hochladen" }}</fb-button
+        >
+      </div>
+    }
+  }
+</div>

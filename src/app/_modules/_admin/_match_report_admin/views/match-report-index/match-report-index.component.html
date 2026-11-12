@@ -518,8 +518,71 @@
               {{ "matchReportAdmin.index.flagsTitle" | transloco }}
             </div>
             <ul class="list-disc list-inside">
-              @if (row.flags.protest) {
-                <li>{{ "matchReportAdmin.flags.protest" | transloco }}</li>
+              @if (row.flags.protest || row.protests?.length) {
+                <li data-testid="flag-protest">
+                  {{ "matchReportAdmin.flags.protest" | transloco }}
+                  @if (row.protests?.length) {
+                    <ul class="ml-5 list-[circle]">
+                      @for (protest of row.protests; track protest.party) {
+                        <li [attr.data-protest]="protest.party">
+                          <span [class.line-through]="!protest.selected">{{
+                            protest.label
+                          }}</span
+                          >:
+                          @if (protest.manual) {
+                            <span class="text-fb-gray-500">{{
+                              "matchReportAdmin.protests.manual" | transloco
+                            }}</span>
+                          } @else if (protest.submitted_at) {
+                            <button
+                              type="button"
+                              class="underline font-bold"
+                              [disabled]="protestLoadingKey !== null"
+                              (click)="openProtest(row, protest)"
+                            >
+                              {{
+                                "matchReportAdmin.protests.submitted"
+                                  | transloco
+                                    : {
+                                        date:
+                                          (protest.submitted_at
+                                          | date: "dd.MM.yyyy, HH:mm"),
+                                      }
+                              }}
+                            </button>
+                          } @else if (protest.invited_at) {
+                            @if (protest.recipient_count === 0) {
+                              <span class="text-red-600">{{
+                                "matchReportAdmin.protests.noAddress"
+                                  | transloco
+                              }}</span>
+                            } @else {
+                              <span class="text-fb-gray-500">{{
+                                "matchReportAdmin.protests.invited"
+                                  | transloco
+                                    : {
+                                        date:
+                                          (protest.invited_at
+                                          | date: "dd.MM.yyyy"),
+                                      }
+                              }}</span>
+                            }
+                          } @else {
+                            <span class="text-fb-gray-500">{{
+                              "matchReportAdmin.protests.pending" | transloco
+                            }}</span>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <span class="text-red-600">
+                      ({{
+                        "matchReportAdmin.protests.noParty" | transloco
+                      }})</span
+                    >
+                  }
+                </li>
               }
               @if (row.flags.forfait) {
                 <li>{{ "matchReportAdmin.flags.forfait" | transloco }}</li>

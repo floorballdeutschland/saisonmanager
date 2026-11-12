@@ -460,6 +460,15 @@ export const routes: Routes = [
       ),
   },
   {
+    // Upload des Protestformulars über den Link aus der Mail an eine
+    // Protestpartei. Ohne Guard und ohne Vorabladen, wie der Einspruch oben.
+    path: '',
+    loadChildren: () =>
+      import('@floorball/public/protest-upload').then(
+        (m) => m.PublicProtestUploadModule
+      ),
+  },
+  {
     // YouTube-Thumbnails eines Spieltags, geöffnet aus dem OBS-Bedienfeld mit
     // dessen Overlay-Token (feedback#77). Ohne Guard und ohne Vorabladen: Die
     // Seite ruft nur auf, wer den Link hat.

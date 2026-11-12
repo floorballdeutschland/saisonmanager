@@ -168,6 +168,13 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Dasselbe für den Upload des Protestformulars (/protest/:token).
+        // Als Präfix, nicht als Teilstring: Der Abruf der Datei in der
+        // SBK-Übersicht (admin/games/:id/protests/…) soll weiter melden.
+        if (request.url.startsWith(environment.apiURL + 'protests/')) {
+          return throwError(() => err);
+        }
+
         // Dasselbe für die Einwilligung der Erziehungsberechtigten zu einer
         // Kursanmeldung (/kurs-einwilligung/:token): ohne Benutzerkonto, die
         // Seite zeigt einen ungültigen Link selbst an.

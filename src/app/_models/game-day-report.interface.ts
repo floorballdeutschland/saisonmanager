@@ -20,6 +20,21 @@ export interface GameReportScan {
   expired: boolean;
 }
 
+// Stand je Protestpartei (Admin::GameDaysController#protests_hash).
+export interface GameReportProtest {
+  party: string;
+  label: string;
+  // Noch gewählt? Ein abgewählter Protest mit Formular bleibt sichtbar.
+  selected: boolean;
+  // „Andere": kein Link, der Vorgang läuft manuell.
+  manual: boolean;
+  invited_at: string | null;
+  // 0 = keine Adresse gefunden, der Link wurde nicht zugestellt.
+  recipient_count: number | null;
+  submitted_at: string | null;
+  filename: string | null;
+}
+
 export interface GameReportFlags {
   protest: boolean;
   forfait: boolean;
@@ -64,6 +79,8 @@ export interface GameDayReportRow {
     uploaded_by_email: string | null;
   } | null;
   proceeding_proposal: { id: number; status: string } | null;
+  // Fehlt bei einer API vor der Protestparteien-Auswahl.
+  protests?: GameReportProtest[];
   checklist_negative_count: number;
   /**
    * Die verneinten Punkte des Spieltagsberichts, jeder mit seinem Fragetext.
