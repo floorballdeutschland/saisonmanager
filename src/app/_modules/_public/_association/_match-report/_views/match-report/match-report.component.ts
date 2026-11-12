@@ -28,6 +28,7 @@ import {
 } from '@floorball/core';
 import * as Sentry from '@sentry/angular';
 import { missingSignatureLabels } from 'src/app/_helpers/_utils/missing-signatures';
+import { specialEventDescriptionProblem } from 'src/app/_helpers/_utils/special-event-description';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import {
   checkPdfUpload,
@@ -340,20 +341,40 @@ export class MatchReportComponent implements OnInit, OnChanges {
     confirmationContent?: string;
   }): string {
     const missing = missingSignatureLabels(this.additionalFields);
-    if (option.key !== this.MATCH_RECORD_CLOSED || missing.length === 0) {
+    const specialEvent = specialEventDescriptionProblem(this.additionalFields);
+    if (
+      option.key !== this.MATCH_RECORD_CLOSED ||
+      (missing.length === 0 && !specialEvent)
+    ) {
       return option.confirmationContent ?? '';
     }
     if (this.canCheckGame()) {
+      const problems: string[] = [];
+      if (missing.length > 0) {
+        problems.push(
+          `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
+            'Die Haken bleiben dabei leer.'
+        );
+      }
+      if (specialEvent) {
+        problems.push(
+          'Das besondere Ereignis ist nicht mit mindestens 50 Zeichen beschrieben.'
+        );
+      }
       return (
-        `Auf dem Spielbericht fehlen Unterschriften: ${missing.join(', ')}. ` +
-        'Als SBK kannst du den Bericht trotzdem abschließen; die Haken bleiben ' +
-        'dabei leer. Möchtest du wirklich fortfahren?'
+        `${problems.join(' ')} Als SBK kannst du den Bericht trotzdem ` +
+        'abschließen. Möchtest du wirklich fortfahren?'
       );
     }
-    return (
-      `Es fehlen noch Unterschriften: ${missing.join(', ')}. Hake sie unter ` +
-      '„Spiel nachbereiten“ ab, erst dann kann der Spielbericht abgeschlossen werden.'
-    );
+    const problems: string[] = [];
+    if (missing.length > 0) {
+      problems.push(
+        `Es fehlen noch Unterschriften: ${missing.join(', ')}. Hake sie unter ` +
+          '„Spiel nachbereiten“ ab.'
+      );
+    }
+    if (specialEvent) problems.push(specialEvent);
+    return `${problems.join(' ')} Erst dann kann der Spielbericht abgeschlossen werden.`;
   }
 
   private _advancesTo(newStatus: string): boolean {
@@ -374,6 +395,14 @@ export class MatchReportComponent implements OnInit, OnChanges {
         `Es fehlen noch Unterschriften: ${missing.join(', ')}. ` +
           'Erst wenn alle Unterschriften abgehakt sind, kann der Spielbericht abgeschlossen werden.'
       );
+      this.appGameStatus = this.AFTERGAME;
+      this._cdr.markForCheck();
+      return;
+    }
+    // Dasselbe für die Beschreibung des besonderen Ereignisses (api#896).
+    const specialEvent = specialEventDescriptionProblem(this.additionalFields);
+    if (specialEvent && !this.canCheckGame()) {
+      this._notificationService.error(specialEvent);
       this.appGameStatus = this.AFTERGAME;
       this._cdr.markForCheck();
       return;

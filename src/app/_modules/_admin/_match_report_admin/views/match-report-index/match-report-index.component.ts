@@ -280,11 +280,30 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     return (
       f.protest ||
       f.forfait ||
-      !!f.special_event_string ||
+      this.hasSpecialEvent(row) ||
       f.severe_penalty_count > 0 ||
       f.missing_audience ||
       f.missing_signatures ||
       f.missing_referee2
+    );
+  }
+
+  /**
+   * Besonderes Ereignis: der Haken ODER ein Text. Der Haken allein kommt vor,
+   * wenn die SBK trotz fehlender Beschreibung abgeschlossen hat; ein Text ohne
+   * Haken bei Altbeständen, in denen der Haken später entfernt wurde.
+   */
+  hasSpecialEvent(row: GameDayReportRow): boolean {
+    return !!row.flags?.special_event || !!row.flags?.special_event_string;
+  }
+
+  /** Für die CSV: der Text einzeilig, oder ein Vermerk, dass er fehlt. */
+  private _specialEventCell(row: GameDayReportRow): string {
+    if (!this.hasSpecialEvent(row)) return '';
+    const text = row.flags?.special_event_string?.replace(/\s+/g, ' ').trim();
+    return (
+      text ||
+      this._transloco.translate('matchReportAdmin.flags.specialEventNoText')
     );
   }
 
@@ -571,6 +590,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       t('matchReportAdmin.index.colUpdatedAt'),
       t('matchReportAdmin.index.colUpdatedBy'),
       t('matchReportAdmin.index.colComment'),
+      t('matchReportAdmin.index.colSpecialEvent'),
       t('matchReportAdmin.index.colScanUploadedAt'),
       t('matchReportAdmin.index.colObjections'),
       t('matchReportAdmin.index.colReviewedAt'),
@@ -589,6 +609,7 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
       r.record_updated_at ?? '',
       r.record_updated_by_name ?? '',
       r.record_comment ?? '',
+      this._specialEventCell(r),
       r.scan?.uploaded_at ?? '',
       this._objectionSummary(r),
       r.report_reviewed_at ?? '',
@@ -719,6 +740,9 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
     }
     if (this.filterStatus === 'withComment') return !!row.record_comment;
     if (this.filterStatus === 'withObjection') return this.hasObjection(row);
+    if (this.filterStatus === 'withSpecialEvent') {
+      return this.hasSpecialEvent(row);
+    }
     return row.game_status === this.filterStatus;
   }
 
