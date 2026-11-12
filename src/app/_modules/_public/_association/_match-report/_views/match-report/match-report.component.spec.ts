@@ -675,6 +675,30 @@ describe('MatchReportComponent', () => {
       });
     });
 
+    it('weist einen Protest ohne Partei vor der Checkliste ab', () => {
+      create({ permission: ['edit_game_report'] });
+      component.additionalFields = {
+        missing_signatures: [],
+        protest: true,
+        protest_parties: [],
+        protest_party_options: [{ key: 'guest', label: 'Gastteam' }],
+      } as unknown as GameAdditionalFields;
+      const setStatus = spyOn(gameService, 'setGameStatus');
+      const error = spyOn(notifications, 'error');
+      const option = component.gameStatusOptions[3];
+
+      expect(component.statusConfirmationContent(option)).toContain(
+        'keine Protestpartei ausgewählt'
+      );
+      component.requestGameStatusChange('match_record_closed');
+
+      expect(error).toHaveBeenCalledWith(
+        jasmine.stringContaining('keine Protestpartei ausgewählt')
+      );
+      expect(component.checklistVisible).toBeFalse();
+      expect(setStatus).not.toHaveBeenCalled();
+    });
+
     it('lässt die übrigen Schritte der Navigation unverändert', () => {
       create({
         game_status: 'match_record_closed',

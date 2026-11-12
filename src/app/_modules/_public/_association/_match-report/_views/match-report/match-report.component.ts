@@ -29,6 +29,10 @@ import {
 import * as Sentry from '@sentry/angular';
 import { missingSignatureLabels } from 'src/app/_helpers/_utils/missing-signatures';
 import { specialEventDescriptionProblem } from 'src/app/_helpers/_utils/special-event-description';
+import {
+  PROTEST_PARTIES_MISSING_MESSAGE,
+  protestPartiesMissing,
+} from 'src/app/_helpers/_utils/protest-parties';
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import {
   checkPdfUpload,
@@ -342,9 +346,10 @@ export class MatchReportComponent implements OnInit, OnChanges {
   }): string {
     const missing = missingSignatureLabels(this.additionalFields);
     const specialEvent = specialEventDescriptionProblem(this.additionalFields);
+    const noParty = protestPartiesMissing(this.additionalFields);
     if (
       option.key !== this.MATCH_RECORD_CLOSED ||
-      (missing.length === 0 && !specialEvent)
+      (missing.length === 0 && !specialEvent && !noParty)
     ) {
       return option.confirmationContent ?? '';
     }
@@ -361,6 +366,11 @@ export class MatchReportComponent implements OnInit, OnChanges {
           'Das besondere Ereignis ist nicht mit mindestens 50 Zeichen beschrieben.'
         );
       }
+      if (noParty) {
+        problems.push(
+          'Beim Protest ist keine Protestpartei ausgewählt, es geht also kein Upload-Link raus.'
+        );
+      }
       return (
         `${problems.join(' ')} Als SBK kannst du den Bericht trotzdem ` +
         'abschließen. Möchtest du wirklich fortfahren?'
@@ -374,6 +384,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
       );
     }
     if (specialEvent) problems.push(specialEvent);
+    if (noParty) problems.push(PROTEST_PARTIES_MISSING_MESSAGE);
     return `${problems.join(' ')} Erst dann kann der Spielbericht abgeschlossen werden.`;
   }
 
@@ -403,6 +414,13 @@ export class MatchReportComponent implements OnInit, OnChanges {
     const specialEvent = specialEventDescriptionProblem(this.additionalFields);
     if (specialEvent && !this.canCheckGame()) {
       this._notificationService.error(specialEvent);
+      this.appGameStatus = this.AFTERGAME;
+      this._cdr.markForCheck();
+      return;
+    }
+    // Ebenso ein Protest ohne gewählte Partei.
+    if (protestPartiesMissing(this.additionalFields) && !this.canCheckGame()) {
+      this._notificationService.error(PROTEST_PARTIES_MISSING_MESSAGE);
       this.appGameStatus = this.AFTERGAME;
       this._cdr.markForCheck();
       return;

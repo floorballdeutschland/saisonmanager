@@ -52,7 +52,11 @@ export { GameInput } from './game.interface';
 export * from './game.interface';
 export { GamePlayers } from './game.interface';
 export { GamePlayerEntry } from './game.interface';
-export { GameAdditionalFields } from './game-additional-fields.interface';
+export {
+  GameAdditionalFields,
+  ProtestParty,
+  ProtestPartyOption,
+} from './game-additional-fields.interface';
 export {
   RefereeReportRecipient,
   RefereeReportStatus,
@@ -111,6 +115,7 @@ export * from './email-log.interface';
 export * from './proceeding-proposal.interface';
 export * from './email-template.interface';
 export * from './checklist-veto.interface';
+export * from './protest-upload.interface';
 export * from './overlay-link.interface';
 export * from './secretary-hall-day.interface';
 export * from './live-stream.interface';

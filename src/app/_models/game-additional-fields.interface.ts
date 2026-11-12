@@ -1,3 +1,10 @@
+export type ProtestParty = 'host' | 'home' | 'guest' | 'referees' | 'other';
+
+export interface ProtestPartyOption {
+  key: ProtestParty;
+  label: string;
+}
+
 export interface GameAdditionalFields {
   time_keeper_signed: boolean;
   record_keeper_signed: boolean;
@@ -9,6 +16,11 @@ export interface GameAdditionalFields {
   // (Spaltennamen wie oben). Fehlt bei einer API vor dieser Regel.
   missing_signatures?: string[];
   protest: boolean;
+  // Wer protestiert (host, home, guest, referees, other) und welche Parteien
+  // für dieses Spiel wählbar sind, mit Bezeichnung. Fehlen bei einer API vor
+  // der Protestparteien-Auswahl.
+  protest_parties?: ProtestParty[];
+  protest_party_options?: ProtestPartyOption[];
   special_event: boolean;
   playoff: boolean;
   overtime: boolean;

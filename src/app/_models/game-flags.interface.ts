@@ -6,6 +6,7 @@ export interface GameFlags {
   referee1_signed?: boolean;
   referee2_signed?: boolean;
   protest?: boolean;
+  protest_parties?: string[];
   special_event?: boolean;
   playoff?: boolean;
   overtime?: boolean;

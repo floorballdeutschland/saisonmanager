@@ -1,4 +1,7 @@
-import { getTranslocoTestingModule } from '@floorball/core';
+import {
+  getTranslocoTestingModule,
+  NotificationService,
+} from '@floorball/core';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
@@ -491,6 +494,152 @@ describe('MatchReportIndexComponent', () => {
     expect(target.game_status).toBe('finalized');
     expect(component.groups[0].closedCount).toBe(1);
     expect(component.finalizingGameId).toBeNull();
+  });
+
+  it('öffnet das Protestformular einer Partei im neuen Tab', () => {
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+    const protest = {
+      party: 'guest',
+      label: 'Gastteam',
+      selected: true,
+      manual: false,
+      invited_at: '2026-11-08T20:00:00Z',
+      recipient_count: 1,
+      submitted_at: '2026-11-09T10:00:00Z',
+      filename: 'protest.pdf',
+    };
+
+    component.openProtest(row({ id: 42 }), protest);
+    expect(component.protestLoadingKey).toBe('42:guest');
+
+    httpMock
+      .expectOne(environment.apiURL + 'admin/games/42/protests/guest/file')
+      .flush({
+        url: 'https://example.test/protest.pdf',
+        filename: 'protest.pdf',
+      });
+
+    expect(tab.location.href).toBe('https://example.test/protest.pdf');
+    expect(component.protestLoadingKey).toBeNull();
+  });
+
+  describe('Protest-Link erneut senden', () => {
+    const referees = {
+      party: 'referees',
+      label: 'Schiedsrichter*innen',
+      selected: true,
+      manual: false,
+      invited_at: '2026-11-08T20:00:00Z',
+      recipient_count: 0,
+      submitted_at: null,
+      filename: null,
+    };
+
+    it('schickt die eingegebene Adresse und übernimmt den neuen Stand', () => {
+      const r = row({ id: 42, protests: [referees] });
+      const success = spyOn(TestBed.inject(NotificationService), 'success');
+
+      component.openProtestResend(r, referees);
+      expect(component.protestResendKey).toBe('42:referees');
+      component.protestResendEmail = ' schiri@example.de ';
+      component.resendProtestLink(r, referees);
+
+      const req = httpMock.expectOne(
+        environment.apiURL + 'admin/games/42/protests/referees/resend'
+      );
+      expect(req.request.body).toEqual({ email: 'schiri@example.de' });
+      req.flush({
+        ...referees,
+        recipient_count: 1,
+        invited_at: '2026-11-12T09:00:00Z',
+      });
+
+      expect(r.protests?.[0].recipient_count).toBe(1);
+      expect(component.protestResendKey).toBeNull();
+      expect(success).toHaveBeenCalled();
+    });
+
+    it('schickt ohne Eingabe keinen Adresswert mit', () => {
+      const r = row({ id: 42, protests: [referees] });
+
+      component.openProtestResend(r, referees);
+      component.resendProtestLink(r, referees);
+
+      const req = httpMock.expectOne(
+        environment.apiURL + 'admin/games/42/protests/referees/resend'
+      );
+      expect(req.request.body).toEqual({});
+      req.flush(referees);
+    });
+
+    it('bietet neu senden nur, wo es etwas zu senden gibt', () => {
+      const closed = row({ game_status: 'match_record_closed' });
+      const open = row({ game_status: 'aftergame' });
+      const notSent = { ...referees, invited_at: null, recipient_count: null };
+
+      expect(component.canResendProtest(closed, referees)).toBeTrue();
+      // Versand beim Abschluss gescheitert: Der Knopf legt den Link an.
+      expect(component.canResendProtest(closed, notSent)).toBeTrue();
+      // Vor dem Abschluss geht der Link ohnehin noch raus.
+      expect(component.canResendProtest(open, notSent)).toBeFalse();
+      expect(
+        component.canResendProtest(closed, { ...referees, manual: true })
+      ).toBeFalse();
+      expect(
+        component.canResendProtest(closed, {
+          ...referees,
+          submitted_at: '2026-11-09T10:00:00Z',
+        })
+      ).toBeFalse();
+      expect(
+        component.canResendProtest(closed, { ...referees, selected: false })
+      ).toBeFalse();
+    });
+
+    it('lässt das Feld bei einer Absage offen', () => {
+      const r = row({ id: 42, protests: [referees] });
+
+      component.openProtestResend(r, referees);
+      component.protestResendEmail = 'kaputt';
+      component.resendProtestLink(r, referees);
+      httpMock
+        .expectOne(
+          environment.apiURL + 'admin/games/42/protests/referees/resend'
+        )
+        .flush(
+          { message: 'Bitte gib eine gültige E-Mail-Adresse an.' },
+          { status: 422, statusText: 'Unprocessable' }
+        );
+
+      expect(component.protestResendKey).toBe('42:referees');
+      expect(component.protestResending).toBeFalse();
+      expect(r.protests?.[0].recipient_count).toBe(0);
+    });
+  });
+
+  it('schließt den Tab und meldet, wenn das Protestformular fehlt', () => {
+    const tab = { location: { href: '' }, close: jasmine.createSpy('close') };
+    spyOn(window, 'open').and.returnValue(tab as unknown as Window);
+    const error = spyOn(TestBed.inject(NotificationService), 'error');
+
+    component.openProtest(row({ id: 42 }), {
+      party: 'guest',
+      label: 'Gastteam',
+      selected: true,
+      manual: false,
+      invited_at: null,
+      recipient_count: 1,
+      submitted_at: '2026-11-09T10:00:00Z',
+      filename: 'protest.pdf',
+    });
+    httpMock
+      .expectOne(environment.apiURL + 'admin/games/42/protests/guest/file')
+      .flush({ message: 'fehlt' }, { status: 404, statusText: 'Not Found' });
+
+    expect(tab.close).toHaveBeenCalled();
+    expect(error).toHaveBeenCalled();
+    expect(component.protestLoadingKey).toBeNull();
   });
 
   it('öffnet den Tab synchron und füllt die Scan-URL nach', () => {
@@ -1060,6 +1209,68 @@ describe('MatchReportIndexComponent (Uploader-Kontakt)', () => {
     );
     const item = element.querySelector('[data-testid="flag-special-event"]');
     expect(item).not.toBeNull();
+    expect(item?.querySelector('.text-red-600')).not.toBeNull();
+  });
+
+  it('zeigt je Protestpartei den Stand', () => {
+    const base = row();
+    show(
+      row({
+        flags: { ...base.flags, protest: true },
+        protests: [
+          {
+            party: 'guest',
+            label: 'Gastteam (Gast)',
+            selected: true,
+            manual: false,
+            invited_at: '2026-11-08T20:00:00Z',
+            recipient_count: 1,
+            submitted_at: '2026-11-09T10:00:00Z',
+            filename: 'protest.pdf',
+          },
+          {
+            party: 'referees',
+            label: 'Schiedsrichter*innen',
+            selected: true,
+            manual: false,
+            invited_at: '2026-11-08T20:00:00Z',
+            recipient_count: 0,
+            submitted_at: null,
+            filename: null,
+          },
+          {
+            party: 'other',
+            label: 'Andere',
+            selected: true,
+            manual: true,
+            invited_at: null,
+            recipient_count: null,
+            submitted_at: null,
+            filename: null,
+          },
+        ],
+      })
+    );
+
+    const item = (party: string) =>
+      element.querySelector(`[data-protest="${party}"]`) as HTMLElement;
+    expect(item('guest').querySelector('button')).not.toBeNull();
+    expect(item('referees').querySelector('.text-red-600')).not.toBeNull();
+    expect(
+      item('referees').querySelector('[data-testid="protest-resend"]')
+    ).not.toBeNull();
+    expect(
+      item('guest').querySelector('[data-testid="protest-resend"]')
+    ).toBeNull();
+    expect(item('other').textContent).toContain('Andere');
+    expect(item('other').querySelector('button')).toBeNull();
+  });
+
+  it('vermerkt einen Protest ohne Partei', () => {
+    const base = row();
+    show(row({ flags: { ...base.flags, protest: true }, protests: [] }));
+
+    const item = element.querySelector('[data-testid="flag-protest"]');
     expect(item?.querySelector('.text-red-600')).not.toBeNull();
   });
 

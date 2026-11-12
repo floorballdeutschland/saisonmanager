@@ -24,6 +24,10 @@ import {
   specialEventDescriptionLength,
   specialEventDescriptionMissing,
 } from 'src/app/_helpers/_utils/special-event-description';
+import {
+  PROTEST_PARTIES_MISSING_MESSAGE,
+  protestPartiesMissing,
+} from 'src/app/_helpers/_utils/protest-parties';
 
 @Component({
   selector: 'fb-match-report-step-three',
@@ -144,8 +148,21 @@ export class MatchReportStepThreeComponent {
     );
   }
 
+  // Protest ohne gewählte Partei: Die API lehnt den Abschluss für den Verein
+  // ab, die SBK wird nur gewarnt.
+  public readonly protestPartiesMissingMessage =
+    PROTEST_PARTIES_MISSING_MESSAGE;
+
+  public get protestPartiesMissing(): boolean {
+    return protestPartiesMissing(this.additionalFields);
+  }
+
   public get canCloseWithoutOverride(): boolean {
-    return this.signaturesComplete && !this.specialEventDescriptionMissing;
+    return (
+      this.signaturesComplete &&
+      !this.specialEventDescriptionMissing &&
+      !this.protestPartiesMissing
+    );
   }
 
   public get overrideConfirmationContent(): string {
@@ -160,6 +177,11 @@ export class MatchReportStepThreeComponent {
       problems.push(
         'Das besondere Ereignis ist nicht mit mindestens ' +
           `${SPECIAL_EVENT_DESCRIPTION_MIN_LENGTH} Zeichen beschrieben.`
+      );
+    }
+    if (this.protestPartiesMissing) {
+      problems.push(
+        'Beim Protest ist keine Protestpartei ausgewählt, es geht also kein Upload-Link raus.'
       );
     }
     return (
