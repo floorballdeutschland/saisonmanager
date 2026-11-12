@@ -148,6 +148,7 @@
     "resendPlaceholder": "other address (optional)",
     "resendSubmit": "Send",
     "resendCancel": "Cancel",
-    "resent": "New upload link sent. The old link is no longer valid."
+    "resent": "New upload link sent. The old link is no longer valid.",
+    "notSent": "no link sent"
   }
 }

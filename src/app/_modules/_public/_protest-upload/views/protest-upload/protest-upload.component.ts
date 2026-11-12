@@ -17,7 +17,8 @@ export const PROTEST_MAX_FILE_SIZE = 5 * 1024 * 1024;
 /**
  * Upload des Protestformulars einer Protestpartei. Erreichbar nur über den
  * Link aus der Mail; der Token ist die einzige Berechtigung. Pro Link genau
- * ein Formular, danach ist er verbraucht.
+ * ein Formular, danach ist er verbraucht. Ungültig wird er auch, wenn die SBK
+ * einen neuen verschickt oder die Partei abgewählt wird.
  *
  * Fehler zeigt die Seite selbst an, der ErrorInterceptor lässt den Endpunkt
  * aus (sonst käme jede Meldung doppelt).
@@ -30,6 +31,10 @@ export const PROTEST_MAX_FILE_SIZE = 5 * 1024 * 1024;
 export class ProtestUploadComponent implements OnInit, OnDestroy {
   loading = true;
   invalid = false;
+  /** Begründung der API zum ungültigen Link (z. B. zurückgenommen). */
+  invalidMessage: string | null = null;
+  /** Laden vorübergehend gescheitert, ein neuer Versuch lohnt sich. */
+  loadFailed = false;
   uploading = false;
   protest?: ProtestUpload;
   selectedFile: File | null = null;
@@ -102,7 +107,10 @@ export class ProtestUploadComponent implements OnInit, OnDestroy {
               ? 'Keine Verbindung. Bitte prüfe die Internetverbindung und versuche es erneut.'
               : (err?.error?.message ??
                 'Das Protestformular konnte nicht hochgeladen werden. Bitte versuche es erneut.');
-          if (err?.status === 410) this.invalid = true;
+          if (err?.status === 410) {
+            this.invalid = true;
+            this.invalidMessage = err?.error?.message ?? null;
+          }
           this._cdr.markForCheck();
         },
       });
@@ -131,6 +139,13 @@ export class ProtestUploadComponent implements OnInit, OnDestroy {
     });
   }
 
+  retryLoad(): void {
+    this.loadFailed = false;
+    this.loading = true;
+    this._cdr.markForCheck();
+    this._load();
+  }
+
   private _load(): void {
     if (!this._token) {
       this.loading = false;
@@ -147,9 +162,17 @@ export class ProtestUploadComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._cdr.markForCheck();
         },
-        error: () => {
+        // Nur 410 heißt „ungültig" (unbekannt, ersetzt oder zurückgenommen).
+        // Funkloch, Drosselung oder Serverfehler sind vorübergehend: Dann
+        // soll die Partei es erneut versuchen, statt aufzugeben.
+        error: (err) => {
           this.loading = false;
-          this.invalid = true;
+          if (err?.status === 410) {
+            this.invalid = true;
+            this.invalidMessage = err?.error?.message ?? null;
+          } else {
+            this.loadFailed = true;
+          }
           this._cdr.markForCheck();
         },
       });

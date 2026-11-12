@@ -550,77 +550,87 @@
                                       }
                               }}
                             </button>
-                          } @else if (protest.invited_at) {
-                            @if (protest.recipient_count === 0) {
+                          } @else {
+                            @if (protest.invited_at) {
+                              @if (protest.recipient_count === 0) {
+                                <span class="text-red-600">{{
+                                  "matchReportAdmin.protests.noAddress"
+                                    | transloco
+                                }}</span>
+                              } @else {
+                                <span class="text-fb-gray-500">{{
+                                  "matchReportAdmin.protests.invited"
+                                    | transloco
+                                      : {
+                                          date:
+                                            (protest.invited_at
+                                            | date: "dd.MM.yyyy"),
+                                        }
+                                }}</span>
+                              }
+                            } @else if (isReportClosed(row)) {
                               <span class="text-red-600">{{
-                                "matchReportAdmin.protests.noAddress"
-                                  | transloco
+                                "matchReportAdmin.protests.notSent" | transloco
                               }}</span>
                             } @else {
                               <span class="text-fb-gray-500">{{
-                                "matchReportAdmin.protests.invited"
-                                  | transloco
-                                    : {
-                                        date:
-                                          (protest.invited_at
-                                          | date: "dd.MM.yyyy"),
-                                      }
+                                "matchReportAdmin.protests.pending" | transloco
                               }}</span>
                             }
-                            @if (
-                              protestResendKey === row.id + ":" + protest.party
-                            ) {
-                              <span
-                                class="flex flex-wrap items-center gap-2 mt-1"
-                                data-testid="protest-resend-form"
-                              >
-                                <input
-                                  type="email"
-                                  class="border border-fb-gray-600 rounded px-2 py-1 text-sm"
-                                  [placeholder]="
-                                    'matchReportAdmin.protests.resendPlaceholder'
-                                      | transloco
-                                  "
-                                  [(ngModel)]="protestResendEmail"
-                                />
+                            @if (canResendProtest(row, protest)) {
+                              @if (
+                                protestResendKey ===
+                                row.id + ":" + protest.party
+                              ) {
+                                <span
+                                  class="flex flex-wrap items-center gap-2 mt-1"
+                                  data-testid="protest-resend-form"
+                                >
+                                  <input
+                                    type="email"
+                                    class="border border-fb-gray-600 rounded px-2 py-1 text-sm"
+                                    [placeholder]="
+                                      'matchReportAdmin.protests.resendPlaceholder'
+                                        | transloco
+                                    "
+                                    [(ngModel)]="protestResendEmail"
+                                  />
+                                  <button
+                                    type="button"
+                                    class="underline font-bold"
+                                    [disabled]="protestResending"
+                                    (click)="resendProtestLink(row, protest)"
+                                  >
+                                    {{
+                                      "matchReportAdmin.protests.resendSubmit"
+                                        | transloco
+                                    }}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="underline"
+                                    (click)="cancelProtestResend()"
+                                  >
+                                    {{
+                                      "matchReportAdmin.protests.resendCancel"
+                                        | transloco
+                                    }}
+                                  </button>
+                                </span>
+                              } @else {
                                 <button
                                   type="button"
-                                  class="underline font-bold"
-                                  [disabled]="protestResending"
-                                  (click)="resendProtestLink(row, protest)"
+                                  class="underline ml-1"
+                                  data-testid="protest-resend"
+                                  (click)="openProtestResend(row, protest)"
                                 >
                                   {{
-                                    "matchReportAdmin.protests.resendSubmit"
+                                    "matchReportAdmin.protests.resend"
                                       | transloco
                                   }}
                                 </button>
-                                <button
-                                  type="button"
-                                  class="underline"
-                                  (click)="cancelProtestResend()"
-                                >
-                                  {{
-                                    "matchReportAdmin.protests.resendCancel"
-                                      | transloco
-                                  }}
-                                </button>
-                              </span>
-                            } @else {
-                              <button
-                                type="button"
-                                class="underline ml-1"
-                                data-testid="protest-resend"
-                                (click)="openProtestResend(row, protest)"
-                              >
-                                {{
-                                  "matchReportAdmin.protests.resend" | transloco
-                                }}
-                              </button>
+                              }
                             }
-                          } @else {
-                            <span class="text-fb-gray-500">{{
-                              "matchReportAdmin.protests.pending" | transloco
-                            }}</span>
                           }
                         </li>
                       }

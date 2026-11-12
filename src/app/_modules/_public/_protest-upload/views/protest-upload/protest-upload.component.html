@@ -7,10 +7,25 @@
 
   @if (!loading && invalid) {
     <p class="text-sm text-fb-gray-500 py-4" data-testid="protest-invalid">
-      Dieser Link ist ungültig. Bitte prüfe, ob du ihn vollständig aus der
-      E-Mail übernommen hast, oder wende dich an die zuständige
-      Spielbetriebskommission.
+      @if (invalidMessage && invalidMessage !== "Dieser Link ist ungültig.") {
+        {{ invalidMessage }}
+      } @else {
+        Dieser Link ist ungültig. Bitte prüfe, ob du ihn vollständig aus der
+        E-Mail übernommen hast. Hat die SBK inzwischen einen neuen Link
+        verschickt, gilt nur noch dieser. Bei Fragen wende dich an die
+        zuständige Spielbetriebskommission.
+      }
     </p>
+  }
+
+  @if (!loading && loadFailed) {
+    <div class="py-4" data-testid="protest-load-failed">
+      <p class="text-sm text-red-600 mb-3">
+        Die Angaben zu diesem Link konnten gerade nicht geladen werden. Bitte
+        prüfe die Internetverbindung und versuche es erneut.
+      </p>
+      <fb-button (handleClick)="retryLoad()">Erneut versuchen</fb-button>
+    </div>
   }
 
   @if (!loading && !invalid && protest) {

@@ -148,6 +148,7 @@
     "resendPlaceholder": "andere Adresse (optional)",
     "resendSubmit": "Senden",
     "resendCancel": "Abbrechen",
-    "resent": "Neuer Upload-Link verschickt. Der alte Link gilt nicht mehr."
+    "resent": "Neuer Upload-Link verschickt. Der alte Link gilt nicht mehr.",
+    "notSent": "kein Link verschickt"
   }
 }

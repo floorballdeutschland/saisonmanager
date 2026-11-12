@@ -519,6 +519,30 @@ describe('MatchReportIndexComponent', () => {
       req.flush(referees);
     });
 
+    it('bietet neu senden nur, wo es etwas zu senden gibt', () => {
+      const closed = row({ game_status: 'match_record_closed' });
+      const open = row({ game_status: 'aftergame' });
+      const notSent = { ...referees, invited_at: null, recipient_count: null };
+
+      expect(component.canResendProtest(closed, referees)).toBeTrue();
+      // Versand beim Abschluss gescheitert: Der Knopf legt den Link an.
+      expect(component.canResendProtest(closed, notSent)).toBeTrue();
+      // Vor dem Abschluss geht der Link ohnehin noch raus.
+      expect(component.canResendProtest(open, notSent)).toBeFalse();
+      expect(
+        component.canResendProtest(closed, { ...referees, manual: true })
+      ).toBeFalse();
+      expect(
+        component.canResendProtest(closed, {
+          ...referees,
+          submitted_at: '2026-11-09T10:00:00Z',
+        })
+      ).toBeFalse();
+      expect(
+        component.canResendProtest(closed, { ...referees, selected: false })
+      ).toBeFalse();
+    });
+
     it('lässt das Feld bei einer Absage offen', () => {
       const r = row({ id: 42, protests: [referees] });
 

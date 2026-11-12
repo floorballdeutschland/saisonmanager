@@ -83,6 +83,40 @@ describe('ProtestUploadComponent', () => {
     ).not.toBeNull();
   });
 
+  it('zeigt die Begründung eines zurückgenommenen Protests', () => {
+    gameService.getProtest.and.returnValue(
+      throwError(() => ({
+        status: 410,
+        error: {
+          message: 'Dieser Protest wurde im Spielbericht zurückgenommen.',
+        },
+      }))
+    );
+    create();
+
+    expect(text()).toContain('zurückgenommen');
+  });
+
+  it('nennt einen Verbindungsfehler nicht ungültig und lädt auf Wunsch neu', () => {
+    gameService.getProtest.and.returnValues(
+      throwError(() => ({ status: 0 })),
+      of(protest())
+    );
+    create();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="protest-invalid"]')
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="protest-load-failed"]')
+    ).not.toBeNull();
+
+    component.retryLoad();
+    fixture.detectChanges();
+
+    expect(text()).toContain('Heim gegen Gast');
+  });
+
   it('zeigt einen bereits genutzten Link als eingegangen', () => {
     gameService.getProtest.and.returnValue(
       of(protest({ status: 'submitted', submitted_at: '2026-11-09T10:00:00Z' }))

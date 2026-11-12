@@ -465,6 +465,23 @@ export class MatchReportIndexComponent implements OnInit, OnDestroy {
   protestResendEmail = '';
   protestResending = false;
 
+  isReportClosed(row: GameDayReportRow): boolean {
+    return (
+      row.game_status === 'match_record_closed' ||
+      row.game_status === 'finalized'
+    );
+  }
+
+  // Neu senden geht für jede noch gewählte Partei mit Link, außer „Andere"
+  // und nach dem Upload. Ohne Link nur bei abgeschlossenem Bericht: Dann ist
+  // der Versand beim Abschluss gescheitert, und der Knopf legt ihn an.
+  canResendProtest(row: GameDayReportRow, protest: GameReportProtest): boolean {
+    if (protest.manual || protest.submitted_at || !protest.selected) {
+      return false;
+    }
+    return !!protest.invited_at || this.isReportClosed(row);
+  }
+
   openProtestResend(row: GameDayReportRow, protest: GameReportProtest): void {
     this.protestResendKey = `${row.id}:${protest.party}`;
     this.protestResendEmail = '';
