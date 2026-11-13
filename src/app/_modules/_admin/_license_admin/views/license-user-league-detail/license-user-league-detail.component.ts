@@ -4,7 +4,13 @@ import {
   OnInit,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { Club, League, TeamWithPlayers } from '@floorball/types';
+import {
+  Club,
+  League,
+  PlayerWithLicense,
+  TeamWithPlayers,
+} from '@floorball/types';
+import { CurrentAgePipe } from '../../../../_uikit/_player/pipes';
 import { ClubService, LeagueService, StorageService } from '@floorball/core';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -39,6 +45,9 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
   // Dieselbe Farbregel wie in der Lizenzverwaltung des Verbands, damit
   // `gesperrt` in jeder Lizenzliste dasselbe Bild ergibt (api#605).
   public statusBadgeClass = licenseStatusBadgeClass;
+
+  // Rückfall für die alte API ohne adult_on, siehe isMinor.
+  private readonly _currentAge = new CurrentAgePipe();
 
   constructor(
     private _leagueService: LeagueService,
@@ -121,23 +130,32 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
     return new Date();
   }
 
-  public calculateAge(dateString: string): number {
-    if (!this.gamedayDate) {
-      return 0;
+  /**
+   * Brillensymbol: minderjährig am gewählten Spieltag (ohne Wahl: heute).
+   *
+   * Die Liga-Lizenzliste liefert seit api#906 kein Geburtsdatum mehr, sondern
+   * `adult_on`, den 18. Geburtstag, solange der höchstens ein Jahr zurückliegt
+   * (auch vergangene Spieltage der Saison stimmen so). `null` heißt seit über
+   * einem Jahr volljährig oder Geburtsdatum unbekannt, beides ohne Symbol wie
+   * bisher. Fehlt das Feld ganz, antwortet
+   * noch die alte API; dann rechnet die currentAge-Pipe wie bisher aus dem
+   * Geburtsdatum. Der Rückfall kann weg, sobald api#906 überall live ist.
+   */
+  public isMinor(player: PlayerWithLicense): boolean {
+    if (player.adult_on === undefined) {
+      return this._currentAge.transform(player, this.gamedayDate ?? '') < 18;
     }
+    if (!player.adult_on) {
+      return false;
+    }
+    // Beide im Format YYYY-MM-DD, daher genügt der Textvergleich.
+    return (this.gamedayDate || this.localDate(new Date())) < player.adult_on;
+  }
 
-    const parseLocalDate = (s: string) => {
-      const [y, m, d] = s.split('-').map(Number);
-      return new Date(y, m - 1, d);
-    };
-    const today = parseLocalDate(this.gamedayDate);
-    const birthDate = parseLocalDate(dateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+  private localDate(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return [date.getFullYear(), month, day].join('-');
   }
 
   public setGamedayDate(daysFromToday: number) {
@@ -145,11 +163,6 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + daysFromToday);
 
-    const year = tomorrow.getFullYear();
-    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const day = String(tomorrow.getDate()).padStart(2, '0');
-    const joined = [year, month, day].join('-');
-
-    this.gamedayDate = joined;
+    this.gamedayDate = this.localDate(tomorrow);
   }
 }

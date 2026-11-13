@@ -175,7 +175,7 @@
                             class="flex flex-col justify-center items-end print:items-start gap-0.5"
                           >
                             <div class="w-5 h-5 print:w-3 print:h-3">
-                              @if ((p | currentAge: gamedayDate) < 18) {
+                              @if (isMinor(p)) {
                                 <fb-glasses-icon></fb-glasses-icon>
                               }
                             </div>
