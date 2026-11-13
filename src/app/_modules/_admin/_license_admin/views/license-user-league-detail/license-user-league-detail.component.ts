@@ -134,8 +134,10 @@ export class LicenseUserLeagueDetailComponent implements OnInit {
    * Brillensymbol: minderjährig am gewählten Spieltag (ohne Wahl: heute).
    *
    * Die Liga-Lizenzliste liefert seit api#906 kein Geburtsdatum mehr, sondern
-   * `adult_on`, den 18. Geburtstag, und den nur für Spieler, die heute noch
-   * minderjährig sind. `null` heißt volljährig. Fehlt das Feld ganz, antwortet
+   * `adult_on`, den 18. Geburtstag, solange der höchstens ein Jahr zurückliegt
+   * (auch vergangene Spieltage der Saison stimmen so). `null` heißt seit über
+   * einem Jahr volljährig oder Geburtsdatum unbekannt, beides ohne Symbol wie
+   * bisher. Fehlt das Feld ganz, antwortet
    * noch die alte API; dann rechnet die currentAge-Pipe wie bisher aus dem
    * Geburtsdatum. Der Rückfall kann weg, sobald api#906 überall live ist.
    */

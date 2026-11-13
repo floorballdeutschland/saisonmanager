@@ -127,8 +127,9 @@ export interface PlayerCurrentLicense {
 export interface PlayerWithLicense extends Player {
   /**
    * Nur Liga-Lizenzliste (user/leagues/:id/licenses, api#906): der 18.
-   * Geburtstag, solange er noch bevorsteht, sonst `null`. Ersetzt dort das
-   * Geburtsdatum, das die Liste nicht mehr bekommt.
+   * Geburtstag, solange er höchstens ein Jahr zurückliegt, sonst `null`
+   * (auch bei unbekanntem Geburtsdatum). Ersetzt dort das Geburtsdatum, das
+   * die Liste nicht mehr bekommt.
    */
   adult_on?: string | null;
   team_license: {

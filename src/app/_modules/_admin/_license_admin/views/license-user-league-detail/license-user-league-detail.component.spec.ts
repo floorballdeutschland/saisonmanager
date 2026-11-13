@@ -313,7 +313,7 @@ describe('LicenseUserLeagueDetailComponent', () => {
   });
 
   // api#906: Die Liga-Lizenzliste bekommt kein Geburtsdatum mehr, sondern
-  // `adult_on` (18. Geburtstag, nur solange er bevorsteht).
+  // `adult_on` (18. Geburtstag, höchstens ein Jahr zurück, sonst null).
   describe('Brillensymbol für Minderjährige', () => {
     const player = (fields: object) =>
       ({ id: 7, ...fields }) as unknown as PlayerWithLicense;
@@ -348,6 +348,43 @@ describe('LicenseUserLeagueDetailComponent', () => {
       expect(
         component().isMinor(player({ adult_on: '2999-01-01' }))
       ).toBeTrue();
+    });
+
+    it('vergleicht bei geleertem Datumsfeld mit heute', () => {
+      expect(
+        component('').isMinor(player({ adult_on: '2999-01-01' }))
+      ).toBeTrue();
+    });
+
+    it('rendert das Symbol nur in der Zeile der Minderjährigen', () => {
+      const fixture = TestBed.createComponent(LicenseUserLeagueDetailComponent);
+      fixture.componentInstance.gamedayDate = '2026-11-13';
+      const row = (id: number, last_name: string, adult_on: string | null) => ({
+        id,
+        last_name,
+        first_name: 'Test',
+        adult_on,
+        team_license: {
+          last_status_id: 1,
+          last_status_code: 'Lizenz erteilt',
+          license: { gf_role: null },
+          requested_at: '2026-01-05T10:00:00Z',
+        },
+      });
+      fixture.componentInstance.teams = [
+        {
+          id: 1,
+          name: 'Musterstadt',
+          players: [row(1, 'Jung', '2028-03-15'), row(2, 'Erwachsen', null)],
+        },
+      ] as unknown as TeamWithPlayers[];
+      fixture.detectChanges();
+
+      const icons: HTMLElement[] = Array.from(
+        fixture.nativeElement.querySelectorAll('fb-glasses-icon')
+      );
+      expect(icons.length).toBe(1);
+      expect(icons[0].closest('li')?.textContent).toContain('Jung');
     });
 
     it('rechnet bei der alten API weiter aus dem Geburtsdatum', () => {
