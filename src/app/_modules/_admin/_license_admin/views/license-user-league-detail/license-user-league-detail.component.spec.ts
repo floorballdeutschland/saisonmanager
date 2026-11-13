@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { getTranslocoTestingModule } from '@floorball/core';
 import { UikitPlayerModule } from '@floorball/uikit/player';
 import { IconsModule } from '../../../../_uikit/_icons/icons.module';
-import { TeamWithPlayers } from '@floorball/types';
+import { PlayerWithLicense, TeamWithPlayers } from '@floorball/types';
 
 describe('LicenseUserLeagueDetailComponent', () => {
   const STORAGE_KEY = 'license_list_show_dates';
@@ -309,6 +309,54 @@ describe('LicenseUserLeagueDetailComponent', () => {
 
       expect(badge.className).toContain('bg-green-100');
       expect(fixture.nativeElement.textContent).not.toContain('Gesperrt:');
+    });
+  });
+
+  // api#906: Die Liga-Lizenzliste bekommt kein Geburtsdatum mehr, sondern
+  // `adult_on` (18. Geburtstag, nur solange er bevorsteht).
+  describe('Brillensymbol für Minderjährige', () => {
+    const player = (fields: object) =>
+      ({ id: 7, ...fields }) as unknown as PlayerWithLicense;
+
+    const component = (gamedayDate?: string) => {
+      const c = TestBed.createComponent(
+        LicenseUserLeagueDetailComponent
+      ).componentInstance;
+      c.gamedayDate = gamedayDate;
+      return c;
+    };
+
+    it('ist minderjährig vor dem 18. Geburtstag', () => {
+      expect(
+        component('2028-03-14').isMinor(player({ adult_on: '2028-03-15' }))
+      ).toBeTrue();
+    });
+
+    it('ist ab dem 18. Geburtstag volljährig', () => {
+      expect(
+        component('2028-03-15').isMinor(player({ adult_on: '2028-03-15' }))
+      ).toBeFalse();
+    });
+
+    it('ist ohne adult_on volljährig, auch ohne Geburtsdatum', () => {
+      expect(
+        component('2026-11-13').isMinor(player({ adult_on: null }))
+      ).toBeFalse();
+    });
+
+    it('vergleicht ohne gewählten Spieltag mit heute', () => {
+      expect(
+        component().isMinor(player({ adult_on: '2999-01-01' }))
+      ).toBeTrue();
+    });
+
+    it('rechnet bei der alten API weiter aus dem Geburtsdatum', () => {
+      expect(
+        component('2026-11-13').isMinor(player({ birthdate: '2010-03-15' }))
+      ).toBeTrue();
+      expect(
+        component('2026-11-13').isMinor(player({ birthdate: '1990-01-01' }))
+      ).toBeFalse();
     });
   });
 });
