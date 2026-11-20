@@ -8,7 +8,7 @@ import {
 import { ControlsOf, FormControl, FormGroup } from '@ngneat/reactive-forms';
 import { Validators } from '@angular/forms';
 import { NotificationService, SessionService } from '@floorball/core';
-import { Subscription } from 'rxjs';
+import { Subscription, finalize } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
 export interface LoginFormValue {
@@ -25,6 +25,10 @@ export interface LoginFormValue {
 export class LoginComponent implements OnInit, OnDestroy {
   public loginForm!: FormGroup<ControlsOf<LoginFormValue>>;
   public error = '';
+  // Sperrt „Passwort vergessen“, solange die Anfrage läuft. Jede Anfrage
+  // erzeugt einen neuen Link und macht den vorigen ungültig; nach einem
+  // Doppelklick öffneten Nutzer die erste Mail und scheiterten.
+  public lostPasswordPending = false;
 
   private subscriptions: Subscription[] = [];
   private returnUrl: string | null = null;
@@ -131,17 +135,25 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.lostPasswordPending) {
+      return;
+    }
+    this.lostPasswordPending = true;
+
     this.subscriptions.push(
-      this._sessionService.lostPassword(data.username).subscribe({
-        next: () => {
-          // this.router.navigate([this.returnUrl])
-          this._router.navigate(['/', 'login']);
-        },
-        error: (err) => {
-          console.error(err);
-          this.error = err;
-        },
-      })
+      this._sessionService
+        .lostPassword(data.username)
+        .pipe(finalize(() => (this.lostPasswordPending = false)))
+        .subscribe({
+          next: () => {
+            // this.router.navigate([this.returnUrl])
+            this._router.navigate(['/', 'login']);
+          },
+          error: (err) => {
+            console.error(err);
+            this.error = err;
+          },
+        })
     );
   }
 }

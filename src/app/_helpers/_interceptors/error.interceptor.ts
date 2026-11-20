@@ -158,6 +158,18 @@ export class ErrorInterceptor implements HttpInterceptor {
           return throwError(() => err);
         }
 
+        // Ein ungültiger oder abgelaufener Link zum Setzen des Passworts (404)
+        // erklärt die Seite /neues-passwort/:token selbst, mit dem Weg zu einem
+        // neuen Link. Der generische Toast „Nicht gefunden: …" sagte nicht,
+        // dass nur die neueste Mail gilt; Nutzer schickten denselben toten
+        // Link bis zu 19-mal ab (16./17.11.2026).
+        if (
+          err.status === 404 &&
+          /\/v2\/reset_password(\.json)?$/.test(request.url.split('?')[0])
+        ) {
+          return throwError(() => err);
+        }
+
         // Die Abgabeseite für das Schiri-Feedback per Einmal-Link
         // (/schiri-feedback/abgeben/:token) rendert jeden Fehlerzustand als
         // eigene Ansicht. Ohne diese Ausnahme käme zusätzlich ein Toast, und

@@ -9,7 +9,7 @@ import {
 } from '@floorball/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { LoginAnswer } from '@floorball/types';
 
 describe('LoginComponent', () => {
@@ -132,5 +132,32 @@ describe('LoginComponent', () => {
     component.lostPassword({ username: 'vm.berlin', password: '' });
 
     expect(lostPasswordSpy).toHaveBeenCalledWith('vm.berlin');
+  });
+
+  // Jede Anfrage macht den vorigen Link ungültig. Ein Doppelklick verschickte
+  // zwei Mails, und die erste führte zu „Ungültiger oder abgelaufener Link“.
+  it('should not send a second lost-password request while the first is pending', () => {
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const pending = new Subject<LoginAnswer>();
+    const lostPasswordSpy = spyOn(
+      TestBed.inject(SessionService),
+      'lostPassword'
+    ).and.returnValue(pending.asObservable());
+
+    component.lostPassword({ username: 'vm.berlin', password: '' });
+    component.lostPassword({ username: 'vm.berlin', password: '' });
+
+    expect(lostPasswordSpy).toHaveBeenCalledTimes(1);
+    expect(component.lostPasswordPending).toBeTrue();
+
+    pending.next({} as unknown as LoginAnswer);
+    pending.complete();
+
+    expect(component.lostPasswordPending).toBeFalse();
+    component.lostPassword({ username: 'vm.berlin', password: '' });
+    expect(lostPasswordSpy).toHaveBeenCalledTimes(2);
   });
 });
