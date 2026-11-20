@@ -189,7 +189,16 @@ export class PlayerService {
     return this.http.get<PlayerSearchResult[]>(path);
   }
 
-  public reenableLicenseRequest(playerId: number, licenseId: string) {
+  /**
+   * Stellt einen abgelehnten oder zurückgezogenen Antrag wieder ein. Mit
+   * `express` wird er dabei zur Expresslizenz (api: nur wenn die Mannschaft
+   * gerade eine anbietet und die Lizenz nie erteilt war).
+   */
+  public reenableLicenseRequest(
+    playerId: number,
+    licenseId: string,
+    express = false
+  ) {
     const path =
       environment.apiURL +
       'user/players/' +
@@ -197,6 +206,7 @@ export class PlayerService {
       '/reenable_license_request.json';
     return this.http.post<Player>(path, {
       license_id: licenseId,
+      ...(express ? { express: true } : {}),
     });
   }
 

@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 
 import { LicenseTeamDetailComponent } from './license-team-detail.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { getTranslocoTestingModule } from '@floorball/core';
@@ -496,6 +499,121 @@ describe('LicenseTeamDetailComponent', () => {
       ).find((el) => (el as HTMLElement).textContent?.trim() === 'gesperrt');
 
       expect((badge as HTMLElement).className).toContain('bg-red-100');
+    });
+  });
+
+  // Ein zurückgezogener Antrag bleibt nach der kostenfreien Stunde stehen, der
+  // Spieler taucht unter „Neue Lizenz" nicht mehr auf. Wer den Express-Haken
+  // vergessen hatte, kam deshalb nicht mehr zur Expresslizenz.
+  describe('Erneut als Express beantragen', () => {
+    function render(player: Partial<PlayerWithLicense>, expressEnabled = true) {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [
+          HttpClientTestingModule,
+          RouterTestingModule,
+          UikitCommonModule,
+          FormsModule,
+          getTranslocoTestingModule({
+            de: {
+              licenseAdmin: {
+                teamDetail: {
+                  reapply: 'erneut beantragen',
+                  reapplyExpress: 'erneut als Express beantragen',
+                },
+              },
+            },
+          }),
+        ],
+        declarations: [LicenseTeamDetailComponent],
+      });
+      const fixture = TestBed.createComponent(LicenseTeamDetailComponent);
+      fixture.componentInstance.licenseHash = {
+        team: { id: 1, name: 'Musterstadt' },
+        express_license_enabled: expressEnabled,
+        current_requests: [
+          {
+            id: 7,
+            last_name: 'Meier',
+            first_name: 'Anna',
+            birthdate: '1990-01-01',
+            team_license: { id: 'abc', license: {} },
+            current_status: {
+              license_status_id: 8,
+              license_status: 'zurückgezogen',
+            },
+            ...player,
+          },
+        ],
+        other_players: [],
+      } as unknown as LicenseHash;
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    const text = (fixture: { nativeElement: HTMLElement }) =>
+      fixture.nativeElement.textContent ?? '';
+
+    it('bietet den Weg für einen zurückgezogenen Antrag an', () => {
+      const fixture = render({});
+      expect(text(fixture)).toContain('erneut beantragen');
+      expect(text(fixture)).toContain('erneut als Express beantragen');
+    });
+
+    it('bietet ihn auch für einen abgelehnten Antrag an', () => {
+      const fixture = render({
+        current_status: { license_status_id: 3, license_status: 'abgelehnt' },
+      } as Partial<PlayerWithLicense>);
+      expect(text(fixture)).toContain('erneut als Express beantragen');
+    });
+
+    it('bietet ihn nicht an, wenn die Mannschaft keine Expresslizenz hat', () => {
+      const fixture = render({}, false);
+      expect(text(fixture)).toContain('erneut beantragen');
+      expect(text(fixture)).not.toContain('erneut als Express beantragen');
+    });
+
+    it('bietet ihn nicht an, wenn der Antrag schon Express war', () => {
+      const fixture = render({
+        team_license: { id: 'abc', license: {}, express: true },
+      } as unknown as Partial<PlayerWithLicense>);
+      expect(text(fixture)).not.toContain('erneut als Express beantragen');
+    });
+
+    it('bietet ihn nicht für eine Reaktivierung nach Transfer an', () => {
+      const fixture = render({ reactivation: true });
+      expect(text(fixture)).not.toContain('erneut als Express beantragen');
+    });
+
+    it('bietet ihn nicht für einen laufenden Antrag an', () => {
+      const fixture = render({
+        current_status: { license_status_id: 2, license_status: 'beantragt' },
+      } as Partial<PlayerWithLicense>);
+      expect(text(fixture)).not.toContain('erneut als Express beantragen');
+    });
+
+    it('schickt express nur mit, wenn er gewählt ist', () => {
+      const fixture = render({});
+      const http = TestBed.inject(HttpTestingController);
+      const component = fixture.componentInstance;
+      spyOn(component, 'loadUserLicenses');
+
+      component.recreateLicenseRequest(7, 'abc', true);
+      const withExpress = http.expectOne((r) =>
+        r.url.endsWith('user/players/7/reenable_license_request.json')
+      );
+      expect(withExpress.request.body).toEqual({
+        license_id: 'abc',
+        express: true,
+      });
+      withExpress.flush({});
+
+      component.recreateLicenseRequest(7, 'abc');
+      const plain = http.expectOne((r) =>
+        r.url.endsWith('user/players/7/reenable_license_request.json')
+      );
+      expect(plain.request.body).toEqual({ license_id: 'abc' });
+      plain.flush({});
     });
   });
 });
