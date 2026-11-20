@@ -36,9 +36,11 @@ describe('LostPasswordComponent', () => {
   });
 
   // Ein durch eine neuere Mail ersetzter oder abgelaufener Link (404) muss
-  // erklären, dass das Passwort nicht geändert wurde und wie man einen neuen
-  // Link bekommt. Vorher stand nur ein Toast da, und das Formular lud zu
-  // weiteren Versuchen mit demselben toten Link ein.
+  // erklären, dass mit ihm nichts geändert wurde und wie man einen neuen Link
+  // bekommt. Vorher stand nur ein Toast da, und das Formular lud zu weiteren
+  // Versuchen mit demselben toten Link ein. Neutral formuliert, ohne feste
+  // Frist: Derselbe Hinweis erscheint auch für einen schon eingelösten Link
+  // und für Einladungen, die 14 Tage statt 24 Stunden gelten.
   it('should explain an invalid link instead of offering the form again', () => {
     const fixture = TestBed.createComponent(LostPasswordComponent);
     const component = fixture.componentInstance;
@@ -67,9 +69,11 @@ describe('LostPasswordComponent', () => {
     fixture.detectChanges();
 
     expect(component.linkInvalid).toBeTrue();
-    expect(
-      el.querySelector('[data-testid="reset-link-invalid"]')?.textContent
-    ).toContain('nicht geändert');
+    const hint =
+      el.querySelector('[data-testid="reset-link-invalid"]')?.textContent ?? '';
+    expect(hint).toContain('Mit diesem Link wurde nichts geändert');
+    expect(hint).not.toContain('Passwort wurde nicht geändert');
+    expect(hint).not.toContain('24 Stunden');
     expect(el.querySelector('form')).toBeNull();
     http.verify();
   });
