@@ -298,6 +298,37 @@ export class LicenseTeamDetailComponent implements OnInit {
     return this.licenseHash?.express_license_league?.name ?? null;
   }
 
+  /**
+   * Abgelehnten oder zurückgezogenen Antrag als Expresslizenz wieder
+   * einstellen. Nicht für Anträge, die schon Express sind, und nicht für
+   * Reaktivierungen nach Transfer (die sind kostenfrei und nie Express).
+   * Ob die Lizenz schon einmal erteilt war, prüft die API.
+   */
+  public canReapplyAsExpress(p: PlayerWithLicense): boolean {
+    const status = p.current_status?.license_status_id;
+    return (
+      !!this.licenseHash?.express_license_enabled &&
+      (status === 3 || status === 8) &&
+      !p.team_license?.express &&
+      !p.reactivation
+    );
+  }
+
+  get reapplyExpressContent(): string {
+    const hint = this._transloco.translate(
+      'licenseAdmin.teamDetail.reapplyExpressContent'
+    );
+    const league = this.expressLicenseLeagueName;
+    return league
+      ? hint +
+          ' ' +
+          this._transloco.translate(
+            'licenseAdmin.teamDetail.expressLeagueHint',
+            { league }
+          )
+      : hint;
+  }
+
   get submitDisabled(): boolean {
     if (!this.needsMinorConsent) return false;
     return !this.minorConsent || !this.guardianEmail.trim();
@@ -347,21 +378,26 @@ export class LicenseTeamDetailComponent implements OnInit {
       });
   }
 
-  public recreateLicenseRequest(playerId: number, licenseId: string) {
-    // check if set!
-    this._playerService.reenableLicenseRequest(playerId, licenseId).subscribe({
-      next: () => {
-        // reload user licenses
-        this.loadUserLicenses();
-      },
-      error: (err) =>
-        this._showRequestError(
-          err,
-          this._transloco.translate(
-            'licenseAdmin.notifications.recreateRequestError'
-          )
-        ),
-    });
+  public recreateLicenseRequest(
+    playerId: number,
+    licenseId: string,
+    express = false
+  ) {
+    this._playerService
+      .reenableLicenseRequest(playerId, licenseId, express)
+      .subscribe({
+        next: () => {
+          // reload user licenses
+          this.loadUserLicenses();
+        },
+        error: (err) =>
+          this._showRequestError(
+            err,
+            this._transloco.translate(
+              'licenseAdmin.notifications.recreateRequestError'
+            )
+          ),
+      });
   }
 
   public withdrawRequest(playerId: number, licenseId: string) {
