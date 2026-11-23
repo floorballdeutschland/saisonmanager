@@ -51,6 +51,12 @@ export class MatchReportComponent implements OnInit, OnChanges {
   @ViewChild('sbbNavigation')
   sbbNavigationRef!: ElementRef<HTMLElement>;
 
+  // Die Dateiauswahl steht außerhalb der Weiche „Scan vorhanden“ und bleibt
+  // beim Spielwechsel stehen, samt angezeigtem Dateinamen. Zurückgesetzt wird
+  // sie in _resetScanState.
+  @ViewChild('scanFileInput')
+  scanFileInputRef?: ElementRef<HTMLInputElement>;
+
   @Input()
   game!: Game;
 
@@ -164,7 +170,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.appGameStatus = this.game.game_status;
-    if (this.game.scan_required) {
+    if (this.game.scan_required && this.canUploadScan()) {
       this._loadScan();
     }
   }
@@ -184,6 +190,18 @@ export class MatchReportComponent implements OnInit, OnChanges {
       this.tabletChecking = false;
       this.tabletUnsent = 0;
       this._tabletCompleteAnswered = false;
+      // Die Seite wird über Spiele hinweg wiederverwendet, geladen wurde der
+      // Scan aber nur in ngOnInit: Nach dem Wechsel stand der Scan des vorigen
+      // Spiels da, und eine dort gewählte, noch nicht hochgeladene Datei ging
+      // mit „Scan hochladen“ an das neue Spiel. Beim ersten Aufruf (noch kein
+      // voriges Spiel) lädt ngOnInit.
+      if (game.previousValue) {
+        this._resetScanState();
+        // Wie ngOnInit: nur, wo der Bereich überhaupt angezeigt wird.
+        if (this.game.scan_required && this.canUploadScan()) {
+          this._loadScan();
+        }
+      }
     }
 
     // Vor dem ersten Abschnitt gibt es noch keinen current_period_title. Die
@@ -635,35 +653,54 @@ export class MatchReportComponent implements OnInit, OnChanges {
   public uploadScan() {
     if (!this.selectedScanFile) return;
 
+    const gameId = this.game.id;
     this.scanUploading = true;
     this.scanUploadError = '';
 
-    this._gameService
-      .uploadGameScan(this.game.id, this.selectedScanFile)
-      .subscribe({
-        next: (scan) => {
-          this.existingScan = scan;
-          this.selectedScanFile = null;
-          this.scanUploading = false;
-          this._cdr.markForCheck();
-        },
-        // Bewusst ohne eigene Meldung, wie beim Berichtsformular: Der
-        // ErrorInterceptor zeigt die Absage der API (`errors`) bereits an, eine
-        // Zeile am Feld wiederholte sie nur. Inline steht allein die
-        // Vorprüfung aus onScanFileSelected, die keine Anfrage auslöst.
-        error: () => {
-          this.scanUploading = false;
-          this._cdr.markForCheck();
-        },
-      });
+    this._gameService.uploadGameScan(gameId, this.selectedScanFile).subscribe({
+      next: (scan) => {
+        // Inzwischen zu einem anderen Spiel gewechselt: Der Scan gehört
+        // dem vorigen, _resetScanState hat die Anzeige schon geräumt.
+        if (this.game?.id !== gameId) return;
+        this.existingScan = scan;
+        this.selectedScanFile = null;
+        this.scanUploading = false;
+        this._cdr.markForCheck();
+      },
+      // Bewusst ohne eigene Meldung, wie beim Berichtsformular: Der
+      // ErrorInterceptor zeigt die Absage der API (`errors`) bereits an, eine
+      // Zeile am Feld wiederholte sie nur. Inline steht allein die
+      // Vorprüfung aus onScanFileSelected, die keine Anfrage auslöst.
+      error: () => {
+        if (this.game?.id !== gameId) return;
+        this.scanUploading = false;
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   private _loadScan() {
-    this._gameService.getGameScan(this.game.id).subscribe({
+    const gameId = this.game.id;
+    this._gameService.getGameScan(gameId).subscribe({
       next: (scan) => {
+        // Eine späte Antwort für das vorige Spiel darf den Scan des neuen
+        // nicht überschreiben.
+        if (this.game?.id !== gameId) return;
         this.existingScan = scan;
         this._cdr.markForCheck();
       },
     });
+  }
+
+  private _resetScanState() {
+    this.existingScan = null;
+    this.selectedScanFile = null;
+    this.scanUploadError = '';
+    this.scanUploading = false;
+    // Eine noch laufende PDF-Prüfung aus onScanFileSelected verfällt.
+    this._scanSelection++;
+    if (this.scanFileInputRef) {
+      this.scanFileInputRef.nativeElement.value = '';
+    }
   }
 }
