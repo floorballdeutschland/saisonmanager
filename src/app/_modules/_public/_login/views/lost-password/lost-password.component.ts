@@ -9,6 +9,7 @@ import { ControlsOf, FormControl, FormGroup } from '@ngneat/reactive-forms';
 import { Validators } from '@angular/forms';
 import { NotificationService, SessionService } from '@floorball/core';
 import { Subscription } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   PASSWORD_MIN_LENGTH,
@@ -29,6 +30,10 @@ export interface LostPasswordFormValue {
 export class LostPasswordComponent implements OnInit, OnDestroy {
   public resetPasswordForm!: FormGroup<ControlsOf<LostPasswordFormValue>>;
   public error = '';
+  // Der Server kennt den Link nicht (mehr): ersetzt durch eine neuere Mail,
+  // abgelaufen oder schon eingelöst. Die Seite erklärt dann den Weg zu einem
+  // neuen Link, statt das Formular erneut anzubieten.
+  public linkInvalid = false;
 
   public resetToken = '';
   private subscriptions: Subscription[] = [];
@@ -105,9 +110,13 @@ export class LostPasswordComponent implements OnInit, OnDestroy {
             // this.router.navigate([this.returnUrl])
             this._router.navigate(['/', 'login']);
           },
-          error: (err) => {
+          error: (err: HttpErrorResponse) => {
+            if (err?.status === 404) {
+              this.linkInvalid = true;
+              return;
+            }
             console.error(err);
-            this.error = err;
+            this.error = String(err?.message ?? err);
           },
         })
     );
