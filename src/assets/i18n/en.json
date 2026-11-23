@@ -134,7 +134,7 @@
     "loginFailed": "Login failed.",
     "loginBlocked": "Your account is not enabled for login. Sorry.",
     "logoutSuccess": "Logout successful.",
-    "lostPasswordSent": "If an account exists, you will receive an email.",
+    "lostPasswordSent": "If an account exists, you will receive an email. This can take a few minutes. Please do not request it again: a new link invalidates the previous one.",
     "lostPasswordError": "Error while resetting.",
     "passwordSet": "Password set successfully.",
     "passwordResetError": "Error while resetting."
