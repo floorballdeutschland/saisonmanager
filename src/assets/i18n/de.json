@@ -134,7 +134,7 @@
     "loginFailed": "Login fehlgeschlagen.",
     "loginBlocked": "Der Login ist für dich nicht freigeschaltet. Sorry.",
     "logoutSuccess": "Logout erfolgreich.",
-    "lostPasswordSent": "Wenn ein Zugang existiert, erhältst du eine E-Mail.",
+    "lostPasswordSent": "Wenn ein Zugang existiert, erhältst du eine E-Mail. Das kann ein paar Minuten dauern. Bitte nicht erneut anfordern: Ein neuer Link macht den vorigen ungültig.",
     "lostPasswordError": "Fehler beim Zurücksetzen.",
     "passwordSet": "Passwort erfolgreich gesetzt.",
     "passwordResetError": "Fehler beim Zurücksetzen."

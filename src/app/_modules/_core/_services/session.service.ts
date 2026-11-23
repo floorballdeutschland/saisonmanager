@@ -4,7 +4,7 @@ import { TranslocoService } from '@jsverse/transloco';
 
 import { EmailChangeAnswer, LoginAnswer, User } from '@floorball/types';
 import { environment } from 'src/environments/environment';
-import { Observable, of, ReplaySubject } from 'rxjs';
+import { Observable, of, ReplaySubject, throwError } from 'rxjs';
 import { catchError, map, startWith, take } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { AppLanguage, DEFAULT_LANG } from '../_i18n/lang';
@@ -216,6 +216,12 @@ export class SessionService {
         return loginAnswer;
       }),
       catchError((error) => {
+        // Einen ungültigen oder abgelaufenen Link (404) erklärt die Seite
+        // /neues-passwort selbst, samt Weg zu einem neuen Link.
+        if (error?.status === 404) {
+          return throwError(() => error);
+        }
+
         console.error(error);
 
         this._notificationService.error(
