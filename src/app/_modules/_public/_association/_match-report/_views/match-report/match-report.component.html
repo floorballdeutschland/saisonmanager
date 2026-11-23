@@ -385,6 +385,7 @@
 
         <div class="flex flex-col gap-3 max-w-md">
           <input
+            #scanFileInput
             type="file"
             [accept]="pdfUploadAccept"
             (change)="onScanFileSelected($event)"

@@ -10,11 +10,11 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NEVER, of, throwError } from 'rxjs';
+import { NEVER, of, Subject, throwError } from 'rxjs';
 
 import { GameService, NotificationService } from '@floorball/core';
 import { getTranslocoTestingModule } from '@floorball/core';
-import { Game, GameAdditionalFields } from '@floorball/types';
+import { Game, GameAdditionalFields, GameScan } from '@floorball/types';
 
 import { TabletShotSyncService } from '../../_components/tablet-capture/tablet-shot-sync.service';
 import { MatchReportComponent } from './match-report.component';
@@ -800,6 +800,148 @@ describe('MatchReportComponent', () => {
       component.uploadScan();
 
       expect(component.scanUploadError).toBe('');
+      expect(component.scanUploading).toBeFalse();
+    });
+  });
+
+  // Gemeldet nach einem Regio-Spieltag: Die Seite bleibt beim Wechsel zum
+  // nächsten Spiel dieselbe Komponente, geladen wurde der Scan aber nur in
+  // ngOnInit. Das nächste Spiel zeigte den Scan des vorigen, und eine dort
+  // gewählte Datei ging mit „Scan hochladen“ an das neue Spiel.
+  describe('Scan beim Wechsel zum nächsten Spiel', () => {
+    const scan = (filename: string) =>
+      ({
+        filename,
+        content_type: 'application/pdf',
+        byte_size: 1,
+        uploaded_at: '2026-11-22T12:00:00Z',
+        uploaded_by_name: null,
+        expires_at: '2027-11-22',
+        url: `https://example.test/${filename}`,
+      }) as GameScan;
+
+    const game = (id: number) =>
+      ({
+        id,
+        game_status: 'aftergame',
+        scan_required: true,
+        permission: ['edit_game_report'],
+        checklist_items: [],
+        checklist_answers: [],
+      }) as unknown as Game;
+
+    // Wie ein echter Elternteil über setInput, damit ngOnChanges das vorige
+    // Spiel kennt.
+    function show(g: Game) {
+      fixture.componentRef.setInput('game', g);
+      fixture.detectChanges();
+    }
+
+    beforeEach(() => {
+      fixture = TestBed.createComponent(MatchReportComponent);
+      component = fixture.componentInstance;
+      // Sonst rendert der Bereich mit dem Dateifeld gar nicht.
+      fixture.componentRef.setInput(
+        'additionalFields',
+        {} as unknown as GameAdditionalFields
+      );
+    });
+
+    function fileInput(): HTMLInputElement | null {
+      return fixture.nativeElement.querySelector('input[type="file"]');
+    }
+
+    it('lädt den Scan des neuen Spiels und zeigt nicht den des vorigen', () => {
+      const load = spyOn(gameService, 'getGameScan').and.callFake(
+        (id: number) =>
+          id === 1 ? of(scan('spiel1.pdf')) : of(null as unknown as GameScan)
+      );
+      show(game(1));
+      expect(component.existingScan?.filename).toBe('spiel1.pdf');
+
+      show(game(2));
+
+      expect(load).toHaveBeenCalledWith(2);
+      expect(component.existingScan).toBeNull();
+    });
+
+    it('lädt eine im vorigen Spiel gewählte Datei nicht ins neue hoch', async () => {
+      spyOn(gameService, 'getGameScan').and.returnValue(NEVER);
+      const upload = spyOn(gameService, 'uploadGameScan');
+      show(game(1));
+      const pdf = new File(['%PDF-1.4'], 'spiel1.pdf', {
+        type: 'application/pdf',
+      });
+      await component.onScanFileSelected({
+        target: { files: [pdf], value: 'spiel1.pdf' },
+      } as unknown as Event);
+      expect(component.selectedScanFile).toBe(pdf);
+
+      show(game(2));
+      component.uploadScan();
+
+      expect(component.selectedScanFile).toBeNull();
+      expect(upload).not.toHaveBeenCalled();
+    });
+
+    // Der angezeigte Dateiname des vorigen Spiels muss verschwinden. Der
+    // Wert eines Dateifelds lässt sich nur leeren, nicht setzen; geprüft wird
+    // daher, dass das Feld geleert wird (Setter-Spion auf dem Element).
+    it('leert das Dateifeld beim Wechsel', () => {
+      spyOn(gameService, 'getGameScan').and.returnValue(NEVER);
+      show(game(1));
+      const input = fileInput();
+      expect(input).withContext('Dateifeld gerendert').not.toBeNull();
+      const cleared: string[] = [];
+      Object.defineProperty(input!, 'value', {
+        configurable: true,
+        get: () => 'C:\\fakepath\\spiel1.pdf',
+        set: (v: string) => cleared.push(v),
+      });
+
+      show(game(2));
+
+      expect(cleared).toEqual(['']);
+    });
+
+    it('lädt keinen Scan ohne Recht zum Hochladen', () => {
+      const load = spyOn(gameService, 'getGameScan').and.returnValue(NEVER);
+      show({ ...game(1), permission: [] } as unknown as Game);
+      show({ ...game(2), permission: [] } as unknown as Game);
+
+      expect(load).not.toHaveBeenCalled();
+    });
+
+    it('übernimmt eine späte Antwort für das vorige Spiel nicht', () => {
+      const first = new Subject<GameScan>();
+      spyOn(gameService, 'getGameScan').and.callFake((id: number) =>
+        id === 1 ? first : NEVER
+      );
+      show(game(1));
+      show(game(2));
+
+      first.next(scan('spiel1.pdf'));
+
+      expect(component.existingScan).toBeNull();
+    });
+
+    it('übernimmt einen späten Upload des vorigen Spiels nicht ins neue', async () => {
+      spyOn(gameService, 'getGameScan').and.returnValue(NEVER);
+      const uploaded = new Subject<GameScan>();
+      spyOn(gameService, 'uploadGameScan').and.returnValue(uploaded);
+      show(game(1));
+      await component.onScanFileSelected({
+        target: {
+          files: [new File(['%PDF-1.4'], 'a.pdf', { type: 'application/pdf' })],
+          value: 'a.pdf',
+        },
+      } as unknown as Event);
+      component.uploadScan();
+
+      show(game(2));
+      uploaded.next(scan('spiel1.pdf'));
+
+      expect(component.existingScan).toBeNull();
       expect(component.scanUploading).toBeFalse();
     });
   });
