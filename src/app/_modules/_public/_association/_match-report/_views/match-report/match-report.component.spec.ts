@@ -825,6 +825,7 @@ describe('MatchReportComponent', () => {
         id,
         game_status: 'aftergame',
         scan_required: true,
+        permission: ['edit_game_report'],
         checklist_items: [],
         checklist_answers: [],
       }) as unknown as Game;
@@ -839,7 +840,16 @@ describe('MatchReportComponent', () => {
     beforeEach(() => {
       fixture = TestBed.createComponent(MatchReportComponent);
       component = fixture.componentInstance;
+      // Sonst rendert der Bereich mit dem Dateifeld gar nicht.
+      fixture.componentRef.setInput(
+        'additionalFields',
+        {} as unknown as GameAdditionalFields
+      );
     });
+
+    function fileInput(): HTMLInputElement | null {
+      return fixture.nativeElement.querySelector('input[type="file"]');
+    }
 
     it('lädt den Scan des neuen Spiels und zeigt nicht den des vorigen', () => {
       const load = spyOn(gameService, 'getGameScan').and.callFake(
@@ -872,6 +882,34 @@ describe('MatchReportComponent', () => {
 
       expect(component.selectedScanFile).toBeNull();
       expect(upload).not.toHaveBeenCalled();
+    });
+
+    // Der angezeigte Dateiname des vorigen Spiels muss verschwinden. Der
+    // Wert eines Dateifelds lässt sich nur leeren, nicht setzen; geprüft wird
+    // daher, dass das Feld geleert wird (Setter-Spion auf dem Element).
+    it('leert das Dateifeld beim Wechsel', () => {
+      spyOn(gameService, 'getGameScan').and.returnValue(NEVER);
+      show(game(1));
+      const input = fileInput();
+      expect(input).withContext('Dateifeld gerendert').not.toBeNull();
+      const cleared: string[] = [];
+      Object.defineProperty(input!, 'value', {
+        configurable: true,
+        get: () => 'C:\\fakepath\\spiel1.pdf',
+        set: (v: string) => cleared.push(v),
+      });
+
+      show(game(2));
+
+      expect(cleared).toEqual(['']);
+    });
+
+    it('lädt keinen Scan ohne Recht zum Hochladen', () => {
+      const load = spyOn(gameService, 'getGameScan').and.returnValue(NEVER);
+      show({ ...game(1), permission: [] } as unknown as Game);
+      show({ ...game(2), permission: [] } as unknown as Game);
+
+      expect(load).not.toHaveBeenCalled();
     });
 
     it('übernimmt eine späte Antwort für das vorige Spiel nicht', () => {

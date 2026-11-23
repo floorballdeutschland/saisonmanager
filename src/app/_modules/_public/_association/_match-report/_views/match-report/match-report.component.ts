@@ -51,9 +51,9 @@ export class MatchReportComponent implements OnInit, OnChanges {
   @ViewChild('sbbNavigation')
   sbbNavigationRef!: ElementRef<HTMLElement>;
 
-  // Die Dateiauswahl steht außerhalb jedes *ngIf und bleibt beim Spielwechsel
-  // stehen, samt angezeigtem Dateinamen. Zurückgesetzt wird sie in
-  // _resetScanState.
+  // Die Dateiauswahl steht außerhalb der Weiche „Scan vorhanden“ und bleibt
+  // beim Spielwechsel stehen, samt angezeigtem Dateinamen. Zurückgesetzt wird
+  // sie in _resetScanState.
   @ViewChild('scanFileInput')
   scanFileInputRef?: ElementRef<HTMLInputElement>;
 
@@ -170,7 +170,7 @@ export class MatchReportComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.appGameStatus = this.game.game_status;
-    if (this.game.scan_required) {
+    if (this.game.scan_required && this.canUploadScan()) {
       this._loadScan();
     }
   }
@@ -197,7 +197,8 @@ export class MatchReportComponent implements OnInit, OnChanges {
       // voriges Spiel) lädt ngOnInit.
       if (game.previousValue) {
         this._resetScanState();
-        if (this.game.scan_required) {
+        // Wie ngOnInit: nur, wo der Bereich überhaupt angezeigt wird.
+        if (this.game.scan_required && this.canUploadScan()) {
           this._loadScan();
         }
       }
