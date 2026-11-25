@@ -27,6 +27,41 @@ export interface SecretaryGameDayStub {
   league_id: number | null;
   games_count: number;
   overlay_link?: OverlayLinkState | null;
+  /**
+   * Die Spiele samt Schiedsrichteransetzung. Wie `overlay_link` nur an den
+   * eigenen Spieltagen; fehlt außerdem bei einer API vor api#935.
+   */
+  games?: SecretaryHostGame[];
+}
+
+/** Eine angesetzte Person, wie sie der Ausrichter sieht: Name und E-Mail. */
+export interface SecretaryHostPerson {
+  name: string;
+  guest: boolean;
+  email: string | null;
+}
+
+/**
+ * Die Ansetzung eines Spiels aus Sicht des Ausrichters. Vor der
+ * Veröffentlichung liefert der Server nur den Status, ohne Personen. Bei einer
+ * Vereinsansetzung steht `club`, und `referees` ist leer.
+ */
+export type SecretaryHostAssignment =
+  | { status: 'tentative' }
+  | {
+      status: 'published';
+      referees: SecretaryHostPerson[];
+      coach: SecretaryHostPerson | null;
+      club: string | null;
+    };
+
+export interface SecretaryHostGame {
+  id: number;
+  game_number: string | null;
+  start_time: string | null;
+  home_team: string | null;
+  guest_team: string | null;
+  referee_assignment: SecretaryHostAssignment | null;
 }
 
 export interface SecretaryLinkInfo {

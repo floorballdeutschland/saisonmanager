@@ -345,6 +345,42 @@ describe('SecretaryLinksComponent', () => {
     });
   });
 
+  describe('Schiedsrichter des Spieltags', () => {
+    const section = () =>
+      fixture.nativeElement.querySelector(
+        '[data-test="host-referees-section"]'
+      );
+
+    it('zeigt den Abschnitt, wenn der Server Spiele mitliefert', () => {
+      const group = hallDay();
+      group.game_days[0].games = [
+        {
+          id: 9,
+          game_number: '66',
+          start_time: '14:00',
+          home_team: 'A',
+          guest_team: 'B',
+          referee_assignment: null,
+        },
+      ];
+      gameService.getSecretaryGameDays.and.returnValue(of([group]));
+
+      fixture.detectChanges();
+
+      expect(section()).not.toBeNull();
+      expect(
+        fixture.debugElement.queryAll(By.css('fb-host-referees')).length
+      ).toBe(1);
+    });
+
+    // Vor dem Deploy von api#935 fehlt `games`; die Seite bleibt dann wie bisher.
+    it('lässt den Abschnitt weg, wenn keine Spiele kommen', () => {
+      fixture.detectChanges();
+
+      expect(section()).toBeNull();
+    });
+  });
+
   describe('Darstellung', () => {
     it('nennt die fremde Belegung der Halle beim Namen', () => {
       gameService.getSecretaryGameDays.and.returnValue(

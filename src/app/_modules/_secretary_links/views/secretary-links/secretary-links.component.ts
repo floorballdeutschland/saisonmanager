@@ -159,6 +159,11 @@ export class SecretaryLinksComponent implements OnInit, OnDestroy {
       .join(' · ');
   }
 
+  /** Ob die Gruppe Spiele mitbringt; eine API vor api#935 liefert keine. */
+  hasGames(hallDay: SecretaryHallDay): boolean {
+    return hallDay.game_days.some((gd) => (gd.games?.length ?? 0) > 0);
+  }
+
   gamesCount(hallDay: SecretaryHallDay): number {
     return hallDay.game_days.reduce((sum, gd) => sum + gd.games_count, 0);
   }
