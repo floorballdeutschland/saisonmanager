@@ -14,10 +14,11 @@ export type NonEmptyArray<T> = [T, ...T[]];
  * Nullable statt optional: Rails' `render json:` lässt keine Schlüssel weg, ein
  * fehlender Wert kommt als `null` an, nicht als `undefined`.
  *
- * `overlay_link` ist die Ausnahme und wirklich optional: Der Server hängt ihn
- * nur an die eigenen Spieltage einer Gruppe, nicht an `other_game_days_in_hall`
- * – für fremde Spieltage gibt es hier nichts zu vergeben und niemand muss
- * erfahren, wer dort einen Zugang erzeugt hat.
+ * `overlay_link` und `games` sind die Ausnahmen und wirklich optional: Der
+ * Server hängt sie nur an die eigenen Spieltage einer Gruppe, nicht an
+ * `other_game_days_in_hall` – für fremde Spieltage gibt es hier nichts zu
+ * vergeben und niemand muss erfahren, wer dort einen Zugang erzeugt hat oder
+ * wer dort pfeift.
  */
 export interface SecretaryGameDayStub {
   id: number;
@@ -27,6 +28,42 @@ export interface SecretaryGameDayStub {
   league_id: number | null;
   games_count: number;
   overlay_link?: OverlayLinkState | null;
+  /**
+   * Die Spiele samt Schiedsrichteransetzung. Nur für VM und TM des Ausrichters,
+   * auch nicht über eine zusätzliche SBK-Rolle; fehlt außerdem bei einer API
+   * vor api#935.
+   */
+  games?: SecretaryHostGame[];
+}
+
+/** Eine angesetzte Person, wie sie der Ausrichter sieht: Name und E-Mail. */
+export interface SecretaryHostPerson {
+  name: string;
+  guest: boolean;
+  email: string | null;
+}
+
+/**
+ * Die Ansetzung eines Spiels aus Sicht des Ausrichters. Vor der
+ * Veröffentlichung liefert der Server nur den Status, ohne Personen. Bei einer
+ * Vereinsansetzung steht `club`, und `referees` ist leer.
+ */
+export type SecretaryHostAssignment =
+  | { status: 'tentative' }
+  | {
+      status: 'published';
+      referees: SecretaryHostPerson[];
+      coach: SecretaryHostPerson | null;
+      club: string | null;
+    };
+
+export interface SecretaryHostGame {
+  id: number;
+  game_number: string | null;
+  start_time: string | null;
+  home_team: string | null;
+  guest_team: string | null;
+  referee_assignment: SecretaryHostAssignment | null;
 }
 
 export interface SecretaryLinkInfo {

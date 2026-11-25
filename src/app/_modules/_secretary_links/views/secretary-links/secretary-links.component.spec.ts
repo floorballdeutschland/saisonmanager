@@ -4,7 +4,11 @@ import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 import { GameService, NotificationService } from '@floorball/core';
-import { OverlayLinkState, SecretaryHallDay } from '@floorball/types';
+import {
+  OverlayLinkState,
+  SecretaryHallDay,
+  SecretaryHostGame,
+} from '@floorball/types';
 
 import { SecretaryLinksComponent } from './secretary-links.component';
 
@@ -13,6 +17,11 @@ class OverlayLinksStubComponent {
   @Input() gameDayId?: number | null;
   @Input() label = '';
   @Input() knownLink?: OverlayLinkState | null;
+}
+
+@Component({ selector: 'fb-host-referees', template: '', standalone: false })
+class HostRefereesStubComponent {
+  @Input() games: SecretaryHostGame[] = [];
 }
 
 describe('SecretaryLinksComponent', () => {
@@ -76,7 +85,11 @@ describe('SecretaryLinksComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      declarations: [SecretaryLinksComponent, OverlayLinksStubComponent],
+      declarations: [
+        SecretaryLinksComponent,
+        OverlayLinksStubComponent,
+        HostRefereesStubComponent,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: GameService, useValue: gameService },
@@ -342,6 +355,67 @@ describe('SecretaryLinksComponent', () => {
 
       expect(overlayStubs()[0].knownLink?.created_by).toBe('Mia Berg');
       expect(overlayStubs()[1].knownLink).toBeUndefined();
+    });
+  });
+
+  describe('Schiedsrichter des Spieltags', () => {
+    const section = () =>
+      fixture.nativeElement.querySelector(
+        '[data-test="host-referees-section"]'
+      );
+    const hostStubs = () =>
+      fixture.debugElement
+        .queryAll(By.directive(HostRefereesStubComponent))
+        .map((de) => de.componentInstance as HostRefereesStubComponent);
+
+    it('zeigt den Abschnitt, wenn der Server Spiele mitliefert', () => {
+      const group = hallDay();
+      group.game_days[0].games = [
+        {
+          id: 9,
+          game_number: '66',
+          start_time: '14:00',
+          home_team: 'A',
+          guest_team: 'B',
+          referee_assignment: null,
+        },
+      ];
+      gameService.getSecretaryGameDays.and.returnValue(of([group]));
+
+      fixture.detectChanges();
+
+      expect(section()).not.toBeNull();
+      expect(hostStubs().map((s) => s.games.map((g) => g.id))).toEqual([[9]]);
+    });
+
+    // Zwei Ligen in einer Halle: Jede bekommt ihre eigenen Spiele, und ein
+    // Spieltag ohne Spiele erscheint gar nicht erst.
+    it('reicht je Spieltag dessen eigene Spiele durch', () => {
+      const group = hallDay();
+      group.game_days[1].games = [
+        {
+          id: 21,
+          game_number: '7',
+          start_time: '16:00',
+          home_team: 'C',
+          guest_team: 'D',
+          referee_assignment: null,
+        },
+      ];
+      gameService.getSecretaryGameDays.and.returnValue(of([group]));
+
+      fixture.detectChanges();
+
+      expect(hostStubs().map((s) => s.games.map((g) => g.id))).toEqual([[21]]);
+      expect(section().textContent).toContain('U17');
+      expect(section().textContent).not.toContain('U15');
+    });
+
+    // Vor dem Deploy von api#935 fehlt `games`; die Seite bleibt dann wie bisher.
+    it('lässt den Abschnitt weg, wenn keine Spiele kommen', () => {
+      fixture.detectChanges();
+
+      expect(section()).toBeNull();
     });
   });
 

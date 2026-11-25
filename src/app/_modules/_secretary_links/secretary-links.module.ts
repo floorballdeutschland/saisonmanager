@@ -6,6 +6,7 @@ import { AccessCardModule } from '@floorball/access-card';
 import { StreamThumbnailsModule } from '@floorball/stream-thumbnails';
 
 import * as Views from './views';
+import { HostRefereesComponent } from './components/host-referees/host-referees.component';
 
 /**
  * Zugang fuer das Spielsekretariat, ohne eigene Route: Die Seite ist ein
@@ -19,7 +20,7 @@ import * as Views from './views';
     AccessCardModule,
     StreamThumbnailsModule,
   ],
-  declarations: [Views.SecretaryLinksComponent],
+  declarations: [Views.SecretaryLinksComponent, HostRefereesComponent],
   exports: [Views.SecretaryLinksComponent],
 })
 export class SecretaryLinksModule {}

@@ -1,0 +1,76 @@
+<ul class="flex flex-col gap-3">
+  @for (game of games; track game.id) {
+    <li class="text-sm" data-test="host-game">
+      <div class="font-medium">
+        @if (game.start_time) {
+          <span>{{ game.start_time }} Uhr · </span>
+        }
+        <span>{{ teams(game) }}</span>
+        @if (game.game_number) {
+          <span class="text-fb-gray-500"> #{{ game.game_number }}</span>
+        }
+      </div>
+
+      @if (published(game); as assignment) {
+        <ul class="mt-1 flex flex-col gap-0.5">
+          @if (assignment.club) {
+            <li data-test="host-club">Gestellt von {{ assignment.club }}</li>
+          }
+          @for (person of assignment.referees; track $index) {
+            <ng-container
+              *ngTemplateOutlet="personRow; context: { $implicit: person }"
+            ></ng-container>
+          }
+          @if (assignment.coach; as coach) {
+            <ng-container
+              *ngTemplateOutlet="
+                personRow;
+                context: { $implicit: coach, coach: true }
+              "
+            ></ng-container>
+          }
+          @if (!assignment.club && people(assignment).length === 0) {
+            <li class="text-fb-gray-500">Niemand angesetzt.</li>
+          }
+        </ul>
+        @if (mailtoAll(assignment); as mailto) {
+          <a
+            class="inline-block mt-1 text-xs underline"
+            data-test="host-mail-all"
+            [href]="mailto"
+            >Alle anschreiben</a
+          >
+        }
+      } @else if (game.referee_assignment) {
+        <div class="mt-1 text-fb-gray-500" data-test="host-tentative">
+          Ansetzung noch nicht veröffentlicht.
+        </div>
+      } @else {
+        <div class="mt-1 text-fb-gray-500" data-test="host-none">
+          Noch keine Schiedsrichter angesetzt.
+        </div>
+      }
+    </li>
+  }
+</ul>
+
+<ng-template #personRow let-person let-coach="coach">
+  <li class="flex flex-wrap gap-x-2" data-test="host-person">
+    <span>
+      @if (coach) {
+        <span class="text-fb-gray-500">Coach: </span>
+      }
+      {{ person.name }}
+      @if (person.guest) {
+        <span class="text-fb-gray-500">(Gast)</span>
+      }
+    </span>
+    @if (person.email) {
+      <a class="underline break-all" [href]="'mailto:' + person.email">{{
+        person.email
+      }}</a>
+    } @else {
+      <span class="text-fb-gray-500">keine E-Mail hinterlegt</span>
+    }
+  </li>
+</ng-template>
