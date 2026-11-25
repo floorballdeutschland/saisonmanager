@@ -14,10 +14,11 @@ type PublishedAssignment = Extract<
  * Die angesetzten Schiedsrichter eines Heimspieltags mit E-Mail, damit der
  * Ausrichter das Gespann einladen kann (api#935).
  *
- * Bisher kamen die Adressen nur mit der Ausrichter-Mail bei der
- * Veröffentlichung. Gast-Schiedsrichter stehen in keiner Vereinsliste, für
- * sie war die Mail der einzige Weg. Was hier steht, entspricht dem Inhalt
- * dieser Mail: Name und E-Mail, keine Telefonnummer.
+ * Bisher kamen die Adressen nur mit der Ausrichter-Mail, und die geht erst
+ * raus, wenn alle Spiele des Spieltags veröffentlicht sind. Gast-Schiedsrichter
+ * stehen in keiner Vereinsliste, für sie war die Mail der einzige Weg. Die
+ * Personendaten sind dieselben wie in der Mail: Name und E-Mail, keine
+ * Telefonnummer.
  */
 @Component({
   selector: 'fb-host-referees',

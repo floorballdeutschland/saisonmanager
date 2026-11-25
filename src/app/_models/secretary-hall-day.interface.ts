@@ -14,10 +14,11 @@ export type NonEmptyArray<T> = [T, ...T[]];
  * Nullable statt optional: Rails' `render json:` lässt keine Schlüssel weg, ein
  * fehlender Wert kommt als `null` an, nicht als `undefined`.
  *
- * `overlay_link` ist die Ausnahme und wirklich optional: Der Server hängt ihn
- * nur an die eigenen Spieltage einer Gruppe, nicht an `other_game_days_in_hall`
- * – für fremde Spieltage gibt es hier nichts zu vergeben und niemand muss
- * erfahren, wer dort einen Zugang erzeugt hat.
+ * `overlay_link` und `games` sind die Ausnahmen und wirklich optional: Der
+ * Server hängt sie nur an die eigenen Spieltage einer Gruppe, nicht an
+ * `other_game_days_in_hall` – für fremde Spieltage gibt es hier nichts zu
+ * vergeben und niemand muss erfahren, wer dort einen Zugang erzeugt hat oder
+ * wer dort pfeift.
  */
 export interface SecretaryGameDayStub {
   id: number;
@@ -28,8 +29,9 @@ export interface SecretaryGameDayStub {
   games_count: number;
   overlay_link?: OverlayLinkState | null;
   /**
-   * Die Spiele samt Schiedsrichteransetzung. Wie `overlay_link` nur an den
-   * eigenen Spieltagen; fehlt außerdem bei einer API vor api#935.
+   * Die Spiele samt Schiedsrichteransetzung. Nur für VM und TM des Ausrichters,
+   * auch nicht über eine zusätzliche SBK-Rolle; fehlt außerdem bei einer API
+   * vor api#935.
    */
   games?: SecretaryHostGame[];
 }
