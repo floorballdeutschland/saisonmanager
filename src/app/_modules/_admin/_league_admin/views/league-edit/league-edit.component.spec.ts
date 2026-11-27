@@ -164,6 +164,59 @@ describe('LeagueEditComponent', () => {
     });
   });
 
+  describe('Vorrunden-Ligen', () => {
+    function setup(): { component: LeagueEditComponent; league: League } {
+      const component =
+        TestBed.createComponent(LeagueEditComponent).componentInstance;
+      component.otherLeagues = [
+        { id: 7, name: 'Staffel A', game_operation_name: 'FVB' },
+        { id: 8, name: 'Staffel B', game_operation_name: 'FVB' },
+        { id: 9, name: 'Andere', game_operation_name: '' },
+      ] as League[];
+      return { component, league: { has_preround: false } as League };
+    }
+
+    it('liest den Altstand mit nur league_id_preround', () => {
+      const { component, league } = setup();
+      league.league_id_preround = 7;
+      expect(component.preroundIds(league)).toEqual([7]);
+    });
+
+    it('fuegt hinzu, haelt league_id_preround auf der ersten und blendet Gewaehltes aus', () => {
+      const { component, league } = setup();
+      component.addPreroundLeague(league, 8);
+      component.addPreroundLeague(league, '7');
+      component.addPreroundLeague(league, 8);
+      component.addPreroundLeague(league, null);
+
+      expect(league.league_ids_preround).toEqual([8, 7]);
+      expect(league.league_id_preround).toBe(8);
+      expect(
+        component.availablePreroundLeagues(league).map((l) => l.id)
+      ).toEqual([9]);
+      expect(component.preroundLeagueLabel(7)).toBe('Staffel A (FVB)');
+      expect(component.preroundLeagueLabel(99)).toBe('#99');
+    });
+
+    it('setzt die Uebernahme zurueck, wenn die letzte Vorrunde entfernt wird', () => {
+      const { component, league } = setup();
+      component.addPreroundLeague(league, 7);
+      component.addPreroundLeague(league, 8);
+      league.preround_point_modus = 'full';
+      league.preround_transfer_scope = 'goals';
+
+      component.removePreroundLeague(league, 7);
+      expect(league.league_id_preround).toBe(8);
+      expect(league.preround_point_modus).toBe('full');
+
+      component.removePreroundLeague(league, 8);
+      expect(league.league_ids_preround).toEqual([]);
+      expect(league.league_id_preround).toBeNull();
+      expect(league.preround_point_modus).toBeNull();
+      expect(league.preround_transfer_scope).toBeNull();
+    });
+  });
+
   // Reiter mit echtem Template. Die Dienste liefern nur, was die Ansicht zum
   // Aufbauen braucht.
   describe('Reiter', () => {
@@ -246,13 +299,30 @@ describe('LeagueEditComponent', () => {
       await open('/ligen/5?reiter=modus');
       expect(panel().getAttribute('data-testid')).toBe('tabpanel-modus');
       expect(
-        panel().querySelector('[name="league_id_preround"]')
+        panel().querySelector('[name="preround_league_add"]')
       ).not.toBeNull();
       // Tabellenregeln stehen mit im Modus-Reiter.
       expect(panel().querySelector('[name="table_modus"]')).not.toBeNull();
       expect(
         panel().querySelector('[name="direct_comparison"]')
       ).not.toBeNull();
+    });
+
+    it('zeigt mehrere Vorrunden-Ligen und die Uebernahmestufe', async () => {
+      existing.league_ids_preround = [7, 8];
+      existing.preround_point_modus = 'full';
+      try {
+        await open('/ligen/5?reiter=modus');
+        expect(
+          panel().querySelectorAll('[data-testid="preround-league"]').length
+        ).toBe(2);
+        expect(
+          panel().querySelector('[name="preround_transfer_scope"]')
+        ).not.toBeNull();
+      } finally {
+        delete existing.league_ids_preround;
+        delete existing.preround_point_modus;
+      }
     });
 
     it('bietet Logo und Banner nur fuer eine gespeicherte Liga an', async () => {

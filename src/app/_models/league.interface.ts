@@ -45,9 +45,17 @@ export interface League {
    */
   competition_group?: CompetitionGroup;
   league_id_preseason?: number;
-  league_id_preround?: number;
+  /** Erste Vorrunden-Liga; führend ist `league_ids_preround` (api, mehrere Vorrunden). */
+  league_id_preround?: number | null;
+  /** Alle Vorrunden-Ligen, aus denen die Tabelle übernimmt (z. B. Staffel A und B). */
+  league_ids_preround?: number[];
   has_preround: boolean;
-  preround_point_modus?: string;
+  preround_point_modus?: string | null;
+  /**
+   * Was aus den Vorrunden übernommen wird: nur Punkte (Vorgabe, auch bei
+   * leer), Punkte und Tore, oder die komplette Bilanz.
+   */
+  preround_transfer_scope?: PreroundTransferScope | null;
   preround_scorer_modus?: string;
   league_id_direct_encounters?: number;
 
@@ -92,3 +100,5 @@ export interface League {
 export interface LeagueWithTeams extends League {
   teams: Team[];
 }
+
+export type PreroundTransferScope = 'points' | 'goals' | 'full';

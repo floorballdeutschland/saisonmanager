@@ -5,7 +5,10 @@ export { GameOperation } from './game-operation.interface';
 export { TableEntry } from './table-entry.interface';
 export { GroupedTableEntry } from './table-entry.interface';
 export { GroupedTable } from './table-entry.interface';
-export { TablePointCorrections } from './table-entry.interface';
+export {
+  TablePointCorrections,
+  TablePreroundTransfer,
+} from './table-entry.interface';
 export { ScorerEntry } from './scorer-entry.interface';
 export {
   PlayerStats,
