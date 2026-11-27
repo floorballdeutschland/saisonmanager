@@ -389,9 +389,9 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
       : found.name;
   }
 
-  // Zwischengespeichert, weil fb-select-search bei jeder neuen Liste seine
-  // Filterung neu aufsetzt; eine pro Durchlauf neu gebaute Liste würde die
-  // Eingabe beim Tippen zurücksetzen.
+  // Zwischengespeichert, weil fb-select-search bei jeder neuen Liste
+  // (ngOnChanges) neu filtert; eine pro Durchlauf neu gebaute Liste löste das
+  // bei jeder Änderungsprüfung aus.
   private _availablePreroundCache: { key: string; items: League[] } | null =
     null;
 
