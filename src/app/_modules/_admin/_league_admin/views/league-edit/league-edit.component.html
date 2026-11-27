@@ -602,24 +602,53 @@
                   </div>
                   <div class="grid grid-cols-2 gap-4">
                     <div class="font-bold">
-                      {{ "leagueAdmin.edit.preroundLeague" | transloco }}
+                      {{ "leagueAdmin.edit.preroundLeagues" | transloco }}
                     </div>
-                    <div>
-                      <fb-select-search
-                        name="league_id_preround"
-                        [(ngModel)]="league.league_id_preround"
-                        [items]="otherLeagues"
-                        hintKey="game_operation_name"
-                        [placeholder]="
-                          'leagueAdmin.edit.noPreround' | transloco
-                        "
-                        [resetLabel]="'leagueAdmin.edit.noPreround' | transloco"
-                      />
-                      <p class="text-xs text-gray-500 mt-1">
+                    <div class="flex flex-col gap-2">
+                      @for (id of preroundIds(league); track id) {
+                        <div
+                          class="flex items-center gap-2"
+                          data-testid="preround-league"
+                        >
+                          <span class="text-sm font-medium flex-1">{{
+                            preroundLeagueLabel(id)
+                          }}</span>
+                          <button
+                            type="button"
+                            (click)="removePreroundLeague(league, id)"
+                            class="text-red-400 hover:text-red-600 text-xs px-2 py-1 border border-red-300 rounded"
+                          >
+                            {{ "leagueAdmin.edit.remove" | transloco }}
+                          </button>
+                        </div>
+                      }
+                      <!-- Das Feld fügt nur hinzu und soll danach wieder leer
+                           stehen. Ein ngModel, das immer null bleibt, schreibt
+                           das Feld nicht neu; der Schlüssel aus der Anzahl
+                           baut es nach jeder Änderung frisch auf. -->
+                      @for (
+                        count of [preroundIds(league).length];
+                        track count
+                      ) {
+                        <fb-select-search
+                          name="preround_league_add"
+                          [ngModel]="null"
+                          (ngModelChange)="addPreroundLeague(league, $event)"
+                          [items]="availablePreroundLeagues(league)"
+                          hintKey="game_operation_name"
+                          [placeholder]="
+                            (preroundIds(league).length
+                              ? 'leagueAdmin.edit.addPreround'
+                              : 'leagueAdmin.edit.noPreround'
+                            ) | transloco
+                          "
+                        />
+                      }
+                      <p class="text-xs text-gray-500">
                         {{ "leagueAdmin.edit.preroundLeagueHint" | transloco }}
                       </p>
                     </div>
-                    @if (league.league_id_preround) {
+                    @if (preroundIds(league).length) {
                       <div class="font-bold">
                         {{ "leagueAdmin.edit.tableTransfer" | transloco }}
                       </div>
@@ -644,6 +673,46 @@
                           </option>
                         </select>
                       </div>
+                      @if (league.preround_point_modus) {
+                        <div class="font-bold">
+                          {{ "leagueAdmin.edit.transferScope" | transloco }}
+                        </div>
+                        <div>
+                          <select
+                            class="w-full"
+                            name="preround_transfer_scope"
+                            [ngModel]="
+                              league.preround_transfer_scope || 'points'
+                            "
+                            (ngModelChange)="
+                              league.preround_transfer_scope = $event
+                            "
+                          >
+                            <option value="points">
+                              {{
+                                "leagueAdmin.edit.transferScopePoints"
+                                  | transloco
+                              }}
+                            </option>
+                            <option value="goals">
+                              {{
+                                "leagueAdmin.edit.transferScopeGoals"
+                                  | transloco
+                              }}
+                            </option>
+                            <option value="full">
+                              {{
+                                "leagueAdmin.edit.transferScopeFull" | transloco
+                              }}
+                            </option>
+                          </select>
+                          <p class="text-xs text-gray-500 mt-1">
+                            {{
+                              "leagueAdmin.edit.transferScopeHint" | transloco
+                            }}
+                          </p>
+                        </div>
+                      }
                     }
                   </div>
                 </div>

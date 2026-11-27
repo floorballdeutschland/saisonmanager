@@ -61,6 +61,9 @@
               ) {
                 <span>*</span>
               }
+              @if (element.preround) {
+                <span>°</span>
+              }
             </div>
           </div>
 
@@ -302,6 +305,14 @@
 @if (has_direct_encounter_games) {
   <div class="text-xs text-gray-500 mt-2">
     * Direktbegegnungen aus der Hinrunde eingerechnet.
+  </div>
+}
+@if (preround_transfers.length > 0) {
+  <div class="text-xs text-gray-500 mt-2" data-testid="preround-transfers">
+    ° Aus der Vorrunde übernommen und in der Tabelle enthalten:
+    @for (t of preround_transfers; track t.team_name) {
+      <p>{{ t.team_name }}: {{ t.text }}</p>
+    }
   </div>
 }
 @if (qualificationLegend.length > 0) {

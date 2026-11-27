@@ -12,7 +12,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { OverlayService } from '@floorball/core';
-import { TableEntry, TablePointCorrections } from '@floorball/models';
+import {
+  TableEntry,
+  TablePointCorrections,
+  TablePreroundTransfer,
+} from '@floorball/models';
 import { take, tap } from 'rxjs';
 import { TeamRankingTableOverlayComponent } from '../team-ranking-table-overlay/team-ranking-table-overlay.component';
 import { TeamRankingTableDatasoure } from './team-ranking-table.datasource';
@@ -44,6 +48,8 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
 
   point_corrections: TablePointCorrections[] = [];
   has_direct_encounter_games = false;
+  /** Mannschaften mit übernommenen Vorrundenwerten, für die Fußnote. */
+  preround_transfers: { team_name: string; text: string }[] = [];
 
   overlayComponentRef?: ComponentRef<TeamRankingTableOverlayComponent>;
 
@@ -128,6 +134,43 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
     this.point_corrections = corrections;
   }
 
+  // Die übernommenen Werte stecken schon in den Spalten. Ohne Hinweis passen
+  // die Punkte nicht zur sichtbaren Bilanz, deshalb nennt die Fußnote sie je
+  // Mannschaft.
+  public setPreroundTransfers(table: TableEntry[]) {
+    this.preround_transfers = table
+      .filter((entry) => entry.preround)
+      .map((entry) => ({
+        team_name: entry.team_name,
+        text: TeamRankingTableComponent.describePreround(entry.preround!),
+      }));
+  }
+
+  static describePreround(transfer: TablePreroundTransfer): string {
+    const parts: string[] = [];
+    if (transfer.points !== undefined) {
+      parts.push(
+        `${transfer.points} ${transfer.points === 1 ? 'Punkt' : 'Punkte'}`
+      );
+    }
+    if (transfer.games !== undefined) {
+      parts.push(
+        `${transfer.games} ${transfer.games === 1 ? 'Spiel' : 'Spiele'} ` +
+          `(${transfer.won ?? 0} S, ${transfer.draw ?? 0} U, ${transfer.lost ?? 0} N` +
+          (transfer.won_ot || transfer.lost_ot
+            ? `, ${transfer.won_ot ?? 0} SDS, ${transfer.lost_ot ?? 0} SDN`
+            : '') +
+          ')'
+      );
+    }
+    if (transfer.goals_scored !== undefined) {
+      parts.push(
+        `Tore ${transfer.goals_scored}:${transfer.goals_received ?? 0}`
+      );
+    }
+    return parts.join(', ');
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']?.currentValue) {
       this.dataSource.data.next(changes['data'].currentValue);
@@ -136,6 +179,7 @@ export class TeamRankingTableComponent implements OnChanges, AfterViewInit {
       this.has_direct_encounter_games = changes['data'].currentValue.some(
         (e: TableEntry) => e.has_direct_encounter_games
       );
+      this.setPreroundTransfers(changes['data'].currentValue);
     }
   }
 

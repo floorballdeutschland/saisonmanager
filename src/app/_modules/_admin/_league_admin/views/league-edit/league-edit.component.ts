@@ -370,6 +370,67 @@ export class LeagueEditComponent implements OnInit, OnDestroy {
     this.otherLeagues = this.allLeagues
       .filter((l) => l.id !== this._currentLeagueId)
       .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+    this._availablePreroundCache = null;
+  }
+
+  // Vorrunden-Ligen. Eine Liga kann mehrere haben (Bayern: Staffel A und B vor
+  // der Zwischenrunde). Ältere API-Stände liefern nur `league_id_preround`,
+  // daher der Rückfall darauf.
+  public preroundIds(league: League): number[] {
+    if (league.league_ids_preround) return league.league_ids_preround;
+    return league.league_id_preround ? [league.league_id_preround] : [];
+  }
+
+  public preroundLeagueLabel(id: number): string {
+    const found = this.otherLeagues.find((l) => l.id === id);
+    if (!found) return `#${id}`;
+    return found.game_operation_name
+      ? `${found.name} (${found.game_operation_name})`
+      : found.name;
+  }
+
+  // Zwischengespeichert, weil fb-select-search bei jeder neuen Liste seine
+  // Filterung neu aufsetzt; eine pro Durchlauf neu gebaute Liste würde die
+  // Eingabe beim Tippen zurücksetzen.
+  private _availablePreroundCache: { key: string; items: League[] } | null =
+    null;
+
+  public availablePreroundLeagues(league: League): League[] {
+    const ids = this.preroundIds(league);
+    const key = ids.join(',');
+    if (this._availablePreroundCache?.key !== key) {
+      this._availablePreroundCache = {
+        key,
+        items: this.otherLeagues.filter((l) => !ids.includes(l.id)),
+      };
+    }
+    return this._availablePreroundCache.items;
+  }
+
+  public addPreroundLeague(league: League, id: number | string | null): void {
+    if (id === null || id === undefined || id === '') return;
+    const numeric = Number(id);
+    const ids = this.preroundIds(league);
+    if (ids.includes(numeric)) return;
+    this._setPreroundIds(league, [...ids, numeric]);
+  }
+
+  public removePreroundLeague(league: League, id: number): void {
+    this._setPreroundIds(
+      league,
+      this.preroundIds(league).filter((i) => i !== id)
+    );
+  }
+
+  // `league_id_preround` folgt der ersten Vorrunde, wie in der API. Ohne
+  // Vorrunde gibt es auch nichts zu übernehmen.
+  private _setPreroundIds(league: League, ids: number[]): void {
+    league.league_ids_preround = ids;
+    league.league_id_preround = ids[0] ?? null;
+    if (!ids.length) {
+      league.preround_point_modus = null;
+      league.preround_transfer_scope = null;
+    }
   }
 
   // Was der Browser im Mindestalter-Feld nicht als Zahl lesen kann, kommt hier
