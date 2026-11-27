@@ -520,6 +520,8 @@ describe('LicenseTeamDetailComponent', () => {
                 teamDetail: {
                   reapply: 'erneut beantragen',
                   reapplyExpress: 'erneut als Express beantragen',
+                  withdrawLink: 'zurückziehen',
+                  withdrawLinkFree: 'kostenfrei löschen',
                 },
               },
             },
@@ -590,6 +592,52 @@ describe('LicenseTeamDetailComponent', () => {
         current_status: { license_status_id: 2, license_status: 'beantragt' },
       } as Partial<PlayerWithLicense>);
       expect(text(fixture)).not.toContain('erneut als Express beantragen');
+    });
+
+    // Ein `hidden sm:flex` an den Knöpfen oder ihren Hüllen nähme Vereinen
+    // mobil das Zurückziehen und erneute Beantragen.
+    const isHidden = (el: Element) =>
+      [...el.classList].some((c) =>
+        /(^|:)hidden$|^invisible$|^sr-only$/.test(c)
+      );
+
+    function expectVisibleButton(root: HTMLElement, label: string) {
+      const button = root.querySelector<HTMLButtonElement>(
+        `button[type="button"][aria-label="${label}"]`
+      );
+      expect(button).withContext(label).not.toBeNull();
+      for (
+        let el: Element | null = button;
+        el && el !== root;
+        el = el.parentElement
+      ) {
+        expect(isHidden(el))
+          .withContext(`${label}: ${el.className}`)
+          .toBeFalse();
+      }
+      expect(button!.getAttribute('title')).withContext(label).toBe(label);
+      expect(button!.querySelector('svg')).withContext(label).not.toBeNull();
+    }
+
+    it('blendet die Knöpfe auf kleinen Bildschirmen nicht aus', () => {
+      const fixture = render({
+        can_withdraw: true,
+      } as Partial<PlayerWithLicense>);
+      for (const label of [
+        'zurückziehen',
+        'erneut beantragen',
+        'erneut als Express beantragen',
+      ]) {
+        expectVisibleButton(fixture.nativeElement, label);
+      }
+    });
+
+    it('nennt in der kostenfreien Stunde das kostenfreie Löschen', () => {
+      const fixture = render({
+        can_withdraw: true,
+        grace_period_ends_at: new Date(Date.now() + 3_600_000).toISOString(),
+      } as Partial<PlayerWithLicense>);
+      expectVisibleButton(fixture.nativeElement, 'kostenfrei löschen');
     });
 
     it('schickt express nur mit, wenn er gewählt ist', () => {
