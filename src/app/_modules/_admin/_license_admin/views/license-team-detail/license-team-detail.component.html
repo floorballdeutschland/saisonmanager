@@ -44,16 +44,14 @@
                       <div href="#" class="block hover:bg-gray-50">
                         <div class="-mx-4 px-4 py-4 sm:px-6 sm:-mx-6">
                           <div class="flex items-start justify-between">
-                            <p class="truncate text-sm font-medium">
+                            <p class="min-w-0 truncate text-sm font-medium">
                               {{ p.last_name }}, {{ p.first_name }}
                             </p>
-                            <!-- Unter sm stehen die Knöpfe nur als Symbol (Text per
-                                 title/aria-label), vorher waren sie dort ganz
-                                 ausgeblendet und Vereine konnten mobil weder
-                                 zurückziehen noch erneut beantragen. -->
-                            <div
-                              class="ml-2 flex flex-wrap items-end justify-end gap-2"
-                            >
+                            <!-- Unter sm stehen die Knöpfe nur als Symbol, der Text
+                                 steht in title/aria-label. Nicht wieder
+                                 ausblenden: Vereine ziehen auch mobil zurück
+                                 und beantragen erneut. -->
+                            <div class="ml-2 flex shrink-0 items-end gap-2">
                               @if (p.can_withdraw) {
                                 <div class="flex flex-col items-end gap-0.5">
                                   <fb-confirmation
@@ -86,7 +84,8 @@
                                       withdrawRequest(p.id, p.team_license.id)
                                     "
                                   >
-                                    <a
+                                    <button
+                                      type="button"
                                       class="flex shrink-0 items-center px-2 py-1 sm:py-0 border border-fb-gray-600 rounded-xl hover:cursor-pointer hover:bg-fb-gray-200"
                                       [attr.aria-label]="
                                         (isInGracePeriod(p)
@@ -126,7 +125,7 @@
                                           ) | transloco
                                         }}
                                       </span>
-                                    </a>
+                                    </button>
                                   </fb-confirmation>
                                   @if (isInGracePeriod(p)) {
                                     <span class="text-[10px] text-green-700">
@@ -143,7 +142,8 @@
                                 p.current_status?.license_status_id === 3 ||
                                 p.current_status?.license_status_id === 8
                               ) {
-                                <a
+                                <button
+                                  type="button"
                                   class="flex shrink-0 items-center px-2 py-1 sm:py-0 border border-fb-gray-600 rounded-xl hover:cursor-pointer hover:bg-fb-gray-200"
                                   [attr.aria-label]="
                                     'licenseAdmin.teamDetail.reapply'
@@ -183,7 +183,7 @@
                                         | transloco
                                     }}
                                   </span>
-                                </a>
+                                </button>
                                 <!-- Wer beim ersten Antrag den Express-Haken
                                      vergessen und nach der kostenfreien Stunde
                                      zurückgezogen hat, findet den Spieler nicht
@@ -208,7 +208,8 @@
                                       )
                                     "
                                   >
-                                    <a
+                                    <button
+                                      type="button"
                                       class="flex shrink-0 items-center px-2 py-1 sm:py-0 border border-fb-gray-600 rounded-xl hover:cursor-pointer hover:bg-fb-gray-200"
                                       [attr.aria-label]="
                                         'licenseAdmin.teamDetail.reapplyExpress'
@@ -242,7 +243,7 @@
                                             | transloco
                                         }}
                                       </span>
-                                    </a>
+                                    </button>
                                   </fb-confirmation>
                                 }
                               }
