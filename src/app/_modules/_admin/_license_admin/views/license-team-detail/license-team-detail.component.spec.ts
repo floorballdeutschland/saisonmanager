@@ -520,6 +520,7 @@ describe('LicenseTeamDetailComponent', () => {
                 teamDetail: {
                   reapply: 'erneut beantragen',
                   reapplyExpress: 'erneut als Express beantragen',
+                  withdrawLink: 'zurückziehen',
                 },
               },
             },
@@ -590,6 +591,26 @@ describe('LicenseTeamDetailComponent', () => {
         current_status: { license_status_id: 2, license_status: 'beantragt' },
       } as Partial<PlayerWithLicense>);
       expect(text(fixture)).not.toContain('erneut als Express beantragen');
+    });
+
+    // Die Knöpfe waren unter sm per `hidden sm:flex` ganz ausgeblendet:
+    // mobil konnte ein Verein weder zurückziehen noch erneut beantragen.
+    it('blendet die Knöpfe auf kleinen Bildschirmen nicht aus', () => {
+      const fixture = render({
+        can_withdraw: true,
+      } as Partial<PlayerWithLicense>);
+      const el: HTMLElement = fixture.nativeElement;
+      for (const label of [
+        'zurückziehen',
+        'erneut beantragen',
+        'erneut als Express beantragen',
+      ]) {
+        const button = el.querySelector(`a[aria-label="${label}"]`);
+        expect(button).withContext(label).not.toBeNull();
+        expect(button!.classList).withContext(label).not.toContain('hidden');
+        expect(button!.getAttribute('title')).withContext(label).toBe(label);
+        expect(button!.querySelector('svg')).withContext(label).not.toBeNull();
+      }
     });
 
     it('schickt express nur mit, wenn er gewählt ist', () => {

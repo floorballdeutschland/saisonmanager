@@ -47,7 +47,13 @@
                             <p class="truncate text-sm font-medium">
                               {{ p.last_name }}, {{ p.first_name }}
                             </p>
-                            <div class="ml-2 flex flex-shrink-0 items-end">
+                            <!-- Unter sm stehen die Knöpfe nur als Symbol (Text per
+                                 title/aria-label), vorher waren sie dort ganz
+                                 ausgeblendet und Vereine konnten mobil weder
+                                 zurückziehen noch erneut beantragen. -->
+                            <div
+                              class="ml-2 flex flex-wrap items-end justify-end gap-2"
+                            >
                               @if (p.can_withdraw) {
                                 <div class="flex flex-col items-end gap-0.5">
                                   <fb-confirmation
@@ -81,7 +87,19 @@
                                     "
                                   >
                                     <a
-                                      class="hidden shrink-0 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
+                                      class="flex shrink-0 items-center px-2 py-1 sm:py-0 border border-fb-gray-600 rounded-xl hover:cursor-pointer hover:bg-fb-gray-200"
+                                      [attr.aria-label]="
+                                        (isInGracePeriod(p)
+                                          ? 'licenseAdmin.teamDetail.withdrawLinkFree'
+                                          : 'licenseAdmin.teamDetail.withdrawLink'
+                                        ) | transloco
+                                      "
+                                      [attr.title]="
+                                        (isInGracePeriod(p)
+                                          ? 'licenseAdmin.teamDetail.withdrawLinkFree'
+                                          : 'licenseAdmin.teamDetail.withdrawLink'
+                                        ) | transloco
+                                      "
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -90,6 +108,7 @@
                                         stroke-width="1.5"
                                         stroke="currentColor"
                                         class="w-4 h-4"
+                                        aria-hidden="true"
                                       >
                                         <path
                                           stroke-linecap="round"
@@ -97,7 +116,9 @@
                                           d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
                                         />
                                       </svg>
-                                      <span class="pl-1 text-[13px]">
+                                      <span
+                                        class="hidden pl-1 text-[13px] sm:inline"
+                                      >
                                         {{
                                           (isInGracePeriod(p)
                                             ? "licenseAdmin.teamDetail.withdrawLinkFree"
@@ -123,7 +144,15 @@
                                 p.current_status?.license_status_id === 8
                               ) {
                                 <a
-                                  class="hidden shrink-0 mr-2 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
+                                  class="flex shrink-0 items-center px-2 py-1 sm:py-0 border border-fb-gray-600 rounded-xl hover:cursor-pointer hover:bg-fb-gray-200"
+                                  [attr.aria-label]="
+                                    'licenseAdmin.teamDetail.reapply'
+                                      | transloco
+                                  "
+                                  [attr.title]="
+                                    'licenseAdmin.teamDetail.reapply'
+                                      | transloco
+                                  "
                                   (click)="
                                     recreateLicenseRequest(
                                       p.id,
@@ -138,6 +167,7 @@
                                     stroke-width="1.5"
                                     stroke="currentColor"
                                     class="w-4 h-4"
+                                    aria-hidden="true"
                                   >
                                     <path
                                       stroke-linecap="round"
@@ -145,7 +175,9 @@
                                       d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3"
                                     />
                                   </svg>
-                                  <span class="pl-1 text-[13px]">
+                                  <span
+                                    class="hidden pl-1 text-[13px] sm:inline"
+                                  >
                                     {{
                                       "licenseAdmin.teamDetail.reapply"
                                         | transloco
@@ -177,9 +209,34 @@
                                     "
                                   >
                                     <a
-                                      class="hidden shrink-0 mr-2 px-2 border border-fb-gray-600 rounded-xl sm:flex sm:items-center hover:cursor-pointer hover:bg-fb-gray-200"
+                                      class="flex shrink-0 items-center px-2 py-1 sm:py-0 border border-fb-gray-600 rounded-xl hover:cursor-pointer hover:bg-fb-gray-200"
+                                      [attr.aria-label]="
+                                        'licenseAdmin.teamDetail.reapplyExpress'
+                                          | transloco
+                                      "
+                                      [attr.title]="
+                                        'licenseAdmin.teamDetail.reapplyExpress'
+                                          | transloco
+                                      "
                                     >
-                                      <span class="text-[13px]">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="1.5"
+                                        stroke="currentColor"
+                                        class="w-4 h-4"
+                                        aria-hidden="true"
+                                      >
+                                        <path
+                                          stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                          d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"
+                                        />
+                                      </svg>
+                                      <span
+                                        class="hidden pl-1 text-[13px] sm:inline"
+                                      >
                                         {{
                                           "licenseAdmin.teamDetail.reapplyExpress"
                                             | transloco
