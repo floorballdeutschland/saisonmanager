@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run lint && ng lint
+sh scripts/gitleaks-staged.sh && npm run lint && ng lint
