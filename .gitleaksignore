@@ -1,0 +1,8 @@
+# Geprüfte Altfunde aus der Historie (Einmalscan 28.11.2026, gitleaks 8.30.1).
+# Format: <commit>:<datei>:<regel>:<zeile>. Ein Eintrag hier macht den Fund
+# nicht ungeschehen; er steht weiter öffentlich in der Historie.
+
+# Früherer Frontend-API-Key im Prod-Environment (April 2026). Der Key stand
+# bis 2.6.0 ohnehin im ausgelieferten Bundle. Er ist erst erledigt, wenn er
+# unter /verwaltung/api-keys deaktiviert ist.
+b385830b09ff9116384343bae39b7013d082c384:src/environments/environment.prod.ts:saisonmanager-api-key:4
